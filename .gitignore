@@ -1,0 +1,16 @@
+
+*.fastq
+
+refactored_pipeline/blat_pp_test_data/
+
+*.rar
+
+*.py~HEAD
+
+*.py~sort_reads_refactor
+
+*.pyc
+
+*.odg#
+
+refactored_pipeline/docker_image/dump\.txt

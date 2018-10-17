@@ -1,0 +1,11 @@
+introduction
+
+this is a simplified outline of our bioinformatics pipeline
+for those not familiar with bioinformatics pipelines, they're a smattering of tools, called in sequence to scrub and analyze the data
+reads walk through this entire process, starting off with initial cleaning
+we remove low quality reads, remove host contamininents, and vectors
+then we remove rRNA
+
+and we start the analysis.
+
+performance-wise, it's a slow process, bounded by the size of your data.
