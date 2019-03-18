@@ -1,4 +1,4 @@
-# MetaPro:  Meta-analysis pipeline for Transcriptomics + Genomics
+# MetaPro:  Meta-analysis pipeline for Transcriptomics
 ---
 The MetaPro Meta Transcriptomics/Genomics Pipeline is a software tool that will perform Transcriptomics and Genomic analysis
 on Paired and Single Reads of FASTQ data.
@@ -6,11 +6,19 @@ on Paired and Single Reads of FASTQ data.
 # How to install
 ---
 This package is meant to work in conjunction with Docker/Singularity.  All of the prerequisite tools, including the pipeline code
-is delivered via the Docker Hub. https://hub.docker.com/r/billyc59/parkinson_pipeline/
+is delivered via the Docker Hub. https://hub.docker.com/r/parkinsonlab/metapro
 Alternatively, individual parts of the pipeline are avaiable from this Github repository.
 
 Therefore, to use this pipeline, Docker (https://www.docker.com/) or Singularity (https://www.sylabs.io/guides/2.6/user-guide/) is needed.
-This also means there is nothing to install (tools and code) besides Docker/Docker CE/Singularity
+This also means there is nothing to install (tools and code) besides Docker/Docker CE/Singularity, and the database files.
+
+# Getting started
+---
+A high-level overview:
+1) Download and install Docker
+2) Acquire or download the database files
+3) Set up the config file
+4) Run the pipeline
 
 # How to use
 ---
@@ -36,7 +44,9 @@ Pair 1 is for Forward Reads.  Pair 2 is for Reverse Reads.  Some portions of the
 
 ## Databases
 ---
-We intentionally did not include any database files in this distribution so as to allow the user more flexibility in how they want to use the pipeline.  Databases also become obselete quickly, and the image size would be enormous.  
+The database files are critical to the operation of MetaPro.  The pipeline will not work without them.
+As a convenience to the user, we have hosted a small variant of these files, to fit in a typical running environment.  However, 
+
 Below is a description of each of the fields we used.  
 * database_path
 This field isn't a part of the parameters that the pipeline accepts.  It's a shortcut argument that makes filling the path to each database easier.
@@ -59,7 +69,10 @@ A copy can be found at: http://huttenhower.sph.harvard.edu/humann2_data/chocophl
 * DNA_DB_Split
 The ChocoPhlAn database is big.  We split it up and process the chunks simultaneously.  The pipeline will split it and dump the chunks at this location
 * Prot_DB
-The Prot_DB is the protein db.  We use the non-redundant database from NCBI.  It will need to be indexed by DIAMOND before usage. (see DIAMOND for more details: https://github.com/bbuchfink/diamond)
+The Prot_DB is the protein db.  We use the non-redundant protein database from NCBI.  It will need to be indexed by DIAMOND before usage. (see DIAMOND for more details: https://github.com/bbuchfink/diamond)
+It can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/db/
+* Prot_DB_reads
+This is the read file of the Protein Database.  It should have been the file that was indexed with DIAMOND. We use both the original file, and the DIAMOND index in the software
 It can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/db/
 * accession2taxid
 This database links each accession to a taxid number.  It's used as part of a custom program in the pipeline.
@@ -90,6 +103,9 @@ PRIAM can be downloaded here: http://priam.prabi.fr/
 * DetectDB
 Detect is an enzyme annotation tool. 
 
+## Settings
+---
+Settings offers the user some control over MetaPro's actions.
 
 # Important Features
 ---
@@ -106,7 +122,7 @@ In an effort to save computational resources, the pipeline will shut itself down
 # Increasing performance
 ---
 ## Operating mode
-The pipeline operates in a Singularity machine.  As of writing (Sept 28, 2018), Singularity does not support multi-machine parallelism.  This pipeline does not utilize MPI, but instead strives to use all the cores made available by the singularity machine through the Python Multiprocessing module.  To increase the performance of the pipeline, more cores should be given to the host machine, and increasing the number of cores the pipeline is allowed to use.
+The pipeline operates in a Singularity machine.  As of writing (March 18, 2019), Singularity does not support multi-machine parallelism.  This pipeline does not utilize MPI, but instead strives to use all the cores made available by the singularity machine through the Python Multiprocessing module.  To increase the performance of the pipeline, more cores should be given to the host machine, and increasing the number of cores the pipeline is allowed to use.
 
 ## Verbose-mode
 ---
