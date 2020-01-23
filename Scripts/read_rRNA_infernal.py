@@ -23,7 +23,11 @@ def extract_rRNA_ID(inf_file):
 
 def filter_rRNA(rRNA_ID_list, fastq_sequence, mRNA_loc, rRNA_loc, file_name):
     #import the fastq as a DF
+<<<<<<< HEAD
     fastq_df = pd.read_csv(fastq_sequence, sep="\n", skip_blank_lines=False, header=None, names = [None])
+=======
+    fastq_df = pd.read_csv(fastq_sequence, sep="\n", skip_blank_lines=False, header=None, names = [None], quoting=3)
+>>>>>>> 4d5286c... committing final-ish code.
     fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
     fastq_df.columns = ["ID", "seq", "junk", "quality"]
     
@@ -31,8 +35,13 @@ def filter_rRNA(rRNA_ID_list, fastq_sequence, mRNA_loc, rRNA_loc, file_name):
     #mRNA segment
     mRNA_export = os.path.join(mRNA_loc, file_name + "_mRNA.fastq")
     rRNA_export = os.path.join(rRNA_loc, file_name + "_rRNA.fastq")
+<<<<<<< HEAD
     fastq_df[~fastq_df["ID"].isin(rRNA_ID_list)].to_csv(mRNA_export, sep = "\n", mode = "w+", header=False, index=False)
     fastq_df[fastq_df["ID"].isin(rRNA_ID_list)].to_csv(rRNA_export, sep="\n", mode = "w+", header=False, index=False)
+=======
+    fastq_df[~fastq_df["ID"].isin(rRNA_ID_list)].to_csv(mRNA_export, sep = "\n", mode = "w+", header=False, index=False, quoting = 3)
+    fastq_df[fastq_df["ID"].isin(rRNA_ID_list)].to_csv(rRNA_export, sep="\n", mode = "w+", header=False, index=False, quoting = 3)
+>>>>>>> 4d5286c... committing final-ish code.
     
     
 if __name__ == "__main__":

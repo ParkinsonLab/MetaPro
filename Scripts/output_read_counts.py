@@ -50,7 +50,11 @@ data.append(str(int(quality_sequence_count)))
 
 headings.append("% high quality")
 quality_sequence_pct = quality_sequence_count / raw_sequence_count
+<<<<<<< HEAD
 data.append("%.2f" % quality_sequence_pct*100)
+=======
+data.append("%.2f" % (quality_sequence_pct*100))
+>>>>>>> 4d5286c... committing final-ish code.
 
 headings.append("rRNA reads")
 rRNA_sequence_count = fastq_count(rRNA_sequence)
@@ -58,7 +62,11 @@ data.append(str(int(rRNA_sequence_count)))
 
 headings.append("% rRNA reads")
 rRNA_sequence_pct = rRNA_sequence_count / raw_sequence_count
+<<<<<<< HEAD
 data.append("%.2f" % rRNA_sequence_pct*100)
+=======
+data.append("%.2f" % (rRNA_sequence_pct*100))
+>>>>>>> 4d5286c... committing final-ish code.
 
 headings.append("Putative mRNA reads")
 mRNA_sequence_count = fastq_count(mRNA_sequence)
@@ -66,7 +74,11 @@ data.append(str(int(mRNA_sequence_count)))
 
 headings.append("% putative mRNA reads")
 mRNA_sequence_pct = mRNA_sequence_count / raw_sequence_count
+<<<<<<< HEAD
 data.append("%.2f" % mRNA_sequence_pct*100)
+=======
+data.append("%.2f" % (mRNA_sequence_pct*100))
+>>>>>>> 4d5286c... committing final-ish code.
 
 headings.append("Annotated mRNA reads")
 annotated_mRNA_count, genes_count = annotated_count(gene_to_read_map)
@@ -74,7 +86,11 @@ data.append(str(int(annotated_mRNA_count)))
 
 headings.append("% of putative mRNA reads annotated")
 annotated_mRNA_pct = annotated_mRNA_count / mRNA_sequence_count
+<<<<<<< HEAD
 data.append("%.2f" % annotated_mRNA_pct*100)
+=======
+data.append("%.2f" % (annotated_mRNA_pct*100))
+>>>>>>> 4d5286c... committing final-ish code.
 
 headings.append("Unique transcripts")
 data.append(str(int(genes_count)))

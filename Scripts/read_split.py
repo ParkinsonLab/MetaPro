@@ -19,7 +19,11 @@ import pandas as pd
 def split_fastq(file_name_in, file_name_out, split_count = 4):
     #FASTQ has 4 lines per entry.
     file_base_name = os.path.splitext(file_name_in)[0]
+<<<<<<< HEAD
     fastq_df = pd.read_csv(file_name_in, header=None, names=[None], sep="\n", skip_blank_lines = False)
+=======
+    fastq_df = pd.read_csv(file_name_in, header=None, names=[None], sep="\n", skip_blank_lines = False, quoting=3)
+>>>>>>> 4d5286c... committing final-ish code.
     fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
     #At this point, we've already got the number of reads.
     chunks = m.ceil(len(fastq_df) / split_count) #how many sequences each split file will have
@@ -42,7 +46,11 @@ def split_fastq(file_name_in, file_name_out, split_count = 4):
         #if(chunks == 1):
         #    end_index += 1 #override on splits that only have 1 
         if not(fastq_df.iloc[start_index:end_index, :].empty):
+<<<<<<< HEAD
             fastq_df.iloc[start_index:end_index, :].to_csv(new_file_name, chunksize = chunks, mode = "w+", index=False, sep='\n', header=False)
+=======
+            fastq_df.iloc[start_index:end_index, :].to_csv(new_file_name, chunksize = chunks, mode = "w+", index=False, sep='\n', header=False, quoting = 3)
+>>>>>>> 4d5286c... committing final-ish code.
         else:
             print("empty frame detected.  no sense in running the rest")
             break
@@ -101,7 +109,11 @@ if __name__ == "__main__":
             split_count = 1
             
         input_extension = os.path.splitext(input_file)[1]
+<<<<<<< HEAD
         if input_extension == ".fastq":
+=======
+        if ((input_extension == ".fastq") or (input_extension ==".fq")):
+>>>>>>> 4d5286c... committing final-ish code.
             split_fastq(input_file, output_name, split_count)
         elif input_extension == ".fasta" or input_extension == ".ffn" or input_extension == ".fna" or input_extension == ".faa":
             split_fasta(input_file, output_name, split_count)

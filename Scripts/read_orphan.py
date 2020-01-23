@@ -8,8 +8,13 @@ import pandas as pd
 # we expect this code to be called multiple times
 
 def filter_for_orphans(pair_0_path_i, pair_1_path_i, orphans_path_i, pair_0_path_o, pair_1_path_o, unique_path_o):
+<<<<<<< HEAD
     pre_df_0 = pd.read_csv(pair_0_path_i, header=None, names=[None], sep = '\n', skip_blank_lines = False)
     pre_df_1 = pd.read_csv(pair_1_path_i, header=None, names=[None], sep = '\n', skip_blank_lines = False)
+=======
+    pre_df_0 = pd.read_csv(pair_0_path_i, header=None, names=[None], sep = '\n', skip_blank_lines = False, quoting=3)
+    pre_df_1 = pd.read_csv(pair_1_path_i, header=None, names=[None], sep = '\n', skip_blank_lines = False, quoting=3)
+>>>>>>> 4d5286c... committing final-ish code.
     df_0 = pd.DataFrame(pre_df_0.values.reshape(int(len(pre_df_0)/4), 4))
     df_1 = pd.DataFrame(pre_df_1.values.reshape(int(len(pre_df_1)/4), 4))
     
@@ -20,6 +25,7 @@ def filter_for_orphans(pair_0_path_i, pair_1_path_i, orphans_path_i, pair_0_path
     common = df_0.merge(df_1, on=["ID"])
     
     #stuff that belongs go here
+<<<<<<< HEAD
     df_0[df_0.ID.isin(common.ID)].to_csv(pair_0_path_o, sep = '\n', mode = 'w+', header = False, index = False)
     df_1[df_1.ID.isin(common.ID)].to_csv(pair_1_path_o, sep = '\n', mode = 'w+', header = False, index = False)
     
@@ -33,6 +39,21 @@ def filter_for_orphans(pair_0_path_i, pair_1_path_i, orphans_path_i, pair_0_path
         orphans_df = pd.DataFrame(orphans_i_file.values.reshape(int(len(orphans_i_file)/4), 4))
         orphans_df.columns = ["ID", "seq", "junk", "quality"]
         orphans_df.to_csv(unique_path_o, sep = '\n', mode = 'a', header=False, index=False)
+=======
+    df_0[df_0.ID.isin(common.ID)].to_csv(pair_0_path_o, sep = '\n', mode = 'w+', header = False, index = False, quoting = 3)
+    df_1[df_1.ID.isin(common.ID)].to_csv(pair_1_path_o, sep = '\n', mode = 'w+', header = False, index = False, quoting = 3)
+    
+    #stuff that doesn't belong go to another pile
+    df_0[~df_0.ID.isin(common.ID)].to_csv(unique_path_o, sep = '\n', mode = 'w+', header=False, index = False, quoting = 3)
+    df_1[~df_1.ID.isin(common.ID)].to_csv(unique_path_o, sep = '\n', mode = 'a', header=False, index = False, quoting = 3)
+    
+    #There's some situations where there's no orphans generated from the previous steps.  
+    if(os.path.exists(orphans_path_i)):
+        orphans_i_file = pd.read_csv(orphans_path_i, header=None, names=[None], sep = '\n', skip_blank_lines = False, quoting = 3)
+        orphans_df = pd.DataFrame(orphans_i_file.values.reshape(int(len(orphans_i_file)/4), 4))
+        orphans_df.columns = ["ID", "seq", "junk", "quality"]
+        orphans_df.to_csv(unique_path_o, sep = '\n', mode = 'a', header=False, index=False, quoting = 3)
+>>>>>>> 4d5286c... committing final-ish code.
 
 if __name__ == "__main__":
     if(len(sys.argv) < 7):

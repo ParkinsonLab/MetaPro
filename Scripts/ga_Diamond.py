@@ -37,11 +37,20 @@ from collections import Counter
 from collections import defaultdict
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
+<<<<<<< HEAD
+=======
+from datetime import datetime as dt
+from shutil import copyfile
+>>>>>>> 4d5286c... committing final-ish code.
 
 Prot_DB             = sys.argv[1]   # INPUT: AA db used for DIAMOND alignement
 contig2read_file    = sys.argv[2]   # INPUT: [contigID, #reads, readIDs ...]
 gene2read_file      = sys.argv[3]   # INPUT: [BWA&BLAT-aligned geneID, length, #reads, readIDs ...]
+<<<<<<< HEAD
 new_gene2read_file  = sys.argv[4]   # ->OUTPUT: [BWA&BLAT&DMD-aligned gene/protID, length, #reads, readIDs ...]
+=======
+new_gene2read_file  = sys.argv[4]   # OUTPUT: [BWA&BLAT&DMD-aligned gene/protID, length, #reads, readIDs ...]
+>>>>>>> 4d5286c... committing final-ish code.
 gene_file           = sys.argv[5]   # INPUT: BWA&BLAT-aligned geneIDs and nt seqs (.fna; fasta-format)
 prot_file           = sys.argv[6]   # OUTPUT: BWA&BLAT&DMD-aligned gene/protIDs and aa seqs (.faa; fasta-format)
 
@@ -252,7 +261,13 @@ for x in range(0,2):
                                     #  (second argument specifies filetype, e.g., "fasta")
     DMD_tab_file= sys.argv[3*x+8]  # INPUT: DMD-aligned contig/readIDs (.dmdout)
     if(os.path.getsize(DMD_tab_file) == 0):
+<<<<<<< HEAD
         sys.exit(DMD_tab_file + " is empty.")
+=======
+        print(dt.today(), "missing file in reading DIAMOND outputs.  likely it wasn't enough data for diamond.")
+        copyfile(gene2read_file, new_gene2read_file)
+        sys.exit(DMD_tab_file + " is empty, exiting")
+>>>>>>> 4d5286c... committing final-ish code.
 
     output_file= sys.argv[3*x+9]    # OUTPUT: non-BWA&BLAT&DMD-aligned contig/readIDs and seqs (.fasta)
 

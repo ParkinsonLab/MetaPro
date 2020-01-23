@@ -1,4 +1,8 @@
 # The functions here generate the pipeline commands.
+<<<<<<< HEAD
+=======
+# The functions here generate the pipeline commands.
+>>>>>>> 4d5286c... committing final-ish code.
 # Each command module is made up of sub stages that are used to get the final result.
 
 import os
@@ -85,22 +89,38 @@ class mt_pipe_commands:
         data_folder                 = os.path.join(subfolder, "data")
         sorted_read_folder          = os.path.join(data_folder, "0_sorted_raw_input")
         adapter_folder              = os.path.join(data_folder, "1_adapter_removal")
+<<<<<<< HEAD
         vsearch_merge_folder        = os.path.join(data_folder, "2_vsearch_pair_merge")
         vsearch_filter_folder       = os.path.join(data_folder, "3_quality_filter")
         orphan_read_filter_folder   = os.path.join(data_folder, "4_orphan_read_filter")
         cdhit_folder                = os.path.join(data_folder, "5_remove_duplicates")
+=======
+        tag_remove_folder           = os.path.join(data_folder, "2_tag_remove")
+        vsearch_merge_folder        = os.path.join(data_folder, "3_vsearch_pair_merge")
+        vsearch_filter_folder       = os.path.join(data_folder, "4_quality_filter")
+        orphan_read_filter_folder   = os.path.join(data_folder, "5_orphan_read_filter")
+        cdhit_folder                = os.path.join(data_folder, "6_remove_duplicates")
+>>>>>>> 4d5286c... committing final-ish code.
         final_folder                = os.path.join(subfolder, "final_results")
 
         self.make_folder(subfolder)
         self.make_folder(data_folder)
         self.make_folder(sorted_read_folder)
         self.make_folder(adapter_folder)
+<<<<<<< HEAD
+=======
+        self.make_folder(tag_remove_folder)
+>>>>>>> 4d5286c... committing final-ish code.
         self.make_folder(vsearch_merge_folder)
         self.make_folder(vsearch_filter_folder)
         self.make_folder(orphan_read_filter_folder)
         self.make_folder(cdhit_folder)
         self.make_folder(final_folder)
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 4d5286c... committing final-ish code.
         sort_pair_1 = ">&2 echo Sorting pair 1 | "
         sort_pair_1 += self.tool_path_obj.Python + " "
         sort_pair_1 += self.tool_path_obj.sort_reads + " "
@@ -123,8 +143,15 @@ class mt_pipe_commands:
             adapter_removal_line += " --file1 " + os.path.join(sorted_read_folder, "pair_1_sorted.fastq")
             adapter_removal_line += " --file2 " + os.path.join(sorted_read_folder, "pair_2_sorted.fastq")
         adapter_removal_line += " --qualitybase " + str(self.Qual_str)
+<<<<<<< HEAD
         adapter_removal_line += " --threads " + self.Threads_str
         adapter_removal_line += " --minlength " + "30"
+=======
+        if(self.Qual_str == "33"):
+            adapter_removal_line += " --qualitymax 75"
+        adapter_removal_line += " --threads " + self.Threads_str
+        adapter_removal_line += " --minlength " + str(self.tool_path_obj.adapterremoval_minlength)
+>>>>>>> 4d5286c... committing final-ish code.
         adapter_removal_line += " --basename " + adapter_folder
         adapter_removal_line += "_AdapterRemoval"
         adapter_removal_line += " --trimqualities "
@@ -135,12 +162,38 @@ class mt_pipe_commands:
             adapter_removal_line += " --output2 " + os.path.join(adapter_folder, "pair_2_adptr_rem.fastq")
             adapter_removal_line += " --singleton " + os.path.join(adapter_folder, "singletons_adptr_rem.fastq")
 
+<<<<<<< HEAD
+=======
+        #Sort-reads introduces tags at the read-level of the 
+        tag_remove_pair_1 = ">&2 echo Remove tags pair 1 | "
+        tag_remove_pair_1 += self.tool_path_obj.Python + " "
+        tag_remove_pair_1 += self.tool_path_obj.remove_tag + " "
+        tag_remove_pair_1 += os.path.join(adapter_folder, "pair_1_adptr_rem.fastq") + " "
+        tag_remove_pair_1 += os.path.join(tag_remove_folder, "pair_1_no_tags.fastq")
+        
+        tag_remove_pair_2 = ">&2 echo Remove tags pair 2 | "
+        tag_remove_pair_2 += self.tool_path_obj.Python + " "
+        tag_remove_pair_2 += self.tool_path_obj.remove_tag + " "
+        tag_remove_pair_2 += os.path.join(adapter_folder, "pair_2_adptr_rem.fastq") + " "
+        tag_remove_pair_2 += os.path.join(tag_remove_folder, "pair_2_no_tags.fastq")
+
+        tag_remove_singletons =  ">&2 echo Remove tags singletons | " 
+        tag_remove_singletons += self.tool_path_obj.Python + " "
+        tag_remove_singletons += self.tool_path_obj.remove_tag + " "
+        tag_remove_singletons += os.path.join(adapter_folder, "singletons_adptr_rem.fastq") + " "
+        tag_remove_singletons += os.path.join(tag_remove_folder, "singletons_no_tags.fastq")
+>>>>>>> 4d5286c... committing final-ish code.
         # tries to merge the cleaned pairs
         # rejects get sent out
         vsearch_merge = ">&2 echo " + "Vsearch Merge pairs | "
         vsearch_merge += self.tool_path_obj.vsearch
+<<<<<<< HEAD
         vsearch_merge += " --fastq_mergepairs " + os.path.join(adapter_folder, "pair_1_adptr_rem.fastq")
         vsearch_merge += " --reverse " + os.path.join(adapter_folder, "pair_2_adptr_rem.fastq")
+=======
+        vsearch_merge += " --fastq_mergepairs " + os.path.join(tag_remove_folder, "pair_1_no_tags.fastq")
+        vsearch_merge += " --reverse " + os.path.join(tag_remove_folder, "pair_2_no_tags.fastq")
+>>>>>>> 4d5286c... committing final-ish code.
         vsearch_merge += " --fastq_ascii " + str(self.Qual_str)
         vsearch_merge += " --fastqout " + os.path.join(vsearch_merge_folder, "merge_success.fastq")
         vsearch_merge += " --fastqout_notmerged_fwd " + os.path.join(vsearch_merge_folder, "pair_1_merge_reject.fastq")
@@ -150,11 +203,19 @@ class mt_pipe_commands:
         cat_glue = ">&2 echo concatenating singletons | "
         cat_glue += "cat "
         cat_glue += os.path.join(vsearch_merge_folder, "merge_success.fastq") + " "
+<<<<<<< HEAD
         cat_glue += os.path.join(adapter_folder, "singletons_adptr_rem.fastq")
+=======
+        cat_glue += os.path.join(tag_remove_folder, "singletons_no_tags.fastq")
+>>>>>>> 4d5286c... committing final-ish code.
         cat_glue += " > " + os.path.join(vsearch_merge_folder, "singletons.fastq")
 
         # Filter out low-quality reads
         # start with the singles / merged sections
+<<<<<<< HEAD
+=======
+        
+>>>>>>> 4d5286c... committing final-ish code.
         vsearch_filter_0 = ">&2 echo low-quality filter on singletons | "
         vsearch_filter_0 += self.tool_path_obj.vsearch
         if self.read_mode == "single":
@@ -243,7 +304,11 @@ class mt_pipe_commands:
 
         copy_pair_2_cluster = "cp " + os.path.join(cdhit_folder, "pair_2_unique.fastq.clstr") + " "
         copy_pair_2_cluster += os.path.join(final_folder, "pair_2_unique.fastq.clstr")
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 4d5286c... committing final-ish code.
         if self.read_mode == "single":
             COMMANDS_qual = [
                 adapter_removal_line,
@@ -258,6 +323,12 @@ class mt_pipe_commands:
                 sort_pair_1,
                 sort_pair_2,
                 adapter_removal_line,
+<<<<<<< HEAD
+=======
+                tag_remove_pair_1,
+                tag_remove_pair_2,
+                tag_remove_singletons,
+>>>>>>> 4d5286c... committing final-ish code.
                 vsearch_merge,
                 cat_glue,
                 vsearch_filter_0,
@@ -294,7 +365,11 @@ class mt_pipe_commands:
         self.make_folder(blat_hr_folder)
         self.make_folder(final_folder)
 
+<<<<<<< HEAD
         Host_Contaminants = host_removal_folder + "host_contaminents_seq.fasta"
+=======
+        Host_Contaminants = os.path.join(host_removal_folder, "host_contaminents_seq.fasta")
+>>>>>>> 4d5286c... committing final-ish code.
         copy_host = ">&2 echo Copy the host file over | "
         copy_host += "cp " + self.tool_path_obj.Host + " " + Host_Contaminants
 
@@ -454,6 +529,22 @@ class mt_pipe_commands:
 
         copy_pair_2 = "cp " + os.path.join(blat_hr_folder, "pair_2_no_host.fastq") + " "
         copy_pair_2 += os.path.join(final_folder, "pair_2.fastq")
+<<<<<<< HEAD
+=======
+        
+        data_change_host = ">&2 echo Scanning for relative change in host filtering | " 
+        data_change_host += self.tool_path_obj.Python + " "
+        data_change_host += self.tool_path_obj.data_change_metrics + " "
+        if(self.read_mode == "single"):
+            data_change_host += os.path.join(quality_folder, "singletons.fastq") + " "
+            data_change_host += os.path.join(final_folder, "singletons.fastq") + " "
+            data_change_host += os.path.join(final_folder, "qual_to_host_singletons.tsv")
+        elif(self.read_mode == "paired"):
+            data_change_host += os.path.join(quality_folder, "pair_1.fastq") + " "
+            data_change_host += os.path.join(final_folder, "pair_1.fastq") + " "
+            data_change_host += os.path.join(final_folder, "qual_to_host_pair_1.tsv")
+        
+>>>>>>> 4d5286c... committing final-ish code.
 
         if self.read_mode == "single":
             COMMANDS_host = [
@@ -468,7 +559,12 @@ class mt_pipe_commands:
                 vsearch_filter_3,
                 blat_hr_singletons,
                 hr_singletons,
+<<<<<<< HEAD
                 copy_singletons
+=======
+                copy_singletons,
+                data_change_host
+>>>>>>> 4d5286c... committing final-ish code.
             ]
         elif self.read_mode == "paired":
             COMMANDS_host = [
@@ -499,7 +595,12 @@ class mt_pipe_commands:
                 hr_pair_2,
                 copy_singletons,
                 copy_pair_1,
+<<<<<<< HEAD
                 copy_pair_2
+=======
+                copy_pair_2,
+                data_change_host
+>>>>>>> 4d5286c... committing final-ish code.
             ]
 
         return COMMANDS_host
@@ -675,6 +776,21 @@ class mt_pipe_commands:
 
         copy_pair_2 = "cp " + os.path.join(blat_containment_vector_folder, "pair_2_no_vectors.fastq") + " "
         copy_pair_2 += os.path.join(final_folder, "pair_2.fastq")
+<<<<<<< HEAD
+=======
+        
+        data_change_vectors = ">&2 echo checking changes from host filter to vector filter | "
+        data_change_vectors += self.tool_path_obj.Python + " "
+        data_change_vectors += self.tool_path_obj.data_change_metrics + " "
+        if(self.read_mode == "single"):
+            data_change_vectors += os.path.join(dependency_folder, "singletons.fastq") + " "
+            data_change_vectors += os.path.join(final_folder, "singletons.fastq") + " "
+            data_change_vectors += os.path.join(final_folder, "host_to_vectors_singletons.tsv")
+        elif(self.read_mode == "paired"):
+            data_change_vectors += os.path.join(dependency_folder, "pair_1.fastq") + " "
+            data_change_vectors += os.path.join(final_folder, "pair_1.fastq") + " "
+            data_change_vectors += os.path.join(final_folder, "host_to_vectors_pair_1.tsv")
+>>>>>>> 4d5286c... committing final-ish code.
 
         if self.read_mode == "single":
             COMMANDS_vector = [
@@ -689,7 +805,12 @@ class mt_pipe_commands:
                 vsearch_filter_6,
                 blat_vr_singletons,
                 blat_containment_vector_singletons,
+<<<<<<< HEAD
                 copy_singletons
+=======
+                copy_singletons,
+                data_change_vectors
+>>>>>>> 4d5286c... committing final-ish code.
             ]
         elif self.read_mode == "paired":
             COMMANDS_vector = [
@@ -720,7 +841,12 @@ class mt_pipe_commands:
                 blat_containment_vector_pair_2,
                 copy_singletons,
                 copy_pair_1,
+<<<<<<< HEAD
                 copy_pair_2
+=======
+                copy_pair_2,
+                data_change_vectors
+>>>>>>> 4d5286c... committing final-ish code.
             ]
 
         return COMMANDS_vector
@@ -736,17 +862,21 @@ class mt_pipe_commands:
         self.make_folder(data_folder)
         self.make_folder(singleton_split_folder)
                 
+<<<<<<< HEAD
         if(operating_mode == "paired"):
             pair_1_split_folder     = os.path.join(data_folder, "pair_1", "pair_1_fastq")
             pair_2_split_folder     = os.path.join(data_folder, "pair_2", "pair_2_fastq")
             self.make_folder(pair_1_split_folder)
             self.make_folder(pair_2_split_folder)        
 
+=======
+>>>>>>> 4d5286c... committing final-ish code.
         file_splitter_singletons = self.tool_path_obj.Python + " " + self.tool_path_obj.File_splitter + " "
         file_splitter_singletons += os.path.join(dep_loc, "singletons.fastq") + " "
         file_splitter_singletons += os.path.join(singleton_split_folder, "singletons") + " "
         file_splitter_singletons += str(file_split_count)
         
+<<<<<<< HEAD
         file_splitter_pair_1 = self.tool_path_obj.Python + " " + self.tool_path_obj.File_splitter + " "
         file_splitter_pair_1 += os.path.join(dep_loc, "pair_1.fastq") + " "
         file_splitter_pair_1 += os.path.join(pair_1_split_folder, "pair_1") + " "
@@ -757,6 +887,27 @@ class mt_pipe_commands:
         file_splitter_pair_2 += os.path.join(pair_2_split_folder, "pair_2") + " "
         file_splitter_pair_2 += str(file_split_count)
         
+=======
+        file_splitter_pair_1 = None
+        file_splitter_pair_2 = None
+        
+        if(operating_mode == "paired"):
+            pair_1_split_folder     = os.path.join(data_folder, "pair_1", "pair_1_fastq")
+            pair_2_split_folder     = os.path.join(data_folder, "pair_2", "pair_2_fastq")
+            self.make_folder(pair_1_split_folder)
+            self.make_folder(pair_2_split_folder)        
+
+            file_splitter_pair_1 = self.tool_path_obj.Python + " " + self.tool_path_obj.File_splitter + " "
+            file_splitter_pair_1 += os.path.join(dep_loc, "pair_1.fastq") + " "
+            file_splitter_pair_1 += os.path.join(pair_1_split_folder, "pair_1") + " "
+            file_splitter_pair_1 += str(file_split_count)
+
+            file_splitter_pair_2 = self.tool_path_obj.Python + " " + self.tool_path_obj.File_splitter + " "
+            file_splitter_pair_2 += os.path.join(dep_loc, "pair_2.fastq") + " "
+            file_splitter_pair_2 += os.path.join(pair_2_split_folder, "pair_2") + " "
+            file_splitter_pair_2 += str(file_split_count)
+            
+>>>>>>> 4d5286c... committing final-ish code.
         if self.read_mode == "single":
             COMMANDS_rRNA_prep = [
                 file_splitter_singletons
@@ -767,7 +918,11 @@ class mt_pipe_commands:
                 file_splitter_pair_1,
                 file_splitter_pair_2
             ]
+<<<<<<< HEAD
         print(dt.today(), COMMANDS_rRNA_prep)
+=======
+        #print(dt.today(), COMMANDS_rRNA_prep)
+>>>>>>> 4d5286c... committing final-ish code.
         return COMMANDS_rRNA_prep
 
     def create_rRNA_filter_barrnap_command(self, stage_name, category, fastq_name, dependency_name):
@@ -876,9 +1031,16 @@ class mt_pipe_commands:
         ]
         return COMMANDS_infernal
 
+<<<<<<< HEAD
     def create_rRNA_filter_post_command(self, stage_name):
         # rRNA filtration orphaned some reads in the pairs.  We need to refilter the singletons.
         # Cat then refilter
+=======
+    def create_rRNA_filter_post_command(self, dependency_stage_name, stage_name):
+        # rRNA filtration orphaned some reads in the pairs.  We need to refilter the singletons.
+        # Cat then refilter
+        dep_folder              = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
+>>>>>>> 4d5286c... committing final-ish code.
         subfolder               = os.path.join(self.Output_Path, stage_name)
         data_folder             = os.path.join(subfolder, "data")
         pre_filter_folder       = os.path.join(data_folder, "0_pre_singletons")
@@ -933,11 +1095,45 @@ class mt_pipe_commands:
         singleton_rRNA_filter += os.path.join(final_rRNA_folder, "pair_1.fastq") + " "
         singleton_rRNA_filter += os.path.join(final_rRNA_folder, "pair_2.fastq") + " "
         singleton_rRNA_filter += os.path.join(final_rRNA_folder, "singletons.fastq")
+<<<<<<< HEAD
 
         if self.read_mode == "single":
             COMMANDS_rRNA_post = [
                 cat_singletons_mRNA,
                 cat_singletons_rRNA
+=======
+        
+        data_change_rRNA = ">&2 echo scanning for relative change between vector filter and rRNA removal rRNA | "
+        data_change_rRNA += self.tool_path_obj.Python + " "
+        data_change_rRNA += self.tool_path_obj.data_change_metrics + " "
+        if(self.read_mode == "single"):
+            data_change_rRNA += os.path.join(dep_folder, "singletons.fastq") + " "
+            data_change_rRNA += os.path.join(final_rRNA_folder, "singletons.fastq") + " "
+            data_change_rRNA += os.path.join(final_folder, "vector_to_rRNA_singletons.tsv")
+        elif(self.read_mode == "paired"):
+            data_change_rRNA += os.path.join(dep_folder, "pair_1.fastq") + " "
+            data_change_rRNA += os.path.join(final_rRNA_folder, "pair_1.fastq") + " "
+            data_change_rRNA += os.path.join(final_folder, "vector_to_rRNA_pair_1.tsv")
+        
+        data_change_mRNA = ">&2 echo scanning for relative change between vector filter and rRNA removal mRNA | "
+        data_change_mRNA += self.tool_path_obj.Python + " "
+        data_change_mRNA += self.tool_path_obj.data_change_metrics + " "
+        if(self.read_mode == "single"):
+            data_change_mRNA += os.path.join(dep_folder, "singletons.fastq") + " "
+            data_change_mRNA += os.path.join(final_mRNA_folder, "singletons.fastq") + " "
+            data_change_mRNA += os.path.join(final_folder, "vector_to_mRNA_singletons.tsv")
+        elif(self.read_mode == "paired"):
+            data_change_mRNA += os.path.join(dep_folder, "pair_1.fastq") + " "
+            data_change_mRNA += os.path.join(final_mRNA_folder, "pair_1.fastq") + " "
+            data_change_mRNA += os.path.join(final_folder, "vector_to_mRNA_pair_1.tsv")
+        
+        if self.read_mode == "single":
+            COMMANDS_rRNA_post = [
+                cat_singletons_mRNA,
+                cat_singletons_rRNA,
+                data_change_mRNA,
+                data_change_rRNA
+>>>>>>> 4d5286c... committing final-ish code.
             ]
         elif self.read_mode == "paired":
             COMMANDS_rRNA_post = [
@@ -948,7 +1144,13 @@ class mt_pipe_commands:
                 cat_pair_2_mRNA,
                 cat_pair_2_rRNA,
                 singleton_mRNA_filter,
+<<<<<<< HEAD
                 singleton_rRNA_filter
+=======
+                singleton_rRNA_filter,
+                data_change_mRNA,
+                data_change_rRNA
+>>>>>>> 4d5286c... committing final-ish code.
             ]
 
         return COMMANDS_rRNA_post
@@ -982,7 +1184,11 @@ class mt_pipe_commands:
         self.make_folder(repop_folder)
         self.make_folder(final_folder)
 
+<<<<<<< HEAD
         repop_singletons = ">&2 echo Duplication repopulation singletons | "
+=======
+        repop_singletons = ">&2 echo Duplication repopulation singletons mRNA| "
+>>>>>>> 4d5286c... committing final-ish code.
         repop_singletons += self.tool_path_obj.Python + " " + self.tool_path_obj.duplicate_repopulate + " "
         if self.read_mode == "single":
             repop_singletons += os.path.join(singleton_path, "singletons_hq.fastq") + " "
@@ -995,9 +1201,16 @@ class mt_pipe_commands:
         elif self.read_mode == "paired":
             repop_singletons += os.path.join(repop_folder, "singletons.fastq")  # out
 
+<<<<<<< HEAD
         repop_singletons_rRNA = self.tool_path_obj.Python + " " + self.tool_path_obj.duplicate_repopulate + " "
         if self.read_mode == "single":
             repop_singletons_rRNA += os.path.join(preprocess_subfolder, "data", "3_quality_filter", "singletons_hq.fastq") + " "
+=======
+        repop_singletons_rRNA = ">&2 echo Duplication repopulations singletons rRNA | "
+        repop_singletons_rRNA += self.tool_path_obj.Python + " " + self.tool_path_obj.duplicate_repopulate + " "
+        if self.read_mode == "single":
+            repop_singletons_rRNA += os.path.join(singleton_path, "singletons_hq.fastq") + " "
+>>>>>>> 4d5286c... committing final-ish code.
         elif self.read_mode == "paired":
             repop_singletons_rRNA += os.path.join(hq_path, "singletons.fastq") + " "
         repop_singletons_rRNA += os.path.join(dep_loc, "rRNA", "singletons.fastq") + " "  # in -> rRNA filtration output
@@ -1007,14 +1220,23 @@ class mt_pipe_commands:
         elif self.read_mode == "paired":
             repop_singletons_rRNA += os.path.join(repop_folder, "singletons_rRNA.fastq")  # out
 
+<<<<<<< HEAD
         repop_pair_1 = ">&2 echo Duplication repopulation pair 1 | "
+=======
+        repop_pair_1 = ">&2 echo Duplication repopulation pair 1 mRNA | "
+>>>>>>> 4d5286c... committing final-ish code.
         repop_pair_1 += self.tool_path_obj.Python + " " + self.tool_path_obj.duplicate_repopulate + " "
         repop_pair_1 += os.path.join(hq_path, "pair_1_match.fastq") + " "
         repop_pair_1 += os.path.join(dep_loc, "mRNA", "pair_1.fastq") + " "
         repop_pair_1 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
         repop_pair_1 += os.path.join(repop_folder, "pair_1.fastq")
 
+<<<<<<< HEAD
         repop_pair_1_rRNA = self.tool_path_obj.Python + " " + self.tool_path_obj.duplicate_repopulate + " "
+=======
+        repop_pair_1_rRNA = ">&2 echo Duplication repopulation pair 1 rRNA | "
+        repop_pair_1_rRNA += self.tool_path_obj.Python + " " + self.tool_path_obj.duplicate_repopulate + " "
+>>>>>>> 4d5286c... committing final-ish code.
         repop_pair_1_rRNA += os.path.join(hq_path, "pair_1_match.fastq") + " "
         repop_pair_1_rRNA += os.path.join(dep_loc, "rRNA", "pair_1.fastq") + " "
         repop_pair_1_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
@@ -1027,7 +1249,12 @@ class mt_pipe_commands:
         repop_pair_2 += os.path.join(cluster_path, "pair_2_unique.fastq.clstr") + " "
         repop_pair_2 += os.path.join(repop_folder, "pair_2.fastq")
 
+<<<<<<< HEAD
         repop_pair_2_rRNA = self.tool_path_obj.Python + " " + self.tool_path_obj.duplicate_repopulate + " "
+=======
+        repop_pair_2_rRNA = ">&2 echo Duplication repopulation pair 2 | "
+        repop_pair_2_rRNA += self.tool_path_obj.Python + " " + self.tool_path_obj.duplicate_repopulate + " "
+>>>>>>> 4d5286c... committing final-ish code.
         repop_pair_2_rRNA += os.path.join(hq_path, "pair_2_match.fastq") + " "
         repop_pair_2_rRNA += os.path.join(dep_loc, "rRNA", "pair_2.fastq") + " "
         repop_pair_2_rRNA += os.path.join(cluster_path, "pair_2_unique.fastq.clstr") + " "
@@ -1052,11 +1279,44 @@ class mt_pipe_commands:
         singleton_repop_filter_rRNA += os.path.join(final_folder, "pair_1_rRNA.fastq") + " "
         singleton_repop_filter_rRNA += os.path.join(final_folder, "pair_2_rRNA.fastq") + " "
         singleton_repop_filter_rRNA += os.path.join(final_folder, "singletons_rRNA.fastq")
+<<<<<<< HEAD
+=======
+        
+        data_change_repop_rRNA = ">&2 echo scanning for changes from rRNA filter to repop rRNA | "
+        data_change_repop_rRNA += self.tool_path_obj.Python + " "
+        data_change_repop_rRNA += self.tool_path_obj.data_change_metrics + " "
+        if(self.read_mode == "single"):
+            data_change_repop_rRNA += os.path.join(dep_loc, "singletons.fastq") + " "
+            data_change_repop_rRNA += os.path.join(final_folder, "singletons_rRNA.fastq") + " "
+            data_change_repop_rRNA += os.path.join(final_folder, "rRNA_filter_to_repop_rRNA_singletons.tsv")
+        elif(self.read_mode == "paired"):
+            data_change_repop_rRNA += os.path.join(dep_loc, "pair_1.fastq") + " "
+            data_change_repop_rRNA += os.path.join(final_folder, "pair_1_rRNA.fastq") + " "
+            data_change_repop_rRNA += os.path.join(final_folder, "rRNA_filter_to_repop_rRNA_pair_1.tsv")
+            
+        data_change_repop_mRNA = ">&2 echo scanning for changes from rRNA filter to repop mRNA | "
+        data_change_repop_mRNA += self.tool_path_obj.Python + " "
+        data_change_repop_mRNA += self.tool_path_obj.data_change_metrics + " "
+        if(self.read_mode == "single"):
+            data_change_repop_mRNA += os.path.join(dep_loc, "singletons.fastq") + " "
+            data_change_repop_mRNA += os.path.join(final_folder, "singletons.fastq") + " "
+            data_change_repop_mRNA += os.path.join(final_folder, "rRNA_filter_to_repop_mRNA_singletons.tsv")
+        elif(self.read_mode == "paired"):
+            data_change_repop_mRNA += os.path.join(dep_loc, "pair_1.fastq") + " "
+            data_change_repop_mRNA += os.path.join(final_folder, "pair_1.fastq") + " "
+            data_change_repop_mRNA += os.path.join(final_folder, "rRNA_filter_to_repop_mRNA_pair_1.tsv")    
+>>>>>>> 4d5286c... committing final-ish code.
 
         if self.read_mode == "single":
             COMMANDS_Repopulate = [
                 repop_singletons,
+<<<<<<< HEAD
                 repop_singletons_rRNA
+=======
+                repop_singletons_rRNA,
+                data_change_repop_mRNA,
+                data_change_repop_rRNA
+>>>>>>> 4d5286c... committing final-ish code.
             ]
         elif self.read_mode == "paired":
             COMMANDS_Repopulate = [
@@ -1067,7 +1327,13 @@ class mt_pipe_commands:
                 repop_pair_2,
                 repop_pair_2_rRNA,
                 singleton_repop_filter,
+<<<<<<< HEAD
                 singleton_repop_filter_rRNA
+=======
+                singleton_repop_filter_rRNA,
+                data_change_repop_mRNA,
+                data_change_repop_rRNA
+>>>>>>> 4d5286c... committing final-ish code.
             ]
 
         return COMMANDS_Repopulate
@@ -1100,6 +1366,10 @@ class mt_pipe_commands:
         spades += " -s " + os.path.join(dep_loc, "singletons.fastq")  # in_single (singletons)
         spades += " -o " + spades_folder  # out
 
+<<<<<<< HEAD
+=======
+        #if there is no output, bypass contigs. -> But this is a v2 upgrade.  
+>>>>>>> 4d5286c... committing final-ish code.
         spades_rename = "cp " + os.path.join(spades_folder, "transcripts.fasta") + " " + os.path.join(spades_folder, "contigs.fasta")  # rename output
 
         bwa_index = self.tool_path_obj.BWA + " index -a bwtsw " + os.path.join(spades_folder, "contigs.fasta")
@@ -1187,6 +1457,22 @@ class mt_pipe_commands:
         sort_paired += self.tool_path_obj.Python + " " + self.tool_path_obj.sort_reads + " "
         sort_paired += os.path.join(final_folder, "pair_2.fastq") + " "
         sort_paired += os.path.join(final_folder, "pair_2_sorted.fastq")
+<<<<<<< HEAD
+=======
+        
+        data_change_contig = ">&2 echo checking relative change in data between repop and contig assembly | "
+        data_change_contig += self.tool_path_obj.Python + " "
+        data_change_contig += self.tool_path_obj.data_change_metrics + " "
+        if(self.read_mode == "single"):
+            data_change_contig += os.path.join(dep_loc, "singletons.fastq") + " "
+            data_change_contig += os.path.join(final_folder, "singletons.fastq") + " "
+            data_change_contig += os.path.join(final_folder, "repop_to_contigs_singletons.tsv")
+        elif(self.read_mode == "paired"):
+            data_change_contig += os.path.join(dep_loc, "pair_1.fastq") + " "
+            data_change_contig += os.path.join(final_folder, "pair_1.fastq") + " "
+            data_change_contig += os.path.join(final_folder, "repop_to_contigs_pair_1.tsv")
+            
+>>>>>>> 4d5286c... committing final-ish code.
 
         if self.read_mode == "single":
             COMMANDS_Assemble = [
@@ -1198,7 +1484,12 @@ class mt_pipe_commands:
                 contig_duplicate_remover_singletons,
                 map_read_contig,
                 copy_singletons,
+<<<<<<< HEAD
                 copy_contigs
+=======
+                copy_contigs, 
+                data_change_contig
+>>>>>>> 4d5286c... committing final-ish code.
             ]
         elif self.read_mode == "paired":
             COMMANDS_Assemble = [
@@ -1217,7 +1508,12 @@ class mt_pipe_commands:
                 map_read_contig,
                 copy_contigs,
                 singleton_assembly_filter,
+<<<<<<< HEAD
                 sort_paired
+=======
+                sort_paired,
+                data_change_contig
+>>>>>>> 4d5286c... committing final-ish code.
             ]
 
         return COMMANDS_Assemble
@@ -1413,7 +1709,11 @@ class mt_pipe_commands:
         diamond_pp = ">&2 echo DIAMOND post process | "
         diamond_pp += self.tool_path_obj.Python + " "
         diamond_pp += self.tool_path_obj.Map_reads_prot_DMND + " "
+<<<<<<< HEAD
         diamond_pp += self.tool_path_obj.Prot_DB + " "  # IN
+=======
+        diamond_pp += self.tool_path_obj.Prot_DB_reads + " "  # IN
+>>>>>>> 4d5286c... committing final-ish code.
         diamond_pp += os.path.join(dep_loc_0, "contig_map.tsv") + " "  # IN
         diamond_pp += os.path.join(dep_loc_0, "gene_map.tsv") + " "  # IN
         diamond_pp += os.path.join(final_folder, "gene_map.tsv") + " "  # OUT
@@ -1535,6 +1835,11 @@ class mt_pipe_commands:
         wevote_combine += os.path.join(assemble_contigs_folder, "contig_map.tsv")
         wevote_combine += " " + os.path.join(wevote_folder, "wevote_ensemble.csv") + " "
         wevote_combine += os.path.join(ga_taxa_folder, "ga_taxon.tsv") + " "
+<<<<<<< HEAD
+=======
+        wevote_combine += os.path.join(ga_taxa_folder, "ga_taxon.tsv") + " "
+        wevote_combine += os.path.join(ga_taxa_folder, "ga_taxon.tsv") + " "
+>>>>>>> 4d5286c... committing final-ish code.
         wevote_combine += os.path.join(kaiju_folder, "merged_kaiju.tsv") + " "
         wevote_combine += os.path.join(centrifuge_folder, "merged_centrifuge.tsv")
 
@@ -1548,10 +1853,23 @@ class mt_pipe_commands:
         wevote_call += " -a " + "0"
         wevote_call += " -s " + "0"
 
+<<<<<<< HEAD
         awk_cleanup = ">&2 echo AWK cleanup of WEVOTE results | "
         awk_cleanup += "awk -F \'\\t\' \'{print \"C\\t\"$1\"\\t\"$9}\' "
         awk_cleanup += os.path.join(wevote_folder, "wevote_WEVOTE_Details.txt")
         awk_cleanup += " > " + os.path.join(final_folder, "taxonomic_classifications.tsv")
+=======
+        #awk_cleanup = ">&2 echo AWK cleanup of WEVOTE results | "
+        #awk_cleanup += "awk -F \'\\t\' \'{print \"C\\t\"$1\"\\t\"$9}\' "
+        #awk_cleanup += os.path.join(wevote_folder, "wevote_WEVOTE_Details.txt")
+        #awk_cleanup += " > " + os.path.join(final_folder, "taxonomic_classifications.tsv")
+        wevote_collect = ">&2 echo gathering WEVOTE results | "
+        wevote_collect += self.tool_path_obj.Python + " "
+        wevote_collect += self.tool_path_obj.Wevote_parser + " "
+        wevote_collect += os.path.join(wevote_folder, "wevote_WEVOTE_Details.txt") + " "
+        wevote_collect += os.path.join(final_folder, "taxonomic_classifications.tsv")
+        
+>>>>>>> 4d5286c... committing final-ish code.
 
         centrifuge_on_rRNA = ">&2 echo centrifuge on rRNA | "
         centrifuge_on_rRNA += self.tool_path_obj.Centrifuge
@@ -1566,6 +1884,18 @@ class mt_pipe_commands:
         centrifuge_on_rRNA += " -S " + os.path.join(final_folder, "rRNA.tsv")
         centrifuge_on_rRNA += " --report-file " + os.path.join(final_folder, "rRNA.txt")
 
+<<<<<<< HEAD
+=======
+        constrain = ">&2 echo Constraining the Taxonomic Annotation | " 
+        constrain += self.tool_path_obj.Python + " " + self.tool_path_obj.Constrain_classification + " "
+        constrain += self.tool_path_obj.target_rank + " "
+        constrain += os.path.join(final_folder, "taxonomic_classifications.tsv") + " "
+        constrain += self.tool_path_obj.nodes + " "
+        constrain += self.tool_path_obj.names + " "
+        constrain += os.path.join(final_folder, "constrain_classification.tsv")
+        
+        
+>>>>>>> 4d5286c... committing final-ish code.
         if self.read_mode == "single":
             COMMANDS_Classify = [
                 get_taxa_from_gene,
@@ -1577,7 +1907,12 @@ class mt_pipe_commands:
                 cat_centrifuge,
                 wevote_combine,
                 wevote_call,
+<<<<<<< HEAD
                 awk_cleanup
+=======
+                wevote_collect,
+                constrain
+>>>>>>> 4d5286c... committing final-ish code.
             ]
         elif self.read_mode == "paired":
             COMMANDS_Classify = [
@@ -1591,6 +1926,7 @@ class mt_pipe_commands:
                 cat_centrifuge,
                 wevote_combine,
                 wevote_call,
+<<<<<<< HEAD
                 awk_cleanup,
                 centrifuge_on_rRNA
             ]
@@ -1642,6 +1978,39 @@ class mt_pipe_commands:
         detect_protein += " --db " + self.tool_path_obj.DetectDB
         detect_protein += " --blastp " + self.tool_path_obj.Blastp
         detect_protein += " --needle " + self.tool_path_obj.Needle + ")"
+=======
+                wevote_collect,
+                centrifuge_on_rRNA,
+                constrain
+            ]
+
+        return COMMANDS_Classify
+        
+      
+
+    def create_EC_DETECT_command(self, current_stage_name, diamond_stage):
+        subfolder       = os.path.join(self.Output_Path, current_stage_name)
+        data_folder     = os.path.join(subfolder, "data")
+        diamond_folder  = os.path.join(self.Output_Path, diamond_stage, "final_results")
+        detect_folder   = os.path.join(data_folder, "0_detect")
+
+        self.make_folder(subfolder)
+        self.make_folder(data_folder)
+        self.make_folder(detect_folder)
+        
+        detect_protein = ">&2 echo running detect on split file | "
+        detect_protein += self.tool_path_obj.Python + " "
+        detect_protein += self.tool_path_obj.Detect + " "
+        detect_protein += os.path.join(diamond_folder,"proteins.faa")
+        detect_protein += " --output_file " + os.path.join(detect_folder, "proteins.detect")
+        detect_protein += " --fbeta " + os.path.join(detect_folder, "proteins.fbeta")
+        detect_protein += " --db " + self.tool_path_obj.DetectDB
+        detect_protein += " --blastp " + self.tool_path_obj.Blastp
+        detect_protein += " --needle " + self.tool_path_obj.Needle
+        detect_protein += " --dump_dir " + detect_folder 
+        detect_protein += " --n_count 20000"
+        detect_protein += " >> " + os.path.join(detect_folder, "detect_out.txt") + " 2>&1"
+>>>>>>> 4d5286c... committing final-ish code.
 
         COMMANDS_DETECT = [
             detect_protein
@@ -1653,8 +2022,13 @@ class mt_pipe_commands:
         subfolder           = os.path.join(self.Output_Path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
         diamond_folder      = os.path.join(self.Output_Path, diamond_stage, "final_results")
+<<<<<<< HEAD
         PRIAM_folder        = os.path.join(data_folder, "2_priam")
         diamond_ea_folder   = os.path.join(data_folder, "3_diamond")
+=======
+        PRIAM_folder        = os.path.join(data_folder, "1_priam")
+        diamond_ea_folder   = os.path.join(data_folder, "2_diamond")
+>>>>>>> 4d5286c... committing final-ish code.
 
         self.make_folder(PRIAM_folder)
         self.make_folder(diamond_ea_folder)
@@ -1690,6 +2064,7 @@ class mt_pipe_commands:
         subfolder           = os.path.join(self.Output_Path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
         diamond_folder      = os.path.join(self.Output_Path, diamond_stage, "final_results")
+<<<<<<< HEAD
         detect_folder       = os.path.join(data_folder, "1_detect")
         PRIAM_folder        = os.path.join(data_folder, "2_priam")
         diamond_ea_folder   = os.path.join(data_folder, "3_diamond")
@@ -1697,12 +2072,26 @@ class mt_pipe_commands:
 
         combine_detect = "cat " + os.path.join(detect_folder, "protein_*.toppred")
         combine_detect += " > " + os.path.join(detect_folder, "proteins.toppred")
+=======
+        detect_folder       = os.path.join(data_folder, "0_detect")
+        PRIAM_folder        = os.path.join(data_folder, "1_priam")
+        diamond_ea_folder   = os.path.join(data_folder, "2_diamond")
+        final_folder        = os.path.join(subfolder, "final_results")
+
+        self.make_folder(final_folder)
+        #combine_detect = "cat " + os.path.join(detect_folder, "protein_*.toppred")
+        #combine_detect += " > " + os.path.join(detect_folder, "proteins.toppred")
+>>>>>>> 4d5286c... committing final-ish code.
 
         postprocess_command = ">&2 echo combining enzyme annotation output | "
         postprocess_command += self.tool_path_obj.Python + " "
         postprocess_command += self.tool_path_obj.EC_Annotation_Post + " "
         postprocess_command += os.path.join(diamond_folder, "proteins.faa") + " "
+<<<<<<< HEAD
         postprocess_command += os.path.join(detect_folder, "proteins.toppred") + " "
+=======
+        postprocess_command += os.path.join(detect_folder, "proteins.fbeta") + " "
+>>>>>>> 4d5286c... committing final-ish code.
         postprocess_command += os.path.join(PRIAM_folder, "PRIAM_proteins_priam", "ANNOTATION", "sequenceECs.txt") + " "
         postprocess_command += os.path.join(diamond_ea_folder, "proteins.blastout") + " "
         postprocess_command += self.tool_path_obj.SWISS_PROT + " "
@@ -1710,7 +2099,11 @@ class mt_pipe_commands:
         postprocess_command += final_folder
 
         COMMANDS_EC_Postprocess = [
+<<<<<<< HEAD
             combine_detect,
+=======
+            #combine_detect,
+>>>>>>> 4d5286c... committing final-ish code.
             postprocess_command
         ]
 
@@ -1732,6 +2125,7 @@ class mt_pipe_commands:
         self.make_folder(data_folder)
         self.make_folder(mpl_folder)
         self.make_folder(final_folder)
+<<<<<<< HEAD
 
         network_generation = ">&2 echo generating RPKM table and Cytoscape network | "
         network_generation += self.tool_path_obj.Python + " "
@@ -1755,6 +2149,32 @@ class mt_pipe_commands:
 
         final_chart = "cp " + os.path.join(mpl_folder, "All_EC.png") + " " + os.path.join(final_folder, "All_EC.png")
 
+=======
+        
+        taxa_table_generation = ">&2 echo generating taxonomy table | "
+        taxa_table_generation += self.tool_path_obj.Python + " "
+        taxa_table_generation += self.tool_path_obj.taxa_table + " "
+        taxa_table_generation += os.path.join(diamond_folder, "gene_map.tsv") + " "
+        taxa_table_generation += os.path.join(ea_folder, "proteins.ECs_All") + " "
+        taxa_table_generation += os.path.join(ta_folder, "constrain_classification.tsv") + " "
+        taxa_table_generation += os.path.join(final_folder, "taxa_table.tsv")
+        
+        network_generation = ">&2 echo Generating RPKM and Cytoscape network | "
+        network_generation += self.tool_path_obj.Python + " "
+        network_generation += self.tool_path_obj.RPKM + " "
+        network_generation += str(self.tool_path_obj.rpkm_cutoff) + " "
+        network_generation += "None" + " "
+        network_generation += self.tool_path_obj.nodes + " "
+        network_generation += self.tool_path_obj.names + " "
+        network_generation += os.path.join(diamond_folder, "gene_map.tsv") + " "
+        network_generation += os.path.join(ta_folder, "taxonomic_classifications.tsv") + " "
+        network_generation += os.path.join(ea_folder, "proteins.ECs_All") + " "
+        network_generation += self.tool_path_obj.show_unclassified + " "
+        network_generation += os.path.join(final_folder, "Count_table.tsv") + " "
+        network_generation += os.path.join(final_folder, "RPKM_table.tsv") + " "
+        network_generation += os.path.join(final_folder, "Cytoscape_network.tsv") + " "
+
+>>>>>>> 4d5286c... committing final-ish code.
         read_counts = ">&2 echo generating read count table | "
         read_counts += self.tool_path_obj.Python + " "
         read_counts += self.tool_path_obj.read_count + " "
@@ -1782,7 +2202,11 @@ class mt_pipe_commands:
         if(self.read_mode == "single"):
             per_read_scores += "single" + " "
             per_read_scores += self.sequence_single + " "
+<<<<<<< HEAD
             per_read_scores += os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
+=======
+            per_read_scores += os.path.join(quality_folder, "singletons_hq.fastq") + " "
+>>>>>>> 4d5286c... committing final-ish code.
             per_read_scores += os.path.join(final_folder)
             
         elif(self.read_mode == "paired"):
@@ -1811,9 +2235,14 @@ class mt_pipe_commands:
             
     
         COMMANDS_Outputs = [
+<<<<<<< HEAD
             network_generation,
             chart_generation,
             final_chart,
+=======
+            taxa_table_generation,
+            network_generation,
+>>>>>>> 4d5286c... committing final-ish code.
             read_counts,
             per_read_scores,
             contig_stats,

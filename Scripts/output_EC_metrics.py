@@ -15,10 +15,17 @@ if __name__ == "__main__":
     pd.options.mode.chained_assignment = None  # default='warn' -> program makes too much noise.  this quiets it
     plt.ioff()
     
+<<<<<<< HEAD
     ec_pathway_file = sys.argv[1]   #path->EC file  -> EC_pathway.txt
     rpkm_table_file = sys.argv[2]   #EC-> gene file -> RPKM_table.tsv
     pathway_superpathway_file = sys.argv[3] #path->superpath file -> pathway_to_superpathway.csv
     output_dir = sys.argv[4]
+=======
+    ec_pathway_file                 = sys.argv[1]   #path->EC file  -> EC_pathway.txt
+    rpkm_table_file                 = sys.argv[2]   #EC-> gene file -> RPKM_table.tsv
+    pathway_superpathway_file       = sys.argv[3] #path->superpath file -> pathway_to_superpathway.csv
+    output_dir                      = sys.argv[4]
+>>>>>>> 4d5286c... committing final-ish code.
     if(not output_dir.endswith("/")):
         output_dir += "/"
     
@@ -116,10 +123,42 @@ if __name__ == "__main__":
     
     selected_heatmap_df = selected_heatmap_df.groupby(["Superpathway"]).sum()           #collapse the rows, grouped by the superpath`
     plt.subplots(figsize = (25,10))                                                     #set the image size    
+<<<<<<< HEAD
     heatmap = sns.heatmap(selected_heatmap_df)
+=======
+    heatmap = sns.heatmap(selected_heatmap_df, cmap="Blues")                           #maek the heatmap.  Use a colour palette
+>>>>>>> 4d5286c... committing final-ish code.
     heatmap.set_xticklabels(heatmap.get_xticklabels(), rotation = 40, ha = "right")     #make the labels pretty
     heatmap.set_yticklabels(heatmap.get_yticklabels(), rotation = 40, ha = "right")
     heatmap.figure.savefig(output_dir + "enzyme_superpathway_heatmap.jpg")              #export it
     selected_heatmap_df.to_csv(output_dir + "enzyme_superpathway_heatmap.csv", mode="w")
     
+<<<<<<< HEAD
+=======
+    
+    #redraw heatmap without unclassifieds
+    if("Unclassified" in fixed_rpkm_df.columns):
+        fixed_rpkm_df.drop(columns = ["Unclassified"], inplace = True)
+        
+        count = 0
+        selected_heatmap_df = None
+        for item in cleaned_enzyme_df.columns.values:
+            new_df = pd.DataFrame(fixed_rpkm_df.loc[fixed_rpkm_df["EC#"].isin(cleaned_enzyme_df[item])])
+            new_df["Superpathway"] = item
+            if(count == 0):
+                selected_heatmap_df = new_df
+            else:
+                selected_heatmap_df = pd.concat([selected_heatmap_df, new_df])
+            count+= 1
+        
+        selected_heatmap_df = selected_heatmap_df.groupby(["Superpathway"]).sum()           #collapse the rows, grouped by the superpath`
+        plt.subplots(figsize = (25,10))                                                     #set the image size    
+        heatmap = sns.heatmap(selected_heatmap_df, cmap="Blues")                           #maek the heatmap.  Use a colour palette
+        heatmap.set_xticklabels(heatmap.get_xticklabels(), rotation = 40, ha = "right")     #make the labels pretty
+        heatmap.set_yticklabels(heatmap.get_yticklabels(), rotation = 40, ha = "right")
+        heatmap.figure.savefig(output_dir + "enzyme_superpathway_heatmap_no_unclassified.jpg")              #export it
+        selected_heatmap_df.to_csv(output_dir + "enzyme_superpathway_heatmap_no_unclassified.csv", mode="w")    
+    
+    
+>>>>>>> 4d5286c... committing final-ish code.
     

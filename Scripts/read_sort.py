@@ -9,7 +9,11 @@ def sort_and_export(input_file, output_file, direction):
 
     start_total_call = time.clock()
     print("input file:", input_file)
+<<<<<<< HEAD
     df = pd.read_csv(input_file, header=None, names=[None], sep='\n', skip_blank_lines = False)
+=======
+    df = pd.read_csv(input_file, header=None, names=[None], sep='\n', quoting=3, skip_blank_lines = False)
+>>>>>>> 4d5286c... committing final-ish code.
     end_read_time = time.clock()
     
     # reshaping, aka: unflattening the 1-D array into something meaningful to us
@@ -19,6 +23,7 @@ def sort_and_export(input_file, output_file, direction):
     df["ID"] = df["ID"].apply(lambda x: x.split(" ")[0])
     df["ID"] = df["ID"].apply(lambda x: x.replace(".", "_"))
     df = df.sort_values(by=['ID'])
+<<<<<<< HEAD
     if(direction == "forward"):
         df["ID"] = df["ID"].apply(lambda x: x + "/1")
     elif(direction == "reverse"):
@@ -26,6 +31,12 @@ def sort_and_export(input_file, output_file, direction):
         
     end_df_time = time.clock()
     df.to_csv(output_file, sep='\n', mode = 'w+', header=False, index=False)
+=======
+    
+        
+    end_df_time = time.clock()
+    df.to_csv(output_file, sep='\n', mode = 'w+', header=False, index=False, quoting = 3)
+>>>>>>> 4d5286c... committing final-ish code.
     end_total_call = time.clock()
     #-------------------------------------------------------------------------------------------
     
@@ -43,7 +54,11 @@ if __name__ == "__main__":
     else:
         input_fastq_path = sys.argv[1]      # expects a path to the fastq file, including the name
         export_path = sys.argv[2]           # expects a place to dump the new fastq, including the name
+<<<<<<< HEAD
         direction = sys.argv[3]             # adapterremoval is choking on a few files for some reason.
                                             # we need to append some tag (in hopes of fixing it)
+=======
+        direction = sys.argv[3]
+>>>>>>> 4d5286c... committing final-ish code.
     
     sort_and_export(input_fastq_path, export_path, direction)

@@ -1,5 +1,8 @@
 #!/usr/bin/env python
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4d5286c... committing final-ish code.
 import sys
 import os
 import os.path
@@ -10,6 +13,10 @@ import MetaPro_commands as mpcom
 import MetaPro_paths as mpp
 import time
 import zipfile
+<<<<<<< HEAD
+=======
+import pandas as pd
+>>>>>>> 4d5286c... committing final-ish code.
 import shutil
 from datetime import datetime as dt
 
@@ -38,6 +45,7 @@ def compress_folder(folder_path):
         
 # Used to determine quality encoding of fastq sequences.
 # Assumes Phred+64 unless there is a character within the first 10000 reads with encoding in the Phred+33 range.
+<<<<<<< HEAD
 def determine_encoding(fastq):
     encoding = 64
     with open(fastq) as fq:
@@ -56,6 +64,29 @@ def determine_encoding(fastq):
 
     return encoding
 
+=======
+def check_code(segment):
+    encoding = 64
+    for item in segment:
+        if(ord(item) < 64):
+            encoding = 33
+            break
+    return encoding
+
+def determine_encoding(fastq):
+    #import the first 10k lines, then check the quality scores.
+    #if the quality score symbols are below 76, it's phred33.  
+    fastq_df = pd.read_csv(fastq, header=None, names=[None], sep="\n", skip_blank_lines = False, quoting=3, nrows=40000)
+    fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
+    fastq_df.columns = ["ID", "seq", "junk", "quality"]
+    quality_encoding = fastq_df["quality"].apply(lambda x: check_code(x)).mean() #condense into a single number.
+    if(quality_encoding == 64): #all must be 64 or else it's 33
+        quality_encoding = 64
+    else:
+        quality_encoding =  33
+    return quality_encoding
+
+>>>>>>> 4d5286c... committing final-ish code.
 
 # handles where to kill the pipeline, due to the prev step behaving badly
 # logic is:  if the files inside the dep_path (or dep job label shortcut to the final_results)
@@ -120,11 +151,21 @@ def main(config_path, pair_1_path, pair_2_path, single_path, output_folder_path,
     if not single_path == "":
         read_mode = "single"
         quality_encoding = determine_encoding(single_path)
+<<<<<<< HEAD
+=======
+        print("ENCODING USED:", quality_encoding)
+>>>>>>> 4d5286c... committing final-ish code.
         print("OPERATING IN SINGLE-ENDED MODE")
     else:
         read_mode = "paired"
         quality_encoding = determine_encoding(pair_1_path)
+<<<<<<< HEAD
         print("OPERATING IN PAIRED-MODE")
+=======
+        print("ENCODING USED:", quality_encoding)
+        print("OPERATING IN PAIRED-MODE")
+        
+>>>>>>> 4d5286c... committing final-ish code.
     if threads == 0:
         thread_count = mp.cpu_count()
     else:
@@ -136,6 +177,7 @@ def main(config_path, pair_1_path, pair_2_path, single_path, output_folder_path,
     # profiling vars are init here, in case a stage is skipped
     start_time = time.time()
     
+<<<<<<< HEAD
     quality_start           = quality_end           = cleanup_quality_start             = cleanup_quality_end                                       = 0
     host_start              = host_end              = cleanup_host_start                = cleanup_host_end                                          = 0
     vector_start            = vector_end            = cleanup_vector_start              = cleanup_vector_end                                        = 0
@@ -148,6 +190,21 @@ def main(config_path, pair_1_path, pair_2_path, single_path, output_folder_path,
     TA_start                = TA_end                = cleanup_TA_start                  = cleanup_TA_end                                            = 0
     EC_DETECT_start         = EC_DETECT_end         = EC_PRIAM_DIAMOND_start            = EC_PRIAM_DIAMOND_end = cleanup_EC_start = cleanup_EC_end  = 0
     Cytoscape_start         = Cytoscape_end         = cleanup_cytoscape_start           = cleanup_cytoscape_end                                     = 0
+=======
+    quality_start           = quality_end           = cleanup_quality_start             = cleanup_quality_end           = 0
+    host_start              = host_end              = cleanup_host_start                = cleanup_host_end              = 0
+    vector_start            = vector_end            = cleanup_vector_start              = cleanup_vector_end            = 0
+    rRNA_filter_start       = rRNA_filter_end       = cleanup_rRNA_filter_start         = cleanup_rRNA_filter_end       = 0
+    repop_start             = repop_end             = cleanup_repop_start               = cleanup_repop_end             = 0
+    assemble_contigs_start  = assemble_contigs_end  = cleanup_assemble_contigs_start    = cleanup_assemble_contigs_end  = 0
+    GA_BWA_start            = GA_BWA_end            = cleanup_GA_BWA_start              = cleanup_GA_BWA_end            = 0
+    GA_BLAT_start           = GA_BLAT_end           = cleanup_GA_BLAT_start             = cleanup_GA_BLAT_end           = 0
+    GA_DIAMOND_start        = GA_DIAMOND_end        = cleanup_GA_DIAMOND_start          = cleanup_GA_DIAMOND_end        = 0
+    TA_start                = TA_end                = cleanup_TA_start                  = cleanup_TA_end                = 0
+    EC_DETECT_start         = EC_DETECT_end         = EC_PRIAM_DIAMOND_start            = EC_PRIAM_DIAMOND_end          = 0
+    cleanup_EC_start        = cleanup_EC_end                                                                            = 0
+    Cytoscape_start         = Cytoscape_end         = cleanup_cytoscape_start           = cleanup_cytoscape_end         = 0
+>>>>>>> 4d5286c... committing final-ish code.
     
     # the pipeline stages are all labelled.  This is for multiple reasons:  to keep the interim files organized properly
     # and to perform the auto-resume/kill features
@@ -330,7 +387,11 @@ def main(config_path, pair_1_path, pair_2_path, single_path, output_folder_path,
             target=commands.create_and_launch,
             args=(
                 rRNA_filter_label,
+<<<<<<< HEAD
                 commands.create_rRNA_filter_post_command(rRNA_filter_label),
+=======
+                commands.create_rRNA_filter_post_command(vector_filter_label, rRNA_filter_label),
+>>>>>>> 4d5286c... committing final-ish code.
                 True,
                 inner_name
             )
@@ -598,6 +659,7 @@ def main(config_path, pair_1_path, pair_2_path, single_path, output_folder_path,
     # Detect EC annotation
     EC_DETECT_start = time.time()
     ec_annotation_path = os.path.join(output_folder_path, ec_annotation_label)
+<<<<<<< HEAD
     if not check_where_resume(ec_annotation_path, None, gene_annotation_DIAMOND_path):
         # Preparing folders for DETECT
         process = mp.Process(
@@ -616,16 +678,48 @@ def main(config_path, pair_1_path, pair_2_path, single_path, output_folder_path,
         for item in os.listdir(proteins_path):
             file_root_name = os.path.splitext(item)[0]
             inner_name = file_root_name + "_detect"
+=======
+    #There's a 2-step check.  We don't want it ti re-run either DETECT, or PRIAM+DIAMOND because they're too slow
+    if not check_where_resume(ec_annotation_path, None, gene_annotation_DIAMOND_path):
+        ec_detect_path = os.path.join(ec_annotation_path, "data", "0_detect")
+        if not check_where_resume(job_label = None, full_path = ec_detect_path, dep_job_path = gene_annotation_DIAMOND_path):
+            inner_name = "ec_detect"
             process = mp.Process(
-                target=commands.create_and_launch,
-                args=(
-                    ec_annotation_label,
-                    commands.create_EC_DETECT_command(ec_annotation_label, file_root_name),
+                target = commands.create_and_launch,
+                args = (
+                    ec_annotation_label, 
+                    commands.create_EC_DETECT_command(ec_annotation_label, gene_annotation_DIAMOND_label),
                     True,
                     inner_name
                 )
             )
             process.start()
+            process.join()
+            
+        EC_DETECT_end = time.time()
+        print("EC DETECT:", '%1.1f' % (EC_DETECT_end - EC_DETECT_start), "s")
+        
+        # --------------------------------------------------------------
+        # Priam and Diamond EC annotation
+        EC_PRIAM_DIAMOND_start = time.time()
+        if not check_where_resume(ec_annotation_path, None, gene_annotation_DIAMOND_path):
+            inner_name = "ec_priam_diamond"
+>>>>>>> 4d5286c... committing final-ish code.
+            process = mp.Process(
+                target=commands.create_and_launch,
+                args=(
+                    ec_annotation_label,
+<<<<<<< HEAD
+                    commands.create_EC_DETECT_command(ec_annotation_label, file_root_name),
+=======
+                    commands.create_EC_PRIAM_DIAMOND_command(ec_annotation_label, gene_annotation_DIAMOND_label),
+>>>>>>> 4d5286c... committing final-ish code.
+                    True,
+                    inner_name
+                )
+            )
+            process.start()
+<<<<<<< HEAD
             mp_store.append(process)  # pack all the processes into a list
 
         for item in mp_store:
@@ -671,6 +765,39 @@ def main(config_path, pair_1_path, pair_2_path, single_path, output_folder_path,
             delete_folder(ec_annotation_path)
         cleanup_EC_end = time.time()
         
+=======
+            process.join()
+
+            inner_name = "ec_post"
+            process = mp.Process(
+                target=commands.create_and_launch,
+                args=(
+                    ec_annotation_label,
+                    commands.create_EC_postprocess_command(ec_annotation_label, gene_annotation_DIAMOND_label),
+                    True,
+                    inner_name
+                )
+            )
+            process.start()
+            process.join()
+            
+            cleanup_EC_start = time.time()
+            if(verbose_mode == "quiet"):
+                delete_folder(ec_annotation_path)
+            elif(verbose_mode == "compress"):
+                compress_folder(ec_annotation_path)
+                delete_folder(ec_annotation_path)
+            cleanup_EC_end = time.time()
+    else:
+        #EC bypassed
+        EC_PRIAM_DIAMOND_start = time.time()
+        EC_DETECT_start = time.time()
+        EC_DETECT_end = time.time()
+        cleanup_EC_start = time.time()
+        cleanup_EC_end = time.time()
+        
+        print("EC DETECT:", '%1.1f' % (EC_DETECT_end - EC_DETECT_start), "s")
+>>>>>>> 4d5286c... committing final-ish code.
     EC_PRIAM_DIAMOND_end = time.time()
     print("EC PRIAM + DIAMOND:", '%1.1f' % (EC_PRIAM_DIAMOND_end - EC_PRIAM_DIAMOND_start - (cleanup_EC_end - cleanup_EC_start)), "s")
     print("EC cleanup:", '%1.1f' % (cleanup_EC_end - cleanup_EC_start), "s")
@@ -760,7 +887,11 @@ if __name__ == "__main__":
         print("You cannot specify both paired-end and single-end reads in a single run.")
         sys.exit()
 
+<<<<<<< HEAD
     config_file = args.config if args.pair1 else ""
+=======
+    config_file = args.config if args.config else ""
+>>>>>>> 4d5286c... committing final-ish code.
     pair_1 =        args.pair1 if args.pair1 else ""
     pair_2 =        args.pair2 if args.pair2 else ""
     single =        args.single if args.single else ""
