@@ -1,21 +1,4 @@
-#!/usr/bin/env python
-
-# Now with some commenting!
-# CHANGES:
-# - fixed 'while line.startswith("@"): continue' infinte loop
-# - changed gene_map() to deal with thresholds and
-#   multiple alignments before the "Recording" part.
-
-# NOTES:
-# - Some contigs/reads may match to the DB multiple times.
-# - Filenames for unmerged paired-end reads must be specified last.
-
-# "non-BWA-aligned" = unmapped should consist of:
-# (1) contigs/reads not aligned by BWA at all
-# (2) BWA-aligned contigs containing reads involved in other contigs
-# (3) BWA-aligned contigs/reads that don't meet match % threshold
-# (4) BWA-aligned reads that are part of a contig (THIS SHOULDT'T HAPPEN), but not the contig
-# (5) BWA-aligned contigs/reads that align to multiple genes (PAIRED READS CONSIDERED TOGETHER)
+#This script sifts through one SAM, and one reference to form a map of genes to constituent reads.
 
 import os
 import os.path
@@ -131,7 +114,7 @@ def gene_map(sam, mapped_reads, gene2read_map, contig2read_map, contig2read_map_
                 unmapped.add(query)                     # add it to the unmapped set and
                 continue                                # skip to the next query.
             
-            # is query a contig made of unique reads?:
+            # is query a contig made of unique reads?:  This is a BWA-specific construct
             if query in contig2read_map:                # If query is a contig (searches through keys)
                 if query in contig2read_map_uniq:       #  and it's made of contig-unique reads,
                     contig = True                        #  then mark as contig and move on.
@@ -142,23 +125,27 @@ def gene_map(sam, mapped_reads, gene2read_map, contig2read_map, contig2read_map_
                 contig = False                           # If query isn't a contig, just move on.
             
             # does query alignment meet threshold?:
+            CIGAR = re.split("([MIDNSHPX=])", line_parts[5]) # Split CIGAR string into list, placing
+            CIGAR = CIGAR[:-1]                      #lop off the empty char artifact from the split
+            position_count = 0                      #position counter, because the CIGAR string is split into alternating segments of <length><Label>, 
             length = 0
             matched = 0
-            CIGAR = re.split("([MIDNSHPX=])", line_parts[5]) # Split CIGAR string into list, placing
-                                                            #  all chars w/in [...] into own field
-                                                            #  (e.g., 9S41M50S->['9','S','41','M','50','S','']).
-            for index in range(len(CIGAR))[:-1]:            # Loop CIGAR elements (last element=''),
-                if CIGAR[index+1] in len_chars:             # Use CIGAR operations that step along the query seq,
-                    length+= int(CIGAR[index])              #  to determine length of query.
-                if CIGAR[index+1]=="M":                     # Use CIGAR match operation to
-                    matched+= int(CIGAR[index])             #  determine no. nuclotides matched.
+            segment_length = 0
+            for item in CIGAR:
+                if((position_count %2) == 0):       #every even position (starting from 0) is going to be a length
+                    segment_length = int(item)
+                elif((position_count %2) == 1):     #every odd position is going to be a label
+                    length += segment_length
+                    if(item == "M"):
+                        matched += segment_length
+                position_count += 1
+            
+            
             if matched<length*0.9:                          # If alignment is <90% matched:
                 unmapped.add(query)                         # add it to the unmapped set and
                 continue                                    # skip to the next query.
 
             # store info for queries that remain:
-            #query2gene_map[query].add(db_match)             # Collect all aligned genes for contig/read.
-            #queryIScontig[query]= contig                    # Store contig (T/F) info.
             inner_details_dict["gene"] = db_match
             inner_details_dict["is_contig"] = contig
             query_details_dict[query] = inner_details_dict
@@ -234,9 +221,7 @@ def gene_map(sam, mapped_reads, gene2read_map, contig2read_map, contig2read_map_
 
     # return unmapped set:
     return unmapped
-
-
-
+    
 
 def write_unmapped_reads(unmapped_reads, reads_in, output_file):
     if(len(unmapped_reads) == 0):
@@ -260,7 +245,7 @@ def write_unmapped_reads(unmapped_reads, reads_in, output_file):
         #prev_mapping_count= len(mapped_reads)
 
 
-def write_gene_map(gene2read_file, gene2read_map):
+def write_gene_map(gene2read_file, gene2read_map, mapped_gene_file):
     # WRITE OUTPUT: write gene<->read mapfile of BWA-aligned:
     # [BWA-aligned geneID, length, #reads, readIDs ...]
     reads_count = 0
@@ -277,137 +262,49 @@ def write_gene_map(gene2read_file, gene2read_map):
                     reads_count+= 1
                 else:
                     out_map.write("\n")                     #  and a new line character.
-
-    # print BWA stats:
-    print (str(reads_count) + ' reads were mapped with BWA.')
-    print ('Reads mapped to ' + str(len(genes)) + ' genes.')
-
-
+    
+    #WRITE THE ANNOTATED GENES OUT TO A FILE.  FOR DOWNSTREAM USE
+    with open(mapped_gene_file,"w") as outfile:
+        SeqIO.write(genes, outfile, "fasta") 
+    
 if __name__ == "__main__":
-    DNA_DB = sys.argv[1]             # INPUT: DNA db used for BWA alignement
-    contig2read_file = sys.argv[2]   # INPUT: [contigID, #reads, readIDs ...]
-    gene2read_file = sys.argv[3]     # OUTPUT: [BWA-aligned geneID, length, #reads, readIDs ...]
+    DNA_DB              = sys.argv[1]       # INPUT: DNA db used for BWA alignement
+    contig2read_file    = sys.argv[2]       # INPUT: [contigID, #reads, readIDs ...]
+    gene2read_out       = sys.argv[3]       # OUTPUT: [BWA-aligned geneID, length, #reads, readIDs ...]
+    mapped_gene_file    = sys.argv[4]       # OUTPUT: genes mapped by BWA.
     
-    contigs_reads_in = sys.argv[4]
-    contigs_bwa_in = sys.argv[5]
-    contigs_reads_out = sys.argv[6]
+    reads_in            = sys.argv[5]   
+    bwa_in              = sys.argv[6]
+    reads_out           = sys.argv[7]
     
-    singletons_reads_in = sys.argv[7]
-    singletons_bwa_in = sys.argv[8]
-    singletons_reads_out = sys.argv[9]
+    input_safety = check_file_safety(reads_in) and check_file_safety(bwa_in)
     
-    operating_mode = "single"
-    if(len(sys.argv) == 16):
-        operating_mode = "paired"
-        pair_1_reads_in = sys.argv[10]
-        pair_1_bwa_in = sys.argv[11]
-        pair_1_reads_out = sys.argv[12]
+    if(input_safety):
+        contig2read_map, contig_reads = import_contig2read(contig2read_file)
+        contig2read_map_uniq, contig_unique_reads = filter_common_contigs(contig2read_map, contig_reads)
+        # tracking BWA-assigned:
+        gene2read_map = defaultdict(list)                    # dict of BWA-aligned geneID<->readID(s)
+        mapped_reads = set()                                 # tracks BWA-assigned reads
+        mapped_list = []
+        prev_mapping_count = 0
+        unmapped_reads = gene_map(bwa_in, mapped_reads, gene2read_map, contig2read_map, contig2read_map_uniq)
         
-        pair_2_reads_in = sys.argv[13]
-        pair_2_bwa_in = sys.argv[14]
-        pair_2_reads_out = sys.argv[15]
-        print(dt.today(), "OPERATING MODE:", operating_mode)
-    elif(len(sys.argv) == 10):
-        print(dt.today(), "OPERATING MODE:", operating_mode)
+        write_gene_map(gene2read_out, gene2read_map, mapped_gene_file)
+        write_unmapped_reads(unmapped_reads, reads_in, reads_out)
+        
     else:
-        print(dt.today(), "something wrong with the number of args.  exiting.  This is a metapro_commands issue")
-    contig2read_map, contig_reads = import_contig2read(contig2read_file)
-    contig2read_map_uniq, contig_unique_reads = filter_common_contigs(contig2read_map, contig_reads)
-
-    # tracking BWA-assigned:
-    gene2read_map = defaultdict(list)                    # dict of BWA-aligned geneID<->readID(s)
-    mapped_reads = set()                                 # tracks BWA-assigned reads
-    mapped_list = []
-    prev_mapping_count = 0
-
-
-    contigs_safe = check_file_safety(contigs_reads_in) and check_file_safety(contigs_bwa_in)
-    singletons_safe = check_file_safety(singletons_reads_in) and check_file_safety(singletons_bwa_in)
-
-    print(dt.today(), "contigs are safe:", contigs_safe)
-    print(dt.today(), "singletons are safe:", singletons_safe)
-    
-    pair_1_safe = False
-    pair_2_safe = False
-    if(operating_mode == "paired"):
-        pair_1_safe = check_file_safety(pair_1_reads_in) and check_file_safety(pair_1_bwa_in)
-        pair_2_safe = check_file_safety(pair_2_reads_in) and check_file_safety(pair_2_bwa_in)
-        print(dt.today(), "pair 1 is safe:", pair_1_safe)
-        print(dt.today(), "pair 2 is safe:", pair_2_safe)
-
-    #####################################
-
-    if(contigs_safe):
-        contig_unmapped_reads = gene_map(contigs_bwa_in, mapped_reads, gene2read_map, contig2read_map, contig2read_map_uniq)
-    else:
-        if(os.path.exists(contigs_reads_in)):
-            print(dt.today(), "contigs deemed unsafe.  passing files to BLAT")
-            copyfile(contigs_reads_in, contigs_reads_out)
-        else:
-            print(dt.today(), "contigs don't exist.  writing dummy file")
-            open(contigs_reads_out, "a").close()
-            
-    if(singletons_safe):
-        singletons_unmapped_reads = gene_map(singletons_bwa_in, mapped_reads, gene2read_map, contig2read_map, contig2read_map_uniq)
-    else:
-        if(os.path.exists(singletons_reads_in)):
-            print(dt.today(), "singletons deemed unsafe.  passing files to BLAT")
-            copyfile(singletons_reads_in, singletons_reads_out)
-        else:
-            print(dt.today(), "singletons don't exist.  writing dummy file")
-            open(singletons_reads_out, "a").close()
-            
-    if(operating_mode == "paired"):
-        if(pair_1_safe):
-            pair_1_unmapped_reads = gene_map(pair_1_bwa_in, mapped_reads, gene2read_map, contig2read_map, contig2read_map_uniq)
-        else:
-            if(os.path.exists(pair_1_reads_in)):
-                print(dt.today(), "pairs deemed unsafe.  passing files to BLAT")
-                copyfile(pair_1_reads_in, pair_1_reads_out)
-                copyfile(pair_2_reads_in, pair_2_reads_out)
+        print(dt.today(), "input unsafe.  Either no reads, or BWA annotated nothing.  converting to fasta, then passing on")
+        if(check_file_safety(reads_in)):
+            if(reads_in.endswith(".fastq")):
+                reads_to_convert = SeqIO.parse(reads_in, "fastq")
+                SeqIO.write(reads_to_convert, reads_out, "fasta")
             else:
-                print(dt.today(), "paired files don't exist.  writing dummy file")
-                open(pair_1_reads_out, "a").close()
-                open(pair_2_reads_out, "a").close()
-        #pair_2_unmapped_reads = gene_map(contigs_bwa_in, mapped_reads, gene2read_map, contig2read_map, contig2read_map_uniq)
+                copyfile(reads_in, reads_out)
+            
     
-    process_store = []
     
-    gene_map_export_process = mp.Process(target = write_gene_map, args = (gene2read_file, gene2read_map))
-    gene_map_export_process.start()
-    print(dt.today(), "GA BWA pp export gene map launched")
-    process_store.append(gene_map_export_process)
     
-    if(contigs_safe):
-        contig_write_process = mp.Process(target = write_unmapped_reads, args = (contig_unmapped_reads, contigs_reads_in, contigs_reads_out))
-        contig_write_process.start()
-        print(dt.today(), "GA BWA pp writing unmapped contigs process launched")
-        process_store.append(contig_write_process)
-
-    if(singletons_safe):
-        singleton_write_process = mp.Process(target = write_unmapped_reads, args = (singletons_unmapped_reads, singletons_reads_in, singletons_reads_out))
-        singleton_write_process.start()
-        print(dt.today(), "GA BWA pp writing unmapped singletons process launched")
-        process_store.append(singleton_write_process)
     
-    if(operating_mode == "paired"):
-        if(pair_1_safe):
-            pair_1_write_process = mp.Process(target = write_unmapped_reads, args = (pair_1_unmapped_reads, pair_1_reads_in, pair_1_reads_out))
-            pair_1_write_process.start()
-            print(dt.today(), "GA BWA pp writing unmapped pair 1 process launched")
-            process_store.append(pair_1_write_process)
-        
-        if(pair_2_safe):
-            pair_2_write_process = mp.Process(target = write_unmapped_reads, args = (pair_1_unmapped_reads, pair_2_reads_in, pair_2_reads_out))
-            pair_2_write_process.start()
-            print(dt.today(), "GA BWA pp writing unmapped pair 2 process launched")
-            process_store.append(pair_2_write_process)
-        
     
-    for item in process_store:
-        item.join()
-    process_store[:] = []
-    print(dt.today(), "GA BWA pp done")
     
-
-
+    

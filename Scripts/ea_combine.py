@@ -65,6 +65,8 @@ with open(os.path.join(Output_Dir, Input_Name + ".ECs_PB"), "w") as PB_out:
     with open(diamond_ECs, "r") as diamond_ECs_in:
         diamond_preds = diamond_ECs_in.readlines()
     PB_preds = []
+    
+    #take the ones common in BLAST (diamond) and PRIAM.  
     for priam_ec in priam_preds:
         if priam_ec in diamond_preds:
             PB_preds.append(priam_ec)
@@ -76,6 +78,11 @@ with open(detect_ECs, "r") as detect_ECs_in:
         line_as_list = "\t".join(line_as_list[:2]) + "\n"
         detect_preds.append(line_as_list)
 All_preds = set()
+
+#DETECT-2 is designed to take all of the ECs.  not just one.  We will no longer discard the other ECs.  We must take them all from DETECT-2
+
+#take everything from PRIAM. only take the unique ones (there's multiple of the same).  There will also be a score cutoff (it's the first number).  build in a feature to change the EC cutoffs
+#There will also be multiple ECs from swissprot.  Take them all.  Also another cutoff for the BLAST results. (we need a number.) also make it parameterizable
 for pred in detect_preds:
     if len(pred.split("\t")[1].split(".")) == 4:
         All_preds.add(pred)

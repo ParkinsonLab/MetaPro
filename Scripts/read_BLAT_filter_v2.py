@@ -56,17 +56,17 @@ if __name__ == "__main__":
     #we don't know enough about BLATOUT files.  we assume we just want the IDs, but we aren't entirely sure
     #what the rules are here.  So we can leave this inefficient loop in for now. (feb 06, 2019)
     #pick out the results from the BLATOUT report
-    tabfile = open(BLAT_tab_file, "r")
-    for line in tabfile:
-        if len(line) < 2:
-            continue
-        line_parts = line.split("\t")
-        if query_seq == line_parts[0]:
-            continue
-        else:
-            query_seq = line_parts[0]
-            contaminated_seqs.append(query_seq)
-    
+    with open(BLAT_tab_file, "r") as tabfile:
+        for line in tabfile:
+            if len(line) < 2:
+                continue
+            line_parts = line.split("\t")
+            if query_seq == line_parts[0]:
+                continue
+            else:
+                query_seq = line_parts[0]
+                contaminated_seqs.append(query_seq)
+        
     
     #The BLAT report spits out what was aligned as human.  
     #so we take the NOT of the intersection to get host-free

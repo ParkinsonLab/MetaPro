@@ -59,8 +59,8 @@ def repopulate_single(ref_filename, mRNA_filename, cluster_filename, output_file
 
 
 if __name__ == "__main__":
-    ref_filename = sys.argv[1]
-    mRNA_filename = sys.argv[2]
-    cluster_filename = sys.argv[3]
-    output_filename = sys.argv[4]
+    ref_filename = sys.argv[1]      #in: the file that the duplicates will come from
+    mRNA_filename = sys.argv[2]     #in: the file that will contain the reads needing to be duplicated
+    cluster_filename = sys.argv[3]  #in: the cluster file showing what was in-fact duplicated
+    output_filename = sys.argv[4]   #out: the final output
     repopulate_single(ref_filename, mRNA_filename, cluster_filename, output_filename)

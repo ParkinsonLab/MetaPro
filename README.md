@@ -1,4 +1,4 @@
-# MetaPro:  Meta-analysis pipeline for Transcriptomics
+# MetaPro:  Meta-analysis pipeline for Transcriptomics + Genomics
 ---
 The MetaPro Meta Transcriptomics/Genomics Pipeline is a software tool that will perform Transcriptomics and Genomic analysis
 on Paired and Single Reads of FASTQ data.
@@ -6,24 +6,20 @@ on Paired and Single Reads of FASTQ data.
 # How to install
 ---
 This package is meant to work in conjunction with Docker/Singularity.  All of the prerequisite tools, including the pipeline code
-is delivered via the Docker Hub. https://hub.docker.com/r/parkinsonlab/metapro
+is delivered via the Docker Hub. https://hub.docker.com/r/parkinsonlab/metapro/
 Alternatively, individual parts of the pipeline are avaiable from this Github repository.
 
 Therefore, to use this pipeline, Docker (https://www.docker.com/) or Singularity (https://www.sylabs.io/guides/2.6/user-guide/) is needed.
-This also means there is nothing to install (tools and code) besides Docker/Docker CE/Singularity, and the database files.
-
-# Getting started
----
-A high-level overview:
-1) Download and install Docker
-2) Acquire or download the database files
-3) Set up the config file
-4) Run the pipeline
+This also means there is nothing to install (tools and code) besides Docker/Docker CE/Singularity
 
 # How to use
 ---
 This pipeline comes with a config.ini file.  The user is meant to change, configure, and contort the file to point to the location of local files and Databases.
 Our config file is written with Python's ConfigParser, using the basic interpretation.  
+The docker invocation command should look like:
+
+> docker run 
+
 The following is an outline of wwhat each of the sections mean:
 
 ## Parameters
@@ -33,6 +29,11 @@ Output_Folder is where the user would indicate to the pipeline where you want th
 
 * Threads
 Threads is the number of threads that the pipeline is allowed to use.  The pipeline is dependent on threads and parallelization to operate efficiently
+
+## Configuration File
+---
+The configuration file is an essential portion of MetaPro's operation.  It governs the internal settings, and tool paths 
+that MetaPro will use in the analysis of the sample data.
 
 ## Sequences
 ---
@@ -44,9 +45,7 @@ Pair 1 is for Forward Reads.  Pair 2 is for Reverse Reads.  Some portions of the
 
 ## Databases
 ---
-The database files are critical to the operation of MetaPro.  The pipeline will not work without them.
-As a convenience to the user, we have hosted a small variant of these files, to fit in a typical running environment.  However, 
-
+We intentionally did not include any database files in this distribution so as to allow the user more flexibility in how they want to use the pipeline.  Databases also become obselete quickly, and the image size would be enormous.  
 Below is a description of each of the fields we used.  
 * database_path
 This field isn't a part of the parameters that the pipeline accepts.  It's a shortcut argument that makes filling the path to each database easier.
@@ -67,12 +66,9 @@ A copy can be found here: http://rfam.xfam.org/
 The DNA DB is what we use to annotate the sequence data against.  We use the ChocoPhlAn database.
 A copy can be found at: http://huttenhower.sph.harvard.edu/humann2_data/chocophlan/chocophlan.tar.gz
 * DNA_DB_Split
-The ChocoPhlAn database is big.  We split it up and process the chunks simultaneously.  The pipeline will split it and dump the chunks at this location
+The ChocoPhlAn database too large for pBLAT to process.  We split it up and process the chunks simultaneously.  The pipeline will split it and dump the chunks at this location
 * Prot_DB
-The Prot_DB is the protein db.  We use the non-redundant protein database from NCBI.  It will need to be indexed by DIAMOND before usage. (see DIAMOND for more details: https://github.com/bbuchfink/diamond)
-It can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/db/
-* Prot_DB_reads
-This is the read file of the Protein Database.  It should have been the file that was indexed with DIAMOND. We use both the original file, and the DIAMOND index in the software
+The Prot_DB is the protein db.  We use the non-redundant database from NCBI.  It will need to be indexed by DIAMOND before usage. (see DIAMOND for more details: https://github.com/bbuchfink/diamond)
 It can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/db/
 * accession2taxid
 This database links each accession to a taxid number.  It's used as part of a custom program in the pipeline.
@@ -103,9 +99,37 @@ PRIAM can be downloaded here: http://priam.prabi.fr/
 * DetectDB
 Detect is an enzyme annotation tool. 
 
+* WEVOTEDB
+WeVote is a taxonomy consensus tool that determines taxonomy, given a collection of possible results.
+
+* EC_pathway
+This file translates ECs to pathways.  It is needed for the CytoScape data generation
+
+* path_to_superpath
+This file is also for the CytoScape data generation
+
+* MetaGeneMark_model
+The MetaGeneMark model used by MetaGeneMark to identify genes within contigs.
+
 ## Settings
 ---
-Settings offers the user some control over MetaPro's actions.
+These settings are used by MetaPro to orchestrate the concurrency of the tools in action, as well as control some quality-of-life functions within MetaPro
+* AdapterRemoval_minlength
+This is the minimum length for an adapter
+
+*Target_Rank
+Sets the 
+
+
+
+
+## Important note for MetaGeneMark
+---
+MetaGeneMark is free to use, but requires a license.  If your MetaGeneMark license is not valid, MetaPro will not proceed past the Contig Assembly stage.
+To acquire a valid MetaGeneMark license, please visit: http://exon.gatech.edu/GeneMark/license_download.cgi
+Select MetaGeneMark, along with the linux 64bit version, and fill in the required fields.  Then download the 64bit key.  Extract the key to obtain the .gm_key file.
+The expected location of the license file (.gm_key) is in the home folder of your singularity instance.
+
 
 # Important Features
 ---
@@ -122,7 +146,7 @@ In an effort to save computational resources, the pipeline will shut itself down
 # Increasing performance
 ---
 ## Operating mode
-The pipeline operates in a Singularity machine.  As of writing (March 18, 2019), Singularity does not support multi-machine parallelism.  This pipeline does not utilize MPI, but instead strives to use all the cores made available by the singularity machine through the Python Multiprocessing module.  To increase the performance of the pipeline, more cores should be given to the host machine, and increasing the number of cores the pipeline is allowed to use.
+MetaPro runs in a Singularity instance.  As of writing (Sept 28, 2018), Singularity does not support multi-machine parallelism.  This pipeline does not utilize MPI, but instead strives to use all the cores made available by the singularity machine through the Python Multiprocessing module.  To increase the performance of the pipeline, more cores should be given to the host machine, and increasing the number of cores the pipeline is allowed to use.
 
 ## Verbose-mode
 ---
