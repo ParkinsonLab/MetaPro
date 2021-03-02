@@ -304,7 +304,7 @@ if __name__ == "__main__":
         
         
         dmd_hits = get_dmd_hit_details(dmd_in, reads_in)
-        unmapped_reads, mapped_reads, prot2read_map = form_prot_map(identity_cutoff, length_cutoff, score_cutoff, md_hits, contig2read_map)
+        unmapped_reads, mapped_reads, prot2read_map = form_prot_map(identity_cutoff, length_cutoff, score_cutoff, dmd_hits, contig2read_map)
         write_proteins_genemap(prot2read_map, Prot_DB, new_gene2read_file, prot_file)
         
         

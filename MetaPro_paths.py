@@ -8,15 +8,17 @@ class tool_path_obj:
         try:
             value = config[config_section][var_name] if config[config_section][var_name] or config[config_section][var_name] == "" else default
         except KeyError:
+            print("failed:", config_section, var_name, ": using default")
             value = default
         
         return value
 
     def __init__ (self, config_path):
-
+        print("CHECKING CONFIG")
         if config_path:
             config = ConfigParser() #change this to ex
             config.read(config_path)
+            print("USING CONFIG")
         else:
             print("no config found, defaulting")
             config = None
@@ -31,27 +33,28 @@ class tool_path_obj:
         # Note: default host is Mouse CDS
         
         if config:
-            self.UniVec_Core        = config["Databases"]["UniVec_Core"]        if config["Databases"]["UniVec_Core"]       or config["Databases"]["UniVec_Core"]       == "" else os.path.join(database_path, "univec_core/UniVec_Core.fasta")
-            self.Adapter            = config["Databases"]["Adapter"]            if config["Databases"]["Adapter"]           or config["Databases"]["Adapter"]           == "" else os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa")
-            self.Host               = config["Databases"]["Host"]               if config["Databases"]["Host"]              or config["Databases"]["Host"]              == "" else os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta")
-            self.Rfam               = config["Databases"]["Rfam"]               if config["Databases"]["Rfam"]              or config["Databases"]["Rfam"]              == "" else os.path.join(database_path, "Rfam/Rfam.cm")
-            self.DNA_DB             = config["Databases"]["DNA_DB"]             if config["Databases"]["DNA_DB"]            or config["Databases"]["DNA_DB"]            == "" else os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta")
-            self.DNA_DB_Split       = config["Databases"]["DNA_DB_Split"]       if config["Databases"]["DNA_DB_Split"]      or config["Databases"]["DNA_DB_Split"]      == "" else os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn_split/")
-            self.Prot_DB            = config["Databases"]["Prot_DB"]            if config["Databases"]["Prot_DB"]           or config["Databases"]["Prot_DB"]           == "" else os.path.join(database_path, "nr/nr")
-            self.Prot_DB_reads      = config["Databases"]["Prot_DB_reads"]            if config["Databases"]["Prot_DB_reads"]           or config["Databases"]["Prot_DB_reads"]           == "" else os.path.join(database_path, "nr/nr")
-            self.accession2taxid    = config["Databases"]["accession2taxid"]    if config["Databases"]["accession2taxid"]   or config["Databases"]["accession2taxid"]   == "" else os.path.join(database_path, "accession2taxid/accession2taxid")
-            self.nodes              = config["Databases"]["nodes"]              if config["Databases"]["nodes"]             or config["Databases"]["nodes"]             == "" else os.path.join(database_path, "WEVOTE_db/nodes.dmp")
-            self.names              = config["Databases"]["names"]              if config["Databases"]["names"]             or config["Databases"]["names"]             == "" else os.path.join(database_path, "WEVOTE_db/names.dmp")
-            self.Kaiju_db           = config["Databases"]["Kaiju_db"]           if config["Databases"]["Kaiju_db"]          or config["Databases"]["Kaiju_db"]          == "" else os.path.join(database_path, "kaiju_db/kaiju_db_nr.fmi")
-            self.Centrifuge_db      = config["Databases"]["Centrifuge_db"]      if config["Databases"]["Centrifuge_db"]     or config["Databases"]["Centrifuge_db"]     == "" else os.path.join(database_path, "centrifuge_db/nt")
-            self.SWISS_PROT         = config["Databases"]["SWISS_PROT"]         if config["Databases"]["SWISS_PROT"]        or config["Databases"]["SWISS_PROT"]        == "" else os.path.join(database_path, "swiss_prot_db/swiss_prot_db")
-            self.SWISS_PROT_map     = config["Databases"]["SWISS_PROT_map"]     if config["Databases"]["SWISS_PROT_map"]    or config["Databases"]["SWISS_PROT_map"]    == "" else os.path.join(database_path, "swiss_prot_db/SwissProt_EC_Mapping.tsv")
-            self.PriamDB            = config["Databases"]["PriamDB"]            if config["Databases"]["PriamDB"]           or config["Databases"]["PriamDB"]           == "" else os.path.join(database_path, "PRIAM_db/")
-            self.DetectDB           = config["Databases"]["DetectDB"]           if config["Databases"]["DetectDB"]          or config["Databases"]["DetectDB"]          == "" else os.path.join(database_path, "DETECTv2")
-            self.WEVOTEDB           = config["Databases"]["WEVOTEDB"]           if config["Databases"]["WEVOTEDB"]          or config["Databases"]["WEVOTEDB"]          == "" else os.path.join(database_path, "WEVOTE_db/")
-            self.EC_pathway         = config["Databases"]["EC_pathway"]         if config["Databases"]["EC_pathway"]        or config["Databases"]["EC_pathway"]        == "" else os.path.join(database_path, "EC_pathway.txt")
-            self.path_to_superpath  = config["Databases"]["path_to_superpath"]  if config["Databases"]["path_to_superpath"] or config["Databases"]["path_to_superpath"] == "" else os.path.join(custom_database_path, "pathway_to_superpathway.csv")
-            self.mgm_model          = config["Databases"]["MetaGeneMark_model"] if config["Databases"]["MetaGeneMark_model"]or config["Databases"]["MetaGeneMark_model"]== "" else os.path.join(tool_path, "mgm/MetaGeneMark_v1.mod")
+            self.UniVec_Core        = self.value_assignment(config, "Databases", "UniVec_Core", os.path.join(database_path, "univec_core/UniVec_Core.fasta")) 
+            self.Adapter            = self.value_assignment(config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"))
+            self.Host               = self.value_assignment(config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"))
+            self.Rfam               = self.value_assignment(config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
+            self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
+            self.DNA_DB_Split       = self.value_assignment(config, "Databases", "DNA_DB_Split", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn_split/"))
+            self.Prot_DB            = self.value_assignment(config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr"))
+            self.Prot_DB_reads      = self.value_assignment(config, "Databases", "Prof_DB_reads", os.path.join(database_path, "nr/nr"))
+            self.accession2taxid    = self.value_assignment(config, "Databases", "accession2taxid", os.path.join(database_path, "accession2taxid/accession2taxid"))
+            self.nodes              = self.value_assignment(config, "Databases", "nodes", os.path.join(database_path, "WEVOTE_db/nodes.dmp"))
+            self.names              = self.value_assignment(config, "Databases", "names", os.path.join(database_path, "WEVOTE_db/names.dmp"))
+            self.Kaiju_db           = self.value_assignment(config, "Databases", "Kaiju_db", os.path.join(database_path, "kaiju_db/kaiju_db_nr.fmi"))
+            self.Centrifuge_db      = self.value_assignment(config, "Databases", "Centrifuge_db", os.path.join(database_path, "centrifuge_db/nt"))
+            self.SWISS_PROT         = self.value_assignment(config, "Databases", "SWISS_PROT", os.path.join(database_path, "swiss_prot_db/swiss_prot_db"))
+            self.SWISS_PROT_map     = self.value_assignment(config, "Databases", "SWISS_PROT_map", os.path.join(database_path, "swiss_prot_db/SwissProt_EC_Mapping.tsv"))
+            self.PriamDB            = self.value_assignment(config, "Databases", "PriamDB", os.path.join(database_path, "PRIAM_db/"))
+            self.DetectDB           = self.value_assignment(config, "Databases", "DetectDB", os.path.join(database_path, "DETECTv2"))
+            self.WEVOTEDB           = self.value_assignment(config, "Databases", "WEVOTEDB", os.path.join(database_path, "WEVOTE_db/"))
+            self.EC_pathway         = self.value_assignment(config, "Databases", "EC_pathway", os.path.join(database_path, "EC_pathway.txt"))
+            self.path_to_superpath  = self.value_assignment(config, "Databases", "path_to_superpath", os.path.join(custom_database_path, "pathway_to_superpathway.csv"))
+            self.mgm_model          = self.value_assignment(config, "Databases", "MetaGeneMark_model", os.path.join(tool_path, "mgm/MetaGeneMark_v1.mod"))
+            self.enzyme_db          = self.value_assignment(config, "Databases", "enzyme_db", os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt"))
             
             
         else:
@@ -76,41 +79,36 @@ class tool_path_obj:
             self.EC_pathway         = os.path.join(custom_database_path,    "EC_pathway.txt")
             self.path_to_superpath  = os.path.join(custom_database_path,    "pathway_to_superpathway.csv")
             self.mgm_model          = os.path.join(tool_path,               "mgm/MetaGeneMark_v1.mod")
-   
-        try:
-            self.enzyme_db = config["Databases"]["enzyme_db"] if config["Databases"]["enzyme_db"] or config["Databases"]["enzyme_db"] == "" else os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt")
-        except:
-            self.enzyme_db = os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt")
+            self.enzyme_db          = os.path.join(custom_database_path,    "FREQ_EC_pairs_3_mai_2020.txt")
             
         #----------------------------------------------------------
         # external tools
         
         if config:
-            self.Python         = config["Tools"]["Python"]         if config["Tools"]["Python"]            or config["Tools"]["Python"]            == "" else "python3"
-            self.Java           = config["Tools"]["Java"]           if config["Tools"]["Java"]              or config["Tools"]["Java"]              == "" else "java -Xmx10000m -jar"
-            self.cdhit_dup      = config["Tools"]["cdhit_dup"]      if config["Tools"]["cdhit_dup"]         or config["Tools"]["cdhit_dup"]         == "" else os.path.join(tool_path, "cdhit_dup/cd-hit-dup")
-            self.Timmomatic     = config["Tools"]["Timmomatic"]     if config["Tools"]["Timmomatic"]        or config["Tools"]["Timmomatic"]        == "" else os.path.join(tool_path, "Trimmomatic/trimmomatic-0.36.jar")
-            self.AdapterRemoval = config["Tools"]["AdapterRemoval"] if config["Tools"]["AdapterRemoval"]    or config["Tools"]["AdapterRemoval"]    == "" else os.path.join(tool_path, "adapterremoval/AdapterRemoval")
-            self.vsearch        = config["Tools"]["vsearch"]        if config["Tools"]["vsearch"]           or config["Tools"]["vsearch"]           == "" else os.path.join(tool_path, "vsearch/vsearch")
-            self.Flash          = config["Tools"]["Flash"]          if config["Tools"]["Flash"]             or config["Tools"]["Flash"]             == "" else os.path.join(tool_path, "FLASH/flash")
-            self.BWA            = config["Tools"]["BWA"]            if config["Tools"]["BWA"]               or config["Tools"]["BWA"]               == "" else os.path.join(tool_path, "BWA/bwa")
-            self.SAMTOOLS       = config["Tools"]["SAMTOOLS"]       if config["Tools"]["SAMTOOLS"]          or config["Tools"]["SAMTOOLS"]          == "" else os.path.join(tool_path, "samtools/samtools")
-            self.BLAT           = config["Tools"]["BLAT"]           if config["Tools"]["BLAT"]              or config["Tools"]["BLAT"]              == "" else os.path.join(tool_path, "PBLAT/pblat")
-            self.DIAMOND        = config["Tools"]["DIAMOND"]        if config["Tools"]["DIAMOND"]           or config["Tools"]["DIAMOND"]           == "" else os.path.join(tool_path, "DIAMOND/diamond")
-            self.Blastp         = config["Tools"]["Blastp"]         if config["Tools"]["Blastp"]            or config["Tools"]["Blastp"]            == "" else os.path.join(tool_path, "BLAST_p/blastp")
-            self.Needle         = config["Tools"]["Needle"]         if config["Tools"]["Needle"]            or config["Tools"]["Needle"]            == "" else os.path.join(tool_path, "EMBOSS-6.6.0/emboss/stretcher")
-            self.Blastdbcmd     = config["Tools"]["Blastdbcmd"]     if config["Tools"]["Blastdbcmd"]        or config["Tools"]["Blastdbcmd"]        == "" else os.path.join(tool_path, "BLAST_p/blastdbcmd")
-            self.Makeblastdb    = config["Tools"]["Makeblastdb"]    if config["Tools"]["Makeblastdb"]       or config["Tools"]["Makeblastdb"]       == "" else os.path.join(tool_path, "BLAST_p/makeblastdb")
-            self.Barrnap        = config["Tools"]["Barrnap"]        if config["Tools"]["Barrnap"]           or config["Tools"]["Barrnap"]           == "" else os.path.join(tool_path, "Barrnap/bin/barrnap")
-            self.Infernal       = config["Tools"]["Infernal"]       if config["Tools"]["Infernal"]          or config["Tools"]["Infernal"]          == "" else os.path.join(tool_path, "infernal/cmsearch")
-            self.Kaiju          = config["Tools"]["Kaiju"]          if config["Tools"]["Kaiju"]             or config["Tools"]["Kaiju"]             == "" else os.path.join(tool_path, "kaiju/kaiju")
-            self.Centrifuge     = config["Tools"]["Centrifuge"]     if config["Tools"]["Centrifuge"]        or config["Tools"]["Centrifuge"]        == "" else os.path.join(tool_path, "centrifuge/centrifuge")
-            self.Priam          = config["Tools"]["Priam"]          if config["Tools"]["Priam"]             or config["Tools"]["Priam"]             == "" else os.path.join(tool_path, "PRIAM_search/PRIAM_search.jar")
-            self.Detect         = config["Tools"]["Detect"]         if config["Tools"]["Detect"]            or config["Tools"]["Detect"]            == "" else os.path.join(script_path, "Detect_2.2.7.py")
-            self.BLAST_dir      = config["Tools"]["BLAST_dir"]      if config["Tools"]["BLAST_dir"]         or config["Tools"]["BLAST_dir"]         == "" else os.path.join(tool_path, "BLAST_p")
-            self.WEVOTE         = config["Tools"]["WEVOTE"]         if config["Tools"]["WEVOTE"]            or config["Tools"]["WEVOTE"]            == "" else os.path.join(tool_path, "WEVOTE/WEVOTE")
-            self.Spades         = config["Tools"]["Spades"]         if config["Tools"]["Spades"]            or config["Tools"]["Spades"]            == "" else os.path.join(tool_path, "SPAdes/bin/spades.py")
-            self.MetaGeneMark   = config["Tools"]["MetaGeneMark"]   if config["Tools"]["MetaGeneMark"]      or config["Tools"]["MetaGeneMark"]      == "" else os.path.join(tool_path, "mgm/gmhmmp")
+            self.Python         = self.value_assignment(config, "Tools", "Python", "python3")
+            self.Java           = self.value_assignment(config, "Tools", "Java", "java -Xmx10000m -jar")
+            self.cdhit_dup      = self.value_assignment(config, "Tools", "cdhit_dup",  os.path.join(tool_path, "cdhit_dup/cd-hit-dup"))
+            self.AdapterRemoval = self.value_assignment(config, "Tools", "AdapterRemoval", os.path.join(tool_path, "adapterremoval/AdapterRemoval"))
+            self.vsearch        = self.value_assignment(config, "Tools", "vsearch", os.path.join(tool_path, "vsearch/vsearch"))
+            self.Flash          = self.value_assignment(config, "Tools", "Flash", os.path.join(tool_path, "FLASH/flash"))
+            self.BWA            = self.value_assignment(config, "Tools", "BWA", os.path.join(tool_path, "BWA/bwa"))
+            self.SAMTOOLS       = self.value_assignment(config, "Tools", "SAMTOOLS", os.path.join(tool_path, "samtools/samtools"))
+            self.BLAT           = self.value_assignment(config, "Tools", "BLAT", os.path.join(tool_path, "PBLAT/pblat"))
+            self.DIAMOND        = self.value_assignment(config, "Tools", "DIAMOND", os.path.join(tool_path, "DIAMOND/diamond"))
+            self.Blastp         = self.value_assignment(config, "Tools", "Blastp", os.path.join(tool_path, "BLAST_p/blastp"))
+            self.Needle         = self.value_assignment(config, "Tools", "Needle", os.path.join(tool_path, "EMBOSS-6.6.0/emboss/stretcher"))
+            self.Blastdbcmd     = self.value_assignment(config, "Tools", "Blastdbcmd", os.path.join(tool_path, "BLAST_p/blastdbcmd"))
+            self.Makeblastdb    = self.value_assignment(config, "Tools", "Makeblastdb", os.path.join(tool_path, "BLAST_p/makeblastdb"))
+            self.Barrnap        = self.value_assignment(config, "Tools", "Barrnap", os.path.join(tool_path, "Barrnap/bin/barrnap"))
+            self.Infernal       = self.value_assignment(config, "Tools", "Infernal", os.path.join(tool_path, "infernal/cmsearch"))
+            self.Kaiju          = self.value_assignment(config, "Tools", "Kaiju", os.path.join(tool_path, "kaiju/kaiju"))
+            self.Centrifuge     = self.value_assignment(config, "Tools", "Centrifuge", os.path.join(tool_path, "centrifuge/centrifuge"))
+            self.Priam          = self.value_assignment(config, "Tools", "Priam", os.path.join(tool_path, "PRIAM_search/PRIAM_search.jar"))
+            self.Detect         = self.value_assignment(config, "Tools", "Detect", os.path.join(script_path, "Detect_2.2.7.py"))
+            self.BLAST_dir      = self.value_assignment(config, "Tools", "BLAST_dir", os.path.join(tool_path, "BLAST_p"))
+            self.WEVOTE         = self.value_assignment(config, "Tools", "WEVOTE", os.path.join(tool_path, "WEVOTE/WEVOTE"))
+            self.Spades         = self.value_assignment(config, "Tools", "Spades", os.path.join(tool_path, "SPAdes/bin/spades.py"))
+            self.MetaGeneMark   = self.value_assignment(config, "Tools", "MetaGeneMark", os.path.join(tool_path, "mgm/gmhmmp"))
         else:
             self.Python         = "python3"
             self.Java           = "java -jar"

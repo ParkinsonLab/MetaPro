@@ -2455,8 +2455,8 @@ def tutorial_main(config_path, pair_1_path, pair_2_path, single_path, contig_pat
         # BLAT gene annotation
         GA_BLAT_start = time.time()
         GA_BLAT_path = os.path.join(output_folder_path, GA_BLAT_label)
-        GA_BLAT_jobs_folder = os.path.join(GA_BLAT_path, "data")
-        GA_BLAT_final_job_marker = os.path.join(GA_BLAT_jobs_folder, "all_BLAT")
+        GA_BLAT_jobs_folder = os.path.join(GA_BLAT_path, "data", "jobs")
+        GA_BLAT_final_job_marker = os.path.join(GA_BLAT_path, "all_BLAT")
         if (os.path.exists(GA_BLAT_final_job_marker)):
             print(dt.today(), "BLAT was run, skipping")
         else:
