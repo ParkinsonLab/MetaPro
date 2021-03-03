@@ -40,7 +40,7 @@ class tool_path_obj:
             self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
             self.DNA_DB_Split       = self.value_assignment(config, "Databases", "DNA_DB_Split", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn_split/"))
             self.Prot_DB            = self.value_assignment(config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr"))
-            self.Prot_DB_reads      = self.value_assignment(config, "Databases", "Prof_DB_reads", os.path.join(database_path, "nr/nr"))
+            self.Prot_DB_reads      = self.value_assignment(config, "Databases", "Prot_DB_reads", os.path.join(database_path, "nr/nr"))
             self.accession2taxid    = self.value_assignment(config, "Databases", "accession2taxid", os.path.join(database_path, "accession2taxid/accession2taxid"))
             self.nodes              = self.value_assignment(config, "Databases", "nodes", os.path.join(database_path, "WEVOTE_db/nodes.dmp"))
             self.names              = self.value_assignment(config, "Databases", "names", os.path.join(database_path, "WEVOTE_db/names.dmp"))
