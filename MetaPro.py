@@ -2942,18 +2942,18 @@ def tutorial_main(config_path, pair_1_path, pair_2_path, single_path, contig_pat
             #repop vectors
             if check_bypass_log(output_folder, output_unique_vectors_singletons_label):
                 job_name = output_unique_vectors_singletons_label
-                command_list = commands.create_output_unique_vectors_singletons_command(output_label, quality_filter_label, vector_filter_label)
+                command_list = commands.create_output_unique_vectors_singletons_command(output_label, quality_filter_label, host_filter_label, vector_filter_label)
                 launch_and_create_with_mp_store(mp_store, output_label, job_name, commands, command_list)
             
             if(read_mode == "paired"):
                 if check_bypass_log(output_folder, output_unique_vectors_pair_1_label):
                     job_name = output_unique_vectors_pair_1_label
-                    command_list = commands.create_output_unique_vectors_pair_1_command(output_label, quality_filter_label, vector_filter_label)
+                    command_list = commands.create_output_unique_vectors_pair_1_command(output_label, quality_filter_label, host_filter_label, vector_filter_label)
                     launch_and_create_with_mp_store(mp_store, output_label, job_name, commands, command_list)
                     
                 if check_bypass_log(output_folder, output_unique_vectors_pair_2_label):
                     job_name = output_unique_vectors_pair_2_label
-                    command_list = commands.create_output_unique_vectors_pair_2_command(output_label, quality_filter_label, vector_filter_label)
+                    command_list = commands.create_output_unique_vectors_pair_2_command(output_label, quality_filter_label, host_filter_label, vector_filter_label)
                     launch_and_create_with_mp_store(mp_store, output_label, job_name, commands, command_list)
                         
                         
