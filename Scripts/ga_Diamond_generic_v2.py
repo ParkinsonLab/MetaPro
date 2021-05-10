@@ -33,6 +33,8 @@
 # - this is a messy Piece-of-shit code that needs to be written without those dumb import loops.
 # Aug 26, 2019:  it's much cleaner now, but there's a possibility for empty-files to be created, which interferes with the error-check of the pipe.
 
+#mar 09, 2021:
+#including a bypasser for contigs 
 
 import os
 import os.path
@@ -299,9 +301,12 @@ if __name__ == "__main__":
     input_safety = check_file_safety(reads_in) and check_file_safety(dmd_in)
     
     if(input_safety):
-        #"global" vars
-        contig2read_map = construct_contig2read_map(contig2read_file)   #Input: key->contig | val->reads
-        
+        contig2read_map = dict()
+        if(contig2read_file != "None"):
+            print(dt.today(), "GA dmd pp: including contigs")
+            contig2read_map = construct_contig2read_map(contig2read_file)   #Input: key->contig | val->reads
+        else:
+            print(dt.today(), "GA dmd pp: ignoring contigs")
         
         dmd_hits = get_dmd_hit_details(dmd_in, reads_in)
         unmapped_reads, mapped_reads, prot2read_map = form_prot_map(identity_cutoff, length_cutoff, score_cutoff, dmd_hits, contig2read_map)

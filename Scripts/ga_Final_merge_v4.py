@@ -558,8 +558,8 @@ def scrub_and_merge(gene_map_0, gene_map_1):
     #time.sleep(60)
         
     
-    export_gene_map(clean_gene_map_0, sys.argv[6], "v4_cleaned_contigs")
-    export_gene_map(clean_gene_map_1, sys.argv[6], "v4_cleaned_singles")
+    #export_gene_map(clean_gene_map_0, sys.argv[6], "v4_cleaned_contigs")
+    #export_gene_map(clean_gene_map_1, sys.argv[6], "v4_cleaned_singles")
     
     final_gene_map = clean_gene_map_0.copy()
     for gene in clean_gene_map_1:

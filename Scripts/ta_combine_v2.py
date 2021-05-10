@@ -4,6 +4,8 @@
 #We also wanted to make it as explicit as possible, so it's easy to understand.
 
 import sys
+import os
+from datetime import datetime as dt
 
 def import_classifications(input_file, contig2read_map):
     #list of dictionaries
@@ -79,13 +81,20 @@ if __name__ == "__main__":
     centrifuge_results = sys.argv[7]
     
     #import the contig map
-    contig2read_map = import_contig2read_map(contig2read_file)
-
+    contig2read_map = dict()
+    if(os.path.exists(contig2read_file)):
+        contig2read_map = import_contig2read_map(contig2read_file)
+    else:
+        print(dt.today(), "no contigs to consider.  continuing")
+    
     #import each classification result
     Input_classifications = []
-    Input_classifications.append(import_classifications(ga_taxon_results_0, contig2read_map))
-    Input_classifications.append(import_classifications(ga_taxon_results_1, contig2read_map))
-    Input_classifications.append(import_classifications(ga_taxon_results_2, contig2read_map))
+    if(os.path.exists(ga_taxon_results_0)):
+        Input_classifications.append(import_classifications(ga_taxon_results_0, contig2read_map))
+    if(os.path.exists(ga_taxon_results_1)):
+        Input_classifications.append(import_classifications(ga_taxon_results_1, contig2read_map))
+    if(os.path.exists(ga_taxon_results_2)):
+        Input_classifications.append(import_classifications(ga_taxon_results_2, contig2read_map))
     Input_classifications.append(import_classifications(kaiju_results, contig2read_map))
     Input_classifications.append(import_classifications(centrifuge_results, contig2read_map))
 

@@ -18,7 +18,10 @@ This pipeline comes with a config.ini file.  The user is meant to change, config
 Our config file is written with Python's ConfigParser, using the basic interpretation.  
 The docker invocation command should look like:
 
-> docker run 
+> docker run python3 /pipeline/MetaPro.py -c $config -1 $forward_read -2 $reverse_read -o <output>
+
+if you are invoking the pipeline using Singularity
+
 
 The following is an outline of wwhat each of the sections mean:
 

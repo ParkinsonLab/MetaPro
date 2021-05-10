@@ -4,6 +4,8 @@
 #couple of assumptions:
 #-> contigs are now constructed of completely unique reads
 #-> we do contigs now
+#mar 09, 2021:
+#we now handle a one-off case where contigs are skipped entirely (due to a weird niche use for xuejian's evonik chicken thing)
 
 import os
 import os.path
@@ -288,7 +290,10 @@ if __name__ == "__main__":
     input_safety = check_file_safety(reads_in) and check_file_safety(bwa_in)
     cigar_cutoff = int(cigar_cut)
     if(input_safety):
-        contig2read_map, contig_reads = import_contig2read(contig2read_file)
+        contig2read_map = dict()
+        if(contig2read_file != "None"):
+            contig2read_map, contig_reads = import_contig2read(contig2read_file)
+        
         #contig2read_map_uniq, contig_unique_reads = filter_common_contigs(contig2read_map, contig_reads)
         # tracking BWA-assigned:
         unmapped_reads, mapped_reads, gene2read_map = gene_map(cigar_cutoff, bwa_in, contig2read_map)

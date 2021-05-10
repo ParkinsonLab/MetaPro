@@ -5,6 +5,9 @@
 #
 #oct 22, 2020:
 #New in v2: top-hit! 
+#mar 09, 2021:
+#we now handle a one-off case where contigs are skipped entirely (due to a weird niche use for xuejian's evonik chicken thing)
+
 
 import os
 import os.path
@@ -329,7 +332,12 @@ if __name__ == "__main__":
     input_safety = check_file_safety(reads_in) and check_file_safety(blat_in)
     
     if(input_safety):
-        contig2read_map = import_contig_map(contig2read_file)
+        contig2read_map = dict()
+        if(contig2read_file != "None"):
+            print(dt.today(), "including contigs")
+            contig2read_map = import_contig_map(contig2read_file)
+        else:
+            print(dt.today(), "skipping contigs")
         blat_hits, reads_in_dict = get_blat_details(blat_in, reads_in)
         mapped_reads, gene2read_map = make_gene_map(identity_cutoff, length_cutoff, score_cutoff, blat_hits, contig2read_map) 
         unmapped_reads = get_full_unmapped_reads(mapped_reads, reads_in_dict)

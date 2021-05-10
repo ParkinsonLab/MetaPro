@@ -1,3 +1,23 @@
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#April 12, 2021
+#-------------------------------------------------------------------------
+#MetaPro_paths.py
+#This code manages all of the locations of files needed to run MetaPro. 
+#It also controls the import of the configuration file.  
+
+
 import os.path
 from configparser import ConfigParser, ExtendedInterpolation
 
@@ -156,7 +176,7 @@ class tool_path_obj:
         self.Map_reads_prot_DMND        = os.path.join(script_path, "ga_Diamond_generic_v2.py")
         self.GA_final_merge             = os.path.join(script_path, "ga_Final_merge_v4.py")
         self.EC_Annotation_Post         = os.path.join(script_path, "ea_combine_v5.py")
-        self.Annotated_taxid            = os.path.join(script_path, "ta_taxid.py")
+        self.Annotated_taxid            = os.path.join(script_path, "ta_taxid_v2.py")
         self.Constrain_classification   = os.path.join(script_path, "ta_constrain_taxonomy_v2.py")
         self.Classification_combine     = os.path.join(script_path, "ta_combine_v2.py")
         self.Wevote_parser              = os.path.join(script_path, "ta_wevote_parser.py")
