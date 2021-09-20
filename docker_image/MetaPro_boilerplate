@@ -192,12 +192,13 @@ RUN wget https://sourceforge.net/projects/samtools/files/samtools/1.8/samtools-1
 
 #-------------------------------------------------------
 # Install SPAdes
-RUN wget http://cab.spbu.ru/files/release3.11.1/SPAdes-3.11.1-Linux.tar.gz -O SPAdes.tar.gz \
+#RUN wget http://cab.spbu.ru/files/release3.11.1/SPAdes-3.11.1-Linux.tar.gz -O SPAdes.tar.gz \
+RUN wget https://cab.spbu.ru/files/release3.15.2/SPAdes-3.15.2-Linux.tar.gz -O SPAdes.tar.gz \
 && tar --remove-files -xzvf SPAdes.tar.gz \
 && rm SPAdes.tar.gz \
 && mkdir SPAdes \
-&& mv SPAdes-3.11.1-Linux/* SPAdes \
-&& rm -r SPAdes-3.11.1-Linux
+&& mv SPAdes-3.15.2-Linux/* SPAdes \
+&& rm -r SPAdes-3.15.2-Linux
 
 
 #---------------------------------------------------
@@ -243,7 +244,7 @@ RUN wget https://github.com/aametwally/WEVOTE/archive/master.zip -O wevote.zip \
 #------------------------------------------------------------------------
 #post-build annoyances with java
 ## JAVA INSTALLATION
-RUN apt-get install -y openjdk-8-jre \
+RUN apt-get update && apt-get install -y openjdk-8-jre \
 && apt-get install -y openjdk-8-jdk \
 && cd /pipeline_tools
 
@@ -251,14 +252,17 @@ RUN apt-get install -y openjdk-8-jre \
 #--------------------------------------------
 # Install PRIAM
 RUN mkdir PRIAM_search \
-&& wget http://priam.prabi.fr/utilities/PRIAM_search.jar \
+&& wget http://compsysbio.org/metapro_hosting/PRIAM_search.jar \
 && mv PRIAM_search.jar PRIAM_search
+
+#&& wget http://priam.prabi.fr/utilities/PRIAM_search.jar \
+#&& mv PRIAM_search.jar PRIAM_search
 
 
 #------------------------------------
 # Install BLAST+
 RUN apt-get install -y libidn11-dev \
-&& wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.7.1/ncbi-blast-2.7.1+-x64-linux.tar.gz -O BLAST_p.tar.gz \
+&& wget -c http://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.7.1/ncbi-blast-2.7.1+-x64-linux.tar.gz -O BLAST_p.tar.gz \
 && tar --remove-files -xzvf BLAST_p.tar.gz \
 && rm BLAST_p.tar.gz \
 && mkdir BLAST_p \
@@ -271,19 +275,6 @@ RUN apt-get install -y libidn11-dev \
 #WORKDIR BLAST_p
 #RUN ./configure --without-boost && make 
 
-#------------------------------------------------------------------------------------------
-# Install Python3
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
-RUN apt-get autoclean \
-&& apt-get autoremove \
-&& apt-get clean && apt-get install -y python3 \
-&& apt-get install -y python3-pip \
-&& pip3 install biopython \
-&& pip3 install pandas  \
-&& pip3 install matplotlib \
-&& pip3 install seaborn \
-&& pip3 install pillow \
-&& pip3 install psutil
 
 #-----------------------------------
 # Add MetaGeneMark
@@ -299,3 +290,20 @@ RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.
 && unzip fastqc_v0.11.9.zip \
 && chmod 755 /pipeline_tools/FastQC/fastqc \ 
 && rm fastqc_v0.11.9.zip
+
+
+#------------------------------------------------------------------------------------------
+# Install Python3
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+RUN apt-get autoclean \
+&& apt-get autoremove \
+&& apt-get clean && apt-get install -y python3 \
+&& apt-get install -y python3-pip \
+&& pip3 install biopython \
+&& pip3 install pandas  \
+&& pip3 install matplotlib \
+&& pip3 install seaborn \
+&& pip3 install pillow \
+&& pip3 install psutil \
+&& pip3 install hanging_threads \
+&& pip3 install requests

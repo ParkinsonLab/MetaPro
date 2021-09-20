@@ -71,6 +71,9 @@ ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/S
 # get mgm license
 ADD https://raw.githubusercontent.com/billytaj/parkinson_int_meta_pipe/develop/mgm_license/gm_key /pipeline
 
+# get the lib downloader
+ADD https://raw.githubusercontent.com/billytaj/parkinson_int_meta_pipe/develop/lib_downloader.py /pipeline
+
 RUN chmod -R 555 /pipeline
 
 

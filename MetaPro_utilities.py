@@ -330,9 +330,23 @@ class mp_util:
                         print(dt.today(), item, "not found.  kill the pipe.  restart this stage")
                         sys.exit("not all jobs completed")
 
-
+    def limited_wait_for_mp_store(self, limit):
+        print(dt.today(), "limit for mp_store:", limit)
+        if(len(self.mp_store) >= limit):
+            print(dt.today(), "mp_store limit reached. pausing to flush")
+            for item in self.mp_store:
+                item.join()
+            self.mp_store[:] = []
+            print(dt.today(), "mp_store flushed. continuing")
+    
+    
     def wait_for_mp_store(self):
+        print(dt.today(), "closing down processes: ", len(self.mp_store))
+        count = 0
         for item in self.mp_store:
+            
+            print(dt.today(), "closed down: " + str(count) +  "/" + str(len(self.mp_store)) + "            ", end = "\r") 
+            count += 1
             item.join()
         self.mp_store[:] = []
 
