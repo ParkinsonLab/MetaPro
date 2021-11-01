@@ -32,74 +32,6 @@ import psutil as psu
 import threading as th
 import queue as q
 
-def cat_blat_files(blatout_queue, raw_blat_location, segment_name, done_queue):
-    print(dt.today(), "merge thread launched:", segment_name)
-    stop_flag = False
-    blat_location = os.path.join(raw_blat_location, "data", "1_blat_merge")
-    if not (os.path.exists(blat_location)):
-        os.makedirs(blat_location)
-    blatout_final_file = os.path.join(blat_location, segment_name + ".blatout")
-    
-    while(not stop_flag):
-        blatout_path = blatout_queue.get()
-        
-        #print(dt.today(), segment_name , "merge thread queue:", blatout_path)
-        if(blatout_path == "stop"):
-            if(blatout_queue.empty()):
-                stop_flag = True
-                print(dt.today(), segment_name, "merge thread stop command received")
-                done_queue.put("done")
-                break
-        else:
-            database_part = blatout_path.split("g__")[1]
-            database_part = "g__" + database_part.strip(".blatout")
-            marker_file = segment_name + "_blat_" + database_part
-            marker_path = os.path.join(raw_blat_location, "data", "jobs", marker_file)
-            print("marker path:", marker_path)
-        
-            file_exist_flag = False
-            marker_exists_flag = False
-            while (not file_exist_flag):    #wait for the file to exist
-                if(os.path.exists(blatout_path)):
-                    
-                    file_exist_flag = True
-                else:
-                    #print(dt.today(), segment_name, "waiting for file to exist:", blatout_path)
-                    time.sleep(1) #can't go any faster.  the file needs time to be populated, or else the file is skipped
-            while (not marker_exists_flag):
-                if(os.path.exists(marker_path)):
-                    marker_exists_flag = True
-                else:
-                    #print(dt.today(), "waiting for marker to exist:", marker_path, end="\r")
-                    time.sleep(0.001)
-                    
-            blatout_file_size = os.stat(blatout_path).st_size
-            #print("BLATOUT os stat", blatout_file_size)    
-            
-            print(dt.today(), segment_name, "file found:", blatout_path)
-            if(os.path.exists(blatout_final_file)):
-                print(dt.today(), segment_name, "appending to old file")
-                with open(blatout_final_file, "a") as outfile:
-                    with open(blatout_path, "r") as infile:
-                        for line in infile:
-                            if("\n" in line):
-                                outfile.write(line)
-                            else:
-                                outfile.write(line + "\n")
-                                
-            else:
-                print(dt.today(), segment_name, "new file needed")
-                with open(blatout_final_file, "w") as outfile:
-                    with open(blatout_path, "r") as infile:
-                        for line in infile:
-                            if("\n" in line):
-                                outfile.write(line)
-                            else:
-                                outfile.write(line + "\n")
-
-            #print(dt.today(), "deleting:", blatout_path)
-            os.remove(blatout_path)
-                
 
 def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, threads, args_pack, tutorial_mode):
     #make our util obj
@@ -904,6 +836,10 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
             marker_path_list.append(marker_path)
             command_list = commands.create_BWA_copy_contig_map_command(GA_BWA_label, assemble_contigs_label, marker_file)
             mp_util.launch_and_create_simple(GA_BWA_label, GA_BWA_label + "_copy_contig_map", commands, command_list)
+
+
+
+
         
         final_checklist = os.path.join(GA_BWA_path, "GA_BWA_pp.txt")
         mp_util.check_all_job_markers(marker_path_list, final_checklist)
@@ -935,11 +871,6 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
                 file_tag = os.path.basename(split_sample)
                 file_tag = os.path.splitext(file_tag)[0]
                 full_sample_path = os.path.join(os.path.join(GA_BWA_path, "final_results", split_sample))
-                blat_file_queue = q.Queue()
-                blat_done_queue = q.Queue()
-                #blat_merge_thread = th.Thread(target = cat_blat_files, args = (blat_file_queue, os.path.join(GA_BLAT_path), file_tag, blat_done_queue))
-                #blat_merge_thread.setDaemon(True)
-                #blat_merge_thread.start()
 
                 delay_count = 0
                 for fasta_db in os.listdir(paths.DNA_DB_Split):
@@ -948,14 +879,14 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
                         marker_file = file_tag + "_blat_" + fasta_db
                         marker_path = os.path.join(GA_BLAT_jobs_folder, marker_file)
                         blatout_path = os.path.join(GA_BLAT_path, "data", "0_blat", file_tag + "_"+fasta_db + ".blatout")
-                        
+                        blat_queue_package = blatout_path+"|" + marker_file
                         
                         #This checker assume BLAT only exports a file when it's finished running
                         if(os.path.exists(marker_path)):
                             if(os.path.exists(blatout_path)):
                                 #recover from a restart.  there will be files that have been missed.  thread would have deleted the file
                                 print(dt.today(), "file still exists. adding to merge thread:", blatout_path)
-                                blat_file_queue.put(blatout_path)
+                                #blat_file_queue.put(blat_queue_package)
                                 
                             else:
                                 print(dt.today(), "file doesn't exist anymore already merged", blatout_path)
@@ -970,41 +901,11 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
                             marker_path_list.append(marker_path)
                             command_list = commands.create_BLAT_annotate_command_v2(GA_BLAT_label, full_sample_path, fasta_db, marker_file)
                             mp_util.launch_only_with_hold(BLAT_mem_threshold, BLAT_job_limit, BLAT_job_delay, job_name, commands, command_list)
-                            blat_file_queue.put(blatout_path)
-                            
-                        #mp_util.limited_wait_for_mp_store(100)
-                blat_file_queue.put("stop")
-                cat_blat_files(blat_file_queue, os.path.join(GA_BLAT_path), file_tag, blat_done_queue)
-                
-                #blat_merge_thread.join()
-                #while(blat_merge_thread.is_alive()):
-                #    print(dt.today(), "interim merge thread still alive", end="\r")
-                #else:
-                #    print(dt.today(), "interim merge thread def dead")
-                #print(dt.today(), "BLAT merge thread joined. waiting for mp_store to finish")
-                #time.sleep(2)
-                # #mp_util.wait_for_mp_store()
-                # #time.sleep(10)
-                # done_flag = False
-                # #wait for the blat merge queue to report it being finished
-                # print(dt.today(), "waiting for merge process to tell us when it's finished")
-                # while not(done_flag):
-                    # done_sign = blat_done_queue.get()
-                    # if(done_sign == "done"):
-                        # done_flag = True
-                    # time.sleep(1)
-                # print(dt.today(), "merge process all finished!")
-                # #blat_file_queue.put("stop")
+
         #---------------------------------------------------------------------------
 
         
         print(dt.today(), "final BLAT job removal. now waiting for mp-store flush")
-        #blat_merge_thread.join()
-        #while(blat_merge_thread.is_alive()):
-        #    print(dt.today(), "merge thread still alive", end="\r")
-        #else:
-        #    print(dt.today(), "merge thread def dead")
-        #blat_merge_thread.exit()
         #note: this wait is disabled because we now have a separate thread.  it will hang if we enable it.
         print(dt.today(), "flushing mp_store")
         #mp_util.mp_store[:] = []        
@@ -1024,7 +925,7 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
                 file_tag = os.path.basename(split_sample)
                 file_tag = os.path.splitext(file_tag)[0]
                 
-                ref_path = paths.DNA_DB
+                ref_path = paths.DNA_DB_Split
                 if (ref_path.endswith(".fasta")):
                     #single chocophlan mode
                     job_name = "BLAT_" + file_tag + "_pp"
@@ -1040,27 +941,33 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
                         mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, GA_BLAT_label, job_name, commands, command_list)
                         
                 else:
-                    #split chocophlan mode
-                    #decode the chocophlan chunk, and supply the appropriate one.
-                    print("file tag:", file_tag.split("chocophlan"))
-                    choco_chunk = "chocophlan" + file_tag.split("chocophlan")[1]
-                    ref_file = os.path.join(ref_path, choco_chunk + ".fasta")
-                    print("BLAT file tag:", file_tag, "|chunk: ", ref_file)
-                    
-                    job_name = "BLAT_" + file_tag + "_" + choco_chunk + "_pp"
-                    full_sample_path = os.path.join(os.path.join(GA_BWA_path, "final_results", split_sample))
-                    marker_file = file_tag + "_" + choco_chunk + "_blat_pp"
-                    marker_path = os.path.join(GA_BLAT_jobs_folder, marker_file)
-                    
-                    if(os.path.exists(marker_path)):
-                        print(dt.today(), "skipping:", marker_file)
-                        continue
-                    else:
-                        marker_path_list.append(marker_path)
-                        command_list = commands.create_BLAT_pp_command_v2(GA_BLAT_label, full_sample_path, GA_BWA_label, ref_file, marker_file)
-                        mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, GA_BLAT_label, job_name, commands, command_list)
-                    
-                    #time.sleep(1)
+                    for fasta_db in os.listdir(ref_path):
+                        if fasta_db.endswith(".fasta") or fasta_db.endswith(".ffn") or fasta_db.endswith(".fsa") or fasta_db.endswith(".fas") or fasta_db.endswith(".fna"):
+                            #split chocophlan mode
+                            #decode the chocophlan chunk, and supply the appropriate one.
+                            #print("file tag:", file_tag.split("chocophlan"))
+                            choco_chunk = fasta_db.split(".fasta")[0]
+                            ref_file = os.path.join(ref_path, fasta_db)
+                            #print("BLAT file tag:", file_tag, "|chunk: ", ref_file)
+                            
+                            job_name = "BLAT_" + file_tag + "_" + choco_chunk + "_pp"
+                            full_sample_path = os.path.join(os.path.join(GA_BWA_path, "final_results", split_sample))
+                            #print("query file:", full_sample_path)
+                            marker_file = file_tag + "_" + choco_chunk + "_blat_pp"
+                            print("MARKER FILE:", marker_file)
+                            marker_path = os.path.join(GA_BLAT_jobs_folder, marker_file)
+                            
+                            if(os.path.exists(marker_path)):
+                                print(dt.today(), "skipping:", marker_file)
+                                continue
+                            else:
+                                marker_path_list.append(marker_path)
+                                command_list = commands.create_BLAT_pp_command_v3(GA_BLAT_label, full_sample_path, GA_BWA_label, ref_file, marker_file)
+                                print("Command list:", command_list)
+                                #time.sleep(10)
+                                mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, GA_BLAT_label, job_name, commands, command_list)
+                            #time.sleep(10)
+
                 
         print(dt.today(), "submitted all BLAT pp jobs.  waiting for sync")
         mp_util.wait_for_mp_store()
@@ -1567,6 +1474,7 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     print("Outputs cleanup:", '%1.1f' % (cleanup_cytoscape_end - cleanup_cytoscape_start), "s")
     
 
+#-------------------------------------------------------------------------------
 def tutorial_main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, threads, args_pack, tutorial_mode_string): 
     paths = mpp.tool_path_obj(config_path)
     mp_util = mpu.mp_util(output_folder_path)
@@ -1682,7 +1590,7 @@ def tutorial_main(config_path, pair_1_path, pair_2_path, single_path, contig_pat
     print("rRNA filter Chunk size:", rRNA_chunks)
     print("GA chunk size:", GA_chunksize)
     print("---------------------------------")
-    if not single_path == "":
+    if ((not single_path == "") and (pair_1_path == "") and (pair_2_path == "")):
         read_mode = "single"
         extension = os.path.splitext(single_path)[1]
         if(extension == ".fa" or extension == ".fasta"):
@@ -1776,7 +1684,7 @@ def tutorial_main(config_path, pair_1_path, pair_2_path, single_path, contig_pat
         command_list = commands.create_host_filter_command(host_filter_label, quality_filter_label)
         mp_util.launch_and_create_simple(host_filter_label, job_name, commands, command_list)
         
-    elif(tutorial_mode_string == "vector"):
+    elif(tutorial_mode_string == "vectors" or tutorial_mode_string == "vector"):
         print(dt.today(), "working on:", tutorial_mode_string)
         job_name = vector_filter_label
         command_list = commands.create_vector_filter_command(vector_filter_label, quality_filter_label)
@@ -2765,19 +2673,12 @@ if __name__ == "__main__":
     parser.add_argument("-con", "--contig",   type=str,   help="Tutorial use only: Path to the file containing the contig reads in fastq format")
     parser.add_argument("-o", "--output_folder", type=str, required=True, help="Path of the folder for the output of the pipeline")
     parser.add_argument("-t", "--num_threads", type=int, help="Maximum number of threads used by the pipeline")
-    parser.add_argument("--nhost", action='store_true', help="Skip the host read removal step of the pipeline")
+    parser.add_argument("--nhost", "--no-host", action='store_true', help="Skip the host read removal step of the pipeline")
     parser.add_argument("--verbose_mode", type=str, help = "Decide how to handle the interim files, Compress them, or leave them alone.  Values are: keep, compress, quiet")
     parser.add_argument("--tutorial", type = str, help = "tutorial operating mode for MetaPro")
     
     args = parser.parse_args()
-
-    if (args.pair1 and not args.pair2) or (args.pair2 and not args.pair1):
-        print("You must specify both forward and reverse reads for a paired-end run")
-        sys.exit()
-    elif args.single and (args.pair1 or args.pair2):
-        print("You cannot specify both paired-end and single-end reads in a single run.")
-        sys.exit()
-
+    
     config_file     = args.config if args.config else ""
     contig          = args.contig if args.contig else "None"
     pair_1          = args.pair1 if args.pair1 else ""
@@ -2788,6 +2689,14 @@ if __name__ == "__main__":
     no_host         = args.nhost if args.nhost else False
     verbose_mode    = args.verbose_mode if args.verbose_mode else "quiet"
     tutorial_mode   = args.tutorial if args.tutorial else "none"
+
+    if(tutorial_mode == "none"):
+        if (args.pair1 and not args.pair2) or (args.pair2 and not args.pair1):
+            print("You must specify both forward and reverse reads for a paired-end run")
+            sys.exit()
+        elif args.single and (args.pair1 or args.pair2):
+            print("You cannot specify both paired-end and single-end reads in a single run.")
+            sys.exit()
 
     if not (os.path.exists(output_folder)):
         print("output folder does not exist.  Now building directory.")
