@@ -2177,8 +2177,13 @@ class mt_pipe_commands:
         
         reads_in    = query_file
         bwa_in      = os.path.join(bwa_folder, sample_root_name + "_" + ref_tag + ".sam")
-        reads_out   = os.path.join(pp_folder, sample_root_name + "_" + ref_tag + ".fasta")
-            
+        reads_out = ""
+        if("chunk" in ref_file):
+            reads_out   = os.path.join(pp_folder, sample_root_name + "_" + ref_tag + ".fasta")
+        else:
+            reads_out = os.path.join(final_folder, sample_root_name + "_" + ref_tag + ".fasta")
+        
+
         map_read_bwa = ">&2 echo " + str(dt.today()) + " GA BWA PP generic: " + sample_root_name + " | "
         map_read_bwa += self.tool_path_obj.Python + " "
         map_read_bwa += self.tool_path_obj.Map_reads_gene_BWA + " "
@@ -2202,15 +2207,24 @@ class mt_pipe_commands:
         merge_bwa_fastas += sample_root_name + " " 
         merge_bwa_fastas += final_folder
 
+        
 
         make_marker = ">&2 echo bwa pp complete: " + marker_file + " | " 
         make_marker += "touch" + " " 
         make_marker += os.path.join(jobs_folder, marker_file)
 
+
+
         COMMANDS_Annotate_BWA = [
             map_read_bwa + " && " + merge_bwa_fastas + " && " + make_marker
             #copy_contig_map
         ]
+
+        if("chunk" in ref_file):
+            COMMANDS_Annotate_BWA = [
+                map_read_bwa + " && " + make_marker
+            ]
+
         return COMMANDS_Annotate_BWA
 
 
