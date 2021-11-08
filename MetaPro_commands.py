@@ -2178,9 +2178,11 @@ class mt_pipe_commands:
         reads_in    = query_file
         bwa_in      = os.path.join(bwa_folder, sample_root_name + "_" + ref_tag + ".sam")
         reads_out = ""
-        if("chunk" in ref_file):
+        if("chunk" in ref_path):
+            print(dt.today(), "BWA_pp running in split-mode")
             reads_out   = os.path.join(pp_folder, sample_root_name + "_" + ref_tag + ".fasta")
         else:
+            print(dt.today(), "BWA_pp running in single-mode")
             reads_out = os.path.join(final_folder, sample_root_name + "_" + ref_tag + ".fasta")
         
 
@@ -2220,7 +2222,7 @@ class mt_pipe_commands:
             #copy_contig_map
         ]
 
-        if("chunk" in ref_file):
+        if("chunk" in ref_path):
             COMMANDS_Annotate_BWA = [
                 map_read_bwa + " && " + make_marker
             ]
