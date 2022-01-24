@@ -4,6 +4,8 @@
 
 import os
 import os.path
+
+from numpy.core.arrayprint import _make_options_dict
 import MetaPro_paths as mpp
 import subprocess as sp
 import time
@@ -1011,8 +1013,6 @@ class mt_pipe_commands:
         Barrnap_archaea += " " + fasta_seqs
         Barrnap_archaea += " >> " + Barrnap_arc_out
         
-
-    
         make_marker = "touch" + " "
         make_marker += os.path.join(jobs_folder, marker_file)
   
@@ -1131,10 +1131,6 @@ class mt_pipe_commands:
         return [Barrnap_mitochondria + " && " + make_marker]
         
         
-        
-        
-        
-        
     def create_rRNA_filter_barrnap_cat_command(self, stage_name, category, fastq_name, marker_file):
         #this is expected to run on each sample split
         subfolder           = os.path.join(self.Output_Path, stage_name)
@@ -1162,9 +1158,6 @@ class mt_pipe_commands:
         self.make_folder(infernal_out_folder)
         self.make_folder(jobs_folder)
    
-        
-
-        
         #combine the arc, bac, euk, mit files into 1
         cat_command = ">&2 echo Combining files for:" + file_name + " | "
         cat_command += "cat" + " "
@@ -1207,15 +1200,7 @@ class mt_pipe_commands:
         file_name           = fastq_name.split(".")[0]
         Barrnap_out         = os.path.join(Barrnap_out_folder, file_name + ".barrnap_out")
         fastq_seqs          = os.path.join(fastq_folder, fastq_name)
-        fasta_seqs          = os.path.join(fasta_folder, file_name + ".fasta")
-        tut_mRNA_folder     = os.path.join(data_folder, "tutorial_barrnap_mRNA")
-        tut_rRNA_folder     = os.path.join(data_folder, "tutorial_barrnap_rRNA")
-        tut_fasta_folder    = os.path.join(data_folder, "tutorial_fasta")
-        tut_Barrnap_out_folder = os.path.join(data_folder, "tutorial_barrnap")
-        # if(self.tutorial_keyword == "rRNA"):
-            # self.make_folder(tut_mRNA_folder)
-            # self.make_folder(tut_rRNA_folder)
-        # else:
+        
         self.make_folder(fasta_folder)
         self.make_folder(Barrnap_out_folder)
         self.make_folder(infernal_out_folder)
@@ -2202,12 +2187,6 @@ class mt_pipe_commands:
         map_read_bwa += reads_out
 
 
-        merge_bwa_fastas = ">&2 echo " + str(dt.today()) + " GA BWA merge leftover reads " + sample_root_name + " | "
-        merge_bwa_fastas += self.tool_path_obj.Python + " "
-        merge_bwa_fastas += self.tool_path_obj.GA_merge_fasta + " "
-        merge_bwa_fastas += pp_folder + " " 
-        merge_bwa_fastas += sample_root_name + " " 
-        merge_bwa_fastas += final_folder
 
         
 
@@ -2216,16 +2195,9 @@ class mt_pipe_commands:
         make_marker += os.path.join(jobs_folder, marker_file)
 
 
-
         COMMANDS_Annotate_BWA = [
-            map_read_bwa + " && " + merge_bwa_fastas + " && " + make_marker
-            #copy_contig_map
+            map_read_bwa + " && " + make_marker
         ]
-
-        if("chunk" not in ref_path):
-            COMMANDS_Annotate_BWA = [
-                map_read_bwa + " && " + make_marker
-            ]
 
         return COMMANDS_Annotate_BWA
 
@@ -2236,6 +2208,7 @@ class mt_pipe_commands:
         subfolder       = os.path.join(self.Output_Path, stage_name)
         data_folder     = os.path.join(subfolder, "data")
         bwa_folder      = os.path.join(data_folder, "1_bwa")
+        pp_folder       = os.path.join(data_folder, "2_bwa_pp")
         split_folder    = os.path.join(data_folder, "0_read_split")
         final_folder    = os.path.join(subfolder, "final_results")
         dep_loc         = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
@@ -2255,6 +2228,39 @@ class mt_pipe_commands:
         make_marker += os.path.join(jobs_folder, marker_file)
         
         return [copy_contig_map + " && " + make_marker]
+
+    def create_merge_BWA_fasta_command(self, stage_name, query_file, marker_file):
+        sample_root_name = os.path.basename(query_file)
+        sample_root_name = os.path.splitext(sample_root_name)[0]
+
+        subfolder       = os.path.join(self.Output_Path, stage_name)
+        data_folder     = os.path.join(subfolder, "data")
+        bwa_folder      = os.path.join(data_folder, "1_bwa")
+        split_folder    = os.path.join(data_folder, "0_read_split")
+        pp_folder       = os.path.join(data_folder, "2_bwa_pp")
+        final_folder    = os.path.join(subfolder, "final_results")
+        
+        jobs_folder     = os.path.join(data_folder, "jobs")
+        
+        self.make_folder(subfolder)
+        self.make_folder(data_folder)
+        self.make_folder(bwa_folder)
+        self.make_folder(final_folder)
+        self.make_folder(jobs_folder)
+        self.make_folder(pp_folder)
+
+        merge_bwa_fastas = ">&2 echo " + str(dt.today()) + " GA BWA merge leftover reads " + sample_root_name + " | "
+        merge_bwa_fastas += self.tool_path_obj.Python + " "
+        merge_bwa_fastas += self.tool_path_obj.GA_merge_fasta + " "
+        merge_bwa_fastas += pp_folder + " " 
+        merge_bwa_fastas += sample_root_name + " " 
+        merge_bwa_fastas += final_folder
+
+        make_marker = ">&2 echo merge BWA leftover fastas: " + marker_file + " | " 
+        make_marker += "touch" + " " 
+        make_marker += os.path.join(jobs_folder, marker_file)
+
+        return [merge_bwa_fastas + " && " + make_marker]
 
     def create_BLAT_annotate_command_v2(self, stage_name, query_file, fasta_db, marker_file):
         #takes in a sample query file (expecting a segment of the whole GA data, after BWA
@@ -2317,10 +2323,10 @@ class mt_pipe_commands:
         ]
         
 
-
     def create_BLAT_pp_command_v2(self, stage_name, query_file, dependency_stage_name, ref_file, marker_file):
         # this call is meant to be run after the BLAT calls have been completed.
-        #aug 16, 2021: modded to consider the split-chocophlan
+        #aug 16, 2021: modded to consider the split-chocophlan 
+        #Dec 14 2021: this one remains the old variant for back compatibility
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
         
@@ -2376,6 +2382,7 @@ class mt_pipe_commands:
         subfolder           = os.path.join(self.Output_Path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         blat_folder         = os.path.join(data_folder, "0_blat")
+        pp_folder           = os.path.join(data_folder, "1_pp")
         final_folder        = os.path.join(subfolder, "final_results")
         dep_loc             = os.path.join(self.Output_Path, dependency_stage_name, "final_results")  # implied to be BWA
         jobs_folder         = os.path.join(data_folder, "jobs")
@@ -2383,6 +2390,7 @@ class mt_pipe_commands:
         self.make_folder(subfolder)
         self.make_folder(data_folder)
         self.make_folder(blat_folder)
+        self.make_folder(pp_folder)
         self.make_folder(final_folder)
         self.make_folder(jobs_folder)
 
@@ -2402,8 +2410,8 @@ class mt_pipe_commands:
         blat_pp += os.path.join(final_folder, sample_root_name + "_" + no_ext_ref_root_name + "_gene_map.tsv") + " "
         blat_pp += reads_in + " "
         blat_pp += os.path.join(blat_folder, sample_root_name + "_" + sample_ref_root_name+ ".blatout") + " "
-        blat_pp += os.path.join(final_folder, sample_root_name + "_" + no_ext_ref_root_name + ".fasta") + " "
-        
+        blat_pp += os.path.join(pp_folder, sample_root_name + "_" + no_ext_ref_root_name + ".fasta") + " "
+
         make_marker = ">&2 echo BLAT pp complete: " + marker_file + " | "
         make_marker += "touch" + " " 
         make_marker += os.path.join(jobs_folder, marker_file)
@@ -2423,7 +2431,6 @@ class mt_pipe_commands:
         self.make_folder(data_folder)
         self.make_folder(jobs_folder)
         self.make_folder(final_folder)
-        
     
         copy_contig_map = ">&2 echo " + str(dt.today()) + " copy contig map | "
         copy_contig_map += "cp " + os.path.join(dep_loc, "contig_map.tsv") + " " + os.path.join(final_folder, "contig_map.tsv")
@@ -2434,7 +2441,34 @@ class mt_pipe_commands:
         
         return [copy_contig_map + " && " + make_marker]
 
+    def create_BLAT_merge_fasta_command(self, stage_name, sample_root_name, marker_file):
+        
+        subfolder           = os.path.join(self.Output_Path, stage_name)
+        data_folder         = os.path.join(subfolder, "data")
+        blat_folder         = os.path.join(data_folder, "0_blat")
+        pp_folder           = os.path.join(data_folder, "1_pp")
+        final_folder        = os.path.join(subfolder, "final_results")
+        jobs_folder         = os.path.join(data_folder, "jobs")
 
+        self.make_folder(subfolder)
+        self.make_folder(data_folder)
+        self.make_folder(blat_folder)
+        self.make_folder(pp_folder)
+        self.make_folder(final_folder)
+        self.make_folder(jobs_folder)
+
+        merge_blat_fastas = ">&2 echo " + str(dt.today()) + " GA BLAT merge leftover reads " + sample_root_name + " | "
+        merge_blat_fastas += self.tool_path_obj.Python + " "
+        merge_blat_fastas += self.tool_path_obj.GA_merge_fasta + " "
+        merge_blat_fastas += pp_folder + " " 
+        merge_blat_fastas += sample_root_name + " " 
+        merge_blat_fastas += final_folder
+
+        make_marker = ">&2 echo merge BLAT leftover fastas: " + marker_file + " | " 
+        make_marker += "touch" + " " 
+        make_marker += os.path.join(jobs_folder, marker_file)
+
+        return [merge_blat_fastas + " && " + make_marker]
 
         
     def create_DIAMOND_annotate_command_v2(self, stage_name, query_file, marker_file):

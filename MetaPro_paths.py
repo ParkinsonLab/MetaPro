@@ -238,6 +238,10 @@ class tool_path_obj:
         BLAT_job_delay_default = 5
         DIAMOND_job_delay_default = 5
         DETECT_job_delay_default = 5
+        BWA_pp_job_delay_default = 5
+        BLAT_pp_job_delay_default = 5
+        DIAMOND_pp_job_delay_default = 5
+        repop_job_delay_default = 10
         
         filter_stringency_default = "high"
         GA_chunksize_default = 25000
@@ -245,14 +249,13 @@ class tool_path_obj:
         BWA_pp_mem_default = 50
         BLAT_pp_mem_default = 50
         DIAMOND_pp_mem_default = 50
-        
+        repop_mem_default = 50
+
         BWA_pp_job_limit_default = 40
         BLAT_pp_job_limit_default = 40
         DIAMOND_pp_job_limit_default = 40
-        
-        BWA_pp_job_delay_default = 5
-        BLAT_pp_job_delay_default = 5
-        DIAMOND_pp_job_delay_default = 5
+        repop_job_limit_default = 4
+
         
         TA_mem_threshold_default = 75
         TA_job_delay_default = 5

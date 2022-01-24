@@ -265,10 +265,10 @@ class mp_util:
                     )
                     process.start()
                     self.mp_store.append(process)
-                    print(dt.today(), job_name, "job submitted.  mem:", psu.virtual_memory().available/(1024*1024*1000), "GB")
+                    print(dt.today(), job_name, "job submitted.  mem:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
                     job_submitted = True
                 else:
-                    print(dt.today(), job_name, "Pausing. mem limit reached:", psu.virtual_memory().available/(1024*1024*1000), "GB")
+                    #print(dt.today(), job_name, "Pausing. mem limit reached:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
                     time.sleep(job_delay)
             else:
                 print(dt.today(), "job limit reached.  waiting for queue to flush")
@@ -288,10 +288,10 @@ class mp_util:
                     )
                     process.start()
                     self.mp_store.append(process)
-                    print(dt.today(), job_name, "job submitted.  mem:", psu.virtual_memory().available/(1024*1024*1000), "GB")
+                    print(dt.today(), job_name, "job submitted.  mem:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
                     job_submitted = True
                 else:
-                    print(dt.today(), job_name, "Pausing. mem limit reached:", psu.virtual_memory().available/(1024*1024*1000), "GB")
+                    #print(dt.today(), job_name, "Pausing. mem limit reached:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
                     time.sleep(job_delay)
             else:
                 print(dt.today(), "job limit reached.  waiting for queue to flush")

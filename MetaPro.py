@@ -233,10 +233,12 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     destroy_contigs_label                   = "destroy_contigs"
     GA_BWA_label                            = "GA_BWA"
     GA_BWA_pp_label                         = "GA_BWA_pp"
+    GA_BWA_merge_label                      = "GA_BWA_merge"
     GA_BLAT_label                           = "GA_BLAT"
     GA_BLAT_cleanup_label                   = "GA_BLAT_cleanup"
     GA_BLAT_cat_label                       = "GA_BLAT_cat"
     GA_BLAT_pp_label                        = "GA_BLAT_pp"
+    GA_BLAT_merge_label                     = "GA_BLAT_merge"
     GA_DIAMOND_label                        = "GA_DIAMOND"
     GA_DIAMOND_pp_label                     = "GA_DIAMOND_pp"
     GA_final_merge_label                    = "GA_FINAL_MERGE"
@@ -785,6 +787,7 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
                 
                 
                 ref_path = paths.DNA_DB
+                #chocophlan in many mutiple segments
                 if (ref_path.endswith(".fasta")):
                     ref_tag = os.path.basename(ref_path)
                     ref_tag = ref_tag.strip(".fasta")
@@ -803,6 +806,7 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
                         mp_util.launch_and_create_with_hold(BWA_pp_mem_threshold, BWA_pp_job_limit, BWA_pp_job_delay, GA_BWA_label, job_name, commands, command_list)
                         
                 else:
+                    #chocophlan in chunks
                     split_db = os.listdir(ref_path)
                     for db_segments in split_db:
                         if(db_segments.endswith(".fasta")):
@@ -818,13 +822,10 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
                             else:
                                 marker_path_list.append(marker_path)
                                 command_list = commands.create_BWA_pp_command_v2(GA_BWA_label, assemble_contigs_label, ref_tag, segment_ref_path, full_sample_path, marker_file)
-                                print(dt.today(), "segmented BWA:", command_list)
-                                time.sleep(2)
+                                #print(dt.today(), "segmented BWA:", command_list)
+                                #time.sleep(2)
                                 mp_util.launch_and_create_with_hold(BWA_pp_mem_threshold, BWA_pp_job_limit, BWA_pp_job_delay, GA_BWA_label, job_name, commands, command_list)
-                            
-                            
-                        
-                        
+
                         
         print(dt.today(), "all BWA PP jobs submitted.  waiting for sync")            
         mp_util.wait_for_mp_store()
@@ -837,19 +838,49 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
             command_list = commands.create_BWA_copy_contig_map_command(GA_BWA_label, assemble_contigs_label, marker_file)
             mp_util.launch_and_create_simple(GA_BWA_label, GA_BWA_label + "_copy_contig_map", commands, command_list)
 
-
-
-
         
         final_checklist = os.path.join(GA_BWA_path, "GA_BWA_pp.txt")
         mp_util.check_all_job_markers(marker_path_list, final_checklist)
         mp_util.write_to_bypass_log(output_folder_path, GA_BWA_pp_label)
+
+    if mp_util.check_bypass_log(output_folder_path, GA_BWA_merge_label):
+        #merge 
+        marker_path_list = []
+        sections = ["contigs", "singletons"]
+        if read_mode == "paired":
+            sections.extend(["pair_1", "pair_2"])
+            
+        for section in sections:
+            for split_sample in os.listdir(os.path.join(GA_BWA_path, "data", "0_read_split", section)):
+                full_sample_path = os.path.join(os.path.join(GA_BWA_path, "data", "0_read_split", section, split_sample))
+                print("split sample:", full_sample_path)
+                file_tag = os.path.basename(split_sample)
+                file_tag = os.path.splitext(file_tag)[0]
+                ref_path = paths.DNA_DB
+
+                marker_file = file_tag + "_merge_fasta"
+                marker_path = os.path.join(GA_BWA_jobs_folder, marker_file)
+                if(os.path.exists(marker_path)):
+                    print(dt.today(), "skipping:", marker_file)
+                    continue
+                else:
+                    marker_path_list.append(marker_path)
+                    job_name = "BWA_fasta_merge_" + file_tag
+                    command_list = commands.create_merge_BWA_fasta_command(GA_BWA_label, full_sample_path, marker_file)
+                    mp_util.launch_and_create_with_hold(BWA_pp_mem_threshold, BWA_pp_job_limit, BWA_pp_job_delay, GA_BWA_label, job_name, commands, command_list)
+
+        print(dt.today(), "All BWA merge jobs have launched. waiting for sync")
+        mp_util.wait_for_mp_store()
+        final_checklist = os.path.join(GA_BWA_path, "GA_BWA_merge.txt")
+        mp_util.check_all_job_markers(marker_path_list, final_checklist)
+        mp_util.write_to_bypass_log(output_folder_path, GA_BWA_merge_label)
         
-        cleanup_GA_BWA_start = time.time()
-        mp_util.delete_folder_simple(GA_BWA_jobs_folder)
-        mp_util.clean_or_compress(GA_BWA_path, keep_all, keep_GA_BWA)
-        
-        cleanup_GA_BWA_end = time.time()
+ 
+    cleanup_GA_BWA_start = time.time()
+    mp_util.delete_folder_simple(GA_BWA_jobs_folder)
+    mp_util.clean_or_compress(GA_BWA_path, keep_all, keep_GA_BWA)
+    
+    cleanup_GA_BWA_end = time.time()
     GA_BWA_end = time.time()
     print("GA BWA:", '%1.1f' % (GA_BWA_end - GA_BWA_start - (cleanup_GA_BWA_end - cleanup_GA_BWA_start)), "s")
     print("GA BWA cleanup:", '%1.1f' % (cleanup_GA_BWA_end - cleanup_GA_BWA_start), "s")
@@ -925,7 +956,7 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
                 file_tag = os.path.basename(split_sample)
                 file_tag = os.path.splitext(file_tag)[0]
                 
-                ref_path = paths.DNA_DB_Split
+                ref_path = paths.DNA_DB_Split  #the chocophlan chunks
                 if (ref_path.endswith(".fasta")):
                     #single chocophlan mode
                     job_name = "BLAT_" + file_tag + "_pp"
@@ -938,7 +969,8 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
                     else:
                         marker_path_list.append(marker_path)
                         command_list = commands.create_BLAT_pp_command_v2(GA_BLAT_label, full_sample_path, GA_BWA_label, ref_path, marker_file)
-                        mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, GA_BLAT_label, job_name, commands, command_list)
+                        #mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, GA_BLAT_label, job_name, commands, command_list)
+                        mp_util.launch_only_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, job_name, commands, command_list)
                         
                 else:
                     for fasta_db in os.listdir(ref_path):
@@ -963,9 +995,10 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
                             else:
                                 marker_path_list.append(marker_path)
                                 command_list = commands.create_BLAT_pp_command_v3(GA_BLAT_label, full_sample_path, GA_BWA_label, ref_file, marker_file)
-                                print("Command list:", command_list)
+                                #print("Command list:", command_list)
                                 #time.sleep(10)
-                                mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, GA_BLAT_label, job_name, commands, command_list)
+                                #mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, GA_BLAT_label, job_name, commands, command_list)
+                                mp_util.launch_only_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, job_name, commands, command_list)
                             #time.sleep(10)
 
                 
@@ -984,8 +1017,35 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
         final_checklist = os.path.join(GA_BLAT_path, "GA_BLAT_pp.txt")
         mp_util.check_all_job_markers(marker_path_list, final_checklist)
         mp_util.write_to_bypass_log(output_folder_path, GA_BLAT_pp_label)
-        
-        
+    #--------------------------------------------------------------
+    # GA BLAT merge    
+    if mp_util.check_bypass_log(output_folder_path, GA_BLAT_merge_label):
+        marker_path_list = []
+        for split_sample in os.listdir(os.path.join(GA_BWA_path, "final_results")):
+            if(split_sample.endswith(".fasta")):
+                file_tag = os.path.basename(split_sample)
+                file_tag = os.path.splitext(file_tag)[0]
+
+                marker_file = "BLAT_merge_" + file_tag
+                marker_path = os.path.join(GA_BLAT_jobs_folder, marker_file)
+                if(os.path.exists(marker_path)):
+                    print(dt.today(), "skipping: ", marker_file)
+                    continue
+                else:
+                    marker_path_list.append(marker_path)
+                    command_list = commands.create_BLAT_merge_fasta_command(GA_BLAT_label, file_tag, marker_file)
+                    mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, GA_BLAT_label, marker_file, commands, command_list)
+
+        print(dt.today(), "submitted all BLAT merge jobs. waiting for sync")
+        mp_util.wait_for_mp_store()
+
+        final_checklist = os.path.join(GA_BLAT_path, "GA_BLAT_merge.txt")
+        mp_util.check_all_job_markers(marker_path_list, final_checklist)
+        mp_util.write_to_bypass_log(output_folder_path, GA_BLAT_merge_label)
+
+    #print(dt.today(), "stopping for a sanity check: BLAT merge")
+    #sys.exit()
+
     cleanup_GA_BLAT_start = time.time()
     mp_util.delete_folder_simple(GA_BLAT_jobs_folder)
     mp_util.clean_or_compress(GA_BLAT_path, keep_all, keep_GA_BLAT)
