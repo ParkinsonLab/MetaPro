@@ -48,12 +48,11 @@ ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/master/Scripts/read_s
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/master/Scripts/ta_combine_v2.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/master/Scripts/ta_constrain.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/master/Scripts/ta_constrain_taxonomy_v2.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/master/Scripts/ta_taxid_v2.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/master/Scripts/ta_taxid_v3.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/master/Scripts/ta_wevote_parser.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/master/Scripts/remove_gaps_in_fasta.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/master/Scripts/ta_contig_name_convert.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/master/Scripts/alter_taxa_for_krona.py /pipeline/Scripts
-
 
 #--------------------------------------------
 # get reference files
