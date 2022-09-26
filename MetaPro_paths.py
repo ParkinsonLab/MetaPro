@@ -18,7 +18,9 @@
 #It also controls the import of the configuration file.  
 
 
-import os.path
+import os
+import sys
+from datetime import datetime as dt
 from configparser import ConfigParser, ExtendedInterpolation
 
 class tool_path_obj:
@@ -32,6 +34,94 @@ class tool_path_obj:
             value = default
         
         return value
+        
+    def check_file_valid(self, file_0):
+        #checks that a file is there, and larger than 0kb
+        ok_flag = False
+        if (os.path.exists(file_0)):
+            if(os.path.getsize(file_0) > 0):
+                ok_flag = True
+        return ok_flag
+        
+    def check_dmd_valid(self):
+        #if there's a .dmnd file
+        #if it's sufficiently big
+        dir_name = os.path.dirname(self.Prot_DB)
+        basename = os.path.basename(self.Prot_DB)
+        print("dir name:", dir_name)
+        file_name = basename.split(".")[0]
+        print("file name:", file_name)#, "extension:", extension)
+        
+        
+        print(self.Prot_DB)
+        if not(os.path.exists(self.Prot_DB)):
+            sys.exit("file does not exists")
+        else:
+            print(dt.today(), self.Prot_DB, "exists")
+        dmd_index_path = os.path.join(dir_name, file_name + ".dmnd")
+        db_size = os.path.getsize(self.Prot_DB)
+        
+        if(os.path.exists(dmd_index_path)):
+            if(os.path.getsize(dmd_index_path) >= db_size * 0.9):
+                print(dt.today(), "DMD index is ok")
+
+        
+
+    def check_bwa_valid(self):
+        file_list = os.listdir(self.DNA_DB)
+        ok_flag = False
+        file_count = 0
+        for item in file_list:
+            if(item.endswith(".fasta")):
+            
+                ext_0 = ".amb"
+                ext_1 = ".ann"
+                ext_2 = ".bwt"
+                ext_3 = ".pac"
+                ext_4 = ".sa"
+                
+                file_0 = os.path.join(self.DNA_DB, item + ext_0)
+                file_1 = os.path.join(self.DNA_DB, item + ext_1)
+                file_2 = os.path.join(self.DNA_DB, item + ext_2)
+                file_3 = os.path.join(self.DNA_DB, item + ext_3)
+                file_4 = os.path.join(self.DNA_DB, item + ext_4)
+                
+                ok_flag = self.check_file_valid(file_0)
+                ok_flag = self.check_file_valid(file_1)
+                ok_flag = self.check_file_valid(file_2)
+                ok_flag = self.check_file_valid(file_3)
+                ok_flag = self.check_file_valid(file_4)
+                file_count += 1
+        if(file_count == 0):
+            print(dt.today(), "Error: no fasta files found. BWA only accepts .fasta extensions")
+                
+        if(not ok_flag):
+            sys.exit("BWA database has not been fully indexed. try reindexing the database")
+        else:
+            print(dt.today(), "BWA database OK")
+            
+            
+        #if it's a fastq or fasta
+        #if it's been indexed (all files present)
+
+    def check_blat_valid(self):
+        #check that there's at least 1 fasta in the dict
+        #but truth-be-told, this doesn't do anything, since BWA will use the same DB
+        file_list = os.listdir(self.DNA_DB)
+        ok_flag = False
+        file_count = 0
+        for item in file_list:
+            if(item.endswith(".fasta")):
+                ok_flag = self.check_file_valid(os.path.join(self.DNA_DB, item))
+                file_count += 1
+        if(file_count == 0):
+            print(dt.today(), "Error: no fasta file found.  BLAT accepts .fasta extensions only")
+            sys.exit()
+        if(ok_flag):
+           print(dt.today(), "BLAT database OK")
+        else:
+            sys.exit("Error with BLAT db. there's an empty fasta file")
+       
 
     def __init__ (self, config_path):
         print("CHECKING CONFIG")
@@ -58,7 +148,7 @@ class tool_path_obj:
             self.Host               = self.value_assignment(config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"))
             self.Rfam               = self.value_assignment(config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
             self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
-            self.DNA_DB_Split       = self.value_assignment(config, "Databases", "DNA_DB_Split", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn_split/"))
+            #self.DNA_DB_Split       = self.value_assignment(config, "Databases", "DNA_DB_Split", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn_split/"))
             self.Prot_DB            = self.value_assignment(config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr"))
             self.Prot_DB_reads      = self.value_assignment(config, "Databases", "Prot_DB_reads", os.path.join(database_path, "nr/nr"))
             self.accession2taxid    = self.value_assignment(config, "Databases", "accession2taxid", os.path.join(database_path, "accession2taxid/accession2taxid"))
@@ -100,7 +190,13 @@ class tool_path_obj:
             self.path_to_superpath  = os.path.join(custom_database_path,    "pathway_to_superpathway.csv")
             self.mgm_model          = os.path.join(tool_path,               "mgm/MetaGeneMark_v1.mod")
             self.enzyme_db          = os.path.join(custom_database_path,    "FREQ_EC_pairs_3_mai_2020.txt")
-            
+
+        #-------------------------------------------------------
+        # test DBs
+        self.check_dmd_valid()
+        self.check_bwa_valid()
+        self.check_blat_valid()
+
         #----------------------------------------------------------
         # external tools
         
@@ -176,6 +272,9 @@ class tool_path_obj:
         self.Map_reads_prot_DMND        = os.path.join(script_path, "ga_Diamond_generic_v2.py")
         self.GA_final_merge             = os.path.join(script_path, "ga_Final_merge_v4.py")
         self.GA_merge_fasta             = os.path.join(script_path, "ga_merge_fasta.py")
+        self.GA_final_merge_fasta       = os.path.join(script_path, "ga_final_merge_fastq.py")
+        self.GA_final_merge_proteins    = os.path.join(script_path, "ga_final_merge_proteins.py")
+        self.GA_final_merge_maps        = os.path.join(script_path, "ga_final_merge_map.py")
         self.EC_Annotation_Post         = os.path.join(script_path, "ea_combine_v5.py")
         self.Annotated_taxid            = os.path.join(script_path, "ta_taxid_v3.py")
         self.Constrain_classification   = os.path.join(script_path, "ta_constrain_taxonomy_v2.py")
@@ -207,15 +306,46 @@ class tool_path_obj:
         DETECT_mem_default = 50
         Infernal_mem_default = 50
         Barrnap_mem_default = 50
+        repop_mem_default = 50
+        TA_mem_threshold_default = 50
+        BWA_pp_mem_default = 50
+        BLAT_pp_mem_default = 50
+        DIAMOND_pp_mem_default = 50
+        GA_final_merge_mem_default = 5 
         
+        cpu_default = os.cpu_count()
         rRNA_chunksize_default = 50000
-        BWA_job_limit_default = 80
-        BLAT_job_limit_default = 80
-        DIAMOND_job_limit_default = 80
-        DETECT_job_limit_default = 1000
-        Infernal_job_limit_default = 1000
-        Barrnap_job_limit_default = 1000
         
+        BWA_job_limit_default               = cpu_default
+        BLAT_job_limit_default              = cpu_default
+        DIAMOND_job_limit_default           = cpu_default
+        DETECT_job_limit_default            = cpu_default
+        Infernal_job_limit_default          = 1000
+        Barrnap_job_limit_default           = 1000
+        BWA_pp_job_limit_default            = cpu_default
+        BLAT_pp_job_limit_default           = cpu_default
+        DIAMOND_pp_job_limit_default        = cpu_default
+        GA_final_merge_job_limit_default    = cpu_default
+        repop_job_limit_default             = 1
+        TA_job_limit_default                = cpu_default
+
+
+        
+        
+        
+        Barrnap_job_delay_default           = 5
+        Infernal_job_delay_default          = 5
+        BWA_job_delay_default               = 5
+        BLAT_job_delay_default              = 5
+        DIAMOND_job_delay_default           = 5
+        DETECT_job_delay_default            = 5
+        BWA_pp_job_delay_default            = 5
+        BLAT_pp_job_delay_default           = 5
+        DIAMOND_pp_job_delay_default        = 5
+        GA_final_merge_job_delay_default    = 5
+        repop_job_delay_default             = 10
+        TA_job_delay_default                = 5
+
         keep_all_default = "yes"
         keep_quality_default = "no"
         keep_host_default = "no"
@@ -231,35 +361,8 @@ class tool_path_obj:
         keep_EC_default = "no"
         keep_outputs_default = "no"
         
-        
-        Barrnap_job_delay_default = 5
-        Infernal_job_delay_default = 5
-        BWA_job_delay_default = 5
-        BLAT_job_delay_default = 5
-        DIAMOND_job_delay_default = 5
-        DETECT_job_delay_default = 5
-        BWA_pp_job_delay_default = 5
-        BLAT_pp_job_delay_default = 5
-        DIAMOND_pp_job_delay_default = 5
-        repop_job_delay_default = 10
-        
         filter_stringency_default = "high"
         GA_chunksize_default = 25000
-        
-        BWA_pp_mem_default = 50
-        BLAT_pp_mem_default = 50
-        DIAMOND_pp_mem_default = 50
-        repop_mem_default = 50
-
-        BWA_pp_job_limit_default = 40
-        BLAT_pp_job_limit_default = 40
-        DIAMOND_pp_job_limit_default = 40
-        repop_job_limit_default = 4
-
-        
-        TA_mem_threshold_default = 75
-        TA_job_delay_default = 5
-        TA_job_limit_default = 40
         
         BWA_cigar_default = 90
         BLAT_identity_default = 85
@@ -286,16 +389,18 @@ class tool_path_obj:
             self.DIAMOND_score_cutoff       = self.value_assignment(config, "Settings", "DIAMOND_score_cutoff", DIAMOND_score_default)
             #-----------------------------------------------------------------------------------------------    
             
-            self.BWA_mem_threshold          = self.value_assignment(config, "Settings", "BWA_mem_threshold", BWA_mem_default)
-            self.BLAT_mem_threshold         = self.value_assignment(config, "Settings", "BLAT_mem_threshold", BLAT_mem_default)
-            self.DIAMOND_mem_threshold      = self.value_assignment(config, "Settings", "DIAMOND_mem_threshold", DIAMOND_mem_default)
-            self.DETECT_mem_threshold       = self.value_assignment(config, "Settings", "DETECT_mem_threshold", DETECT_mem_default)
-            self.Infernal_mem_threshold     = self.value_assignment(config, "Settings", "Infernal_mem_threshold", Infernal_mem_default)
-            self.Barrnap_mem_threshold      = self.value_assignment(config, "Settings", "Barrnap_mem_threshold", Barrnap_mem_default)
-            self.BWA_pp_mem_threshold       = self.value_assignment(config, "Settings", "BWA_pp_mem_threshold", BWA_pp_mem_default)
-            self.BLAT_pp_mem_threshold      = self.value_assignment(config, "Settings", "BLAT_pp_mem_threshold", BLAT_pp_mem_default)
-            self.DIAMOND_pp_mem_threshold   = self.value_assignment(config, "Settings", "DIAMOND_pp_mem_threshold", DIAMOND_pp_mem_default)
-            self.TA_mem_threshold           = self.value_assignment(config, "Settings", "TA_mem_threshold", TA_mem_threshold_default)
+            self.BWA_mem_threshold              = self.value_assignment(config, "Settings", "BWA_mem_threshold", BWA_mem_default)
+            self.BLAT_mem_threshold             = self.value_assignment(config, "Settings", "BLAT_mem_threshold", BLAT_mem_default)
+            self.DIAMOND_mem_threshold          = self.value_assignment(config, "Settings", "DIAMOND_mem_threshold", DIAMOND_mem_default)
+            self.DETECT_mem_threshold           = self.value_assignment(config, "Settings", "DETECT_mem_threshold", DETECT_mem_default)
+            self.Infernal_mem_threshold         = self.value_assignment(config, "Settings", "Infernal_mem_threshold", Infernal_mem_default)
+            self.Barrnap_mem_threshold          = self.value_assignment(config, "Settings", "Barrnap_mem_threshold", Barrnap_mem_default)
+            self.BWA_pp_mem_threshold           = self.value_assignment(config, "Settings", "BWA_pp_mem_threshold", BWA_pp_mem_default)
+            self.BLAT_pp_mem_threshold          = self.value_assignment(config, "Settings", "BLAT_pp_mem_threshold", BLAT_pp_mem_default)
+            self.DIAMOND_pp_mem_threshold       = self.value_assignment(config, "Settings", "DIAMOND_pp_mem_threshold", DIAMOND_pp_mem_default)
+            self.GA_final_merge_mem_threshold   = self.value_assignment(config, "Settings", "GA_final_merge_mem_threshold", GA_final_merge_mem_default)
+            self.TA_mem_threshold               = self.value_assignment(config, "Settings", "TA_mem_threshold", TA_mem_threshold_default)
+            self.repop_mem_threshold            = self.value_assignment(config, "Settings", "repop_mem_threshold", repop_mem_default)
                 
             #-----------------------------------------------------------------------------------------------    
             
@@ -309,8 +414,25 @@ class tool_path_obj:
             self.BWA_pp_job_limit           = self.value_assignment(config, "Settings", "BWA_pp_job_limit", BWA_pp_job_limit_default)
             self.BLAT_pp_job_limit          = self.value_assignment(config, "Settings", "BLAT_pp_job_limit", BLAT_pp_job_limit_default)
             self.DIAMOND_pp_job_limit       = self.value_assignment(config, "Settings", "DIAMOND_pp_job_limit", DIAMOND_pp_job_limit_default)
+            self.GA_final_merge_job_limit   = self.value_assignment(config, "Settings", "GA_final_merge_job_limit", GA_final_merge_job_limit_default)
             self.TA_job_limit               = self.value_assignment(config, "Settings", "TA_job_limit", TA_job_limit_default)
+            self.repop_job_limit            = self.value_assignment(config, "Settings", "repop_job_limit", repop_job_limit_default)
             
+            #------------------------------------------------------------------------
+            
+            self.Infernal_job_delay         = self.value_assignment(config, "Settings", "Infernal_job_delay", Infernal_job_delay_default)
+            self.Barrnap_job_delay          = self.value_assignment(config, "Settings", "Barrnap_job_delay", Barrnap_job_delay_default)
+            self.BWA_job_delay              = self.value_assignment(config, "Settings", "BWA_job_delay", BWA_job_delay_default)
+            self.BLAT_job_delay             = self.value_assignment(config, "Settings", "BLAT_job_delay", BLAT_job_delay_default)
+            self.DIAMOND_job_delay          = self.value_assignment(config, "Settings", "DIAMOND_job_delay", DIAMOND_job_delay_default)
+            self.DETECT_job_delay           = self.value_assignment(config, "Settings", "DETECT_job_delay", DETECT_job_delay_default)
+            self.BWA_pp_job_delay           = self.value_assignment(config, "Settings", "BWA_pp_job_delay", BWA_pp_job_delay_default)
+            self.BLAT_pp_job_delay          = self.value_assignment(config, "Settings", "BLAT_pp_job_delay", BLAT_pp_job_delay_default)
+            self.DIAMOND_pp_job_delay       = self.value_assignment(config, "Settings", "DIAMOND_pp_job_delay", DIAMOND_pp_job_delay_default)
+            self.GA_final_merge_job_delay   = self.value_assignment(config, "Settings", "GA_final_merge_job_delay", GA_final_merge_job_delay_default)
+            self.TA_job_delay               = self.value_assignment(config, "Settings", "TA_job_delay", TA_job_delay_default)
+            self.repop_job_delay            = self.value_assignment(config, "Settings", "repop_job_delay", repop_job_delay_default)
+
             #------------------------------------------------------------------------------------------------
             self.keep_all                   = self.value_assignment(config, "Settings", "keep_all", keep_all_default)
             self.keep_quality               = self.value_assignment(config, "Settings", "keep_quality", keep_quality_default)
@@ -328,18 +450,7 @@ class tool_path_obj:
             self.keep_outputs               = self.value_assignment(config, "Settings", "keep_outputs", keep_outputs_default)
             
   
-            #------------------------------------------------------------------------
             
-            self.Infernal_job_delay         = self.value_assignment(config, "Settings", "Infernal_job_delay", Infernal_job_delay_default)
-            self.Barrnap_job_delay          = self.value_assignment(config, "Settings", "Barrnap_job_delay", Barrnap_job_delay_default)
-            self.BWA_job_delay              = self.value_assignment(config, "Settings", "BWA_job_delay", BWA_job_delay_default)
-            self.BLAT_job_delay             = self.value_assignment(config, "Settings", "BLAT_job_delay", BLAT_job_delay_default)
-            self.DIAMOND_job_delay          = self.value_assignment(config, "Settings", "DIAMOND_job_delay", DIAMOND_job_delay_default)
-            self.DETECT_job_delay           = self.value_assignment(config, "Settings", "DETECT_job_delay", DETECT_job_delay_default)
-            self.BWA_pp_job_delay           = self.value_assignment(config, "Settings", "BWA_pp_job_delay", BWA_pp_job_delay_default)
-            self.BLAT_pp_job_delay          = self.value_assignment(config, "Settings", "BLAT_pp_job_delay", BLAT_pp_job_delay_default)
-            self.DIAMOND_pp_job_delay       = self.value_assignment(config, "Settings", "DIAMOND_pp_job_delay", DIAMOND_pp_job_delay_default)
-            self.TA_job_delay               = self.value_assignment(config, "Settings", "TA_job_delay", TA_job_delay_default)
             
             #--------------------------------------------------------------------------------------
             

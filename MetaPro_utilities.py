@@ -37,7 +37,8 @@ class mp_util:
         self.output_folder_path = output_folder_path
 
     def mem_checker(self, threshold):
-        #threshold is a percentage
+        #threshold is a percentage for available memory.  
+        
         mem = psu.virtual_memory()
         available_mem = mem.available
         total_mem = mem.total
@@ -239,19 +240,32 @@ class mp_util:
         process.start()
         process.join()
         
-    def subdivide_and_launch(self, job_location, job_label, command_obj, commands):
+    def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_location, job_label, command_obj, commands):
         #just launches a job.  no multi-process.
+        #Jan 25, 2022: now adding job controls.
         job_counter = 0
         for item in commands:
-            new_job_label = job_label + "_" + str(job_counter)
+            job_name = job_label + "_" + str(job_counter)
             job_counter += 1
-            process = mp.Process(
-                target=command_obj.create_and_launch,
-                args=(job_location, new_job_label, [item])
-            )
-            process.start()
-            self.mp_store.append(process)
-        
+            job_submitted = False
+            while(not job_submitted):
+                if(len(self.mp_store) < job_limit):
+                    if(self.mem_checker(mem_threshold)):
+
+                        process = mp.Process(
+                            target=command_obj.create_and_launch,
+                            args=(job_location, job_name, [item])
+                        )
+                        process.start()
+                        self.mp_store.append(process)
+                        print(dt.today(), job_name, "job submitted.  mem:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
+                        job_submitted = True
+                    else:
+                        time.sleep(job_delay)
+                else:
+                    self.wait_for_mp_store()
+            time.sleep(job_delay)
+                
         
     def launch_only_with_hold(self, mem_threshold, job_limit, job_delay, job_name, command_obj, command):
         #launch a job in launch-only mode

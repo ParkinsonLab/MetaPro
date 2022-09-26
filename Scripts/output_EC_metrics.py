@@ -175,10 +175,10 @@ if __name__ == "__main__":
         
         #heatmap.set_ylabel("Chicken", font_size = 50)
         font_size = 20
-        plt.ylabel("Superpathway", fontsize = font_size)
+        plt.ylabel("Superpathway", fontsize = font_size, fontname = "Times")
             
-        heatmap.set_xticklabels(test_x, rotation = 40, ha = "right", fontsize = font_size)     #make the labels pretty
-        heatmap.set_yticklabels(test_y, rotation = 0, ha = "right", fontsize = font_size)
+        heatmap.set_xticklabels(test_x, rotation = 40, ha = "right", fontsize = font_size, fontname = "Times")     #make the labels pretty
+        heatmap.set_yticklabels(test_y, rotation = 0, ha = "right", fontsize = font_size, fontname = "Times")
         heatmap.figure.savefig(output_dir + "enzyme_superpathway_heatmap_no_unclassified.jpg")              #export it
         selected_heatmap_df.to_csv(output_dir + "enzyme_superpathway_heatmap_no_unclassified.csv", mode="w")    
     

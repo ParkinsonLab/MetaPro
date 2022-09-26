@@ -1,3 +1,5 @@
+#removes tags from the read IDs
+
 import sys
 import time
 import pandas as pd

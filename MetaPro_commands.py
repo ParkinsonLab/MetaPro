@@ -123,8 +123,6 @@ class mt_pipe_commands:
             if return_code != 1:
                 raise
                 
-
-    
     def launch_only(self, command_list, command_list_length):
         #just launch the job.  Don't make a script file.
         #print(dt.today(), "inside launch_only:", len(command_list))
@@ -870,10 +868,6 @@ class mt_pipe_commands:
                 ]    
 
         return COMMANDS_vector
-
-   
-
-        
         
     def create_rRNA_filter_prep_command_v3(self, stage_name, category, dependency_name, marker_file):
         #split the data into tiny shards.  called once
@@ -1400,9 +1394,7 @@ class mt_pipe_commands:
         make_marker += os.path.join(jobs_folder, marker_file)
             
         return [rRNA_filtration + " && " + make_marker]
-
-    
-    
+  
     def create_rRNA_filter_final_cat_command(self, stage_name, category, marker_file):
         # 
         # Cat then final filter.  
@@ -1805,7 +1797,6 @@ class mt_pipe_commands:
         return COMMANDS_Repopulate 
 
 
-
     def create_assemble_contigs_command(self, stage_name, dependency_stage_name):
         subfolder           = os.path.join(self.Output_Path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
@@ -1939,14 +1930,18 @@ class mt_pipe_commands:
    
     def create_split_ga_fastq_data_command(self, stage_name, dependency_stage_name, category, marker_file):
         subfolder       = os.path.join(self.Output_Path, stage_name)
+        final_folder    = os.path.join(subfolder, "final_results")
         data_folder     = os.path.join(subfolder, "data")
-        split_folder    = os.path.join(data_folder, "0_read_split", category)
+        split_folder    = os.path.join(final_folder, category)#, os.path.join(data_folder, "0_read_split", category)
         dep_loc         = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
+        
         jobs_folder     = os.path.join(data_folder, "jobs")
         self.make_folder(subfolder)
+        self.make_folder(final_folder)
         self.make_folder(data_folder)
         self.make_folder(split_folder)
         self.make_folder(jobs_folder)
+        
         
         if(self.tutorial_keyword == "GA"):
             if(category == "pair_1"):
@@ -2014,12 +2009,14 @@ class mt_pipe_commands:
     def create_split_ga_fasta_data_command(self, stage_name, dependency_stage_name, category, marker_file):
         subfolder       = os.path.join(self.Output_Path, stage_name)
         data_folder     = os.path.join(subfolder, "data")
-        split_folder    = os.path.join(data_folder, "0_read_split", category)
+        final_folder    = os.path.join(subfolder, "final_results")
+        split_folder    = os.path.join(final_folder, category)#os.path.join(data_folder, "0_read_split", category)
         dep_folder      = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
         jobs_folder     = os.path.join(data_folder, "jobs")
         
         self.make_folder(subfolder)
         self.make_folder(data_folder)
+        self.make_folder(final_folder)
         self.make_folder(split_folder)
         self.make_folder(jobs_folder)
         
@@ -2279,7 +2276,7 @@ class mt_pipe_commands:
 
         blat_command = ">&2 echo " + str(dt.today()) + " BLAT annotation for " + sample_root_name + " " + fasta_db + " | "
         blat_command += self.tool_path_obj.BLAT + " -noHead -minIdentity=90 -minScore=65 "
-        blat_command += self.tool_path_obj.DNA_DB_Split + fasta_db + " "
+        blat_command += self.tool_path_obj.DNA_DB + fasta_db + " "
         blat_command += query_file
         blat_command += " -fine -q=rna -t=dna -out=blast8 -threads=40" + " "
         blat_command += os.path.join(blat_folder, sample_root_name + "_" + fasta_db + ".blatout")
@@ -2558,10 +2555,10 @@ class mt_pipe_commands:
         subfolder       = os.path.join(self.Output_Path, current_stage_name)
         data_folder     = os.path.join(subfolder, "data")
         final_folder    = os.path.join(subfolder, "final_results")
-        dep_0_path      = os.path.join(self.Output_Path, dep_0_name, "final_results")
-        dep_1_path      = os.path.join(self.Output_Path, dep_1_name, "final_results")
-        dep_2_path      = os.path.join(self.Output_Path, dep_2_name, "final_results")
-        dep_3_path      = os.path.join(self.Output_Path, dep_3_name, "final_results")
+        dep_0_path      = os.path.join(self.Output_Path, dep_0_name, "final_results")   #assemble-contigs
+        dep_1_path      = os.path.join(self.Output_Path, dep_1_name, "final_results")   #bwa
+        dep_2_path      = os.path.join(self.Output_Path, dep_2_name, "final_results")   #blat
+        dep_3_path      = os.path.join(self.Output_Path, dep_3_name, "final_results")   #dmd
         jobs_folder     = os.path.join(data_folder, "jobs")
         
         self.make_folder(subfolder)
@@ -2569,24 +2566,46 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
         self.make_folder(jobs_folder)
         
-        final_merge = self.tool_path_obj.Python + " "
-        final_merge += self.tool_path_obj.GA_final_merge + " "
-        final_merge += dep_3_path + " "
-        final_merge += dep_0_path + " "
-        final_merge += dep_1_path + " "
-        final_merge += dep_2_path + " "
-        final_merge += data_folder + " "
-        final_merge += final_folder + " "
-        final_merge += self.read_mode + " "
-        final_merge += jobs_folder
+        final_merge_fastq = self.tool_path_obj.Python + " "
+        final_merge_fastq += self.tool_path_obj.GA_final_merge_fasta + " "
+        final_merge_fastq += dep_0_path + " "
+        final_merge_fastq += dep_3_path + " "
+        final_merge_fastq += self.read_mode + " "
+        final_merge_fastq += final_folder
         
-        make_marker = ">&2 echo " + str(dt.today()) + " GA final merge | "
-        make_marker += "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
+        final_merge_proteins = self.tool_path_obj.Python + " "
+        final_merge_proteins += self.tool_path_obj.GA_final_merge_proteins + " "
+        final_merge_proteins += dep_1_path + " "
+        final_merge_proteins += dep_2_path + " "
+        final_merge_proteins += dep_3_path + " "
+        final_merge_proteins += final_folder
+        
+        final_merge_maps = self.tool_path_obj.Python + " "
+        final_merge_maps += self.tool_path_obj.GA_final_merge_maps + " "
+        final_merge_maps += dep_1_path + " "
+        final_merge_maps += dep_2_path + " "
+        final_merge_maps += dep_3_path + " "
+        final_merge_maps += final_folder
+        
+        
+        
+        make_marker_p = ">&2 echo " + str(dt.today()) + " GA final merge | "
+        make_marker_p += "touch" + " "
+        make_marker_p += os.path.join(jobs_folder, marker_file + "_proteins")
+        
+        make_marker_f = ">&2 echo " + str(dt.today()) + " GA final merge | "
+        make_marker_f += "touch" + " "
+        make_marker_f += os.path.join(jobs_folder, marker_file + "_fastq")
+        
+        make_marker_m = ">&2 echo " + str(dt.today()) + " GA final merge | "
+        make_marker_m += "touch" + " "
+        make_marker_m += os.path.join(jobs_folder, marker_file + "_maps")
         
         
         COMMANDS_ga_final_merge = [
-            final_merge + " && " + make_marker
+            final_merge_maps + " && " + make_marker_m,
+            final_merge_fastq + " && " + make_marker_f,
+            final_merge_proteins + " && " + make_marker_p
         ]
         
         return COMMANDS_ga_final_merge
@@ -3219,15 +3238,23 @@ class mt_pipe_commands:
         self.make_folder(full_vectors_folder)
         self.make_folder(final_folder)
         
-        
         get_unique_vectors_reads_singletons = ">&2 echo get singleton vectors reads for stats | "
         get_unique_vectors_reads_singletons += self.tool_path_obj.Python + " "
         get_unique_vectors_reads_singletons += self.tool_path_obj.get_unique_host_reads + " "
-        get_unique_vectors_reads_singletons += os.path.join(vectors_folder, "singletons.fastq") + " "
-        get_unique_vectors_reads_singletons += os.path.join(host_folder, "singletons.fastq") + " "
-        get_unique_vectors_reads_singletons += os.path.join(unique_vectors_folder, "singletons_vectors.fastq")
+            
         
+        if(self.no_host_flag):
+            get_unique_vectors_reads_singletons += os.path.join(vectors_folder, "singletons.fastq") + " "
+            get_unique_vectors_reads_singletons += os.path.join(quality_folder, "singletons.fastq") + " "
+            get_unique_vectors_reads_singletons += os.path.join(unique_vectors_folder, "singletons_vectors.fastq")
+            
+        else:
         
+            get_unique_vectors_reads_singletons += os.path.join(vectors_folder, "singletons.fastq") + " "
+            get_unique_vectors_reads_singletons += os.path.join(host_folder, "singletons.fastq") + " "
+            get_unique_vectors_reads_singletons += os.path.join(unique_vectors_folder, "singletons_vectors.fastq")
+            
+            
         repop_singletons_vectors = ">&2 echo repopulating singletons vectors | " 
         repop_singletons_vectors += self.tool_path_obj.Python + " "
         repop_singletons_vectors += self.tool_path_obj.duplicate_repopulate + " "
@@ -3262,9 +3289,16 @@ class mt_pipe_commands:
         get_unique_vectors_reads_pair_1 = ">&2 echo get pair 1 vector reads for stats | " 
         get_unique_vectors_reads_pair_1 += self.tool_path_obj.Python + " "
         get_unique_vectors_reads_pair_1 += self.tool_path_obj.get_unique_host_reads + " "
-        get_unique_vectors_reads_pair_1 += os.path.join(vectors_folder, "pair_1.fastq") + " "
-        get_unique_vectors_reads_pair_1 += os.path.join(host_folder, "pair_1.fastq") + " "
-        get_unique_vectors_reads_pair_1 += os.path.join(unique_vectors_folder, "pair_1_vectors.fastq")
+        
+        if(self.no_host_flag):
+            get_unique_vectors_reads_pair_1 += os.path.join(vectors_folder, "pair_1.fastq") + " "
+            get_unique_vectors_reads_pair_1 += os.path.join(quality_folder, "pair_1.fastq") + " "
+            get_unique_vectors_reads_pair_1 += os.path.join(unique_vectors_folder, "pair_1_vectors.fastq")
+
+        else:
+            get_unique_vectors_reads_pair_1 += os.path.join(vectors_folder, "pair_1.fastq") + " "
+            get_unique_vectors_reads_pair_1 += os.path.join(host_folder, "pair_1.fastq") + " "
+            get_unique_vectors_reads_pair_1 += os.path.join(unique_vectors_folder, "pair_1_vectors.fastq")
         
         repop_pair_1_vectors = ">&2 echo repopulating pair 1 vectors | " 
         repop_pair_1_vectors += self.tool_path_obj.Python + " "
@@ -3297,10 +3331,16 @@ class mt_pipe_commands:
         get_unique_vectors_reads_pair_2 = ">&2 echo get pair 2 vector reads for stats | " 
         get_unique_vectors_reads_pair_2 += self.tool_path_obj.Python + " "
         get_unique_vectors_reads_pair_2 += self.tool_path_obj.get_unique_host_reads + " "
-        get_unique_vectors_reads_pair_2 += os.path.join(vectors_folder, "pair_2.fastq") + " "
-        get_unique_vectors_reads_pair_2 += os.path.join(host_folder, "pair_2.fastq") + " "
-        get_unique_vectors_reads_pair_2 += os.path.join(unique_vectors_folder, "pair_2_vectors.fastq")
         
+        if(self.no_host_flag):
+            get_unique_vectors_reads_pair_2 += os.path.join(vectors_folder, "pair_2.fastq") + " "
+            get_unique_vectors_reads_pair_2 += os.path.join(quality_folder, "pair_2.fastq") + " "
+            get_unique_vectors_reads_pair_2 += os.path.join(unique_vectors_folder, "pair_2_vectors.fastq")
+        else:
+            get_unique_vectors_reads_pair_2 += os.path.join(vectors_folder, "pair_2.fastq") + " "
+            get_unique_vectors_reads_pair_2 += os.path.join(host_folder, "pair_2.fastq") + " "
+            get_unique_vectors_reads_pair_2 += os.path.join(unique_vectors_folder, "pair_2_vectors.fastq")
+            
         repop_pair_2_vectors = ">&2 echo repopulating pair 2 vectors | " 
         repop_pair_2_vectors += self.tool_path_obj.Python + " "
         repop_pair_2_vectors += self.tool_path_obj.duplicate_repopulate + " "
