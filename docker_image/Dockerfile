@@ -72,12 +72,8 @@ ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.0.2.2/custom_databa
 # get setup scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.0.2.2/Setup_scripts/Download_EC_Annotated_SwissProt.py /pipeline/setup_scripts
 
-
-# get mgm license
-ADD https://raw.githubusercontent.com/billytaj/parkinson_int_meta_pipe/mgm_license/gm_key /pipeline
-
 # get the lib downloader
-ADD https://raw.githubusercontent.com/billytaj/parkinson_int_meta_pipe/lib_downloader.py /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.0.2.2/Setup_scripts/lib_downloader.py /pipeline
 
 RUN chmod -R 555 /pipeline
 
