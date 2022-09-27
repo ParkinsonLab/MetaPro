@@ -2116,7 +2116,7 @@ class mt_pipe_commands:
         
         bwa_job = ">&2 echo " + str(dt.today()) + " BWA on " + file_tag + " | "
         bwa_job += self.tool_path_obj.BWA + " mem -t " + self.Threads_str + " "
-        bwa_job += ref_path + " " #self.tool_path_obj.DNA_DB + " "
+        bwa_job += ref_path + " "
         #bwa_job += os.path.join(dep_loc, section_file) + " | "
         bwa_job += query_file + " | "
         bwa_job += self.tool_path_obj.SAMTOOLS + " view "
@@ -2172,7 +2172,7 @@ class mt_pipe_commands:
         map_read_bwa += self.tool_path_obj.Python + " "
         map_read_bwa += self.tool_path_obj.Map_reads_gene_BWA + " "
         map_read_bwa += str(self.tool_path_obj.BWA_cigar_cutoff) + " "
-        map_read_bwa += ref_path + " " #self.tool_path_obj.DNA_DB + " "  # IN
+        map_read_bwa += ref_path + " "
         if(self.sequence_contigs == "None"):
             map_read_bwa += "None" + " "
         else:        
@@ -2276,12 +2276,11 @@ class mt_pipe_commands:
 
         blat_command = ">&2 echo " + str(dt.today()) + " BLAT annotation for " + sample_root_name + " " + fasta_db + " | "
         blat_command += self.tool_path_obj.BLAT + " -noHead -minIdentity=90 -minScore=65 "
-        blat_command += self.tool_path_obj.DNA_DB + fasta_db + " "
+        blat_command += os.path.join(self.tool_path_obj.DNA_DB, fasta_db) + " "
         blat_command += query_file
         blat_command += " -fine -q=rna -t=dna -out=blast8 -threads=40" + " "
         blat_command += os.path.join(blat_folder, sample_root_name + "_" + fasta_db + ".blatout")
-        
-        #make_marker = ">&2 echo marking BLAT job complete: " + sample_root_name + "_" + fasta_db + " | " 
+         
         make_marker = "touch" + " "
         make_marker += os.path.join(jobs_folder, marker_file)
         
@@ -2346,7 +2345,7 @@ class mt_pipe_commands:
         blat_pp += str(self.tool_path_obj.BLAT_identity_cutoff) + " "
         blat_pp += str(self.tool_path_obj.BLAT_length_cutoff) + " "
         blat_pp += str(self.tool_path_obj.BLAT_score_cutoff) + " "
-        blat_pp += ref_file + " " #self.tool_path_obj.DNA_DB + " "
+        blat_pp += ref_file + " " 
         
         if(self.sequence_contigs == "None"):
             blat_pp += "None" + " "
@@ -2397,7 +2396,7 @@ class mt_pipe_commands:
         blat_pp += str(self.tool_path_obj.BLAT_identity_cutoff) + " "
         blat_pp += str(self.tool_path_obj.BLAT_length_cutoff) + " "
         blat_pp += str(self.tool_path_obj.BLAT_score_cutoff) + " "
-        blat_pp += ref_file + " " #self.tool_path_obj.DNA_DB + " "
+        blat_pp += ref_file + " " 
         
         if(self.sequence_contigs == "None"):
             blat_pp += "None" + " "

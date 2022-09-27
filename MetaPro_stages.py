@@ -987,7 +987,7 @@ class mp_stage:
         self.mp_util.clean_or_compress(self.GA_BWA_path, self.keep_all, self.keep_GA_BWA)
         
         self.cleanup_GA_BWA_end = time.time()
-        GA_BWA_end = time.time()
+        self.GA_BWA_end = time.time()
         print("GA BWA:", '%1.1f' % (self.GA_BWA_end - self.GA_BWA_start - (self.cleanup_GA_BWA_end - self.cleanup_GA_BWA_start)), "s")
         print("GA BWA cleanup:", '%1.1f' % (self.cleanup_GA_BWA_end - self.cleanup_GA_BWA_start), "s")
 
@@ -1017,6 +1017,7 @@ class mp_stage:
                             marker_path = os.path.join(self.GA_BLAT_jobs_folder, marker_file)
                             blatout_path = os.path.join(self.GA_BLAT_path, "data", "0_blat", file_tag + "_"+fasta_db + ".blatout")
                             blat_queue_package = blatout_path+"|" + marker_file
+                            #ref_db = os.path.join(self.paths.DNA_DB, fasta_db)
                             
                             #This checker assume BLAT only exports a file when it's finished running
                             if(os.path.exists(marker_path)):
