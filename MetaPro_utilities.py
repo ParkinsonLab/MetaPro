@@ -265,6 +265,8 @@ class mp_util:
                 else:
                     self.wait_for_mp_store()
             time.sleep(job_delay)
+        #final wait for everything to be done
+        self.wait_for_mp_store()
                 
         
     def launch_only_with_hold(self, mem_threshold, job_limit, job_delay, job_name, command_obj, command):
