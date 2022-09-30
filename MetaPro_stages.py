@@ -706,71 +706,79 @@ class mp_stage:
         self.assemble_contigs_start = time.time()
         
         #if not check_where_resume(assemble_contigs_path, None, repop_job_path):
-        mgm_file = os.path.join(self.assemble_contigs_path, "data", "1_mgm", "gene_report.txt")
+        mgm_gene_report = os.path.join(self.assemble_contigs_path, "data", "1_mgm", "gene_report.txt")
         mgm_folder = os.path.join(self.assemble_contigs_path, "data", "1_mgm")
-        done_file = os.path.join(self.assemble_contigs_path, "data", "0_spades", "pipeline_state", "stage_7_terminate")
+        spades_done_file = os.path.join(self.assemble_contigs_path, "data", "0_spades", "pipeline_state", "stage_7_terminate")
+        spades_transcript_file = os.path.join(self.assemble_contigs_path, "data", "0_spades", "transcripts.fasta")
+
+        mgm_fail_flag = True
+        spades_fail_flag = True
+
         if self.mp_util.check_bypass_log(self.output_folder_path, self.assemble_contigs_label):
             job_name = self.assemble_contigs_label
             command_list = self.commands.create_assemble_contigs_command(self.assemble_contigs_label, self.repop_job_label)
             self.mp_util.launch_and_create_simple(self.assemble_contigs_label, job_name, self.commands, command_list)
             
             
-            mgm_contents = os.listdir(mgm_folder)
-            mgm_pass = True
-            if(len(mgm_contents) == 0):
-                mgm_pass = False
-            
-        
-            if(os.path.exists(mgm_file)):
-                self.mp_util.write_to_bypass_log(self.output_folder_path, self.assemble_contigs_label)
-            else:
-                if(mgm_pass):
-                    if(os.path.exists(done_file)):
-                        print(dt.today(), "SPADes ran, but no contigs were created.  moving files to compensate")
-                        bypass_contig_map_path = os.path.join(self.assemble_contigs_path, "final_results", "contig_map.tsv")
-                        bypass_contig_path = os.path.join(self.assemble_contigs_path, "final_results", "contigs.fasta")
-                        s_src_path = os.path.join(self.rRNA_filter_path, "final_results", "mRNA", "singletons.fastq")
-                        p1_src_path = os.path.join(self.rRNA_filter_path, "final_results", "mRNA", "pair_1.fastq")
-                        p2_src_path = os.path.join(self.rRNA_filter_path, "final_results", "mRNA", "pair_2.fastq")
-                        s_dest_path = os.path.join(self.assemble_contigs_path, "final_results", "singletons.fastq")
-                        p1_dest_path = os.path.join(self.assemble_contigs_path, "final_results", "pair_1.fastq")
-                        p2_dest_path = os.path.join(self.assemble_contigs_path, "final_results", "pair_2.fastq")
-                        make_map = open(bypass_contig_map_path, "w")
-                        make_contig = open(bypass_contig_path, "w")
-                        shutil.copyfile(s_src_path, s_dest_path)
-                        shutil.copyfile(p1_src_path, p1_dest_path)
-                        shutil.copyfile(p2_src_path, p2_dest_path)
-                        self.contigs_present = False
-                        self.mp_util.write_to_bypass_log(self.output_folder_path, self.assemble_contigs_label)
-
-                    else:    
-                        sys.exit("SPADes did not run.  look into it.  pipeline stopping here")
+            if(os.path.exists(spades_done_file)):
+                if(os.path.exists(spades_transcript_file)):
+                    spades_fail_flag = False
+                    print(dt.today(), "SPADes OK")
                 else:
-                    sys.exit("MGM did not run. stopping pipeline. check the license file")
-             
+                    spades_fail_flag = True
+                    print(dt.today(), "SPADes ran, but did not create contigs")
+            else:
+                sys.exit(dt.today(), "SPADes did not run. this is not normal. Contact admin immediately")
+
+            if(os.path.exists(mgm_gene_report)):
+                if(os.path.getsize(mgm_gene_report) > 0):
+                    mgm_fail_flag = False
+                    print(dt.today(), "MGM OK")
+                else:
+                    mgm_fail_flag = True
+                    print(dt.today(), "MGM produced an empty gene report. this is not normal")
+                    sys.exit("MGM_empty_report")
+            else:
+                mgm_fail_flag = True
+                print(dt.today(), "MGM did not produce a report. likely it didn't run")
+
+            if(spades_fail_flag and mgm_fail_flag):        
+                print(dt.today(), "moving contig files to compensate")
+                bypass_contig_map_path = os.path.join(self.assemble_contigs_path, "final_results", "contig_map.tsv")
+                bypass_contig_path = os.path.join(self.assemble_contigs_path, "final_results", "contigs.fasta")
+                s_src_path = os.path.join(self.rRNA_filter_path, "final_results", "mRNA", "singletons.fastq")
+                p1_src_path = os.path.join(self.rRNA_filter_path, "final_results", "mRNA", "pair_1.fastq")
+                p2_src_path = os.path.join(self.rRNA_filter_path, "final_results", "mRNA", "pair_2.fastq")
+                s_dest_path = os.path.join(self.assemble_contigs_path, "final_results", "singletons.fastq")
+                p1_dest_path = os.path.join(self.assemble_contigs_path, "final_results", "pair_1.fastq")
+                p2_dest_path = os.path.join(self.assemble_contigs_path, "final_results", "pair_2.fastq")
+                make_map = open(bypass_contig_map_path, "w")
+                make_contig = open(bypass_contig_path, "w")
+                shutil.copyfile(s_src_path, s_dest_path)
+                shutil.copyfile(p1_src_path, p1_dest_path)
+                shutil.copyfile(p2_src_path, p2_dest_path)
+                self.contigs_present = False
+                self.mp_util.write_to_bypass_log(self.output_folder_path, self.assemble_contigs_label)
+                
+
+            
+            
             
             self.cleanup_assemble_contigs_start = time.time()
-            if(os.path.exists(mgm_file)):
-                if(os.path.getsize(mgm_file) == 0):
-                    sys.exit("MGM did not run. gene_report is 0")
-                else:
-                    print(dt.today(), "MGM OK")
-            else:
-                sys.exit("MGM did not run. mgm file doesn't exist")
-            
             self.mp_util.clean_or_compress(self.assemble_contigs_path, self.keep_all, self.keep_assemble_contigs)
 
             self.cleanup_assemble_contigs_end = time.time()
         
         else:
-            if(os.path.exists(mgm_file)):
-                if(os.path.getsize(mgm_file) == 0):
+            if(os.path.exists(mgm_gene_report)):
+                if(os.path.getsize(mgm_gene_report) == 0):
                     sys.exit("MGM did not run. gene report is 0")
-                else:   
+                else:
+                    print(dt.today(), "MGM OK. contigs present")   
                     self.contigs_present = True
             else:
-                done_file = os.path.join(self.assemble_contigs_path, "data", "0_spades", "pipeline_state", "stage_7_terminate")
-                if(os.path.exists(done_file)):
+                if(os.path.exists(spades_done_file)):
+                    print(dt.today(), "No contigs were assembled.")
                     self.contigs_present = False
                 
                 
