@@ -32,6 +32,7 @@ class mp_stage:
         self.output_folder_path = output_folder_path
         self.mp_util = mpu.mp_util(self.output_folder_path)
         self.paths = mpp.tool_path_obj(config_path)
+        self.GA_DB_mode = self.paths.GA_DB_mode
         self.segmented_chocophlan_flag = True
         if(self.paths.DNA_DB.endswith(".fasta")):
             self.segmented_chocophlan_flag = False

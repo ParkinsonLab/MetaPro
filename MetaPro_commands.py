@@ -2160,7 +2160,7 @@ class mt_pipe_commands:
         reads_in    = query_file
         bwa_in      = os.path.join(bwa_folder, sample_root_name + "_" + ref_tag + ".sam")
         reads_out = ""
-        if("chunk" in ref_path):
+        if(self.tool_path_obj.GA_DB_mode == "multi"):
             print(dt.today(), "BWA_pp running in split-mode")
             reads_out   = os.path.join(pp_folder, sample_root_name + "_" + ref_tag + ".fasta")
         else:

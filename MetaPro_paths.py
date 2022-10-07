@@ -24,6 +24,9 @@ from datetime import datetime as dt
 from configparser import ConfigParser, ExtendedInterpolation
 
 class tool_path_obj:
+    def __init__ (self):
+        self.GA_DB_mode = "None"
+    
     def value_assignment(self, config, config_section, var_name, default):
         value = ""
         
@@ -68,37 +71,66 @@ class tool_path_obj:
         
 
     def check_bwa_valid(self):
-        file_list = os.listdir(self.DNA_DB)
-        ok_flag = False
-        file_count = 0
-        for item in file_list:
-            if(item.endswith(".fasta")):
-            
+        if(os.path.isdir(self.DNA_DB)):
+            file_list = os.listdir(self.DNA_DB)
+            ok_flag = False
+            file_count = 0
+            for item in file_list:
+                if(item.endswith(".fasta")):
+                
+                    ext_0 = ".amb"
+                    ext_1 = ".ann"
+                    ext_2 = ".bwt"
+                    ext_3 = ".pac"
+                    ext_4 = ".sa"
+                    
+                    file_0 = os.path.join(self.DNA_DB, item + ext_0)
+                    file_1 = os.path.join(self.DNA_DB, item + ext_1)
+                    file_2 = os.path.join(self.DNA_DB, item + ext_2)
+                    file_3 = os.path.join(self.DNA_DB, item + ext_3)
+                    file_4 = os.path.join(self.DNA_DB, item + ext_4)
+                    
+                    ok_flag = self.check_file_valid(file_0)
+                    ok_flag = self.check_file_valid(file_1)
+                    ok_flag = self.check_file_valid(file_2)
+                    ok_flag = self.check_file_valid(file_3)
+                    ok_flag = self.check_file_valid(file_4)
+                    file_count += 1
+            if(file_count == 0):
+                print(dt.today(), "Error: no fasta files found. BWA only accepts .fasta extensions")
+                sys.exit("empty BWA database")    
+            if(not ok_flag):
+                sys.exit("BWA database has not been fully indexed. try reindexing the database")
+            else:
+                print(dt.today(), "BWA database OK")
+                self.GA_DB_mode = "multi"
+        else:
+            if(self.DNA_DB.endswith(".fasta")):
                 ext_0 = ".amb"
                 ext_1 = ".ann"
                 ext_2 = ".bwt"
                 ext_3 = ".pac"
                 ext_4 = ".sa"
                 
-                file_0 = os.path.join(self.DNA_DB, item + ext_0)
-                file_1 = os.path.join(self.DNA_DB, item + ext_1)
-                file_2 = os.path.join(self.DNA_DB, item + ext_2)
-                file_3 = os.path.join(self.DNA_DB, item + ext_3)
-                file_4 = os.path.join(self.DNA_DB, item + ext_4)
+                file_0 = os.path.join(self.DNA_DB + ext_0)
+                file_1 = os.path.join(self.DNA_DB + ext_1)
+                file_2 = os.path.join(self.DNA_DB + ext_2)
+                file_3 = os.path.join(self.DNA_DB + ext_3)
+                file_4 = os.path.join(self.DNA_DB + ext_4)
                 
                 ok_flag = self.check_file_valid(file_0)
                 ok_flag = self.check_file_valid(file_1)
                 ok_flag = self.check_file_valid(file_2)
                 ok_flag = self.check_file_valid(file_3)
                 ok_flag = self.check_file_valid(file_4)
-                file_count += 1
-        if(file_count == 0):
-            print(dt.today(), "Error: no fasta files found. BWA only accepts .fasta extensions")
-                
-        if(not ok_flag):
-            sys.exit("BWA database has not been fully indexed. try reindexing the database")
-        else:
-            print(dt.today(), "BWA database OK")
+
+                if(not ok_flag):
+                    sys.exit("BWA Database FILE has not been fully indexed. Try reindexing the database")
+                else:
+                    print(dt.today(), "BWA Database File OK")
+                    self.GA_DB_mode = "single"
+            else:
+                sys.exit("Error: no fasta file found. BWA only accepts .fasta extensions")
             
             
         #if it's a fastq or fasta
@@ -107,21 +139,33 @@ class tool_path_obj:
     def check_blat_valid(self):
         #check that there's at least 1 fasta in the dict
         #but truth-be-told, this doesn't do anything, since BWA will use the same DB
-        file_list = os.listdir(self.DNA_DB)
-        ok_flag = False
-        file_count = 0
-        for item in file_list:
-            if(item.endswith(".fasta")):
-                ok_flag = self.check_file_valid(os.path.join(self.DNA_DB, item))
-                file_count += 1
-        if(file_count == 0):
-            print(dt.today(), "Error: no fasta file found.  BLAT accepts .fasta extensions only")
-            sys.exit()
-        if(ok_flag):
-           print(dt.today(), "BLAT database OK")
+        if(os.path.isdir(self.DNA_DB)):
+            file_list = os.listdir(self.DNA_DB)
+            ok_flag = False
+            file_count = 0
+            for item in file_list:
+                if(item.endswith(".fasta")):
+                    ok_flag = self.check_file_valid(os.path.join(self.DNA_DB, item))
+                    file_count += 1
+            if(file_count == 0):
+                print(dt.today(), "Error: no fasta file found.  BLAT accepts .fasta extensions only")
+                sys.exit()
+            if(ok_flag):
+                print(dt.today(), "BLAT database OK")
+                self.GA_DB_mode = "multi"
+            else:
+                sys.exit("Error with BLAT db. there's an empty fasta file")
         else:
-            sys.exit("Error with BLAT db. there's an empty fasta file")
-       
+            if(self.DNA_DB.endswith(".fasta")):
+                ok_flag = self.check_file_valid(self.DNA_DB)
+                if(ok_flag):
+                    print(dt.today(), "BLAT Database file OK")
+                    self.GA_DB_mode = "single"
+                else:
+                    sys.exit("Error with BLAT DB file. it's empty")
+            else:
+                print(dt.today(), "Error: no fasta file found.  BLAT accepts .fasta extensions only")
+                sys.exit()
 
     def __init__ (self, config_path):
         print("CHECKING CONFIG")
