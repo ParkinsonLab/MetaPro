@@ -155,8 +155,11 @@ A copy can be found here: http://rfam.xfam.org/
 * DNA_DB
 The DNA DB is what we use to annotate the sequence data against.  We use the ChocoPhlAn database.
 A copy can be found at: http://huttenhower.sph.harvard.edu/humann2_data/chocophlan/chocophlan.tar.gz
+However, we also allow the use of custom databases.  
+Note: If a database is larger than 5GB, it can still be used, but it will need to be split.  Each file of the split database must not exceed 5GB.  pBLAT cannot handle a file larger than 5GB. 
+
 * DNA\_DB\_Split
-The ChocoPhlAn database too large for pBLAT to process.  We split it up and process the chunks simultaneously.  The pipeline will split it and dump the chunks at this location
+The ChocoPhlAn database too large for pBLAT to process.  We split it up and process the chunks simultaneously.  The pipeline will split it and dump the chunks at this location.
 * Prot_DB
 The Prot_DB is the protein db.  We use the non-redundant database from NCBI.  It will need to be indexed by DIAMOND before usage. (see DIAMOND for more details: https://github.com/bbuchfink/diamond)
 It can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/db/
