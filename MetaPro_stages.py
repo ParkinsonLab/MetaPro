@@ -760,6 +760,15 @@ class mp_stage:
                 shutil.copyfile(p2_src_path, p2_dest_path)
                 self.contigs_present = False
                 self.mp_util.write_to_bypass_log(self.output_folder_path, self.assemble_contigs_label)
+            elif(spades_fail_flag and (not mgm_fail_flag)):
+                print(dt.today(), "SPADes fails but MGM runs anyway: this shouldn't happen. contact admin")
+                sys.exit("SPADES_fail_MGM_ok")
+            elif((not spades_fail_flag) and mgm_fail_flag):
+                print(dt.today(), "SPADes ran fine, but MGM failed. Check your MetaGeneMark license")
+                sys.exit("SPADES_ok_MGM_fail")
+            else:
+                self.contigs_present = True
+                self.mp_util.write_to_bypass_log(self.output_folder_path, self.assemble_contigs_label)
                 
 
             
