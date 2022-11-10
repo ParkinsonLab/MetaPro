@@ -720,7 +720,6 @@ class mp_stage:
             command_list = self.commands.create_assemble_contigs_command(self.assemble_contigs_label, self.repop_job_label)
             self.mp_util.launch_and_create_simple(self.assemble_contigs_label, job_name, self.commands, command_list)
             
-            
             if(os.path.exists(spades_done_file)):
                 if(os.path.exists(spades_transcript_file)):
                     spades_fail_flag = False
@@ -760,6 +759,7 @@ class mp_stage:
                 shutil.copyfile(p2_src_path, p2_dest_path)
                 self.contigs_present = False
                 self.mp_util.write_to_bypass_log(self.output_folder_path, self.assemble_contigs_label)
+
             elif(spades_fail_flag and (not mgm_fail_flag)):
                 print(dt.today(), "SPADes fails but MGM runs anyway: this shouldn't happen. contact admin")
                 sys.exit("SPADES_fail_MGM_ok")
@@ -768,15 +768,11 @@ class mp_stage:
                 sys.exit("SPADES_ok_MGM_fail")
             else:
                 self.contigs_present = True
+                print(dt.today(), "Assemble-contigs pass")
                 self.mp_util.write_to_bypass_log(self.output_folder_path, self.assemble_contigs_label)
-                
-
-            
-            
             
             self.cleanup_assemble_contigs_start = time.time()
             self.mp_util.clean_or_compress(self.assemble_contigs_path, self.keep_all, self.keep_assemble_contigs)
-
             self.cleanup_assemble_contigs_end = time.time()
         
         else:
@@ -790,7 +786,6 @@ class mp_stage:
                 if(os.path.exists(spades_done_file)):
                     print(dt.today(), "No contigs were assembled.")
                     self.contigs_present = False
-                
                 
         self.assemble_contigs_end = time.time()
         print("assemble contigs:", '%1.1f' % (self.assemble_contigs_end - self.assemble_contigs_start - (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start)), "s")    
