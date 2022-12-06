@@ -16,7 +16,7 @@ class mt_pipe_commands:
     # --------------------------------------------------------------------
     # constructor:
     # there should only be one of these objects used for an entire pipeline.
-    def __init__(self, no_host, Config_path, Quality_score=33, Thread_count=8, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=None, sequence_contigs = None):
+    def __init__(self, no_host, Config_path, Quality_score=33, thread_count=80, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=None, sequence_contigs = None):
 
         self.tool_path_obj = mpp.tool_path_obj(Config_path)
         self.no_host_flag = no_host
@@ -75,7 +75,8 @@ class mt_pipe_commands:
                 
         self.Qual_str = str(Quality_score)
         self.Output_Path = os.getcwd()
-        self.Threads_str = str(Thread_count)
+        self.threads_str = str(thread_count)
+        self.thread_count = thread_count
         
         
         print("Output filepath:", self.Output_Path)
@@ -195,7 +196,7 @@ class mt_pipe_commands:
         adapter_removal_line += " --qualitybase " + str(self.Qual_str)
         if(self.Qual_str == "33"):
             adapter_removal_line += " --qualitymax 75"
-        adapter_removal_line += " --threads " + self.Threads_str
+        adapter_removal_line += " --threads " + self.threads_str
         adapter_removal_line += " --minlength " + str(self.tool_path_obj.adapterremoval_minlength)
         adapter_removal_line += " --basename " + adapter_folder
         adapter_removal_line += "_AdapterRemoval"
@@ -395,7 +396,7 @@ class mt_pipe_commands:
         # host removal on unique singletons
         bwa_hr_singletons = ">&2 echo BWA host remove on singletons | "
         bwa_hr_singletons += self.tool_path_obj.BWA + " mem -t "
-        bwa_hr_singletons += self.Threads_str + " "
+        bwa_hr_singletons += self.threads_str + " "
         bwa_hr_singletons += Host_Contaminants + " "
         bwa_hr_singletons += os.path.join(quality_folder, "singletons.fastq") + " " 
         bwa_hr_singletons += ">" + " "
@@ -404,7 +405,7 @@ class mt_pipe_commands:
         #Tutorial-use only.  
         bwa_hr_tut_singletons = ">&2 echo BWA host remove on singletons | "
         bwa_hr_tut_singletons += self.tool_path_obj.BWA + " mem -t "
-        bwa_hr_tut_singletons += self.Threads_str + " "
+        bwa_hr_tut_singletons += self.threads_str + " "
         bwa_hr_tut_singletons += Host_Contaminants + " "
         bwa_hr_tut_singletons += self.sequence_single 
         bwa_hr_tut_singletons += " > " + os.path.join(host_removal_folder, "singletons_no_host.sam")
@@ -428,7 +429,7 @@ class mt_pipe_commands:
         
         bwa_hr_paired = ">&2 echo bwa host-removal on paired | " 
         bwa_hr_paired += self.tool_path_obj.BWA + " "
-        bwa_hr_paired += "mem" + " "  + "-t" + " " + self.Threads_str + " "
+        bwa_hr_paired += "mem" + " "  + "-t" + " " + self.threads_str + " "
         bwa_hr_paired += Host_Contaminants + " "
         bwa_hr_paired += os.path.join(quality_folder, "pair_1.fastq") + " "
         bwa_hr_paired += os.path.join(quality_folder, "pair_2.fastq") + " "
@@ -438,7 +439,7 @@ class mt_pipe_commands:
         #Tutorial-use only
         bwa_hr_tut_paired = ">&2 echo bwa host-removal on paired | " 
         bwa_hr_tut_paired += self.tool_path_obj.BWA + " "
-        bwa_hr_tut_paired += "mem" + " "  + "-t" + " " + self.Threads_str + " "
+        bwa_hr_tut_paired += "mem" + " "  + "-t" + " " + self.threads_str + " "
         bwa_hr_tut_paired += Host_Contaminants + " "
         bwa_hr_tut_paired += self.sequence_path_1 + " "
         bwa_hr_tut_paired += self.sequence_path_2 + " "
@@ -485,21 +486,21 @@ class mt_pipe_commands:
         blat_hr_singletons += self.tool_path_obj.BLAT + " -noHead -minIdentity=90 -minScore=65 "
         blat_hr_singletons += Host_Contaminants + " "
         blat_hr_singletons += os.path.join(host_removal_folder, "singletons_no_host.fasta")
-        blat_hr_singletons += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.Threads_str
+        blat_hr_singletons += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str
         blat_hr_singletons += " " + os.path.join(host_removal_folder, "singletons_no_host.blatout")
 
         blat_hr_pair_1 = ">&2 echo BLAT host pair 1 | "
         blat_hr_pair_1 += self.tool_path_obj.BLAT
         blat_hr_pair_1 += " -noHead -minIdentity=90 -minScore=65 " + Host_Contaminants + " "
         blat_hr_pair_1 += os.path.join(host_removal_folder, "pair_1_no_host.fasta")
-        blat_hr_pair_1 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.Threads_str
+        blat_hr_pair_1 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str
         blat_hr_pair_1 += " " + os.path.join(host_removal_folder, "pair_1_no_host.blatout")
 
         blat_hr_pair_2 = ">&2 echo BLAT host pair 2 | "
         blat_hr_pair_2 += self.tool_path_obj.BLAT
         blat_hr_pair_2 += " -noHead -minIdentity=90 -minScore=65 " + Host_Contaminants + " "
         blat_hr_pair_2 += os.path.join(host_removal_folder, "pair_2_no_host.fasta")
-        blat_hr_pair_2 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.Threads_str
+        blat_hr_pair_2 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str
         blat_hr_pair_2 += " " + os.path.join(host_removal_folder, "pair_2_no_host.blatout")
 
         # HR BLAT
@@ -657,14 +658,14 @@ class mt_pipe_commands:
         samtools_vr_prep += self.tool_path_obj.SAMTOOLS + " faidx " + Vector_Contaminants
 
         bwa_vr_singletons = ">&2 echo BWA vector oprhans | "
-        bwa_vr_singletons += self.tool_path_obj.BWA + " mem -t " + self.Threads_str + " "
+        bwa_vr_singletons += self.tool_path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_vr_singletons += Vector_Contaminants + " "
         bwa_vr_singletons += os.path.join(dependency_folder, "singletons.fastq")
         bwa_vr_singletons += " > " + os.path.join(vector_removal_folder, "singletons_no_vectors.sam")
         
         
         bwa_vr_tut_singletons = ">&2 echo BWA vector oprhans TUTORIAL MODE | "
-        bwa_vr_tut_singletons += self.tool_path_obj.BWA + " mem -t " + self.Threads_str + " "
+        bwa_vr_tut_singletons += self.tool_path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_vr_tut_singletons += Vector_Contaminants + " "
         bwa_vr_tut_singletons += self.sequence_single
         bwa_vr_tut_singletons += " > " + os.path.join(vector_removal_folder, "singletons_no_vectors.sam")
@@ -685,14 +686,14 @@ class mt_pipe_commands:
         samtools_vector_singletons_export += os.path.join(vector_removal_folder, "singletons_no_vectors.bam")
 
         bwa_vr_paired = ">&2 echo bwa vector paired | "
-        bwa_vr_paired += self.tool_path_obj.BWA + " mem -t " + self.Threads_str + " "
+        bwa_vr_paired += self.tool_path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_vr_paired += Vector_Contaminants + " "
         bwa_vr_paired += os.path.join(dependency_folder, "pair_1.fastq") + " "
         bwa_vr_paired += os.path.join(dependency_folder, "pair_2.fastq") + " "
         bwa_vr_paired += " > " + os.path.join(vector_removal_folder, "paired_on_vectors.sam")
 
         bwa_vr_tut_paired = ">&2 echo bwa vector paired TUTORIAL MODE | "
-        bwa_vr_tut_paired += self.tool_path_obj.BWA + " mem -t " + self.Threads_str + " "
+        bwa_vr_tut_paired += self.tool_path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_vr_tut_paired += Vector_Contaminants + " "
         bwa_vr_tut_paired += self.sequence_path_1 + " "
         bwa_vr_tut_paired += self.sequence_path_2 + " "
@@ -738,21 +739,21 @@ class mt_pipe_commands:
         blat_vr_singletons += " -noHead -minIdentity=90 -minScore=65 "
         blat_vr_singletons += Vector_Contaminants + " "
         blat_vr_singletons += os.path.join(vector_removal_folder, "singletons_no_vectors.fasta")
-        blat_vr_singletons += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.Threads_str + " "
+        blat_vr_singletons += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str + " "
         blat_vr_singletons += os.path.join(vector_removal_folder, "singletons_no_vectors.blatout")
 
         blat_vr_pair_1 = ">&2 echo BLAT vector pair 1 | "
         blat_vr_pair_1 += self.tool_path_obj.BLAT + " -noHead -minIdentity=90 -minScore=65 "
         blat_vr_pair_1 += Vector_Contaminants + " "
         blat_vr_pair_1 += os.path.join(vector_removal_folder, "pair_1_no_vectors.fasta")
-        blat_vr_pair_1 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.Threads_str + " "
+        blat_vr_pair_1 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str + " "
         blat_vr_pair_1 += os.path.join(vector_removal_folder, "pair_1_no_vectors.blatout")
 
         blat_vr_pair_2 = ">&2 echo BLAT vector pair 2 | "
         blat_vr_pair_2 += self.tool_path_obj.BLAT + " -noHead -minIdentity=90 -minScore=65 "
         blat_vr_pair_2 += Vector_Contaminants + " "
         blat_vr_pair_2 += os.path.join(vector_removal_folder, "pair_2_no_vectors.fasta")
-        blat_vr_pair_2 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.Threads_str + " "
+        blat_vr_pair_2 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str + " "
         blat_vr_pair_2 += os.path.join(vector_removal_folder, "pair_2_no_vectors.blatout")
 
         blat_filter_vector_singletons = ">&2 echo BLAT contaminant singletons | "
@@ -1003,7 +1004,7 @@ class mt_pipe_commands:
         Barrnap_archaea = ">&2 echo running Barrnap on " + file_name + " file: arc | "
         Barrnap_archaea += self.tool_path_obj.Barrnap
         Barrnap_archaea += " --quiet --reject 0.01 --kingdom " + "arc"
-        Barrnap_archaea += " --threads " + self.Threads_str
+        Barrnap_archaea += " --threads " + self.threads_str
         Barrnap_archaea += " " + fasta_seqs
         Barrnap_archaea += " >> " + Barrnap_arc_out
         
@@ -1040,7 +1041,7 @@ class mt_pipe_commands:
         Barrnap_bacteria = ">&2 echo Running Barrnap on " + file_name + " file:  bac | "
         Barrnap_bacteria += self.tool_path_obj.Barrnap
         Barrnap_bacteria += " --quiet --reject 0.01 --kingdom " + "bac"
-        Barrnap_bacteria += " --threads " + self.Threads_str
+        Barrnap_bacteria += " --threads " + self.threads_str
         Barrnap_bacteria += " " + fasta_seqs
         Barrnap_bacteria += " >> " + Barrnap_bac_out
   
@@ -1078,7 +1079,7 @@ class mt_pipe_commands:
         Barrnap_eukaryote = ">&2 echo Running Barrnap on " + file_name + " file: euk | "
         Barrnap_eukaryote += self.tool_path_obj.Barrnap
         Barrnap_eukaryote += " --quiet --reject 0.01 --kingdom " + "euk"
-        Barrnap_eukaryote += " --threads " + self.Threads_str
+        Barrnap_eukaryote += " --threads " + self.threads_str
         Barrnap_eukaryote += " " + fasta_seqs
         Barrnap_eukaryote += " >> " + Barrnap_euk_out
         
@@ -1112,7 +1113,7 @@ class mt_pipe_commands:
         Barrnap_mitochondria = ">&2 echo Running Barrnap on " + file_name + " file: mito | " 
         Barrnap_mitochondria += self.tool_path_obj.Barrnap
         Barrnap_mitochondria += " --quiet --reject 0.01 --kingdom " + "mito"
-        Barrnap_mitochondria += " --threads " + self.Threads_str
+        Barrnap_mitochondria += " --threads " + self.threads_str
         Barrnap_mitochondria += " " + fasta_seqs
         Barrnap_mitochondria += " >> " + Barrnap_mit_out
         
@@ -1295,7 +1296,7 @@ class mt_pipe_commands:
         infernal_command += self.tool_path_obj.Infernal
         infernal_command += " -o /dev/null --tblout "
         infernal_command += infernal_out
-        #infernal_command += " --cpu " + self.Threads_str -> lined nerf'd because infernal's parallelism is not good
+        #infernal_command += " --cpu " + self.threads_str -> lined nerf'd because infernal's parallelism is not good
         infernal_command += " --cpu 1"
         infernal_command += " --anytrunc --rfam -E 0.001 "
         infernal_command += self.tool_path_obj.Rfam + " "
@@ -1861,7 +1862,7 @@ class mt_pipe_commands:
         
         # Build a report of what was consumed by contig transmutation (assemble/disassemble)
         bwa_paired_contigs = ">&2 echo BWA pair contigs | "
-        bwa_paired_contigs += self.tool_path_obj.BWA + " mem -t " + self.Threads_str + " -B 40 -O 60 -E 10 -L 50 "
+        bwa_paired_contigs += self.tool_path_obj.BWA + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
         bwa_paired_contigs += final_contigs + " "
         bwa_paired_contigs += os.path.join(dep_loc, "pair_1.fastq") + " "
         bwa_paired_contigs += os.path.join(dep_loc, "pair_2.fastq") + " "
@@ -1869,7 +1870,7 @@ class mt_pipe_commands:
         bwa_paired_contigs += os.path.join(bwa_folder, "paired_on_contigs.sam")
 
         bwa_singletons_contigs = ">&2 echo BWA singleton contigs | "
-        bwa_singletons_contigs += self.tool_path_obj.BWA + " mem -t " + self.Threads_str + " -B 40 -O 60 -E 10 -L 50 "
+        bwa_singletons_contigs += self.tool_path_obj.BWA + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
         bwa_singletons_contigs += final_contigs + " "
         bwa_singletons_contigs += os.path.join(dep_loc, "singletons.fastq")
         bwa_singletons_contigs += " > " + os.path.join(bwa_folder, "singletons_on_contigs.sam")
@@ -2115,7 +2116,7 @@ class mt_pipe_commands:
         file_tag = os.path.splitext(file_tag)[0]
         
         bwa_job = ">&2 echo " + str(dt.today()) + " BWA on " + file_tag + " | "
-        bwa_job += self.tool_path_obj.BWA + " mem -t " + self.Threads_str + " "
+        bwa_job += self.tool_path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_job += ref_path + " "
         #bwa_job += os.path.join(dep_loc, section_file) + " | "
         bwa_job += query_file + " | "
@@ -2488,7 +2489,7 @@ class mt_pipe_commands:
         
         diamond_annotate = ">&2 echo " + str(dt.today()) + " GA DIAMOND " + sample_root_name + " | "
         diamond_annotate += self.tool_path_obj.DIAMOND
-        diamond_annotate += " blastx -p " + self.Threads_str
+        diamond_annotate += " blastx -p " + self.threads_str
         diamond_annotate += " -d " + self.tool_path_obj.Prot_DB
         diamond_annotate += " -q " + query_file 
         diamond_annotate += " -o " + os.path.join(diamond_folder, sample_root_name + ".dmdout")
@@ -2629,7 +2630,7 @@ class mt_pipe_commands:
                 kaiju_on_contigs += " -i " + self.sequence_contigs
             else:
                 kaiju_on_contigs += " -i " + os.path.join(assemble_contigs_folder, "contigs.fasta")
-            kaiju_on_contigs += " -z " + self.Threads_str
+            kaiju_on_contigs += " -z " + self.threads_str
             kaiju_on_contigs += " -o " + os.path.join(kaiju_folder, "contigs.tsv")
             
             make_marker = "touch" + " "
@@ -2646,7 +2647,7 @@ class mt_pipe_commands:
                 kaiju_on_singletons += " -i " + self.sequence_single
             else:
                 kaiju_on_singletons += " -i " + os.path.join(assemble_contigs_folder, "singletons.fastq")
-            kaiju_on_singletons += " -z " + self.Threads_str
+            kaiju_on_singletons += " -z " + self.threads_str
             kaiju_on_singletons += " -o " + os.path.join(kaiju_folder, "singletons.tsv")
 
             make_marker = "touch" + " "
@@ -2668,7 +2669,7 @@ class mt_pipe_commands:
                 kaiju_on_paired += " -i " + os.path.join(assemble_contigs_folder, "pair_1.fastq")
                 kaiju_on_paired += " -j " + os.path.join(assemble_contigs_folder, "pair_2.fastq")
 
-            kaiju_on_paired += " -z " + self.Threads_str
+            kaiju_on_paired += " -z " + self.threads_str
             kaiju_on_paired += " -o " + os.path.join(kaiju_folder, "pairs.tsv")
             
             make_marker = "touch" + " "
@@ -2881,7 +2882,7 @@ class mt_pipe_commands:
         wevote_call += " -i " + os.path.join(wevote_folder, "wevote_ensemble.csv")
         wevote_call += " -d " + self.tool_path_obj.WEVOTEDB
         wevote_call += " -p " + os.path.join(wevote_folder, "wevote")
-        wevote_call += " -n " + self.Threads_str
+        wevote_call += " -n " + self.threads_str
         wevote_call += " -k " + "2"
         wevote_call += " -a " + "0"
         wevote_call += " -s " + "0"
@@ -2944,6 +2945,31 @@ class mt_pipe_commands:
 
         return COMMANDS_DETECT
 
+    def create_EC_PRIAM_split_command(self, current_stage_name, ga_final_merge_stage, split_folder, marker_file):
+        #used to split the proteins file to run PRIAM
+        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        data_folder         = os.path.join(subfolder, "data")
+        final_merge_folder  = os.path.join(self.Output_Path, ga_final_merge_stage, "final_results")
+        jobs_folder         = os.path.join(data_folder, "jobs")
+
+        self.make_folder(subfolder)
+        self.make_folder(data_folder)
+        self.make_folder(split_folder)
+        self.make_folder(jobs_folder)
+
+        split_command = self.tool_path_obj.Python + " "
+        split_command += self.tool_path_obj.File_splitter + " "
+        split_command += os.path.join(final_merge_folder, "all_proteins.faa") + " "
+        split_command += os.path.join(split_folder, "protein_split") + " "
+        split_command += str(self.tool_path_obj.EC_chunksize)
+        
+        make_marker = "touch" + " "
+        make_marker += os.path.join(jobs_folder, marker_file)
+        
+
+        return [split_command + " && " + make_marker]
+        
+    """
     def create_EC_PRIAM_command(self, current_stage_name, ga_final_merge_stage, marker_file):
         #april 06, 2021: This one's a little tricky.  PRIAM has a user-prompt (and no args) to auto-resume.  
         #We must feed it the bash "Yes" in order to activate it.  So, mind the mess
@@ -2968,7 +2994,7 @@ class mt_pipe_commands:
         PRIAM_command += " -i " + os.path.join(final_merge_folder, "all_proteins.faa")
         PRIAM_command += " -p " + self.tool_path_obj.PriamDB
         PRIAM_command += " -o " + PRIAM_folder
-        PRIAM_command += " --np " + self.Threads_str
+        PRIAM_command += " --np " + self.threads_str
         PRIAM_command += " --bh --cc --cg --bp --bd "
         PRIAM_command += self.tool_path_obj.BLAST_dir
         
@@ -2980,6 +3006,58 @@ class mt_pipe_commands:
         ]
 
         return COMMANDS_PRIAM
+    """
+
+    def create_EC_PRIAM_command_v2(self, current_stage_name, ga_final_merge_stage, priam_out_folder, split_file, id, marker_file):
+        #april 06, 2021: This one's a little tricky.  PRIAM has a user-prompt (and no args) to auto-resume.  
+        #We must feed it the bash "Yes" in order to activate it.  So, mind the mess
+        #dec 05, 2022: now designed to run on split protein files
+        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        data_folder         = os.path.join(subfolder, "data")
+        final_merge_folder  = os.path.join(self.Output_Path, ga_final_merge_stage, "final_results")
+        PRIAM_folder        = os.path.join(data_folder, "1_priam")
+        jobs_folder    = os.path.join(data_folder, "jobs")
+
+        PRIAM_command = ">&2 echo running PRIAM | "
+        
+        if(os.path.exists(PRIAM_folder)):
+            PRIAM_command += "yes | "
+        else:
+            self.make_folder(PRIAM_folder)
+        self.make_folder(jobs_folder)
+        
+        
+        PRIAM_command += self.tool_path_obj.Java + " "
+        PRIAM_command += self.tool_path_obj.Priam
+        PRIAM_command += " -n " + "split_" + str(id) 
+        PRIAM_command += " -i " + split_file
+        PRIAM_command += " -p " + self.tool_path_obj.PriamDB
+        PRIAM_command += " -o " + priam_out_folder
+        PRIAM_command += " --np " + self.threads_str
+        PRIAM_command += " --bh --cc --cg --bp --bd "
+        PRIAM_command += self.tool_path_obj.BLAST_dir
+        
+        make_marker = "touch" + " "
+        make_marker += os.path.join(jobs_folder, marker_file)
+
+        COMMANDS_PRIAM = [
+            PRIAM_command + " && " + make_marker
+        ]
+
+        return COMMANDS_PRIAM
+        
+    def create_EC_PRIAM_cat_command(self, current_stage_name, marker_file):
+        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        data_folder         = os.path.join(subfolder, "data")
+        PRIAM_folder        = os.path.join(data_folder, "1_priam")
+        jobs_folder    = os.path.join(data_folder, "jobs")
+        
+        cat_command = "for i in $(ls " + PRIAM_folder + " | grep split); do cat " + PRIAM_folder + "/$i/PRIAM_$i/ANNOTATION/sequenceECs.txt >> " + PRIAM_folder + "/all_sequenceECs.txt; done"
+        
+        make_marker = "touch" + " "
+        make_marker += os.path.join(jobs_folder, marker_file)
+        
+        return [cat_command + " && " + make_marker]
         
         
     def create_EC_DIAMOND_command(self, current_stage_name, ga_final_merge_stage, marker_file):
@@ -2994,7 +3072,7 @@ class mt_pipe_commands:
         
         diamond_ea_command = ">&2 echo running Diamond enzyme annotation | "
         diamond_ea_command += self.tool_path_obj.DIAMOND + " blastp"
-        diamond_ea_command += " -p " + self.Threads_str
+        diamond_ea_command += " -p " + self.threads_str
         diamond_ea_command += " --query " + os.path.join(final_merge_folder, "all_proteins.faa")
         diamond_ea_command += " --db " + self.tool_path_obj.SWISS_PROT
         diamond_ea_command += " --outfmt " + "6 qseqid sseqid length qstart qend sstart send evalue bitscore qcovhsp slen pident"
@@ -3030,7 +3108,7 @@ class mt_pipe_commands:
         postprocess_command += self.tool_path_obj.Python + " "
         postprocess_command += self.tool_path_obj.EC_Annotation_Post + " "
         postprocess_command += os.path.join(detect_folder, "proteins.fbeta") + " "
-        postprocess_command += os.path.join(PRIAM_folder, "PRIAM_proteins_priam", "ANNOTATION", "sequenceECs.txt") + " "
+        postprocess_command += os.path.join(PRIAM_folder, "all_sequenceECs.txt") + " "
         postprocess_command += os.path.join(diamond_ea_folder, "proteins.blastout") + " "
         postprocess_command += self.tool_path_obj.SWISS_PROT_map + " "
         postprocess_command += os.path.join(final_merge_folder, "gene_map.tsv") + " "

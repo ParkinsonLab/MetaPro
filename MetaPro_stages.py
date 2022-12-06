@@ -39,6 +39,7 @@ class mp_stage:
         self.no_host = args_pack["no_host"]
         self.verbose_mode = args_pack["verbose_mode"]
         self.rRNA_chunks = int(self.paths.rRNA_chunksize)
+        self.EC_chunksize = int(self.paths.EC_chunksize)
         self.GA_chunksize = int(self.paths.GA_chunksize)
         self.config_path = config_path
         self.pair_1_path = pair_1_path
@@ -70,34 +71,37 @@ class mp_stage:
         self.TA_mem_threshold               = int(self.paths.TA_mem_threshold)
         self.repop_mem_threshold            = int(self.paths.repop_mem_threshold)
         self.GA_final_merge_mem_threshold   = int(self.paths.GA_final_merge_mem_threshold)
+        self.EC_mem_threshold               = int(self.paths.EC_mem_threshold)
         
         
         
-        self.BWA_job_limit               = int(self.paths.BWA_job_limit)
-        self.BLAT_job_limit              = int(self.paths.BLAT_job_limit)
-        self.DIAMOND_job_limit           = int(self.paths.DIAMOND_job_limit)
-        self.BWA_pp_job_limit            = int(self.paths.BWA_pp_job_limit)
-        self.BLAT_pp_job_limit           = int(self.paths.BLAT_pp_job_limit)
-        self.DIAMOND_pp_job_limit        = int(self.paths.DIAMOND_pp_job_limit)
-        self.Infernal_job_limit          = int(self.paths.Infernal_job_limit)
-        self.Barrnap_job_limit           = int(self.paths.Barrnap_job_limit)
-        self.DETECT_job_limit            = int(self.paths.DETECT_job_limit)
-        self.TA_job_limit                = int(self.paths.TA_job_limit)
-        self.repop_job_limit             = int(self.paths.repop_job_limit)
-        self.GA_final_merge_job_limit    = int(self.paths.GA_final_merge_job_limit)
+        self.BWA_job_limit              = int(self.paths.BWA_job_limit)
+        self.BLAT_job_limit             = int(self.paths.BLAT_job_limit)
+        self.DIAMOND_job_limit          = int(self.paths.DIAMOND_job_limit)
+        self.BWA_pp_job_limit           = int(self.paths.BWA_pp_job_limit)
+        self.BLAT_pp_job_limit          = int(self.paths.BLAT_pp_job_limit)
+        self.DIAMOND_pp_job_limit       = int(self.paths.DIAMOND_pp_job_limit)
+        self.Infernal_job_limit         = int(self.paths.Infernal_job_limit)
+        self.Barrnap_job_limit          = int(self.paths.Barrnap_job_limit)
+        self.DETECT_job_limit           = int(self.paths.DETECT_job_limit)
+        self.TA_job_limit               = int(self.paths.TA_job_limit)
+        self.repop_job_limit            = int(self.paths.repop_job_limit)
+        self.GA_final_merge_job_limit   = int(self.paths.GA_final_merge_job_limit)
+        self.EC_job_limit               = int(self.paths.EC_job_limit)
         
-        self.Infernal_job_delay          = float(self.paths.Infernal_job_delay)
-        self.Barrnap_job_delay           = float(self.paths.Barrnap_job_delay)
-        self.BWA_job_delay               = float(self.paths.BWA_job_delay)
-        self.BLAT_job_delay              = float(self.paths.BLAT_job_delay)
-        self.DIAMOND_job_delay           = float(self.paths.DIAMOND_job_delay)
-        self.BWA_pp_job_delay            = float(self.paths.BWA_pp_job_delay)
-        self.BLAT_pp_job_delay           = float(self.paths.BLAT_pp_job_delay)
-        self.DIAMOND_pp_job_delay        = float(self.paths.DIAMOND_pp_job_delay)
-        self.DETECT_job_delay            = float(self.paths.DETECT_job_delay)
-        self.TA_job_delay                = float(self.paths.TA_job_delay)
-        self.repop_job_delay             = float(self.paths.repop_job_delay)
-        self.GA_final_merge_job_delay    = float(self.paths.GA_final_merge_job_delay)
+        self.Infernal_job_delay         = float(self.paths.Infernal_job_delay)
+        self.Barrnap_job_delay          = float(self.paths.Barrnap_job_delay)
+        self.BWA_job_delay              = float(self.paths.BWA_job_delay)
+        self.BLAT_job_delay             = float(self.paths.BLAT_job_delay)
+        self.DIAMOND_job_delay          = float(self.paths.DIAMOND_job_delay)
+        self.BWA_pp_job_delay           = float(self.paths.BWA_pp_job_delay)
+        self.BLAT_pp_job_delay          = float(self.paths.BLAT_pp_job_delay)
+        self.DIAMOND_pp_job_delay       = float(self.paths.DIAMOND_pp_job_delay)
+        self.DETECT_job_delay           = float(self.paths.DETECT_job_delay)
+        self.TA_job_delay               = float(self.paths.TA_job_delay)
+        self.repop_job_delay            = float(self.paths.repop_job_delay)
+        self.GA_final_merge_job_delay   = float(self.paths.GA_final_merge_job_delay)
+        self.EC_job_delay               = float(self.paths.EC_job_delay)                              
 
         self.filter_stringency = self.paths.filter_stringency
         
@@ -161,6 +165,8 @@ class mp_stage:
         self.ec_annotation_label                    = "enzyme_annotation"
         self.ec_annotation_detect_label             = "enzyme_annotation_detect"
         self.ec_annotation_priam_label              = "enzyme_annotation_priam"
+        self.ec_annotation_priam_split_label        = "enzyme_annotation_priam_split"
+        self.ec_annotation_priam_cat_label        = "enzyme_annotation_priam_cat"
         self.ec_annotation_DIAMOND_label            = "enzyme_annotation_DIAMOND"
         self.ec_annotation_pp_label                 = "enzyme_annotation_pp"
         self.output_label                           = "outputs"
@@ -181,8 +187,6 @@ class mp_stage:
         self.output_taxa_groupby_label              = "output_taxa_groupby"
         self.output_read_count_label                = "output_read_count"
 
-
-        
 
         #timing vars
         self.start_time                     = time.time()
@@ -281,9 +285,9 @@ class mp_stage:
         # Creates our command object, for creating shellscripts.
 
         if self.read_mode == "single":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, Thread_count=self.real_thread_count, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=single_path, sequence_contigs = None)
+            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, thread_count=self.real_thread_count, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=single_path, sequence_contigs = None)
         elif self.read_mode == "paired":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, Thread_count=self.real_thread_count, tutorial_keyword = None, sequence_path_1=pair_1_path, sequence_path_2=pair_2_path, sequence_single=None, sequence_contigs = None)
+            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, thread_count=self.real_thread_count, tutorial_keyword = None, sequence_path_1=pair_1_path, sequence_path_2=pair_2_path, sequence_single=None, sequence_contigs = None)
     
 
         #--------------------------------------------------------
@@ -303,9 +307,6 @@ class mp_stage:
         self.ec_annotation_path     = os.path.join(self.output_folder_path, self.ec_annotation_label)
         self.network_path           = os.path.join(self.output_folder_path, self.output_label)
         
-        
-        
-
 
         #working folders
         self.GA_split_data_folder   = os.path.join(self.GA_split_label, "data")
@@ -316,14 +317,18 @@ class mp_stage:
         self.GA_BLAT_jobs_folder    = os.path.join(self.GA_BLAT_data_folder, "jobs")
         self.GA_DIAMOND_data_folder = os.path.join(self.GA_DIAMOND_path, "data")
         self.GA_DIAMOND_jobs_folder = os.path.join(self.GA_DIAMOND_data_folder, "jobs")
+        self.EC_data_folder         = os.path.join(self.ec_annotation_path, "data")
+        self.EC_jobs_folder         = os.path.join(self.EC_data_folder, "jobs")
+        self.TA_data_folder         = os.path.join(self.TA_path, "data")
+        self.TA_jobs_folder         = os.path.join(self.TA_data_folder, "jobs")
         
-        self.TA_jobs_folder         = os.path.join(self.TA_path, "data", "jobs")
-        self.ec_detect_path         = os.path.join(self.ec_annotation_path, "data", "0_detect")
-        self.ec_priam_path          = os.path.join(self.ec_annotation_path, "data", "1_priam")
-        self.ec_diamond_path        = os.path.join(self.ec_annotation_path, "data", "2_diamond")
-        self.ec_detect_out          = os.path.join(self.ec_annotation_path, "data", "jobs", "ec_detect")
-        self.ec_priam_out           = os.path.join(self.ec_annotation_path, "data", "jobs", "ec_priam")
-        self.ec_diamond_out         = os.path.join(self.ec_annotation_path, "data", "jobs", "ec_diamond")
+        self.ec_detect_path         = os.path.join(self.EC_data_folder, "0_detect")
+        self.ec_priam_path          = os.path.join(self.EC_data_folder, "1_priam")
+        self.ec_split_path           = os.path.join(self.EC_data_folder, "1A_priam_split")
+        self.ec_diamond_path        = os.path.join(self.EC_data_folder, "2_diamond")
+        self.ec_detect_out          = os.path.join(self.EC_jobs_folder, "ec_detect")
+        self.ec_priam_out           = os.path.join(self.EC_jobs_folder, "ec_priam_cat")
+        self.ec_diamond_out         = os.path.join(self.EC_jobs_folder, "ec_diamond")
         
         #special contig-bypasser logic vars
         self.contigs_present = True  #for the contig/assembly bypasser
@@ -1408,6 +1413,73 @@ class mp_stage:
         #There's a 2-step check.  We don't want it ti re-run either DETECT, or PRIAM+DIAMOND because they're too slow
         #if not check_where_resume(ec_annotation_path, None, self.GA_DIAMOND_path):
         #if check_bypass_log(self.output_folder_path, self.ec_annotation_label):
+        
+        
+        # --------------------------------------------------------------
+        # Priam EC annotation.  Why isn't it parallel? computing restraints.  Not enough mem
+        self.EC_PRIAM_start = time.time()
+
+        #split the proteins
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_priam_split_label):
+            marker_file = "ec_split"
+            marker_path = os.path.join(self.ec_annotation_path, "data", "jobs", marker_file)
+            if(os.path.exists(marker_path)):
+                print(dt.today(), "skipping:", marker_file)
+            else:
+                command_list = self.commands.create_EC_PRIAM_split_command(self.ec_annotation_label, self.GA_final_merge_label, self.ec_split_path, marker_file)
+                print(command_list)
+                self.mp_util.launch_only_simple(self.commands, command_list)
+                
+                
+        #if not check_where_resume(job_label = None, full_path = ec_priam_path, dep_job_path = GA_DIAMOND_path):
+        
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_priam_label):
+            split_count = 0
+            
+            print("ec split dir:", os.listdir(self.ec_split_path))
+            
+            for ec_split_file in os.listdir(self.ec_split_path):
+                marker_file = "ec_priam_" + str(split_count)
+                marker_path = os.path.join(self.ec_annotation_path, "data", "jobs", marker_file)
+                print(marker_path)
+                #time.sleep(10)
+                if(os.path.exists(marker_path)):
+                    print(dt.today(), "skipping:", marker_file)
+                else:
+                    priam_file_path = os.path.join(self.ec_priam_path, "split_" + str(split_count))
+                    split_path = os.path.join(self.ec_split_path, "protein_split_" + str(split_count) + ".fasta")
+                    self.mp_util.make_folder(priam_file_path)    
+                    command_list = self.commands.create_EC_PRIAM_command_v2(self.ec_annotation_label, self.GA_final_merge_label, priam_file_path, split_path, split_count, marker_file)
+                    print(command_list)
+                    if(os.path.exists(priam_file_path)):
+                        print(dt.today(), "attempting PRIAM auto-resume")
+                        
+                    self.mp_util.launch_only_with_hold(self.EC_mem_threshold, self.EC_job_limit, self.EC_job_delay, marker_file, self.commands, command_list)
+                split_count += 1
+        
+        
+        
+            #process.join()
+        print(dt.today(), "Waiting for PRIAM jobs")
+        self.mp_util.wait_for_mp_store()
+        
+        
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_priam_cat_label):
+            marker_file = "ec_priam_cat"
+            marker_path = os.path.join(self.ec_annotation_path, "data", "jobs", marker_file)
+            if(os.path.exists(marker_path)):
+                print(dt.today(), "skipping:", marker_path)
+            else:
+                command_list = self.commands.create_EC_PRIAM_cat_command(self.ec_annotation_label, marker_file)
+                print("CAT:", command_list)
+                self.mp_util.launch_only_simple(self.commands, command_list)
+            
+            
+        self.EC_PRIAM_end = time.time()
+        print("EC PRIAM:", '%1.1f' % (self.EC_PRIAM_end - self.EC_PRIAM_start), "s")
+        
+        #-----------------------------------------------------------------------
+        # Detect
         self.EC_DETECT_start = time.time()
         #if not check_where_resume(job_label = None, full_path = ec_detect_path, dep_job_path = GA_DIAMOND_path):
         if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_detect_label):
@@ -1423,27 +1495,8 @@ class mp_stage:
         self.EC_DETECT_end = time.time()
         print("EC DETECT:", '%1.1f' % (self.EC_DETECT_end - self.EC_DETECT_start), "s")
         
-        # --------------------------------------------------------------
-        # Priam EC annotation.  Why isn't it parallel? computing restraints.  Not enough mem
-        EC_PRIAM_start = time.time()
         
-        #if not check_where_resume(job_label = None, full_path = ec_priam_path, dep_job_path = GA_DIAMOND_path):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_priam_label):
-            marker_file = "ec_priam"
-            marker_path = os.path.join(self.ec_annotation_path, "data", "jobs", marker_file)
-            if(os.path.exists(marker_path)):
-                print(dt.today(), "skipping:", marker_file)
-            else:
-                command_list = self.commands.create_EC_PRIAM_command(self.ec_annotation_label, self.GA_final_merge_label, marker_file)
-                if(os.path.exists(self.ec_priam_path)):
-                    print(dt.today(), "attempting PRIAM auto-resume")
-                    print("command:", command_list)
-                self.mp_util.launch_and_create_with_mp_store(self.ec_annotation_label, marker_file, self.commands, command_list)
-            
         
-            #process.join()
-        EC_PRIAM_end = time.time()
-        print("EC PRIAM:", '%1.1f' % (self.EC_PRIAM_end - EC_PRIAM_start), "s")
         # --------------------------------------------------------------
         # DIAMOND EC annotation 
         self.EC_DIAMOND_start = time.time()

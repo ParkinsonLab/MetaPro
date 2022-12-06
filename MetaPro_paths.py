@@ -189,6 +189,7 @@ class tool_path_obj:
         tool_path               = "/pipeline_tools/"
         database_path           = "/project/j/jparkin/Lab_Databases/"
         custom_database_path    = "/pipeline/custom_databases/"
+        
 
         #----------------------------------------------------------
         # Reference Databases
@@ -313,9 +314,14 @@ class tool_path_obj:
         BLAT_pp_mem_default = 50
         DIAMOND_pp_mem_default = 50
         GA_final_merge_mem_default = 5 
+        EC_mem_threshold_default = 5
         
         cpu_default = os.cpu_count()
         rRNA_chunksize_default = 50000
+        EC_chunksize_default = 50000
+        GA_chunksize_default = 25000
+        
+        
         
         BWA_job_limit_default               = cpu_default
         BLAT_job_limit_default              = cpu_default
@@ -329,6 +335,7 @@ class tool_path_obj:
         GA_final_merge_job_limit_default    = cpu_default
         repop_job_limit_default             = 1
         TA_job_limit_default                = cpu_default
+        EC_job_limit_default                = cpu_default
 
         Barrnap_job_delay_default           = 5
         Infernal_job_delay_default          = 5
@@ -342,6 +349,7 @@ class tool_path_obj:
         GA_final_merge_job_delay_default    = 5
         repop_job_delay_default             = 10
         TA_job_delay_default                = 5
+        EC_job_delay_default                = 1
 
         keep_all_default = "yes"
         keep_quality_default = "no"
@@ -359,7 +367,7 @@ class tool_path_obj:
         keep_outputs_default = "no"
         
         filter_stringency_default = "high"
-        GA_chunksize_default = 25000
+
         
         BWA_cigar_default = 90
         BLAT_identity_default = 85
@@ -398,10 +406,10 @@ class tool_path_obj:
         self.GA_final_merge_mem_threshold   = self.value_assignment(config, "Settings", "GA_final_merge_mem_threshold", GA_final_merge_mem_default)
         self.TA_mem_threshold               = self.value_assignment(config, "Settings", "TA_mem_threshold", TA_mem_threshold_default)
         self.repop_mem_threshold            = self.value_assignment(config, "Settings", "repop_mem_threshold", repop_mem_default)
+        self.EC_mem_threshold               = self.value_assignment(config, "Settings", "EC_mem_threshold", EC_mem_threshold_default)
             
         #-----------------------------------------------------------------------------------------------    
         
-        self.rRNA_chunksize             = self.value_assignment(config, "Settings", "rRNA_chunk_size", rRNA_chunksize_default)
         self.BWA_job_limit              = self.value_assignment(config, "Settings", "BWA_job_limit", BWA_job_limit_default)
         self.BLAT_job_limit             = self.value_assignment(config, "Settings", "BLAT_job_limit", BLAT_job_limit_default)
         self.DIAMOND_job_limit          = self.value_assignment(config, "Settings", "DIAMOND_job_limit", DIAMOND_job_limit_default)
@@ -414,6 +422,7 @@ class tool_path_obj:
         self.GA_final_merge_job_limit   = self.value_assignment(config, "Settings", "GA_final_merge_job_limit", GA_final_merge_job_limit_default)
         self.TA_job_limit               = self.value_assignment(config, "Settings", "TA_job_limit", TA_job_limit_default)
         self.repop_job_limit            = self.value_assignment(config, "Settings", "repop_job_limit", repop_job_limit_default)
+        self.EC_job_limit               = self.value_assignment(config, "Settings", "EC_job_limit", EC_job_limit_default)
         
         #------------------------------------------------------------------------
         
@@ -429,6 +438,7 @@ class tool_path_obj:
         self.GA_final_merge_job_delay   = self.value_assignment(config, "Settings", "GA_final_merge_job_delay", GA_final_merge_job_delay_default)
         self.TA_job_delay               = self.value_assignment(config, "Settings", "TA_job_delay", TA_job_delay_default)
         self.repop_job_delay            = self.value_assignment(config, "Settings", "repop_job_delay", repop_job_delay_default)
+        self.EC_job_delay               = self.value_assignment(config, "Settings", "EC_job_delay", EC_job_delay_default)
 
         #------------------------------------------------------------------------------------------------
         self.keep_all                   = self.value_assignment(config, "Settings", "keep_all", keep_all_default)
@@ -453,5 +463,9 @@ class tool_path_obj:
         
         self.filter_stringency          = self.value_assignment(config, "Settings", "filter_stringency", filter_stringency_default)
         self.GA_chunksize               = self.value_assignment(config, "Settings", "GA_chunk_size", GA_chunksize_default)
+        self.EC_chunksize               = self.value_assignment(config, "Settings", "EC_chunk_size", EC_chunksize_default)
+        self.rRNA_chunksize             = self.value_assignment(config, "Settings", "rRNA_chunk_size", rRNA_chunksize_default)
+        
+        
     
                 
