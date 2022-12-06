@@ -3034,7 +3034,7 @@ class mt_pipe_commands:
         PRIAM_command += " -p " + self.tool_path_obj.PriamDB
         PRIAM_command += " -o " + priam_out_folder
         PRIAM_command += " --np " + self.threads_str
-        PRIAM_command += " --bh --cc --cg --bp --bd "
+        PRIAM_command += " --bh --cc --bp --bd "
         PRIAM_command += self.tool_path_obj.BLAST_dir
         
         make_marker = "touch" + " "
