@@ -315,33 +315,75 @@ MetaPro runs in a Singularity instance.  As of writing (Sept 28, 2018), Singular
 ## Guide to outputs
 ---
 MetaPro produces many outputs for the user to use:
-- Gene map
+### read count
+The read count table (read_count.tsv) is the full accounting of the sequence reads as they progress through MetaPro
+The columns are:
+
+    Total reads: The number of unique raw sequence reads in the sample
+    High quality: The number of unique sequence reads after the low-quality filtering step
+    % high quality: High quality, as a percentage of total reads
+    host reads: the number of host sequence reads found by MetaPro
+    % host reads: host reads, as a percentage of total reads
+    vector reads: the number of vector reads found by MetaPro
+    % vector reads: vector reads, as a percentage of total reads
+    rRNA + tRNA reads: the number of rRNA and tRNA reads removed by MetaPro
+    % rRNA + tRNA reads: rRNA + tRNA reads, as a percentage of total reads
+    Putative reads: the number of mRNA reads that will be annotated by MetaPro
+    % Putative reads: putative reads, as a percentage of total reads
+    annotated mRNA reads: the number of putative reads that were assigned to a gene or protein
+    % annotated reads: annotated mRNA reads, as a percentage of putative reads
+    Unique transcripts: the number of unique genes and proteins found by MetaPro
+    High-Quality enzymes: The number of enzymes found by MetaPro (using the high-quality EC filter settings)
+    Low-Quality enzymes: the number of enzymes found by MetaPro (usiing the low-quality EC filter settings)
+
+### Contig stats
+---
+This file displays the N50 and L50 read lengths of the contigs assembled by rnaSPADes.  
+
+### Gene map
+---
 The Gene map shows all of the genes and proteins that have been identified by either BWA, BLAT, or DIAMOND.
 The map shows every read that has been identified to those genes/proteins.
-The columns in the Gene map are: 
--- Gene ID / Protein accession
--- Length of the gene / protein
--- Number of reads annotated to the gene/protein
--- The read IDs that annotated to the gene/protein
 
-- RPKM table
+The columns in the Gene map are: 
+
+    Gene ID / Protein accession
+    Length of the gene / protein
+    Number of reads annotated to the gene/protein
+    The read IDs that annotated to the gene/protein
+
+### RPKM table
+---
 The RPKM table shows the abundance of each gene, expressed as RPKM of the reads annotated to the gene/protein.
 The columns are:
--- The ID of the gene/protein
--- The length of the gene/protein
--- The number of reads associated with each gene/protein
--- The ECs associated with each gene/protein (delineated with a "|" to show multiple ECs per gene/protein)
--- The RPKM of the gene/protein
--- The rest of the columns are taxa, representing at least 1% of the sample (on default), and the RPKM associated by taxa.
 
-- EC heatmap RPKM
+    The ID of the gene/protein
+    The length of the gene/protein
+    The number of reads associated with each gene/protein
+    The ECs associated with each gene/protein (delineated with a "|" to show multiple ECs per gene/protein)
+    The RPKM of the gene/protein
+    The rest of the columns are taxa, representing at least 1% of the sample (on default), and the RPKM associated by taxa.
+
+### Enzyme superpathway heatmap
+---
 This table is not meant to be used externally.  It is for generating the EC heatmap
 This table contains no new information from RPKM, and is a transformed table to flatten the data where there are multiple ECs per gene/protein
+Each row corresponds to each enzyme superpathway, while each column will be one of the major organisms (at least 1%) in the sample
 
-- Taxa Classifications
+### Taxa Classifications
+---
 This table shows the taxa classification for every putative read that MetaPro processed.
 The columns are:
--- Classified/Unclassified.  C is classified, U is unclassified.  
--- The read ID
--- The full taxonomic tree of the read
+    
+    Classified/Unclassified.  C is classified, U is unclassified.  
+    The read ID
+    The full taxonomic tree of the read
+
+### Taxa Summary
+---
+This table is a tally of all unique taxa trees found in the sample
+The columns are:
+
+    taxa: the full taxonomic tree 
+    count: the number of times a sequence read annotated to this specific taxa tree
 
