@@ -230,7 +230,7 @@ class tool_path_obj:
         
         #if config:
         self.Python         = self.value_assignment(config, "Tools", "Python", "python3")
-        self.Java           = self.value_assignment(config, "Tools", "Java", "java -Xmx10000m -jar")
+        self.Java           = self.value_assignment(config, "Tools", "Java", "java -jar")
         self.cdhit_dup      = self.value_assignment(config, "Tools", "cdhit_dup",  os.path.join(tool_path, "cdhit_dup/cd-hit-dup"))
         self.AdapterRemoval = self.value_assignment(config, "Tools", "AdapterRemoval", os.path.join(tool_path, "adapterremoval/AdapterRemoval"))
         self.vsearch        = self.value_assignment(config, "Tools", "vsearch", os.path.join(tool_path, "vsearch/vsearch"))
