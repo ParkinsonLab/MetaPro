@@ -31,7 +31,8 @@ def shrink_seq_name(seq_name):
             new_name += name_split[i] + "_"
     elif("|" in seq_name):
         #handle names that look like ">1263055__E6SW96__BN594_01963|k__Bacteria...."
-        new_name = seq_name.split("|")[0]
+        name_split = seq_name.split("|")
+        new_name = name_split[0] + "_" + name_split[-1]
     else:
         new_name = seq_name
     invalid_chars = ["?","<",">","\\",":","*","|"]
