@@ -18,6 +18,30 @@ import psutil as psu
 import time
 import resource as rs
 
+def shrink_seq_name(seq_name):
+    #problem with detect-filenames being too long.  using truncated versions.
+    new_name = ""
+        
+        
+    if(seq_name.startswith("gi")):
+        #for names like: >gi|522837954|ref|NZ_KE159520.1|:719717-720472|328812|g__Parabacteroides.s__Parabacteroides_goldsteinii|UniRef90_R6Y7R4|UniRef50_B4UHS9
+        #in choco h2
+        name_split = seq_name.split("|")
+        for i in range(0, 5):
+            new_name += name_split[i] + "_"
+    elif("|" in seq_name):
+        #handle names that look like ">1263055__E6SW96__BN594_01963|k__Bacteria...."
+        new_name = seq_name.split("|")[0]
+    else:
+        new_name = seq_name
+    invalid_chars = ["?","<",">","\\",":","*","|"]
+    for char in invalid_chars:
+        new_name = new_name.replace(char, "_")
+  
+    print("new name:", new_name)
+    #time.sleep(10)    
+    return new_name
+
 def mem_checker(threshold):
     #threshold is a percentage
     mem = psu.virtual_memory()
@@ -141,10 +165,9 @@ def run_pair_alignment (seq, blast_db, num_threads, e_value_min, bitscore_cutoff
     #First pass cutoff with BLAST alignments
     if verbose: print( "[DETECT]: Running BLASTp for {} ...".format(seq.name()))
 
-    invalid_chars = ["?","<",">","\\",":","*","|"]
-    valid_seq_name = seq.name()
-    for char in invalid_chars:
-        valid_seq_name = valid_seq_name.replace(char, "_")
+    valid_seq_name = shrink_seq_name(seq.name())
+    print(seq.name(), "name used:", valid_seq_name)
+    
     try:
         p = subprocess.Popen((blastp, "-query", "-", 
                         "-out", "-",
@@ -603,6 +626,8 @@ if __name__=="__main__":
                     process_list.append(process)
                     process_counter += 1
                     true_job_count += 1
+                    
+                    
                     job_submitted = True
                     if(true_job_count % 100 == 0):
                         print(dt.today(), true_job_count, "jobs launched!")
