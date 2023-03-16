@@ -1013,8 +1013,7 @@ class mt_pipe_commands:
   
 
         return [Barrnap_archaea + " && " + make_marker]
-         
-        
+              
     def create_rRNA_filter_barrnap_bac_command(self, stage_name, category, fastq_name, marker_file):
 
         subfolder           = os.path.join(self.Output_Path, stage_name)
@@ -1124,8 +1123,7 @@ class mt_pipe_commands:
         
 
         return [Barrnap_mitochondria + " && " + make_marker]
-        
-        
+               
     def create_rRNA_filter_barrnap_cat_command(self, stage_name, category, fastq_name, marker_file):
         #this is expected to run on each sample split
         subfolder           = os.path.join(self.Output_Path, stage_name)
@@ -1180,8 +1178,7 @@ class mt_pipe_commands:
         
 
         return [cat_command + " && " + make_marker + " && " + rm_arc  + " && " + rm_bac  + " && " +  rm_euk  + " && " +  rm_mit]
-        
-        
+             
     def create_rRNA_filter_barrnap_pp_command(self, stage_name, category, fastq_name, marker_file):
         subfolder           = os.path.join(self.Output_Path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
@@ -1222,8 +1219,7 @@ class mt_pipe_commands:
         
 
         return [Barrnap_pp + " && " + make_marker]
-        
-        
+               
     def create_rRNA_filter_infernal_prep_command(self, stage_name, category, fastq_name, root_name, marker_file):
         #expecting full file name in fastq_name
         subfolder           = os.path.join(self.Output_Path, stage_name)
@@ -1266,7 +1262,6 @@ class mt_pipe_commands:
         return [convert_fastq_to_fasta_barrnap + " && " + make_marker]
 
     def create_rRNA_filter_infernal_command(self, stage_name, category, file_name, marker_file):
-    
         subfolder           = os.path.join(self.Output_Path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         fasta_folder        = os.path.join(data_folder, category + "_fasta")
@@ -1309,8 +1304,7 @@ class mt_pipe_commands:
         
 
         return [infernal_command + " && " + make_marker]
-        
-    
+          
     def create_rRNA_filter_splitter_command(self, stage_name, category, file_name, marker_file):
     #file name expected to have no extensions.  eg: pair_1_0
     #expected to be called for each category (pair1, singletons).  not pair 2.  paired data is handled in combination
@@ -1735,6 +1729,7 @@ class mt_pipe_commands:
                 ]
 
         return COMMANDS_Repopulate        
+        
     def create_repop_command_v2_step_2(self, stage_name, preprocess_stage_name, dependency_stage_name):
         # This stage reintroduces the duplicate reads into the data.  We need it to count towards things.
         # Due to time, and hierarchical importance, we're leaving this stage alone.
@@ -1796,7 +1791,6 @@ class mt_pipe_commands:
                 ]
 
         return COMMANDS_Repopulate 
-
 
     def create_assemble_contigs_command(self, stage_name, dependency_stage_name):
         subfolder           = os.path.join(self.Output_Path, stage_name)
@@ -1928,7 +1922,34 @@ class mt_pipe_commands:
 
         return COMMANDS_Assemble
 
-   
+    def create_GA_pre_scan_command(self, stage_name, marker_file):
+        subfolder       = os.path.join(self.Output_Path, stage_name)
+        final_folder    = os.path.join(subfolder, "final_results")
+        data_folder     = os.path.join(subfolder, "data")
+        dest_folder     = os.path.join(data_folder, "4_libs")
+        jobs_folder     = os.path.join(subfolder, "jobs")
+        
+        self.make_folder(data_folder)
+        self.make_folder(dest_folder)
+        self.make_folder(jobs_folder)
+        
+        ga_get_lib = ">&2 echo GA pre-scan get libs | "
+        ga_get_lib += self.tool_path_obj.Python + " "
+        ga_get_lib += self.tool_path_obj.GA_pre_scan_libs + " "
+        ga_get_lib += os.path.join(data_folder, "3_wevote", "taxonomic_classifications.tsv") + " "
+        ga_get_lib += self.tool_path_obj.taxid_class_map + " "
+        ga_get_lib += self.tool_path_obj.nodes + " "
+        ga_get_lib += os.path.join(dest_folder, "lib_list.txt") + " "
+        ga_get_lib += os.path.join(dest_folder, "lib_reject.txt") + " "
+        ga_get_lib += self.tool_path_obj.DNA_DB + " "
+        ga_get_lib += self.tool_path.obj.taxa_exist_cutoff
+        
+        
+        make_marker = "touch" + " "
+        make_marker += os.path.join(jobs_folder, marker_file)
+        
+        return [ga_get_lib + " && " + make_marker]
+ 
     def create_split_ga_fastq_data_command(self, stage_name, dependency_stage_name, category, marker_file):
         subfolder       = os.path.join(self.Output_Path, stage_name)
         final_folder    = os.path.join(subfolder, "final_results")
@@ -2132,8 +2153,6 @@ class mt_pipe_commands:
         ]
 
         return COMMANDS_BWA
-        
-        
         
         
     def create_BWA_pp_command_v2(self, stage_name, dependency_stage_name, ref_tag, ref_path, query_file, marker_file):
@@ -2844,7 +2863,55 @@ class mt_pipe_commands:
         make_marker += os.path.join(jobs_folder, marker_file)
         
         return [get_taxa_from_gene + " && " + make_marker]
+        
+    def create_TA_wevote_combine_command(self, current_stage_name, assemble_contigs_stage, marker_file):
+        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        data_folder             = os.path.join(subfolder, "data")
+        assemble_contigs_folder = os.path.join(self.Output_Path, assemble_contigs_stage, "final_results")
+        kaiju_folder            = os.path.join(data_folder, "1_kaiju")
+        centrifuge_folder       = os.path.join(data_folder, "2_centrifuge")
+        wevote_folder           = os.path.join(data_folder, "3_wevote")
+        final_folder            = os.path.join(subfolder, "final_results")
+        jobs_folder             = os.path.join(data_folder, "jobs")
+        
+        self.make_folder(subfolder)
+        self.make_folder(data_folder)
+        self.make_folder(wevote_folder)
+        self.make_folder(final_folder)
+        self.make_folder(jobs_folder)
+        
+        wevote_combine = ">&2 echo combining classification outputs for wevote | "
+        wevote_combine += self.tool_path_obj.Python + " "
+        wevote_combine += self.tool_path_obj.Classification_combine + " "
+        wevote_combine += os.path.join(assemble_contigs_folder, "contig_map.tsv")
+        wevote_combine += " " + os.path.join(wevote_folder, "wevote_input.csv") + " "
+        wevote_combine += "none" + " "
+        wevote_combine += "none" + " "
+        wevote_combine += "none" + " "
+        wevote_combine += os.path.join(kaiju_folder, "merged_kaiju.tsv") + " "
+        wevote_combine += os.path.join(centrifuge_folder, "merged_centrifuge.tsv")  
 
+        wevote_call = ">&2 echo Running WEVOTE | "
+        wevote_call += self.tool_path_obj.WEVOTE
+        wevote_call += " -i " + os.path.join(wevote_folder, "wevote_input.csv")
+        wevote_call += " -d " + self.tool_path_obj.WEVOTEDB
+        wevote_call += " -p " + os.path.join(wevote_folder, "wevote")
+        wevote_call += " -n " + self.threads_str
+        wevote_call += " -k " + "2"
+        wevote_call += " -a " + "0"
+        wevote_call += " -s " + "0"
+        
+        wevote_collect = ">&2 echo gathering WEVOTE results | "
+        wevote_collect += self.tool_path_obj.Python + " "
+        wevote_collect += self.tool_path_obj.Wevote_parser + " "
+        wevote_collect += os.path.join(wevote_folder, "wevote_WEVOTE_Details.txt") + " "
+        wevote_collect += os.path.join(wevote_folder, "taxonomic_classifications.tsv")
+        
+        make_marker = "touch" + " "
+        make_marker += os.path.join(jobs_folder, marker_file)
+        
+        return [wevote_combine + " && " + wevote_call + " && " + wevote_collect +  " && " + make_marker]
+        
     
     def create_TA_final_command(self, current_stage_name, assemble_contigs_stage, marker_file):
         subfolder               = os.path.join(self.Output_Path, current_stage_name)

@@ -21,11 +21,11 @@
 import os
 import sys
 from datetime import datetime as dt
+import time
 from configparser import ConfigParser, ExtendedInterpolation
 
 class tool_path_obj:
-    def __init__ (self):
-        self.GA_DB_mode = "None"
+    
     
     def value_assignment(self, config, config_section, var_name, default):
         value = ""
@@ -34,6 +34,12 @@ class tool_path_obj:
             if(config_section in config):
                 if(var_name in config[config_section]):
                     value = config[config_section][var_name]
+                    if('"' in value):
+                        value = value.strip('"')
+                        #print("quotes cleaned")
+                        #print(var_name, "found! using:", value)
+                        #time.sleep(1)
+                    print(var_name, "found! using:", value)
                 else:
                     print(var_name, "no inner section found. using default", default)
                     value = default
@@ -180,7 +186,7 @@ class tool_path_obj:
         if config_path:
             config = ConfigParser() #change this to ex
             config.read(config_path)
-            print("USING CONFIG")
+            print("USING CONFIG", config_path)
         else:
             print("no config found, defaulting")
             config = None
@@ -381,6 +387,7 @@ class tool_path_obj:
         self.target_rank                = self.value_assignment(config, "Settings", "target_rank", "genus")
         self.adapterremoval_minlength   = self.value_assignment(config, "Settings", "AdapterRemoval_minlength", 30)
         self.show_unclassified          = self.value_assignment(config, "Settings", "Show_unclassified", "No")
+        self.bypass_log_name            = self.value_assignment(config, "Settings", "bypass_log_name", "bypass_log.txt")
         self.RPKM_cutoff                = self.value_assignment(config, "Settings", "RPKM_cutoff", 0.01)
         self.BWA_cigar_cutoff           = self.value_assignment(config, "Settings", "BWA_cigar_cutoff", BWA_cigar_default)
         self.BLAT_identity_cutoff       = self.value_assignment(config, "Settings", "BLAT_identity_cutoff", BLAT_identity_default)
@@ -463,6 +470,120 @@ class tool_path_obj:
         self.EC_chunksize               = self.value_assignment(config, "Settings", "EC_chunk_size", EC_chunksize_default)
         self.rRNA_chunksize             = self.value_assignment(config, "Settings", "rRNA_chunk_size", rRNA_chunksize_default)
         
+     
         
     
-                
+        #--------------------------------------------------------------------------------------------
+        # Labels.  
+        # why? to change them during integration + new feature testing
+
+        quality_filter_label_default                    = "quality_filter"
+        host_filter_label_default                       = "host_filter"
+        vector_filter_label_default                     = "vector_filter"
+        rRNA_filter_label_default                       = "rRNA_filter"
+        rRNA_filter_split_label_default                 = "rRNA_filter_split"
+        rRNA_filter_convert_label_default               = "rRNA_filter_convert"
+        rRNA_filter_barrnap_label_default               = "rRNA_filter_barrnap"
+        rRNA_filter_barrnap_merge_label_default         = "rRNA_filter_barrnap_merge"
+        rRNA_filter_barrnap_pp_label_default            = "rRNA_filter_barrnap_pp"
+        rRNA_filter_infernal_label_default              = "rRNA_filter_infernal"
+        rRNA_filter_infernal_prep_label_default         = "rRNA_filter_infernal_prep"
+        rRNA_filter_splitter_label_default              = "rRNA_filter_splitter"
+        rRNA_filter_post_label_default                  = "rRNA_filter_post"
+        repop_label_default                             = "duplicate_repopulation"
+        assemble_contigs_label_default                  = "assemble_contigs"
+        destroy_contigs_label_default                   = "destroy_contigs"
+        GA_pre_scan_label_default                       = "GA_pre_scan"
+        GA_split_label_default                          = "GA_split"
+        GA_BWA_label_default                            = "GA_BWA"
+        GA_BWA_pp_label_default                         = "GA_BWA_pp"
+        GA_BWA_merge_label_default                      = "GA_BWA_merge"
+        GA_BLAT_label_default                           = "GA_BLAT"
+        GA_BLAT_cleanup_label_default                   = "GA_BLAT_cleanup"
+        GA_BLAT_cat_label_default                       = "GA_BLAT_cat"
+        GA_BLAT_pp_label_default                        = "GA_BLAT_pp"
+        GA_BLAT_merge_label_default                     = "GA_BLAT_merge"
+        GA_DIAMOND_label_default                        = "GA_DIAMOND"
+        GA_DIAMOND_pp_label_default                     = "GA_DIAMOND_pp"
+        GA_final_merge_label_default                    = "GA_FINAL_MERGE"
+        taxon_annotation_label_default                  = "taxonomic_annotation"
+        ec_annotation_label_default                     = "enzyme_annotation"
+        ec_annotation_detect_label_default              = "enzyme_annotation_detect"
+        ec_annotation_priam_label_default               = "enzyme_annotation_priam"
+        ec_annotation_priam_split_label_default         = "enzyme_annotation_priam_split"
+        ec_annotation_priam_cat_label_default           = "enzyme_annotation_priam_cat"
+        ec_annotation_DIAMOND_label_default             = "enzyme_annotation_DIAMOND"
+        ec_annotation_pp_label_default                  = "enzyme_annotation_pp"
+        output_label_default                            = "outputs"
+        output_copy_gene_map_label_default              = "output_copy_gene_map"
+        output_clean_EC_label_default                   = "output_clean_ec"
+        output_copy_taxa_label_default                  = "output_copy_taxa"
+        output_network_gen_label_default                = "output_network_generation"
+        output_unique_hosts_singletons_label_default    = "output_unique_hosts_singletons"
+        output_unique_hosts_pair_1_label_default        = "output_unique_hosts_pair_1"
+        output_unique_hosts_pair_2_label_default        = "output_unique_hosts_pair_2"
+        output_unique_vectors_singletons_label_default  = "output_unique_vectors_singletons"
+        output_unique_vectors_pair_1_label_default      = "output_unique_vectors_pair_1"
+        output_unique_vectors_pair_2_label_default      = "output_unique_vectors_pair_2"
+        output_combine_hosts_label_default              = "output_combine_hosts"
+        output_per_read_scores_label_default            = "output_per_read_scores"
+        output_contig_stats_label_default               = "output_contig_stats"
+        output_ec_heatmap_label_default                 = "output_ec_heatmap"
+        output_taxa_groupby_label_default               = "output_taxa_groupby"
+        output_read_count_label_default                 = "output_read_count"
+        
+
+        self.quality_filter_label                   = self.value_assignment(config, "Labels", "quality_filter",                     quality_filter_label_default)
+        self.host_filter_label                      = self.value_assignment(config, "Labels", "host_filter",                        host_filter_label_default)
+        self.vector_filter_label                    = self.value_assignment(config, "Labels", "vector_filter",                      vector_filter_label_default)
+        self.rRNA_filter_label                      = self.value_assignment(config, "Labels", "rRNA_filter",                        rRNA_filter_label_default)
+        self.rRNA_filter_split_label                = self.value_assignment(config, "Labels", "rRNA_filter_split",                  rRNA_filter_split_label_default)   
+        self.rRNA_filter_convert_label              = self.value_assignment(config, "Labels", "rRNA_filter_convert",                rRNA_filter_convert_label_default)
+        self.rRNA_filter_barrnap_label              = self.value_assignment(config, "Labels", "rRNA_filter_barrnap",                rRNA_filter_barrnap_label_default)
+        self.rRNA_filter_barrnap_merge_label        = self.value_assignment(config, "Labels", "rRNA_filter_barrnap_merge",          rRNA_filter_barrnap_merge_label_default)
+        self.rRNA_filter_barrnap_pp_label           = self.value_assignment(config, "Labels", "rRNA_filter_barrnap_pp",             rRNA_filter_barrnap_pp_label_default)
+        self.rRNA_filter_infernal_label             = self.value_assignment(config, "Labels", "rRNA_filter_infernal",               rRNA_filter_infernal_label_default)
+        self.rRNA_filter_infernal_prep_label        = self.value_assignment(config, "Labels", "rRNA_filter_infernal_prep",          rRNA_filter_infernal_prep_label_default)
+        self.rRNA_filter_splitter_label             = self.value_assignment(config, "Labels", "rRNA_filter_splitter",               rRNA_filter_splitter_label_default)
+        self.rRNA_filter_post_label                 = self.value_assignment(config, "Labels", "rRNA_filter_post",                   rRNA_filter_post_label_default)
+        self.repop_label                            = self.value_assignment(config, "Labels", "repop",                              repop_label_default)
+        self.assemble_contigs_label                 = self.value_assignment(config, "Labels", "assemble_contigs",                   assemble_contigs_label_default)
+        self.destroy_contigs_label                  = self.value_assignment(config, "Labels", "destroy_contigs",                    destroy_contigs_label_default)
+        self.GA_pre_scan_label                      = self.value_assignment(config, "Labels", "GA_pre_scan",                        GA_pre_scan_label_default)
+        self.GA_split_label                         = self.value_assignment(config, "Labels", "GA_split",                           GA_split_label_default)
+        self.GA_BWA_label                           = self.value_assignment(config, "Labels", "GA_BWA",                             GA_BWA_label_default)
+        self.GA_BWA_pp_label                        = self.value_assignment(config, "Labels", "GA_BWA_pp",                          GA_BWA_pp_label_default)
+        self.GA_BWA_merge_label                     = self.value_assignment(config, "Labels", "GA_BWA_merge",                       GA_BWA_merge_label_default)
+        self.GA_BLAT_label                          = self.value_assignment(config, "Labels", "GA_BLAT",                            GA_BLAT_label_default)
+        self.GA_BLAT_cleanup_label                  = self.value_assignment(config, "Labels", "GA_BLAT_cleanup",                    GA_BLAT_cleanup_label_default)
+        self.GA_BLAT_cat_label                      = self.value_assignment(config, "Labels", "GA_BLAT_cat",                        GA_BLAT_cat_label_default)
+        self.GA_BLAT_pp_label                       = self.value_assignment(config, "Labels", "GA_BLAT_pp",                         GA_BLAT_pp_label_default)
+        self.GA_BLAT_merge_label                    = self.value_assignment(config, "Labels", "GA_BLAT_merge",                      GA_BLAT_merge_label_default)
+        self.GA_DIAMOND_label                       = self.value_assignment(config, "Labels", "GA_DIAMOND",                         GA_DIAMOND_label_default)
+        self.GA_DIAMOND_pp_label                    = self.value_assignment(config, "Labels", "GA_DIAMOND_pp",                      GA_DIAMOND_pp_label_default)
+        self.GA_final_merge_label                   = self.value_assignment(config, "Labels", "GA_final_merge",                     GA_final_merge_label_default)
+        self.ta_label                               = self.value_assignment(config, "Labels", "ta",                                 taxon_annotation_label_default)
+        self.ec_label                               = self.value_assignment(config, "Labels", "ec",                                 ec_annotation_label_default)
+        self.ec_detect_label                        = self.value_assignment(config, "Labels", "ec_detect",                          ec_annotation_detect_label_default)
+        self.ec_priam_label                         = self.value_assignment(config, "Labels", "ec_priam",                           ec_annotation_priam_label_default)
+        self.ec_priam_split_label                   = self.value_assignment(config, "Labels", "ec_priam_split",                     ec_annotation_priam_split_label_default)
+        self.ec_priam_cat_label                     = self.value_assignment(config, "Labels", "ec_priam_cat",                       ec_annotation_priam_cat_label_default)
+        self.ec_DIAMOND_label                       = self.value_assignment(config, "Labels", "ec_DIAMOND",                         ec_annotation_DIAMOND_label_default)
+        self.ec_pp_label                            = self.value_assignment(config, "Labels", "ec_pp",                              ec_annotation_pp_label_default)
+        self.output_label                           = self.value_assignment(config, "Labels", "outputs",                            output_label_default)
+        self.output_copy_gene_map_label             = self.value_assignment(config, "Labels", "output_copy_gene_map",               output_copy_gene_map_label_default)
+        self.output_clean_ec_label                  = self.value_assignment(config, "Labels", "output_clean_ec",                    output_clean_EC_label_default)
+        self.output_copy_taxa_label                 = self.value_assignment(config, "Labels", "output_copy_taxa",                   output_copy_taxa_label_default)
+        self.output_network_generation_label        = self.value_assignment(config, "Labels", "output_network_generation",          output_network_gen_label_default)
+        self.output_unique_hosts_singletons_label   = self.value_assignment(config, "Labels", "output_unique_hosts_singletons",     output_unique_hosts_singletons_label_default)
+        self.output_unique_hosts_pair_1_label       = self.value_assignment(config, "Labels", "output_unique_hosts_pair_1",         output_unique_hosts_pair_1_label_default)
+        self.output_unique_hosts_pair_2_label       = self.value_assignment(config, "Labels", "output_unique_hosts_pair_2",         output_unique_hosts_pair_2_label_default)
+        self.output_unique_vectors_singletons_label = self.value_assignment(config, "Labels", "output_unique_vectors_singletons",   output_unique_vectors_singletons_label_default)
+        self.output_unique_vectors_pair_1_label     = self.value_assignment(config, "Labels", "output_unique_vectors_pair_1",       output_unique_vectors_pair_1_label_default)
+        self.output_unique_vectors_pair_2_label     = self.value_assignment(config, "Labels", "output_unique_vectors_pair_2",       output_unique_vectors_pair_2_label_default)
+        self.output_combine_hosts_label             = self.value_assignment(config, "Labels", "output_combine_hosts",               output_combine_hosts_label_default)
+        self.output_per_read_scores_label           = self.value_assignment(config, "Labels", "output_per_read_scores",             output_per_read_scores_label_default)
+        self.output_contig_stats_label              = self.value_assignment(config, "Labels", "output_contig_stats",                output_contig_stats_label_default)
+        self.output_ec_heatmap_label                = self.value_assignment(config, "Labels", "output_ec_heatmap",                  output_ec_heatmap_label_default)
+        self.output_taxa_groupby_label              = self.value_assignment(config, "Labels", "output_taxa_groupby",                output_taxa_groupby_label_default)
+        self.output_read_count_label                = self.value_assignment(config, "Labels", "output_read_count",                  output_read_count_label_default)

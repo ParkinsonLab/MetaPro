@@ -21,9 +21,7 @@ import os.path
 from argparse import ArgumentParser
 from configparser import ConfigParser, ExtendedInterpolation
 import multiprocessing as mp
-import MetaPro_commands as mpcom
-import MetaPro_paths as mpp
-import MetaPro_utilities as mpu
+
 import MetaPro_stages as mps
 import time
 import zipfile
@@ -60,17 +58,27 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     metapro_stage_obj.mp_repop()
 
     # Assemble contigs
-    metapro_stage_obj.mp_assemble()    
+    metapro_stage_obj.mp_assemble()  
+
+    #metapro_stage_obj.mp_TA()
+    metapro_stage_obj.mp_GA_pre_scan()
+    #sys.exit("paused")
 
     # GA split
     metapro_stage_obj.mp_GA_split()
 
     # BWA gene annotation
     
+    #metapro_stage_obj.mp_GA_BWA_v2()
     metapro_stage_obj.mp_GA_BWA()
+    
+    
+    
     metapro_stage_obj.mp_GA_BWA_pp()
     if(metapro_stage_obj.GA_DB_mode == "multi"):
         metapro_stage_obj.mp_GA_BWA_merge()
+    
+    sys.exit("paused")
     
     # BLAT gene annotation
     metapro_stage_obj.mp_GA_BLAT()
@@ -165,7 +173,7 @@ if __name__ == "__main__":
     # There's a few operating modes, mainly "docker", and "singularity".  These modes edit the pipeline filepaths
 
     parser = ArgumentParser(description="MetaPro - Meta-omic sequence processing and analysis pipeline"
-                                        "Version 2.1.1 © 2023")
+                                        "Version 2.2.0 © 2023")
 
     parser.add_argument("-c", "--config",   type=str,   help="Path to the configureation file")
     parser.add_argument("-1", "--pair1",    type=str,   help="Path to the file containing the forward paired-end reads in fastq format")

@@ -30,7 +30,7 @@ class mp_stage:
         
         self.tutorial_string = tutorial_mode_string
         self.output_folder_path = output_folder_path
-        self.mp_util = mpu.mp_util(self.output_folder_path)
+        self.mp_util = mpu.mp_util(self.output_folder_path, config_path)
         self.paths = mpp.tool_path_obj(config_path)
         self.GA_DB_mode = self.paths.GA_DB_mode
         self.segmented_chocophlan_flag = True
@@ -133,59 +133,61 @@ class mp_stage:
 
 
 
-        self.quality_filter_label                   = "quality_filter"
-        self.host_filter_label                      = "host_read_filter"
-        self.vector_filter_label                    = "vector_read_filter"
-        self.rRNA_filter_label                      = "rRNA_filter"
-        self.rRNA_filter_split_label                = "rRNA_filter_split"
-        self.rRNA_filter_convert_label              = "rRNA_filter_convert"
-        self.rRNA_filter_barrnap_label              = "rRNA_filter_barrnap"
-        self.rRNA_filter_barrnap_merge_label        = "rRNA_filter_barrnap_merge"
-        self.rRNA_filter_barrnap_pp_label           = "rRNA_filter_barrnap_pp"
-        self.rRNA_filter_infernal_label             = "rRNA_filter_infernal"
-        self.rRNA_filter_infernal_prep_label        = "rRNA_filter_infernal_prep"
-        self.rRNA_filter_splitter_label             = "rRNA_filter_splitter"
-        self.rRNA_filter_post_label                 = "rRNA_filter_post"
-        self.repop_job_label                        = "duplicate_repopulation"
-        self.assemble_contigs_label                 = "assemble_contigs"
-        self.destroy_contigs_label                  = "destroy_contigs"
-        self.GA_split_label                         = "GA_split"
-        self.GA_BWA_label                           = "GA_BWA"
-        self.GA_BWA_pp_label                        = "GA_BWA_pp"
-        self.GA_BWA_merge_label                     = "GA_BWA_merge"
-        self.GA_BLAT_label                          = "GA_BLAT"
-        self.GA_BLAT_cleanup_label                  = "GA_BLAT_cleanup"
-        self.GA_BLAT_cat_label                      = "GA_BLAT_cat"
-        self.GA_BLAT_pp_label                       = "GA_BLAT_pp"
-        self.GA_BLAT_merge_label                    = "GA_BLAT_merge"
-        self.GA_DIAMOND_label                       = "GA_DIAMOND"
-        self.GA_DIAMOND_pp_label                    = "GA_DIAMOND_pp"
-        self.GA_final_merge_label                   = "GA_FINAL_MERGE"
-        self.taxon_annotation_label                 = "taxonomic_annotation"
-        self.ec_annotation_label                    = "enzyme_annotation"
-        self.ec_annotation_detect_label             = "enzyme_annotation_detect"
-        self.ec_annotation_priam_label              = "enzyme_annotation_priam"
-        self.ec_annotation_priam_split_label        = "enzyme_annotation_priam_split"
-        self.ec_annotation_priam_cat_label        = "enzyme_annotation_priam_cat"
-        self.ec_annotation_DIAMOND_label            = "enzyme_annotation_DIAMOND"
-        self.ec_annotation_pp_label                 = "enzyme_annotation_pp"
-        self.output_label                           = "outputs"
-        self.output_copy_gene_map_label             = "output_copy_gene_map"
-        self.output_clean_EC_label                  = "output_clean_ec"
-        self.output_copy_taxa_label                 = "output_copy_taxa"
-        self.output_network_gen_label               = "output_network_generation"
-        self.output_unique_hosts_singletons_label   = "output_unique_hosts_singletons"
-        self.output_unique_hosts_pair_1_label       = "output_unique_hosts_pair_1"
-        self.output_unique_hosts_pair_2_label       = "output_unique_hosts_pair_2"
-        self.output_unique_vectors_singletons_label = "output_unique_vectors_singletons"
-        self.output_unique_vectors_pair_1_label     = "output_unique_vectors_pair_1"
-        self.output_unique_vectors_pair_2_label     = "output_unique_vectors_pair_2"
-        self.output_combine_hosts_label             = "output_combine_hosts"
-        self.output_per_read_scores_label           = "output_per_read_scores"
-        self.output_contig_stats_label              = "output_contig_stats"
-        self.output_ec_heatmap_label                = "output_ec_heatmap"
-        self.output_taxa_groupby_label              = "output_taxa_groupby"
-        self.output_read_count_label                = "output_read_count"
+        self.quality_filter_label                   = self.paths.quality_filter_label
+        self.host_filter_label                      = self.paths.host_filter_label
+        self.vector_filter_label                    = self.paths.vector_filter_label
+        self.rRNA_filter_label                      = self.paths.rRNA_filter_label
+        self.rRNA_filter_split_label                = self.paths.rRNA_filter_split_label
+        self.rRNA_filter_convert_label              = self.paths.rRNA_filter_convert_label
+        self.rRNA_filter_barrnap_label              = self.paths.rRNA_filter_barrnap_label
+        self.rRNA_filter_barrnap_merge_label        = self.paths.rRNA_filter_barrnap_merge_label
+        self.rRNA_filter_barrnap_pp_label           = self.paths.rRNA_filter_barrnap_pp_label
+        self.rRNA_filter_infernal_label             = self.paths.rRNA_filter_infernal_label
+        self.rRNA_filter_infernal_prep_label        = self.paths.rRNA_filter_infernal_prep_label
+        self.rRNA_filter_splitter_label             = self.paths.rRNA_filter_splitter_label
+        self.rRNA_filter_post_label                 = self.paths.rRNA_filter_post_label
+        self.repop_job_label                        = self.paths.repop_label
+        self.assemble_contigs_label                 = self.paths.assemble_contigs_label
+        self.destroy_contigs_label                  = self.paths.destroy_contigs_label
+        self.GA_pre_scan_label                      = self.paths.GA_pre_scan_label
+        self.GA_split_label                         = self.paths.GA_split_label
+        self.GA_BWA_label                           = self.paths.GA_BWA_label
+        self.GA_BWA_pp_label                        = self.paths.GA_BWA_pp_label
+        self.GA_BWA_merge_label                     = self.paths.GA_BWA_merge_label
+        self.GA_BLAT_label                          = self.paths.GA_BLAT_label
+        self.GA_BLAT_cleanup_label                  = self.paths.GA_BLAT_cleanup_label
+        self.GA_BLAT_cat_label                      = self.paths.GA_BLAT_cat_label
+        self.GA_BLAT_pp_label                       = self.paths.GA_BLAT_pp_label
+        self.GA_BLAT_merge_label                    = self.paths.GA_BLAT_merge_label
+        self.GA_DIAMOND_label                       = self.paths.GA_DIAMOND_label
+        self.GA_DIAMOND_pp_label                    = self.paths.GA_DIAMOND_pp_label
+        self.GA_final_merge_label                   = self.paths.GA_final_merge_label
+        self.ta_label                               = self.paths.ta_label
+        self.ec_label                               = self.paths.ec_label
+        self.ec_detect_label                        = self.paths.ec_detect_label
+        self.ec_priam_label                         = self.paths.ec_priam_label
+        self.ec_priam_split_label                   = self.paths.ec_priam_split_label
+        self.ec_priam_cat_label                     = self.paths.ec_priam_cat_label
+        self.ec_DIAMOND_label                       = self.paths.ec_DIAMOND_label
+        self.ec_pp_label                            = self.paths.ec_pp_label
+        self.output_label                           = self.paths.output_label
+        self.output_copy_gene_map_label             = self.paths.output_copy_gene_map_label
+        self.output_clean_EC_label                  = self.paths.output_clean_ec_label
+        self.output_copy_taxa_label                 = self.paths.output_copy_taxa_label
+        self.output_network_gen_label               = self.paths.output_network_generation_label
+        self.output_unique_hosts_singletons_label   = self.paths.output_unique_hosts_singletons_label
+        self.output_unique_hosts_pair_1_label       = self.paths.output_unique_hosts_pair_1_label
+        self.output_unique_hosts_pair_2_label       = self.paths.output_unique_hosts_pair_2_label
+        self.output_unique_vectors_singletons_label = self.paths.output_unique_vectors_singletons_label
+        self.output_unique_vectors_pair_1_label     = self.paths.output_unique_vectors_pair_1_label
+        self.output_unique_vectors_pair_2_label     = self.paths.output_unique_vectors_pair_2_label
+        self.output_combine_hosts_label             = self.paths.output_combine_hosts_label
+        self.output_per_read_scores_label           = self.paths.output_per_read_scores_label
+        self.output_contig_stats_label              = self.paths.output_contig_stats_label
+        self.output_ec_heatmap_label                = self.paths.output_ec_heatmap_label
+        self.output_taxa_groupby_label              = self.paths.output_taxa_groupby_label
+        self.output_read_count_label                = self.paths.output_read_count_label
+
 
 
         #timing vars
@@ -298,17 +300,20 @@ class mp_stage:
         self.rRNA_filter_path       = os.path.join(self.output_folder_path, self.rRNA_filter_label)
         self.repop_path             = os.path.join(self.output_folder_path, self.repop_job_label)
         self.assemble_contigs_path  = os.path.join(self.output_folder_path, self.assemble_contigs_label)
+        self.GA_pre_scan_path       = os.path.join(self.output_folder_path, self.GA_pre_scan_label)
         self.GA_split_path          = os.path.join(self.output_folder_path, self.GA_split_label)
         self.GA_BWA_path            = os.path.join(self.output_folder_path, self.GA_BWA_label)
         self.GA_BLAT_path           = os.path.join(self.output_folder_path, self.GA_BLAT_label)
         self.GA_DIAMOND_path        = os.path.join(self.output_folder_path, self.GA_DIAMOND_label)
         self.ga_final_merge_path    = os.path.join(self.output_folder_path, self.GA_final_merge_label)
-        self.TA_path                = os.path.join(self.output_folder_path, self.taxon_annotation_label)
-        self.ec_annotation_path     = os.path.join(self.output_folder_path, self.ec_annotation_label)
+        self.TA_path                = os.path.join(self.output_folder_path, self.ta_label)
+        self.ec_path     = os.path.join(self.output_folder_path, self.ec_label)
         self.network_path           = os.path.join(self.output_folder_path, self.output_label)
         
 
         #working folders
+        self.GA_pre_scan_data_folder= os.path.join(self.GA_pre_scan_label, "data")
+        self.GA_pre_scan_jobs_folder= os.path.join(self.GA_pre_scan_data_folder, "jobs")
         self.GA_split_data_folder   = os.path.join(self.GA_split_label, "data")
         self.GA_split_jobs_folder   = os.path.join(self.GA_split_data_folder, "jobs")
         self.GA_BWA_data_folder     = os.path.join(self.GA_BWA_label, "data")
@@ -317,7 +322,7 @@ class mp_stage:
         self.GA_BLAT_jobs_folder    = os.path.join(self.GA_BLAT_data_folder, "jobs")
         self.GA_DIAMOND_data_folder = os.path.join(self.GA_DIAMOND_path, "data")
         self.GA_DIAMOND_jobs_folder = os.path.join(self.GA_DIAMOND_data_folder, "jobs")
-        self.EC_data_folder         = os.path.join(self.ec_annotation_path, "data")
+        self.EC_data_folder         = os.path.join(self.ec_path, "data")
         self.EC_jobs_folder         = os.path.join(self.EC_data_folder, "jobs")
         self.TA_data_folder         = os.path.join(self.TA_path, "data")
         self.TA_jobs_folder         = os.path.join(self.TA_data_folder, "jobs")
@@ -348,6 +353,28 @@ class mp_stage:
                 print(dt.today(), "contigs not present. but that's ok")
         else:
             sys.exit(dt.today(), "contig assembly incomplete. run the pipeline in --tutorial contigs to continue")
+            
+    def import_lib_names(self, names_file):
+    #import the list of libs from GA_pre_scan
+        files_list = []
+        with open(names_file, "r") as names_in:
+            for line in names_in:
+                cleaned_line = line.strip("\n")
+                if("can't" in line):
+                    continue
+                #print("line:", cleaned_line)
+                src_path = cleaned_line.split("|")[3]
+                if(os.path.exists(src_path)):
+                
+                #not complete. the exist path needs to point to the DNA_db folder
+                    files_list.append(src_path)
+                    #print("src:", src_path)
+                    #time.sleep(1)
+                    
+                
+        
+        return files_list
+    
     
 
     #--------------------------------------------------------------------------------------------------------------
@@ -796,6 +823,110 @@ class mp_stage:
         print("assemble contigs:", '%1.1f' % (self.assemble_contigs_end - self.assemble_contigs_start - (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start)), "s")    
         print("assemble contigs cleanup:", '%1.1f' % (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start), "s")
     
+    def mp_GA_pre_scan(self):
+        #scans the mRNA with a TA scanner to pick out a taxa trend.
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_pre_scan_label):
+            marker_path_list = []
+            #----------------------------------------------------------------------
+            #kaiju on reads
+            sections = ["singletons"]
+            if self.read_mode == "paired":
+                sections.extend(["paired"])
+            if(self.contigs_present):
+                sections.extend(["contigs"])    
+            
+            for section in sections:
+                marker_file = "mp_ta_kaiju_" + section
+                marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
+                if(os.path.exists(marker_path)):
+                    print(dt.today(), "skipping:", marker_file)
+                else:
+                    marker_path_list.append(marker_path)
+                    command_list = self.commands.create_TA_kaiju_command(self.GA_pre_scan_label, self.assemble_contigs_label, section, marker_file)
+                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)        
+            
+            #---------------------------------------------------------------------
+            #centrifuge on reads
+            
+            sections_list = ["reads"]
+            if(self.contigs_present):
+                sections_list.extend(["contigs"])
+                
+            for read_cat in sections_list:
+                marker_file = "mp_ta_centrifuge_" + read_cat
+                marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
+                print(marker_path)
+                if(os.path.exists(marker_path)):
+                    print(dt.today(), "skipping:", marker_file)
+                else:
+                    marker_path_list.append(marker_path)
+                    command_list = self.commands.create_TA_centrifuge_command(self.GA_pre_scan_label, self.rRNA_filter_label, self.assemble_contigs_label, read_cat, marker_file)
+                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
+            
+            self.mp_util.wait_for_mp_store()
+            
+            #------------------------------------------
+            #merge kaiju + centrifuge into single file
+            
+            marker_file = "TA_kaiju_pp"
+            marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
+            if(os.path.exists(marker_path)):
+                print(dt.today(), "skipping:", marker_file)
+            else:
+                marker_path_list.append(marker_path)
+                command_list = self.commands.create_TA_kaiju_pp_command(self.GA_pre_scan_label, marker_file)
+                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
+            self.mp_util.wait_for_mp_store()
+            
+            
+            marker_path_list = []
+            marker_file = "TA_centrifuge_pp"
+            marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
+            if(os.path.exists(marker_path)):
+                print(dt.today(), "skipping:", marker_file)
+            else:
+                marker_path_list.append(marker_path)
+                command_list = self.commands.create_TA_centrifuge_pp_command(self.GA_pre_scan_label, marker_file)
+                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
+            self.mp_util.wait_for_mp_store()
+            
+            #----------------------------------------------------
+            #
+            
+            marker_file = "TA_wevote_combine"
+            marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
+            if(os.path.exists(marker_path)):
+                print(dt.today(), "skipping:", marker_file)
+            else:
+                marker_path_list.append(marker_path)
+                command_list = self.commands.create_TA_wevote_combine_command(self.GA_pre_scan_label, self.assemble_contigs_label, marker_file)
+                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
+                print(dt.today(), "running:", marker_file)
+            self.mp_util.wait_for_mp_store()
+            
+            
+            #-------------------------------------------------------
+            #collect the wevote results, get the unique taxa, and match them to a class-level taxa
+            
+            marker_file = "ga_collect_db"
+            marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
+            if(os.path.exists(marker_path)):
+                print(dt.today(), "skipping:", marker_file)
+            else:
+                marker_path_list.append(marker_path)
+                command_list = self.commands.create_GA_pre_scan_command(self.GA_pre_scan_label, marker_file)
+                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
+                print(dt.today(), "running:", marker_file)
+            self.mp_util.wait_for_mp_store()
+            
+            
+            #---------------------------------------------------------
+            
+            
+            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_pre_scan_label)
+            
+            
+    
     def mp_GA_split(self):
         #separating GA split-data from GA_BWA for a few reasons:
         #1) so the pipe has the option to not split all the time
@@ -903,7 +1034,60 @@ class mp_stage:
                 self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
                 self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BWA_label)
     
-    
+    def mp_GA_BWA_v2(self):
+        #v2 variant, for the new grouped db
+        self.GA_BWA_start = time.time()
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BWA_label):
+            marker_path_list = []
+            if not self.mp_util.check_where_resume(self.GA_BWA_path, None, self.GA_split_path):
+            
+                #-------------------------------------------------------------------------
+                sections = ["singletons"]
+                if self.read_mode == "paired":
+                    sections.extend(["pair_1", "pair_2"])
+                if(self.contigs_present):
+                    
+                    sections.extend(["contigs"])
+                
+                for section in sections:
+                    for split_sample in os.listdir(os.path.join(self.GA_split_path, "final_results", section)):
+                        full_sample_path = os.path.join(os.path.join(self.GA_split_path, "final_results",section, split_sample))
+                        print("split sample:", full_sample_path)
+                        file_tag = os.path.basename(split_sample)
+                        file_tag = os.path.splitext(file_tag)[0]
+                        ref_path = self.paths.DNA_DB
+                        #no checker. we'll be getting rid of the choco h2    
+                        command_list = ""
+                        
+                        #split_db = os.listdir(ref_path)
+                        assembled_lib_list_path = os.path.join(self.GA_pre_scan_data_folder, "4_libs", "lib_list.txt")
+                        lib_list = self.import_lib_names(assembled_lib_list_path)
+                        
+                        for db_segments in lib_list:
+                            print("db:", db_segments)
+                            #time.sleep(2)
+                            if(db_segments.endswith(".fasta")):
+                                segment_ref_path = db_segments #os.path.join(ref_path, db_segments)
+                                ref_tag = os.path.basename(db_segments).strip(".fasta")
+                                segment_file_tag = file_tag + "_" + ref_tag
+                                job_name = "BWA" + "_" + segment_file_tag
+                                marker_file = segment_file_tag + "_bwa"
+                                marker_path = os.path.join(self.GA_BWA_jobs_folder, marker_file)
+                                
+                                if(os.path.exists(marker_path)):
+                                    print(dt.today(), "skipping:", marker_file)
+                                    continue
+                                else:
+                                    marker_path_list.append(marker_path)
+                                    command_list = self.commands.create_BWA_annotate_command_v2(self.GA_BWA_label, segment_ref_path, ref_tag, full_sample_path, marker_file)
+                                    self.mp_util.launch_and_create_with_hold(self.BWA_mem_threshold, self.BWA_job_limit, self.BWA_job_delay, self.GA_BWA_label, job_name, self.commands, command_list)
+
+                print(dt.today(), "all BWA jobs have launched.  waiting for them to finish")            
+                self.mp_util.wait_for_mp_store()
+                final_checklist = os.path.join(self.GA_BWA_path, "GA_BWA.txt")
+                self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
+                self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BWA_label + "_new")
+   
     def mp_GA_BWA_pp(self):                
         if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BWA_pp_label):
             marker_path_list = []
@@ -1294,7 +1478,7 @@ class mp_stage:
     def mp_TA(self):
         self.TA_start = time.time()
         
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.taxon_annotation_label):
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ta_label):
             #-----------------------------------------
             # stage 1
             marker_path_list = []
@@ -1309,8 +1493,8 @@ class mp_stage:
                     print(dt.today(), "skipping:", marker_file)
                 else:
                     marker_path_list.append(marker_path)
-                    command_list = self.commands.create_TA_centrifuge_command(self.taxon_annotation_label, self.rRNA_filter_label, self.assemble_contigs_label, section, marker_file)
-                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.taxon_annotation_label, marker_file, self.commands, command_list)
+                    command_list = self.commands.create_TA_centrifuge_command(self.ta_label, self.rRNA_filter_label, self.assemble_contigs_label, section, marker_file)
+                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
                     
             sections = ["singletons"]
             if self.read_mode == "paired":
@@ -1325,16 +1509,16 @@ class mp_stage:
                     print(dt.today(), "skipping:", marker_file)
                 else:
                     marker_path_list.append(marker_path)
-                    command_list = self.commands.create_TA_kaiju_command(self.taxon_annotation_label, self.assemble_contigs_label, section, marker_file)
-                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.taxon_annotation_label, marker_file, self.commands, command_list)        
+                    command_list = self.commands.create_TA_kaiju_command(self.ta_label, self.assemble_contigs_label, section, marker_file)
+                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)        
             marker_file = "TA_taxon_pull"
             marker_path = os.path.join(self.TA_jobs_folder, marker_file)
             if(os.path.exists(marker_path)):
                 print(dt.today(), "skipping:", marker_file)
             else:
                 marker_path_list.append(marker_path)
-                command_list = self.commands.create_TA_taxon_pull_command(self.taxon_annotation_label, self.GA_final_merge_label, marker_file)
-                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.taxon_annotation_label, marker_file, self.commands, command_list)
+                command_list = self.commands.create_TA_taxon_pull_command(self.ta_label, self.GA_final_merge_label, marker_file)
+                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
             print(dt.today(), "waiting for TA stage 1")
             self.mp_util.wait_for_mp_store()
             final_checklist = os.path.join(self.TA_path, "TA_stage_1.txt")
@@ -1352,17 +1536,17 @@ class mp_stage:
                     print(dt.today(), "skipping:", marker_file)
                 else:
                     marker_path_list.append(marker_path)
-                    command_list = self.commands.create_TA_centrifuge_command(self.taxon_annotation_label, self.rRNA_filter_label, self.assemble_contigs_label, section, marker_file)
-                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.taxon_annotation_label, marker_file, self.commands, command_list)
+                    command_list = self.commands.create_TA_centrifuge_command(self.ta_label, self.rRNA_filter_label, self.assemble_contigs_label, section, marker_file)
+                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
             
             marker_file = "TA_kaiju_pp"
             marker_path = os.path.join(self.TA_jobs_folder, marker_file)
-            if(os.path.exists(marker_file)):
+            if(os.path.exists(marker_path)):
                 print(dt.today(), "skipping:", marker_file)
             else:
                 marker_path_list.append(marker_path)
-                command_list = self.commands.create_TA_kaiju_pp_command(self.taxon_annotation_label, marker_file)
-                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.taxon_annotation_label, marker_file, self.commands, command_list)
+                command_list = self.commands.create_TA_kaiju_pp_command(self.ta_label, marker_file)
+                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
             self.mp_util.wait_for_mp_store()
             final_checklist = os.path.join(self.TA_path, "TA_stage_2.txt")
             self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
@@ -1377,8 +1561,8 @@ class mp_stage:
                 print(dt.today(), "skipping:", marker_file)
             else:
                 marker_path_list.append(marker_path)
-                command_list = self.commands.create_TA_centrifuge_pp_command(self.taxon_annotation_label, marker_file)
-                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.taxon_annotation_label, marker_file, self.commands, command_list)
+                command_list = self.commands.create_TA_centrifuge_pp_command(self.ta_label, marker_file)
+                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
             self.mp_util.wait_for_mp_store()
             final_checklist = os.path.join(self.TA_path, "TA_stage_3.txt")
             self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
@@ -1392,13 +1576,13 @@ class mp_stage:
                 print(dt.today(), "skipping:", marker_file)
             else:
                 marker_path_list.append(marker_path)
-                command_list = self.commands.create_TA_final_command(self.taxon_annotation_label, self.assemble_contigs_label, marker_file)
-                self.mp_util.launch_and_create_simple(self.taxon_annotation_label, marker_file, self.commands, command_list)
+                command_list = self.commands.create_TA_final_command(self.ta_label, self.assemble_contigs_label, marker_file)
+                self.mp_util.launch_and_create_simple(self.ta_label, marker_file, self.commands, command_list)
             final_checklist = os.path.join(self.TA_path, "TA_final.txt")
             self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
             
             if(os.path.exists(marker_path)):
-                self.mp_util.write_to_bypass_log(self.output_folder_path, self.taxon_annotation_label)
+                self.mp_util.write_to_bypass_log(self.output_folder_path, self.ta_label)
                 
         self.cleanup_TA_start = time.time()
         self.mp_util.clean_or_compress(self.TA_path, self.keep_all, self.keep_TA)
@@ -1411,8 +1595,8 @@ class mp_stage:
         
         self.EC_start = time.time()
         #There's a 2-step check.  We don't want it ti re-run either DETECT, or PRIAM+DIAMOND because they're too slow
-        #if not check_where_resume(ec_annotation_path, None, self.GA_DIAMOND_path):
-        #if check_bypass_log(self.output_folder_path, self.ec_annotation_label):
+        #if not check_where_resume(ec_path, None, self.GA_DIAMOND_path):
+        #if check_bypass_log(self.output_folder_path, self.ec_label):
         
         
         # --------------------------------------------------------------
@@ -1420,27 +1604,27 @@ class mp_stage:
         self.EC_PRIAM_start = time.time()
 
         #split the proteins
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_priam_split_label):
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_priam_split_label):
             marker_file = "ec_split"
-            marker_path = os.path.join(self.ec_annotation_path, "data", "jobs", marker_file)
+            marker_path = os.path.join(self.ec_path, "data", "jobs", marker_file)
             if(os.path.exists(marker_path)):
                 print(dt.today(), "skipping:", marker_file)
             else:
-                command_list = self.commands.create_EC_PRIAM_split_command(self.ec_annotation_label, self.GA_final_merge_label, self.ec_split_path, marker_file)
+                command_list = self.commands.create_EC_PRIAM_split_command(self.ec_label, self.GA_final_merge_label, self.ec_split_path, marker_file)
                 print(command_list)
                 self.mp_util.launch_only_simple(self.commands, command_list)
                 
                 
         #if not check_where_resume(job_label = None, full_path = ec_priam_path, dep_job_path = GA_DIAMOND_path):
         
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_priam_label):
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_priam_label):
             split_count = 0
             
             print("ec split dir:", os.listdir(self.ec_split_path))
             
             for ec_split_file in os.listdir(self.ec_split_path):
                 marker_file = "ec_priam_" + str(split_count)
-                marker_path = os.path.join(self.ec_annotation_path, "data", "jobs", marker_file)
+                marker_path = os.path.join(self.ec_path, "data", "jobs", marker_file)
                 print(marker_path)
                 #time.sleep(10)
                 if(os.path.exists(marker_path)):
@@ -1449,7 +1633,7 @@ class mp_stage:
                     priam_file_path = os.path.join(self.ec_priam_path, "split_" + str(split_count))
                     split_path = os.path.join(self.ec_split_path, "protein_split_" + str(split_count) + ".fasta")
                     self.mp_util.make_folder(priam_file_path)    
-                    command_list = self.commands.create_EC_PRIAM_command_v2(self.ec_annotation_label, self.GA_final_merge_label, priam_file_path, split_path, split_count, marker_file)
+                    command_list = self.commands.create_EC_PRIAM_command_v2(self.ec_label, self.GA_final_merge_label, priam_file_path, split_path, split_count, marker_file)
                     print(command_list)
                     if(os.path.exists(priam_file_path)):
                         print(dt.today(), "attempting PRIAM auto-resume")
@@ -1464,13 +1648,13 @@ class mp_stage:
         self.mp_util.wait_for_mp_store()
         
         
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_priam_cat_label):
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_priam_cat_label):
             marker_file = "ec_priam_cat"
-            marker_path = os.path.join(self.ec_annotation_path, "data", "jobs", marker_file)
+            marker_path = os.path.join(self.ec_path, "data", "jobs", marker_file)
             if(os.path.exists(marker_path)):
                 print(dt.today(), "skipping:", marker_path)
             else:
-                command_list = self.commands.create_EC_PRIAM_cat_command(self.ec_annotation_label, marker_file)
+                command_list = self.commands.create_EC_PRIAM_cat_command(self.ec_label, marker_file)
                 print("CAT:", command_list)
                 self.mp_util.launch_only_simple(self.commands, command_list)
             
@@ -1482,14 +1666,14 @@ class mp_stage:
         # Detect
         self.EC_DETECT_start = time.time()
         #if not check_where_resume(job_label = None, full_path = ec_detect_path, dep_job_path = GA_DIAMOND_path):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_detect_label):
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_detect_label):
             marker_file = "ec_detect"
-            marker_path = os.path.join(self.ec_annotation_path, "data", "jobs", marker_file)
+            marker_path = os.path.join(self.ec_path, "data", "jobs", marker_file)
             if(os.path.exists(marker_path)):
                 print(dt.today(), "skipping:", marker_file)
             else:
-                command_list = self.commands.create_EC_DETECT_command(self.ec_annotation_label, self.GA_final_merge_label, marker_file)
-                self.mp_util.launch_and_create_with_mp_store(self.ec_annotation_label, marker_file, self.commands, command_list)
+                command_list = self.commands.create_EC_DETECT_command(self.ec_label, self.GA_final_merge_label, marker_file)
+                self.mp_util.launch_and_create_with_mp_store(self.ec_label, marker_file, self.commands, command_list)
             
             
         self.EC_DETECT_end = time.time()
@@ -1501,50 +1685,50 @@ class mp_stage:
         # DIAMOND EC annotation 
         self.EC_DIAMOND_start = time.time()
         
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_DIAMOND_label):
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_DIAMOND_label):
             marker_file = "ec_diamond"
-            marker_path = os.path.join(self.ec_annotation_path, "data", "jobs", marker_file)
+            marker_path = os.path.join(self.ec_path, "data", "jobs", marker_file)
             if(os.path.exists(marker_path)):
                 print(dt.today(), "skipping:", marker_file)
             else:
                 job_name = "ec_diamond"
-                command_list = self.commands.create_EC_DIAMOND_command(self.ec_annotation_label, self.GA_final_merge_label, marker_file)
-                self.mp_util.launch_and_create_with_mp_store(self.ec_annotation_label, job_name, self.commands, command_list)
+                command_list = self.commands.create_EC_DIAMOND_command(self.ec_label, self.GA_final_merge_label, marker_file)
+                self.mp_util.launch_and_create_with_mp_store(self.ec_label, job_name, self.commands, command_list)
             
         self.EC_DIAMOND_end = time.time()
         self.mp_util.wait_for_mp_store()
         
         
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_detect_label):
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_detect_label):
             if(os.path.exists(self.ec_detect_out)):
-                self.mp_util.write_to_bypass_log(self.output_folder_path, self.ec_annotation_detect_label)
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_priam_label):
+                self.mp_util.write_to_bypass_log(self.output_folder_path, self.ec_detect_label)
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_priam_label):
             if(os.path.exists(self.ec_priam_out)):
-                self.mp_util.write_to_bypass_log(self.output_folder_path, self.ec_annotation_priam_label)
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_DIAMOND_label):
+                self.mp_util.write_to_bypass_log(self.output_folder_path, self.ec_priam_label)
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_DIAMOND_label):
             if(os.path.exists(self.ec_diamond_out)):
-                self.mp_util.write_to_bypass_log(self.output_folder_path, self.ec_annotation_DIAMOND_label)
+                self.mp_util.write_to_bypass_log(self.output_folder_path, self.ec_DIAMOND_label)
         
         #----------------------------------------------------------------------
         # EC post process
         self.EC_post_start = time.time()
-        #if not (check_where_resume(ec_annotation_path, None, self.GA_DIAMOND_path)):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_annotation_pp_label):
+        #if not (check_where_resume(ec_path, None, self.GA_DIAMOND_path)):
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.ec_pp_label):
             
             marker_file = "ec_post"
-            marker_path = os.path.join(self.ec_annotation_path, "data", "jobs", marker_file)
+            marker_path = os.path.join(self.ec_path, "data", "jobs", marker_file)
             
             if(os.path.exists(marker_path)):
                 print(dt.today(), "skipping:", marker_file)
             else:
-                command_list = self.commands.create_EC_postprocess_command(self.ec_annotation_label, self.GA_final_merge_label, marker_file)
-                self.mp_util.launch_and_create_simple(self.ec_annotation_label, marker_file, self.commands, command_list)
+                command_list = self.commands.create_EC_postprocess_command(self.ec_label, self.GA_final_merge_label, marker_file)
+                self.mp_util.launch_and_create_simple(self.ec_label, marker_file, self.commands, command_list)
             
             if(os.path.exists(marker_path)):
-                self.mp_util.write_to_bypass_log(self.output_folder_path, self.ec_annotation_pp_label)
+                self.mp_util.write_to_bypass_log(self.output_folder_path, self.ec_pp_label)
         
         self.cleanup_EC_start = time.time()
-        self.mp_util.clean_or_compress(self.ec_annotation_path, self.keep_all, self.keep_EC)
+        self.mp_util.clean_or_compress(self.ec_path, self.keep_all, self.keep_EC)
         self.cleanup_EC_end = time.time()
         self.EC_post_end = time.time()
             
@@ -1555,7 +1739,7 @@ class mp_stage:
 
     def mp_output(self):
         self.Cytoscape_start = time.time()
-        #if not check_where_resume(network_path, None, self.ec_annotation_path):
+        #if not check_where_resume(network_path, None, self.ec_path):
         
         if self.mp_util.check_bypass_log(self.output_folder_path, self.output_label):
             
@@ -1567,7 +1751,7 @@ class mp_stage:
                 
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_copy_taxa_label):
                 job_name = self.output_copy_taxa_label
-                command_list = self.commands.create_output_copy_taxa_command(self.output_label, self.taxon_annotation_label)
+                command_list = self.commands.create_output_copy_taxa_command(self.output_label, self.ta_label)
                 self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
             if(self.contigs_present): 
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.output_contig_stats_label):
@@ -1633,7 +1817,7 @@ class mp_stage:
             #----------------------------------------------------------------------------
             #Phase 2
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_network_gen_label):
-                command_list = self.commands.create_output_network_generation_command(self.output_label, self.GA_final_merge_label, self.taxon_annotation_label, self.ec_annotation_label)
+                command_list = self.commands.create_output_network_generation_command(self.output_label, self.GA_final_merge_label, self.ta_label, self.ec_label)
                 self.mp_util.launch_and_create_with_mp_store(self.output_label, self.output_network_gen_label, self.commands, command_list)
                 
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_taxa_groupby_label):
@@ -1649,7 +1833,7 @@ class mp_stage:
             #Phase 3
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_read_count_label):
                 job_name = self.output_read_count_label
-                command_list = self.commands.create_output_read_count_command(self.output_label, self.quality_filter_label, self.repop_job_label, self.GA_final_merge_label, self.ec_annotation_label)
+                command_list = self.commands.create_output_read_count_command(self.output_label, self.quality_filter_label, self.repop_job_label, self.GA_final_merge_label, self.ec_label)
                 self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
                                 
 

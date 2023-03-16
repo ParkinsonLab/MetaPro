@@ -32,9 +32,11 @@ from datetime import datetime as dt
 import psutil as psu
 
 class mp_util:
-    def __init__(self, output_folder_path):
+    def __init__(self, output_folder_path, config_path):
         self.mp_store = []
         self.output_folder_path = output_folder_path
+        self.paths = mpp.tool_path_obj(config_path)
+        self.bypass_log_name = self.paths.bypass_log_name
 
     def mem_checker(self, threshold):
         #threshold is a percentage for available memory.  
@@ -82,7 +84,7 @@ class mp_util:
         z.close()
             
     def write_to_bypass_log(self, folder_path, message):
-        bypass_log_path = os.path.join(folder_path, "bypass_log.txt")
+        bypass_log_path = os.path.join(folder_path, self.bypass_log_name)
         with open(bypass_log_path, "a") as bypass_log:
             bypass_log.write("\n")
             new_message = message + "\n"
@@ -93,7 +95,7 @@ class mp_util:
     def check_bypass_log(self, folder_path, message):
         stop_message = "stop_" + str(message)
         bypass_keys_list = list()
-        bypass_log_path = os.path.join(folder_path, "bypass_log.txt")
+        bypass_log_path = os.path.join(folder_path, self.bypass_log_name)
         if(os.path.exists(bypass_log_path)):
             with open(bypass_log_path, "r") as bypass_log:
                 for line in bypass_log:
@@ -296,6 +298,7 @@ class mp_util:
         #launch a job in launch-with-create mode
         job_submitted = False
         while(not job_submitted):
+                
             if(len(self.mp_store) < job_limit):
                 if(self.mem_checker(mem_threshold)):
                     process = mp.Process(
@@ -313,7 +316,7 @@ class mp_util:
                 print(dt.today(), "job limit reached.  waiting for queue to flush")
                 self.wait_for_mp_store()
         #final wait
-        self.wait_for_mp_store()
+        #self.wait_for_mp_store()
 
 
     #check if all jobs ran
