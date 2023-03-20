@@ -223,6 +223,7 @@ class tool_path_obj:
         self.path_to_superpath  = self.value_assignment(config, "Databases", "path_to_superpath", os.path.join(custom_database_path, "pathway_to_superpathway.csv"))
         self.mgm_model          = self.value_assignment(config, "Databases", "MetaGeneMark_model", os.path.join(tool_path, "mgm/MetaGeneMark_v1.mod"))
         self.enzyme_db          = self.value_assignment(config, "Databases", "enzyme_db", os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt"))
+        self.taxid_class_map    = self.value_assignment(config, "Databases", "taxid_class_map", os.path.join(custom_database_path, "taxid_class_maps", "family_tree.tsv"))
 
         #-------------------------------------------------------
         # test DBs
@@ -302,6 +303,8 @@ class tool_path_obj:
         self.output_filter_ECs          = self.value_assignment(config, "code", "output_filter_ec", os.path.join(script_path, "output_filter_ECs.py"))
         self.bwa_read_sorter            = self.value_assignment(config, "code", "bwa_read_sorter", os.path.join(script_path, "bwa_read_sorter.py"))
         self.ta_contig_name_convert     = self.value_assignment(config, "code", "ta_name_convert", os.path.join(script_path, "ta_contig_name_convert.py"))
+        self.GA_pre_scan_get_lib        = self.value_assignment(config, "code", "ga_pre_scan_get_lib", os.path.join(script_path, "ga_pre_scan_get_libs.py"))
+        self.GA_pre_scan_assemble_lib   = self.value_assignment(config, "code", "ga_pre_scan_assemble_lib", os.path.join(script_path, "ga_pre_scan_assemble_libs.py"))
         
         #--------------------------------------------------
         # miscellaneous values
@@ -388,6 +391,9 @@ class tool_path_obj:
         self.adapterremoval_minlength   = self.value_assignment(config, "Settings", "AdapterRemoval_minlength", 30)
         self.show_unclassified          = self.value_assignment(config, "Settings", "Show_unclassified", "No")
         self.bypass_log_name            = self.value_assignment(config, "Settings", "bypass_log_name", "bypass_log.txt")
+        self.debug_stop_flag            = self.value_assignment(config, "Settings", "debug_stop_flag", "none")
+        
+        
         self.RPKM_cutoff                = self.value_assignment(config, "Settings", "RPKM_cutoff", 0.01)
         self.BWA_cigar_cutoff           = self.value_assignment(config, "Settings", "BWA_cigar_cutoff", BWA_cigar_default)
         self.BLAT_identity_cutoff       = self.value_assignment(config, "Settings", "BLAT_identity_cutoff", BLAT_identity_default)

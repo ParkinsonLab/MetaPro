@@ -32,6 +32,11 @@ import psutil as psu
 import threading as th
 import queue as q
 
+def debug_stop_check(self, stop_flag, signal):
+    if(stop_flag == signal):
+        sys.exit("paused at:", stop_flag)
+        
+
 
 def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, threads, args_pack, tutorial_mode):
 
@@ -44,6 +49,8 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
 
     # The quality filter stage
     metapro_stage_obj.mp_quality_filter()
+    
+    
 
     # The host read filter stage
     metapro_stage_obj.mp_host_filter()
@@ -78,12 +85,14 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     if(metapro_stage_obj.GA_DB_mode == "multi"):
         metapro_stage_obj.mp_GA_BWA_merge()
     
-    sys.exit("paused")
+    
     
     # BLAT gene annotation
     metapro_stage_obj.mp_GA_BLAT()
     metapro_stage_obj.mp_GA_BLAT_pp()
     metapro_stage_obj.mp_GA_BLAT_merge()
+    
+    
     
     #DIAMOND gene annotation
     metapro_stage_obj.mp_GA_dmd()

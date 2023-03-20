@@ -28,6 +28,8 @@ class mp_stage:
         #---------------------------------------------------------
         #Operational flags and state-recorders
         
+        
+        
         self.tutorial_string = tutorial_mode_string
         self.output_folder_path = output_folder_path
         self.mp_util = mpu.mp_util(self.output_folder_path, config_path)
@@ -187,6 +189,10 @@ class mp_stage:
         self.output_ec_heatmap_label                = self.paths.output_ec_heatmap_label
         self.output_taxa_groupby_label              = self.paths.output_taxa_groupby_label
         self.output_read_count_label                = self.paths.output_read_count_label
+        
+        
+        self.debug_stop_flag = self.paths.debug_stop_flag
+        
 
 
 
@@ -371,10 +377,12 @@ class mp_stage:
                     #print("src:", src_path)
                     #time.sleep(1)
                     
-                
         
         return files_list
     
+    def debug_stop_check(self, stop_signal):
+        if(self.debug_stop_flag == stop_signal):
+            sys.exit("stoppped after:", stop_signal)
     
 
     #--------------------------------------------------------------------------------------------------------------
@@ -386,6 +394,8 @@ class mp_stage:
         self.quality_end = time.time()
         print("quality filter:", '%1.1f' % (self.quality_end - self.quality_start - (self.cleanup_quality_end - self.cleanup_quality_start)), "s")
         print("quality filter cleanup:", '%1.1f' %(self.cleanup_quality_end - self.cleanup_quality_start), "s")
+        self.debug_stop_check("quality")
+        
 
     def mp_host_filter(self):
         if not self.no_host:
@@ -396,6 +406,7 @@ class mp_stage:
             self.host_end = time.time()
             print("host filter:", '%1.1f' % (self.host_end - self.host_start - (self.cleanup_host_end - self.cleanup_host_start)), "s")
             print("host filter cleanup:", '%1.1f' %(self.cleanup_host_end - self.cleanup_host_start),"s")
+            self.debug_stop_check("host")
 
     def mp_vector_filter(self):
         self.vector_start = time.time()
@@ -415,6 +426,7 @@ class mp_stage:
         self.vector_end = time.time()
         print("vector filter:", '%1.1f' % (self.vector_end - self.vector_start - (self.cleanup_vector_end - self.cleanup_vector_start)), "s")
         print("vector filter cleanup:", '%1.1f' % (self.cleanup_vector_end - self.cleanup_vector_start), "s")
+        self.debug_stop_check("vector")
 
     def mp_rRNA_filter(self):
         self.rRNA_filter_start = time.time()
@@ -708,6 +720,7 @@ class mp_stage:
         
         print("rRNA filter:", '%1.1f' % (self.rRNA_filter_end - self.rRNA_filter_start - (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start)), "s")
         print("rRNA filter cleanup:", '%1.1f' % (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start), "s")
+        self.debug_stop_check("rRNA")
 
     def mp_repop(self):
         
@@ -734,6 +747,7 @@ class mp_stage:
         self.repop_end = time.time()
         print("repop:", '%1.1f' % (self.repop_end - self.repop_start - (self.cleanup_repop_end - self.cleanup_repop_start)), "s")
         print("repop cleanup:", '%1.1f' % (self.cleanup_repop_end - self.cleanup_repop_start), "s")
+        self.debug_stop_check("repop")
 
     def mp_assemble(self):
         self.assemble_contigs_start = time.time()
@@ -822,6 +836,7 @@ class mp_stage:
         self.assemble_contigs_end = time.time()
         print("assemble contigs:", '%1.1f' % (self.assemble_contigs_end - self.assemble_contigs_start - (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start)), "s")    
         print("assemble contigs cleanup:", '%1.1f' % (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start), "s")
+        self.debug_stop_check("contigs")
     
     def mp_GA_pre_scan(self):
         #scans the mRNA with a TA scanner to pick out a taxa trend.
@@ -925,7 +940,7 @@ class mp_stage:
             
             self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_pre_scan_label)
             
-            
+        self.debug_stop_check("ga_pre_scan")
     
     def mp_GA_split(self):
         #separating GA split-data from GA_BWA for a few reasons:
@@ -966,6 +981,8 @@ class mp_stage:
             self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
             self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_split_label)
             
+        self.debug_stop_check("ga_split")
+        
     def mp_GA_BWA(self):
         self.GA_BWA_start = time.time()
         if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BWA_label):
@@ -1034,6 +1051,9 @@ class mp_stage:
                 self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
                 self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BWA_label)
     
+        self.debug_stop_check("GA_BWA")
+        
+        
     def mp_GA_BWA_v2(self):
         #v2 variant, for the new grouped db
         self.GA_BWA_start = time.time()
@@ -1087,7 +1107,9 @@ class mp_stage:
                 final_checklist = os.path.join(self.GA_BWA_path, "GA_BWA.txt")
                 self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
                 self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BWA_label + "_new")
-   
+    
+        self.debug_stop_check("GA_BWA")
+        
     def mp_GA_BWA_pp(self):                
         if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BWA_pp_label):
             marker_path_list = []
@@ -1162,7 +1184,9 @@ class mp_stage:
             final_checklist = os.path.join(self.GA_BWA_path, "GA_BWA_pp.txt")
             self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
             self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BWA_pp_label)
-    
+        
+        self.debug_stop_check("GA_BWA_pp")
+        
     def mp_GA_BWA_merge(self):
 
         if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BWA_merge_label):
@@ -1208,6 +1232,7 @@ class mp_stage:
         self.GA_BWA_end = time.time()
         print("GA BWA:", '%1.1f' % (self.GA_BWA_end - self.GA_BWA_start - (self.cleanup_GA_BWA_end - self.cleanup_GA_BWA_start)), "s")
         print("GA BWA cleanup:", '%1.1f' % (self.cleanup_GA_BWA_end - self.cleanup_GA_BWA_start), "s")
+        self.debug_stop_check("GA_BWA_merge")
 
     def mp_GA_BLAT(self):    
         # ------------------------------------------------
@@ -1270,7 +1295,8 @@ class mp_stage:
             final_checklist = os.path.join(self.GA_BLAT_path, "GA_BLAT.txt")
             self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
             self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BLAT_label)
-            
+        
+        self.debug_stop_check("GA_BLAT")
     def mp_GA_BLAT_pp(self):
         if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BLAT_pp_label):
             marker_path_list = []

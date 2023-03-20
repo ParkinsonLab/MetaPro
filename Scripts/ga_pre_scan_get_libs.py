@@ -73,12 +73,12 @@ def export_lines(lib_file_path, nodes_dict, class_item, yes_count, no_count):
 
 
 if __name__ == "__main__":
-    wevote_file_path = sys.argv[1]
+    wevote_file_path = sys.argv[1]      
     taxa_class_map_path = sys.argv[2]
     nodes_file = sys.argv[3]
     export_lib_file = sys.argv[4]
-    reject_lib_file = sys.argv[5]
-    lib_root_path = sys.argv[6]
+    reject_lib_file = sys.argv[5]       
+    lib_root_path = sys.argv[6]         #the stash of DB files 
     exist_percent = float(sys.argv[7])
     
     unique_taxa, tally_dict = import_wevote(wevote_file_path, exist_percent)

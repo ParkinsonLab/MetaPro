@@ -1935,7 +1935,7 @@ class mt_pipe_commands:
         
         ga_get_lib = ">&2 echo GA pre-scan get libs | "
         ga_get_lib += self.tool_path_obj.Python + " "
-        ga_get_lib += self.tool_path_obj.GA_pre_scan_libs + " "
+        ga_get_lib += self.tool_path_obj.GA_pre_scan_get_lib + " "
         ga_get_lib += os.path.join(data_folder, "3_wevote", "taxonomic_classifications.tsv") + " "
         ga_get_lib += self.tool_path_obj.taxid_class_map + " "
         ga_get_lib += self.tool_path_obj.nodes + " "
@@ -2628,9 +2628,18 @@ class mt_pipe_commands:
         ]
         
         return COMMANDS_ga_final_merge
-        
+    def create_TA_kraken2_command(self, current_stage_name, assemble_contigs_stage, operating_mode, marker_file):
+        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        data_folder             = os.path.join(subfolder, "data")
+        assemble_contigs_folder = os.path.join(self.Output_Path, assemble_contigs_stage, "final_results")
+        kaiju_folder            = os.path.join(data_folder, "1_kraken2")
+        jobs_folder             = os.path.join(data_folder, "jobs")
 
+        
+    # Mar 17, 2023: depreciated
     def create_TA_kaiju_command(self, current_stage_name, assemble_contigs_stage, operating_mode, marker_file):
+        return 0
+        """
         subfolder               = os.path.join(self.Output_Path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
         assemble_contigs_folder = os.path.join(self.Output_Path, assemble_contigs_stage, "final_results")
@@ -2695,6 +2704,7 @@ class mt_pipe_commands:
             make_marker += os.path.join(jobs_folder, marker_file)
             
             return [kaiju_on_paired + " && " + make_marker]
+        """
             
             
     def create_TA_kaiju_pp_command(self, current_stage_name, marker_file):
