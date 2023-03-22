@@ -2632,9 +2632,50 @@ class mt_pipe_commands:
         subfolder               = os.path.join(self.Output_Path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
         assemble_contigs_folder = os.path.join(self.Output_Path, assemble_contigs_stage, "final_results")
-        kaiju_folder            = os.path.join(data_folder, "1_kraken2")
+        kraken2_folder            = os.path.join(data_folder, "1_kraken2")
         jobs_folder             = os.path.join(data_folder, "jobs")
+        
+        self.make_folder(subfolder)
+        self.make_folder(data_folder)
+        self.make_folder(kraken2_folder)
+        self.make_folder(jobs_folder)
 
+        if(operating_mode == "contigs"):
+            kraken2_c = ">&2 echo Kraken2 on contigs | "
+            kraken2_c += self.tool_path_obj.kraken2 + " "
+            kraken2_C += "--db " + self.tool_path_obj.kraken2_db + " "
+            kraken2_c += "--threads " + self.tool_path_obj.threads + " "
+            kraken2_c += os.path.join(assemble_contigs_folder, "contigs.fasta") + " "
+            kraken2_c += "--output " + os.path.join(kraken2_folder, "kraken2_c_report.txt")
+            
+            make_marker = "touch " + make_marker += os.path.join(jobs_folder, marker_file)
+            
+            return [kraken2_c + " && " + make_marker]
+            
+        elif(operating_mode == "singletons"):
+            kraken2_s = ">&2 echo Kraken2 on singletons | "
+            kraken2_s += self.tool_path_obj.kraken2 + " "
+            kraken2_s += "--db " + self.tool_path_obj.kraken2_db + " "
+            kraken2_s += "--threads " + self.tool_path_obj.threads + " "
+            kraken2_s += os.path.join(assemble_contigs_folder, "singletons.fastq")
+            kraken2_s += "--output " + os.path.join(kraken2_folder, "kraken2_s_report.txt")
+            
+            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
+            
+            return [kraken2_s + " && " make_marker]
+            
+        elif(operating_mode == "paired"):
+            kraken2_p = ">&2 echo Kraken2 on paired | " 
+            kraken2_p += self.tool_path_obj.kraken2 + " "
+            kraken2_p += "--db " + self.tool_path_obj.kraken2_db +  " "
+            kraken2_p += "--threads " + self.tool_path_obj.threads + " "
+            kraken2_p += "--paired " + os.path.join(assemble_contigs_folder, "pair_1.fastq") + " " + os.path.join(assemble_contigs_folder, "pair_2.fastq") + " "
+            kraken2_p += "--output " + os.path.join(kraken2_folder, "kraken2_p_report.txt")
+            
+            make_marker = "touch " + os.path.join(jobs_folder, "marker_file)
+            
+            return [kraken2_p + " && " + make_marker]
+            
         
     # Mar 17, 2023: depreciated
     def create_TA_kaiju_command(self, current_stage_name, assemble_contigs_stage, operating_mode, marker_file):

@@ -224,6 +224,7 @@ class tool_path_obj:
         self.mgm_model          = self.value_assignment(config, "Databases", "MetaGeneMark_model", os.path.join(tool_path, "mgm/MetaGeneMark_v1.mod"))
         self.enzyme_db          = self.value_assignment(config, "Databases", "enzyme_db", os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt"))
         self.taxid_class_map    = self.value_assignment(config, "Databases", "taxid_class_map", os.path.join(custom_database_path, "taxid_class_maps", "family_tree.tsv"))
+        self.kraken2_db         = self.value_assignment(config, "Databases", "kraken2_db", os.path.join(custom_database_path, "kraken2_db"))
 
         #-------------------------------------------------------
         # test DBs
@@ -257,6 +258,7 @@ class tool_path_obj:
         self.WEVOTE         = self.value_assignment(config, "Tools", "WEVOTE", os.path.join(tool_path, "WEVOTE/WEVOTE"))
         self.Spades         = self.value_assignment(config, "Tools", "Spades", os.path.join(tool_path, "SPAdes/bin/spades.py"))
         self.MetaGeneMark   = self.value_assignment(config, "Tools", "MetaGeneMark", os.path.join(tool_path, "mgm/gmhmmp"))
+        self.kraken2        = self.value_assignment(config, "Tools", "kraken2", os.path.join(tool_path, "kraken2/kraken2"))
             
         #--------------------------------------------
         # Python scripts
@@ -392,6 +394,7 @@ class tool_path_obj:
         self.show_unclassified          = self.value_assignment(config, "Settings", "Show_unclassified", "No")
         self.bypass_log_name            = self.value_assignment(config, "Settings", "bypass_log_name", "bypass_log.txt")
         self.debug_stop_flag            = self.value_assignment(config, "Settings", "debug_stop_flag", "none")
+        self.num_threads                = self.value_assignment(config, "Settings", "num_threads", os.cpu_count())
         
         
         self.RPKM_cutoff                = self.value_assignment(config, "Settings", "RPKM_cutoff", 0.01)

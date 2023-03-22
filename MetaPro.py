@@ -38,10 +38,10 @@ def debug_stop_check(self, stop_flag, signal):
         
 
 
-def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, threads, args_pack, tutorial_mode):
+def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode):
 
     
-    metapro_stage_obj = mps.mp_stage(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, threads, args_pack, tutorial_mode)
+    metapro_stage_obj = mps.mp_stage(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
 
     # This is the format we use to launch each stage of the pipeline.
     # We start a multiprocess that starts a subprocess.
@@ -111,8 +111,8 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     metapro_stage_obj.mp_output()
 
 
-def tutorial_main(config_file, pair_1, pair_2, single, contig, output_folder, num_threads, args_pack, tutorial_mode):
-    metapro_stage_obj = mps.mp_stage(config_file, pair_1, pair_2, single, contig, output_folder, num_threads, args_pack, tutorial_mode)
+def tutorial_main(config_file, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode):
+    metapro_stage_obj = mps.mp_stage(config_file, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode)
     if(tutorial_mode == "quality"):
          # The quality filter stage
         metapro_stage_obj.mp_quality_filter()
@@ -190,7 +190,6 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--single",   type=str,   help="Path to the file containing the single-end reads in fastq format")
     parser.add_argument("-con", "--contig",   type=str,   help="Tutorial use only: Path to the file containing the contig reads in fastq format")
     parser.add_argument("-o", "--output_folder", type=str, required=True, help="Path of the folder for the output of the pipeline")
-    parser.add_argument("-t", "--num_threads", type=int, help="Maximum number of threads used by the pipeline")
     parser.add_argument("--nhost", "--no-host", action='store_true', help="Skip the host read removal step of the pipeline")
     parser.add_argument("--verbose_mode", type=str, help = "Decide how to handle the interim files, Compress them, or leave them alone.  Values are: keep, compress, quiet")
     parser.add_argument("--tutorial", type = str, help = "tutorial operating mode for MetaPro")
@@ -203,7 +202,6 @@ if __name__ == "__main__":
     pair_2          = args.pair2 if args.pair2 else ""
     single          = args.single if args.single else ""
     output_folder   = args.output_folder
-    num_threads     = args.num_threads if args.num_threads else 0
     no_host         = args.nhost if args.nhost else False
     verbose_mode    = args.verbose_mode if args.verbose_mode else "quiet"
     tutorial_mode   = args.tutorial if args.tutorial else "none"
@@ -243,7 +241,7 @@ if __name__ == "__main__":
 
     if (tutorial_mode != "none"):
         print("working in tutorial mode:", tutorial_mode)
-        tutorial_main(config_file, pair_1, pair_2, single, contig, output_folder, num_threads, args_pack, tutorial_mode)
+        tutorial_main(config_file, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode)
     
     else:
-        main(config_file, pair_1, pair_2, single, contig, output_folder, num_threads, args_pack, tutorial_mode)
+        main(config_file, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode)

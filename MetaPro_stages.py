@@ -21,7 +21,7 @@ import queue as q
 #makes for a neat package/capsule
 
 class mp_stage:
-    def __init__ (self, config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, threads, args_pack, tutorial_mode_string = None):
+    def __init__ (self, config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
         #make our util obj
         #refresher: self -> instance var.  not self: class var (shared among class obj instances)
         
@@ -278,9 +278,9 @@ class mp_stage:
         
             
         #number of threads to use/limit
-        self.real_thread_count = threads
-        if threads == 0:
-            self.real_thread_count = mp.cpu_count()
+        self.real_thread_count = self.tool_path_obj.num_threads
+        #if threads == 0:
+        #    self.real_thread_count = mp.cpu_count()
         
             
         
