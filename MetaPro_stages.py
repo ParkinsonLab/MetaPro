@@ -277,25 +277,16 @@ class mp_stage:
 
         
             
-        #number of threads to use/limit
-        self.real_thread_count = self.tool_path_obj.num_threads
-        #if threads == 0:
-        #    self.real_thread_count = mp.cpu_count()
-        
-            
-        
-        if(self.real_thread_count == 1):
-            self.real_thread_count = 2
-        print("number of threads used:", self.real_thread_count)         
+             
                 
         mp_store = []  # stores the multiprocessing processes
 
         # Creates our command object, for creating shellscripts.
 
         if self.read_mode == "single":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, thread_count=self.real_thread_count, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=single_path, sequence_contigs = None)
+            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=single_path, sequence_contigs = None)
         elif self.read_mode == "paired":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, thread_count=self.real_thread_count, tutorial_keyword = None, sequence_path_1=pair_1_path, sequence_path_2=pair_2_path, sequence_single=None, sequence_contigs = None)
+            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=pair_1_path, sequence_path_2=pair_2_path, sequence_single=None, sequence_contigs = None)
     
 
         #--------------------------------------------------------
@@ -313,7 +304,7 @@ class mp_stage:
         self.GA_DIAMOND_path        = os.path.join(self.output_folder_path, self.GA_DIAMOND_label)
         self.ga_final_merge_path    = os.path.join(self.output_folder_path, self.GA_final_merge_label)
         self.TA_path                = os.path.join(self.output_folder_path, self.ta_label)
-        self.ec_path     = os.path.join(self.output_folder_path, self.ec_label)
+        self.ec_path                = os.path.join(self.output_folder_path, self.ec_label)
         self.network_path           = os.path.join(self.output_folder_path, self.output_label)
         
 
@@ -382,7 +373,11 @@ class mp_stage:
     
     def debug_stop_check(self, stop_signal):
         if(self.debug_stop_flag == stop_signal):
-            sys.exit("stoppped after:", stop_signal)
+            exit_string = "stoppped after: " + stop_signal
+            sys.exit(exit_string)
+        else:
+            print(dt.today(), "continuing from:", stop_signal)
+            
     
 
     #--------------------------------------------------------------------------------------------------------------
@@ -851,13 +846,13 @@ class mp_stage:
                 sections.extend(["contigs"])    
             
             for section in sections:
-                marker_file = "mp_ta_kaiju_" + section
+                marker_file = "mp_ta_kraken2_" + section
                 marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
                 if(os.path.exists(marker_path)):
                     print(dt.today(), "skipping:", marker_file)
                 else:
                     marker_path_list.append(marker_path)
-                    command_list = self.commands.create_TA_kaiju_command(self.GA_pre_scan_label, self.assemble_contigs_label, section, marker_file)
+                    command_list = self.commands.create_TA_kraken2_command(self.GA_pre_scan_label, self.assemble_contigs_label, section, marker_file)
                     self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)        
             
             #---------------------------------------------------------------------
@@ -883,13 +878,13 @@ class mp_stage:
             #------------------------------------------
             #merge kaiju + centrifuge into single file
             
-            marker_file = "TA_kaiju_pp"
+            marker_file = "TA_kraken2_pp"
             marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
             if(os.path.exists(marker_path)):
                 print(dt.today(), "skipping:", marker_file)
             else:
                 marker_path_list.append(marker_path)
-                command_list = self.commands.create_TA_kaiju_pp_command(self.GA_pre_scan_label, marker_file)
+                command_list = self.commands.create_TA_kraken2_pp_command(self.GA_pre_scan_label, marker_file)
                 self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
             self.mp_util.wait_for_mp_store()
             
@@ -940,7 +935,7 @@ class mp_stage:
             
             self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_pre_scan_label)
             
-        self.debug_stop_check("ga_pre_scan")
+        self.debug_stop_check("GA_pre_scan")
     
     def mp_GA_split(self):
         #separating GA split-data from GA_BWA for a few reasons:
@@ -987,6 +982,8 @@ class mp_stage:
         self.GA_BWA_start = time.time()
         if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BWA_label):
             marker_path_list = []
+            self.paths.check_bwa_valid(os.path.join(self.GA_pre_scan_path, "final_results"))
+            
             if not self.mp_util.check_where_resume(self.GA_BWA_path, None, self.GA_split_path):
             
                 #-------------------------------------------------------------------------

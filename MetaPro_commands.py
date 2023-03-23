@@ -16,7 +16,7 @@ class mt_pipe_commands:
     # --------------------------------------------------------------------
     # constructor:
     # there should only be one of these objects used for an entire pipeline.
-    def __init__(self, no_host, Config_path, Quality_score=33, thread_count=80, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=None, sequence_contigs = None):
+    def __init__(self, no_host, Config_path, Quality_score=33, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=None, sequence_contigs = None):
 
         self.tool_path_obj = mpp.tool_path_obj(Config_path)
         self.no_host_flag = no_host
@@ -75,8 +75,8 @@ class mt_pipe_commands:
                 
         self.Qual_str = str(Quality_score)
         self.Output_Path = os.getcwd()
-        self.threads_str = str(thread_count)
-        self.thread_count = thread_count
+        self.threads_str = str(self.tool_path_obj.num_threads)
+        self.thread_count = self.tool_path_obj.num_threads
         
         
         print("Output filepath:", self.Output_Path)
@@ -1932,23 +1932,58 @@ class mt_pipe_commands:
         self.make_folder(data_folder)
         self.make_folder(dest_folder)
         self.make_folder(jobs_folder)
+        self.make_folder(final_folder)
         
         ga_get_lib = ">&2 echo GA pre-scan get libs | "
         ga_get_lib += self.tool_path_obj.Python + " "
         ga_get_lib += self.tool_path_obj.GA_pre_scan_get_lib + " "
         ga_get_lib += os.path.join(data_folder, "3_wevote", "taxonomic_classifications.tsv") + " "
-        ga_get_lib += self.tool_path_obj.taxid_class_map + " "
+        ga_get_lib += self.tool_path_obj.taxid_tree + " "
         ga_get_lib += self.tool_path_obj.nodes + " "
         ga_get_lib += os.path.join(dest_folder, "lib_list.txt") + " "
         ga_get_lib += os.path.join(dest_folder, "lib_reject.txt") + " "
-        ga_get_lib += self.tool_path_obj.DNA_DB + " "
-        ga_get_lib += self.tool_path.obj.taxa_exist_cutoff
-        
+        ga_get_lib += self.tool_path_obj.source_taxa_DB + " "
+        ga_get_lib += self.tool_path_obj.taxa_exist_cutoff
         
         make_marker = "touch" + " "
         make_marker += os.path.join(jobs_folder, marker_file)
         
+        
         return [ga_get_lib + " && " + make_marker]
+        
+        
+    def create_GA_pre_scan_assemble_lib_command(self, stage_name, marker_file):
+        subfolder       = os.path.join(self.Output_Path, stage_name)
+        final_folder    = os.path.join(subfolder, "final_results")
+        data_folder     = os.path.join(subfolder, "data")
+        dest_folder     = os.path.join(data_folder, "4_libs")
+        jobs_folder     = os.path.join(subfolder, "jobs")
+        
+        self.make_folder(data_folder)
+        self.make_folder(dest_folder)
+        self.make_folder(jobs_folder)
+        self.make_folder(final_folder)
+    
+        assemble_lib = ">&2 echo GA assemble libs | " 
+        assemble_lib += self.tool_path_obj.Python + " " 
+        assemble_lib += self.tool_path_obj.GA_pre_scan_assemble_lib + " "
+        assemble_lib += os.path.join(dest_folder, "lib_list.txt") + " " 
+        assemble_lib += self.tool_path_obj.source_taxa_DB +  " "
+        assemble_lib += final_folder +  " " 
+        assemble_lib += "fasta"
+        
+        index_lib = "for i in $(ls " + final_folder + ");" + " "
+        index_lib += "do " + self.tool_path_obj.BWA + " index" + " "
+        index_lib += final_folder + "/$i; done" 
+        
+        make_marker = "touch" + " "
+        make_marker += os.path.join(jobs_folder, marker_file)
+        
+        self.tool_path_obj.DNA_DB = final_folder
+        
+        return [assemble_lib + " && " + index_lib + " && " + make_marker]
+        
+        
  
     def create_split_ga_fastq_data_command(self, stage_name, dependency_stage_name, category, marker_file):
         subfolder       = os.path.join(self.Output_Path, stage_name)
@@ -2643,12 +2678,12 @@ class mt_pipe_commands:
         if(operating_mode == "contigs"):
             kraken2_c = ">&2 echo Kraken2 on contigs | "
             kraken2_c += self.tool_path_obj.kraken2 + " "
-            kraken2_C += "--db " + self.tool_path_obj.kraken2_db + " "
-            kraken2_c += "--threads " + self.tool_path_obj.threads + " "
+            kraken2_c += "--db " + self.tool_path_obj.kraken2_db + " "
+            kraken2_c += "--threads " + str(self.tool_path_obj.num_threads) + " "
             kraken2_c += os.path.join(assemble_contigs_folder, "contigs.fasta") + " "
             kraken2_c += "--output " + os.path.join(kraken2_folder, "kraken2_c_report.txt")
             
-            make_marker = "touch " + make_marker += os.path.join(jobs_folder, marker_file)
+            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
             
             return [kraken2_c + " && " + make_marker]
             
@@ -2656,120 +2691,48 @@ class mt_pipe_commands:
             kraken2_s = ">&2 echo Kraken2 on singletons | "
             kraken2_s += self.tool_path_obj.kraken2 + " "
             kraken2_s += "--db " + self.tool_path_obj.kraken2_db + " "
-            kraken2_s += "--threads " + self.tool_path_obj.threads + " "
-            kraken2_s += os.path.join(assemble_contigs_folder, "singletons.fastq")
+            kraken2_s += "--threads " + str(self.tool_path_obj.num_threads) + " "
+            kraken2_s += os.path.join(assemble_contigs_folder, "singletons.fastq") + " " 
             kraken2_s += "--output " + os.path.join(kraken2_folder, "kraken2_s_report.txt")
             
             make_marker = "touch " + os.path.join(jobs_folder, marker_file)
             
-            return [kraken2_s + " && " make_marker]
+            return [kraken2_s + " && " + make_marker]
             
         elif(operating_mode == "paired"):
             kraken2_p = ">&2 echo Kraken2 on paired | " 
             kraken2_p += self.tool_path_obj.kraken2 + " "
             kraken2_p += "--db " + self.tool_path_obj.kraken2_db +  " "
-            kraken2_p += "--threads " + self.tool_path_obj.threads + " "
+            kraken2_p += "--threads " + str(self.tool_path_obj.num_threads) + " "
             kraken2_p += "--paired " + os.path.join(assemble_contigs_folder, "pair_1.fastq") + " " + os.path.join(assemble_contigs_folder, "pair_2.fastq") + " "
             kraken2_p += "--output " + os.path.join(kraken2_folder, "kraken2_p_report.txt")
             
-            make_marker = "touch " + os.path.join(jobs_folder, "marker_file)
+            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
             
             return [kraken2_p + " && " + make_marker]
             
-        
-    # Mar 17, 2023: depreciated
-    def create_TA_kaiju_command(self, current_stage_name, assemble_contigs_stage, operating_mode, marker_file):
-        return 0
-        """
+    def create_TA_kraken2_pp_command(self, current_stage_name, marker_file):
         subfolder               = os.path.join(self.Output_Path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
-        assemble_contigs_folder = os.path.join(self.Output_Path, assemble_contigs_stage, "final_results")
-        kaiju_folder            = os.path.join(data_folder, "1_kaiju")
-        jobs_folder             = os.path.join(data_folder, "jobs")
-        
-        self.make_folder(kaiju_folder)
-        self.make_folder(jobs_folder)
-        
-        if(operating_mode == "contigs"):
-            kaiju_on_contigs = ">&2 echo kaiju on contigs | "
-            kaiju_on_contigs += self.tool_path_obj.Kaiju
-            kaiju_on_contigs += " -t " + self.tool_path_obj.nodes
-            kaiju_on_contigs += " -f " + self.tool_path_obj.Kaiju_db
-            if(self.tutorial_keyword == "TA"):
-                kaiju_on_contigs += " -i " + self.sequence_contigs
-            else:
-                kaiju_on_contigs += " -i " + os.path.join(assemble_contigs_folder, "contigs.fasta")
-            kaiju_on_contigs += " -z " + self.threads_str
-            kaiju_on_contigs += " -o " + os.path.join(kaiju_folder, "contigs.tsv")
-            
-            make_marker = "touch" + " "
-            make_marker += os.path.join(jobs_folder, marker_file)
-            
-            return [kaiju_on_contigs + " && " + make_marker]
-
-        elif(operating_mode == "singletons"):
-            kaiju_on_singletons = ">&2 echo kaiju on singletons | "
-            kaiju_on_singletons += self.tool_path_obj.Kaiju
-            kaiju_on_singletons += " -t " + self.tool_path_obj.nodes
-            kaiju_on_singletons += " -f " + self.tool_path_obj.Kaiju_db
-            if(self.tutorial_keyword == "TA"):
-                kaiju_on_singletons += " -i " + self.sequence_single
-            else:
-                kaiju_on_singletons += " -i " + os.path.join(assemble_contigs_folder, "singletons.fastq")
-            kaiju_on_singletons += " -z " + self.threads_str
-            kaiju_on_singletons += " -o " + os.path.join(kaiju_folder, "singletons.tsv")
-
-            make_marker = "touch" + " "
-            make_marker += os.path.join(jobs_folder, marker_file)
-            
-            return [kaiju_on_singletons + " && " + make_marker]
-            
-        elif(operating_mode == "paired"):
-            kaiju_on_paired = ">&2 echo kaiju on pairs | "
-            kaiju_on_paired += self.tool_path_obj.Kaiju
-            kaiju_on_paired += " -t " + self.tool_path_obj.nodes
-            kaiju_on_paired += " -f " + self.tool_path_obj.Kaiju_db
-
-            if(self.tutorial_keyword == "TA"):
-                kaiju_on_paired += " -i " + self.sequence_path_1
-                kaiju_on_paired += " -j " + self.sequence_path_2
-
-            else:
-                kaiju_on_paired += " -i " + os.path.join(assemble_contigs_folder, "pair_1.fastq")
-                kaiju_on_paired += " -j " + os.path.join(assemble_contigs_folder, "pair_2.fastq")
-
-            kaiju_on_paired += " -z " + self.threads_str
-            kaiju_on_paired += " -o " + os.path.join(kaiju_folder, "pairs.tsv")
-            
-            make_marker = "touch" + " "
-            make_marker += os.path.join(jobs_folder, marker_file)
-            
-            return [kaiju_on_paired + " && " + make_marker]
-        """
-            
-            
-    def create_TA_kaiju_pp_command(self, current_stage_name, marker_file):
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        kaiju_folder            = os.path.join(data_folder, "1_kaiju")
+        kraken2_folder            = os.path.join(data_folder, "1_kraken2")
         jobs_folder             = os.path.join(data_folder, "jobs")
 
-        self.make_folder(jobs_folder)
-        
-        cat_kaiju = ">&2 echo merging all kaiju results | "
-        cat_kaiju += "cat "
+        cat_kraken2 = ">&2 echo merging kraken2 reports | "
+        cat_kraken2 += "cat "
+        cat_kraken2 += os.path.join(kraken2_folder, "kraken2_s_report.txt") + " "
         if(self.sequence_contigs != "None"):
-            cat_kaiju += os.path.join(kaiju_folder, "contigs.tsv") + " "
-        cat_kaiju += os.path.join(kaiju_folder, "singletons.tsv")
-        if self.read_mode == "paired":
-            cat_kaiju += " " + os.path.join(kaiju_folder, "pairs.tsv")
-        cat_kaiju += " > " + os.path.join(kaiju_folder, "merged_kaiju.tsv")
+            cat_kraken2 += os.path.join(kraken2_folder, "kraken2_c_report.txt") + " "
+        if(self.read_mode == "paired"):
+            cat_kraken2 += os.path.join(kraken2_folder, "kraken2_p_report.txt") + " "
+        cat_kraken2 += "> " + os.path.join(kraken2_folder, "merged_kraken2.txt")
         
         make_marker = "touch" + " "
         make_marker += os.path.join(jobs_folder, marker_file)
         
-        return [cat_kaiju + " && " + make_marker]
+        return [cat_kraken2 + " && " + make_marker]
         
+
+    
         
     def create_TA_centrifuge_command(self, current_stage_name, rRNA_stage, assemble_contigs_stage, operating_mode, marker_file):
         subfolder               = os.path.join(self.Output_Path, current_stage_name)
@@ -2919,7 +2882,8 @@ class mt_pipe_commands:
         subfolder               = os.path.join(self.Output_Path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
         assemble_contigs_folder = os.path.join(self.Output_Path, assemble_contigs_stage, "final_results")
-        kaiju_folder            = os.path.join(data_folder, "1_kaiju")
+        #kaiju_folder            = os.path.join(data_folder, "1_kaiju")
+        kraken2_folder          = os.path.join(data_folder, "1_kraken2")
         centrifuge_folder       = os.path.join(data_folder, "2_centrifuge")
         wevote_folder           = os.path.join(data_folder, "3_wevote")
         final_folder            = os.path.join(subfolder, "final_results")
@@ -2939,7 +2903,7 @@ class mt_pipe_commands:
         wevote_combine += "none" + " "
         wevote_combine += "none" + " "
         wevote_combine += "none" + " "
-        wevote_combine += os.path.join(kaiju_folder, "merged_kaiju.tsv") + " "
+        wevote_combine += os.path.join(kraken2_folder, "merged_kraken2.txt") + " "
         wevote_combine += os.path.join(centrifuge_folder, "merged_centrifuge.tsv")  
 
         wevote_call = ">&2 echo Running WEVOTE | "

@@ -83,32 +83,37 @@ class tool_path_obj:
                 print(dt.today(), "DMD index is ok")
 
         
-
-    def check_bwa_valid(self):
-        if(os.path.isdir(self.DNA_DB)):
-            file_list = os.listdir(self.DNA_DB)
+    #Mar 212, 2023: changed to be an external function because we now make custom DBs after a GA pre-scan
+    def check_bwa_valid(self, DNA_DB):
+        if(os.path.isdir(DNA_DB)):
+            
+            file_list = os.listdir(DNA_DB)
+            
             ok_flag = False
             file_count = 0
             for item in file_list:
-                if(item.endswith(".fasta")):
                 
+                if(item.endswith(".fasta")):
+                    #print("CHECKING:", item)
                     ext_0 = ".amb"
                     ext_1 = ".ann"
                     ext_2 = ".bwt"
                     ext_3 = ".pac"
                     ext_4 = ".sa"
                     
-                    file_0 = os.path.join(self.DNA_DB, item + ext_0)
-                    file_1 = os.path.join(self.DNA_DB, item + ext_1)
-                    file_2 = os.path.join(self.DNA_DB, item + ext_2)
-                    file_3 = os.path.join(self.DNA_DB, item + ext_3)
-                    file_4 = os.path.join(self.DNA_DB, item + ext_4)
+                    file_0 = os.path.join(DNA_DB, item + ext_0)
+                    file_1 = os.path.join(DNA_DB, item + ext_1)
+                    file_2 = os.path.join(DNA_DB, item + ext_2)
+                    file_3 = os.path.join(DNA_DB, item + ext_3)
+                    file_4 = os.path.join(DNA_DB, item + ext_4)
                     
                     ok_flag = self.check_file_valid(file_0)
                     ok_flag = self.check_file_valid(file_1)
                     ok_flag = self.check_file_valid(file_2)
                     ok_flag = self.check_file_valid(file_3)
                     ok_flag = self.check_file_valid(file_4)
+                    
+                    print("OK FLAG:", ok_flag)
                     file_count += 1
             if(file_count == 0):
                 print(dt.today(), "Error: no fasta files found. BWA only accepts .fasta extensions")
@@ -126,11 +131,11 @@ class tool_path_obj:
                 ext_3 = ".pac"
                 ext_4 = ".sa"
                 
-                file_0 = os.path.join(self.DNA_DB + ext_0)
-                file_1 = os.path.join(self.DNA_DB + ext_1)
-                file_2 = os.path.join(self.DNA_DB + ext_2)
-                file_3 = os.path.join(self.DNA_DB + ext_3)
-                file_4 = os.path.join(self.DNA_DB + ext_4)
+                file_0 = os.path.join(DNA_DB + ext_0)
+                file_1 = os.path.join(DNA_DB + ext_1)
+                file_2 = os.path.join(DNA_DB + ext_2)
+                file_3 = os.path.join(DNA_DB + ext_3)
+                file_4 = os.path.join(DNA_DB + ext_4)
                 
                 ok_flag = self.check_file_valid(file_0)
                 ok_flag = self.check_file_valid(file_1)
@@ -150,16 +155,16 @@ class tool_path_obj:
         #if it's a fastq or fasta
         #if it's been indexed (all files present)
 
-    def check_blat_valid(self):
+    def check_blat_valid(self, DNA_DB):
         #check that there's at least 1 fasta in the dict
         #but truth-be-told, this doesn't do anything, since BWA will use the same DB
-        if(os.path.isdir(self.DNA_DB)):
-            file_list = os.listdir(self.DNA_DB)
+        if(os.path.isdir(DNA_DB)):
+            file_list = os.listdir(DNA_DB)
             ok_flag = False
             file_count = 0
             for item in file_list:
                 if(item.endswith(".fasta")):
-                    ok_flag = self.check_file_valid(os.path.join(self.DNA_DB, item))
+                    ok_flag = self.check_file_valid(os.path.join(DNA_DB, item))
                     file_count += 1
             if(file_count == 0):
                 print(dt.today(), "Error: no fasta file found.  BLAT accepts .fasta extensions only")
@@ -171,7 +176,7 @@ class tool_path_obj:
                 sys.exit("Error with BLAT db. there's an empty fasta file")
         else:
             if(self.DNA_DB.endswith(".fasta")):
-                ok_flag = self.check_file_valid(self.DNA_DB)
+                ok_flag = self.check_file_valid(DNA_DB)
                 if(ok_flag):
                     print(dt.today(), "BLAT Database file OK")
                     self.GA_DB_mode = "single"
@@ -207,6 +212,7 @@ class tool_path_obj:
         self.Host               = self.value_assignment(config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"))
         self.Rfam               = self.value_assignment(config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
         self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
+        self.source_taxa_DB     = self.value_assignment(config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"))
         self.Prot_DB            = self.value_assignment(config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr"))
         self.Prot_DB_reads      = self.value_assignment(config, "Databases", "Prot_DB_reads", os.path.join(database_path, "nr/nr"))
         self.accession2taxid    = self.value_assignment(config, "Databases", "accession2taxid", os.path.join(database_path, "accession2taxid/accession2taxid"))
@@ -223,14 +229,15 @@ class tool_path_obj:
         self.path_to_superpath  = self.value_assignment(config, "Databases", "path_to_superpath", os.path.join(custom_database_path, "pathway_to_superpathway.csv"))
         self.mgm_model          = self.value_assignment(config, "Databases", "MetaGeneMark_model", os.path.join(tool_path, "mgm/MetaGeneMark_v1.mod"))
         self.enzyme_db          = self.value_assignment(config, "Databases", "enzyme_db", os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt"))
-        self.taxid_class_map    = self.value_assignment(config, "Databases", "taxid_class_map", os.path.join(custom_database_path, "taxid_class_maps", "family_tree.tsv"))
+        self.taxid_tree         = self.value_assignment(config, "Databases", "taxid_tree", os.path.join(custom_database_path, "taxid_trees", "family_tree.tsv"))
         self.kraken2_db         = self.value_assignment(config, "Databases", "kraken2_db", os.path.join(custom_database_path, "kraken2_db"))
 
         #-------------------------------------------------------
         # test DBs
+        self.GA_DB_mode = "multi" #by default for the new DB changes.
         self.check_dmd_valid()
-        self.check_bwa_valid()
-        self.check_blat_valid()
+        #self.check_bwa_valid()
+        #self.check_blat_valid()
 
         #----------------------------------------------------------
         # external tools
@@ -395,6 +402,9 @@ class tool_path_obj:
         self.bypass_log_name            = self.value_assignment(config, "Settings", "bypass_log_name", "bypass_log.txt")
         self.debug_stop_flag            = self.value_assignment(config, "Settings", "debug_stop_flag", "none")
         self.num_threads                = self.value_assignment(config, "Settings", "num_threads", os.cpu_count())
+        if(self.num_threads == 0):
+            self.num_threads = 1
+        self.taxa_exist_cutoff          = self.value_assignment(config, "Settings", "taxa_existence_cutoff", 0.1)
         
         
         self.RPKM_cutoff                = self.value_assignment(config, "Settings", "RPKM_cutoff", 0.01)
