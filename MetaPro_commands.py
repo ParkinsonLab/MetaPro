@@ -77,6 +77,7 @@ class mt_pipe_commands:
         self.Output_Path = os.getcwd()
         self.threads_str = str(self.tool_path_obj.num_threads)
         self.thread_count = self.tool_path_obj.num_threads
+        self.DNA_DB = self.tool_path_obj.DNA_DB
         
         
         print("Output filepath:", self.Output_Path)
@@ -2314,7 +2315,8 @@ class mt_pipe_commands:
 
         return [merge_bwa_fastas + " && " + make_marker]
 
-    def create_BLAT_annotate_command_v2(self, stage_name, query_file, fasta_db, marker_file):
+    def create_BLAT_annotate_command_v2(self, stage_name, query_file, db_path, fasta_db, marker_file):
+        
         #takes in a sample query file (expecting a segment of the whole GA data, after BWA
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
@@ -2331,7 +2333,7 @@ class mt_pipe_commands:
 
         blat_command = ">&2 echo " + str(dt.today()) + " BLAT annotation for " + sample_root_name + " " + fasta_db + " | "
         blat_command += self.tool_path_obj.BLAT + " -noHead -minIdentity=90 -minScore=65 "
-        blat_command += os.path.join(self.tool_path_obj.DNA_DB, fasta_db) + " "
+        blat_command += os.path.join(db_path, fasta_db) + " "
         blat_command += query_file
         blat_command += " -fine -q=rna -t=dna -out=blast8 -threads=40" + " "
         blat_command += os.path.join(blat_folder, sample_root_name + "_" + fasta_db + ".blatout")
@@ -2933,7 +2935,7 @@ class mt_pipe_commands:
         data_folder             = os.path.join(subfolder, "data")
         assemble_contigs_folder = os.path.join(self.Output_Path, assemble_contigs_stage, "final_results")
         ga_taxa_folder          = os.path.join(data_folder, "0_gene_taxa")
-        kaiju_folder            = os.path.join(data_folder, "1_kaiju")
+        kraken2_folder            = os.path.join(data_folder, "1_kraken2")
         centrifuge_folder       = os.path.join(data_folder, "2_centrifuge")
         wevote_folder           = os.path.join(data_folder, "3_wevote")
         final_folder            = os.path.join(subfolder, "final_results")
@@ -2942,7 +2944,7 @@ class mt_pipe_commands:
         self.make_folder(subfolder)
         self.make_folder(data_folder)
         self.make_folder(ga_taxa_folder)
-        self.make_folder(kaiju_folder)
+        self.make_folder(kraken2_folder)
         self.make_folder(centrifuge_folder)
         self.make_folder(wevote_folder)
         self.make_folder(final_folder)
@@ -2956,7 +2958,7 @@ class mt_pipe_commands:
         wevote_combine += os.path.join(ga_taxa_folder, "ga_taxon.tsv") + " "
         wevote_combine += os.path.join(ga_taxa_folder, "ga_taxon.tsv") + " "
         wevote_combine += os.path.join(ga_taxa_folder, "ga_taxon.tsv") + " "
-        wevote_combine += os.path.join(kaiju_folder, "merged_kaiju.tsv") + " "
+        wevote_combine += os.path.join(kraken2_folder, "merged_kraken2.txt") + " "
         wevote_combine += os.path.join(centrifuge_folder, "merged_centrifuge.tsv")        
 
         wevote_call = ">&2 echo Running WEVOTE | "

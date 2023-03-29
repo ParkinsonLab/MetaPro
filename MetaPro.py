@@ -68,15 +68,18 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     metapro_stage_obj.mp_assemble()  
 
     #metapro_stage_obj.mp_TA()
-    metapro_stage_obj.mp_GA_pre_scan()
+    if(metapro_stage_obj.paths.DNA_DB_mode == "chocophlan"):
+        metapro_stage_obj.mp_GA_pre_scan()
+        
     #sys.exit("paused")
-
+    
     # GA split
     metapro_stage_obj.mp_GA_split()
 
-    # BWA gene annotation
+    # GA lib check
+    metapro_stage_obj.mp_GA_lib_check()
     
-    #metapro_stage_obj.mp_GA_BWA_v2()
+    # BWA gene annotation
     metapro_stage_obj.mp_GA_BWA()
     
     

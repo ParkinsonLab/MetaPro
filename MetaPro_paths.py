@@ -21,6 +21,7 @@
 import os
 import sys
 from datetime import datetime as dt
+import math
 import time
 from configparser import ConfigParser, ExtendedInterpolation
 
@@ -85,72 +86,77 @@ class tool_path_obj:
         
     #Mar 212, 2023: changed to be an external function because we now make custom DBs after a GA pre-scan
     def check_bwa_valid(self, DNA_DB):
-        if(os.path.isdir(DNA_DB)):
-            
-            file_list = os.listdir(DNA_DB)
-            
-            ok_flag = False
-            file_count = 0
-            for item in file_list:
+        print(dt.today(), "BWA DB check:", DNA_DB)
+        if(os.path.exists(DNA_DB)):
+            if(os.path.isdir(DNA_DB)):
                 
-                if(item.endswith(".fasta")):
-                    #print("CHECKING:", item)
+                file_list = os.listdir(DNA_DB)
+                
+                ok_flag = False
+                file_count = 0
+                for item in file_list:
+                    
+                    if(item.endswith(".fasta")):
+                        #print("CHECKING:", item)
+                        ext_0 = ".amb"
+                        ext_1 = ".ann"
+                        ext_2 = ".bwt"
+                        ext_3 = ".pac"
+                        ext_4 = ".sa"
+                        
+                        file_0 = os.path.join(DNA_DB, item + ext_0)
+                        file_1 = os.path.join(DNA_DB, item + ext_1)
+                        file_2 = os.path.join(DNA_DB, item + ext_2)
+                        file_3 = os.path.join(DNA_DB, item + ext_3)
+                        file_4 = os.path.join(DNA_DB, item + ext_4)
+                        
+                        ok_flag = self.check_file_valid(file_0)
+                        ok_flag = self.check_file_valid(file_1)
+                        ok_flag = self.check_file_valid(file_2)
+                        ok_flag = self.check_file_valid(file_3)
+                        ok_flag = self.check_file_valid(file_4)
+                        
+                        #print("OK FLAG:", ok_flag)
+                        file_count += 1
+                if(file_count == 0):
+                    print(dt.today(), "Error: no fasta files found. BWA only accepts .fasta extensions")
+                    sys.exit("empty BWA database")    
+                if(not ok_flag):
+                    sys.exit("BWA database has not been fully indexed. try reindexing the database")
+                else:
+                    print(dt.today(), "BWA database OK")
+                    self.GA_DB_mode = "multi"
+            else:
+                if(self.DNA_DB.endswith(".fasta")):
                     ext_0 = ".amb"
                     ext_1 = ".ann"
                     ext_2 = ".bwt"
                     ext_3 = ".pac"
                     ext_4 = ".sa"
                     
-                    file_0 = os.path.join(DNA_DB, item + ext_0)
-                    file_1 = os.path.join(DNA_DB, item + ext_1)
-                    file_2 = os.path.join(DNA_DB, item + ext_2)
-                    file_3 = os.path.join(DNA_DB, item + ext_3)
-                    file_4 = os.path.join(DNA_DB, item + ext_4)
+                    file_0 = os.path.join(DNA_DB + ext_0)
+                    file_1 = os.path.join(DNA_DB + ext_1)
+                    file_2 = os.path.join(DNA_DB + ext_2)
+                    file_3 = os.path.join(DNA_DB + ext_3)
+                    file_4 = os.path.join(DNA_DB + ext_4)
                     
                     ok_flag = self.check_file_valid(file_0)
                     ok_flag = self.check_file_valid(file_1)
                     ok_flag = self.check_file_valid(file_2)
                     ok_flag = self.check_file_valid(file_3)
                     ok_flag = self.check_file_valid(file_4)
-                    
-                    print("OK FLAG:", ok_flag)
-                    file_count += 1
-            if(file_count == 0):
-                print(dt.today(), "Error: no fasta files found. BWA only accepts .fasta extensions")
-                sys.exit("empty BWA database")    
-            if(not ok_flag):
-                sys.exit("BWA database has not been fully indexed. try reindexing the database")
-            else:
-                print(dt.today(), "BWA database OK")
-                self.GA_DB_mode = "multi"
-        else:
-            if(self.DNA_DB.endswith(".fasta")):
-                ext_0 = ".amb"
-                ext_1 = ".ann"
-                ext_2 = ".bwt"
-                ext_3 = ".pac"
-                ext_4 = ".sa"
-                
-                file_0 = os.path.join(DNA_DB + ext_0)
-                file_1 = os.path.join(DNA_DB + ext_1)
-                file_2 = os.path.join(DNA_DB + ext_2)
-                file_3 = os.path.join(DNA_DB + ext_3)
-                file_4 = os.path.join(DNA_DB + ext_4)
-                
-                ok_flag = self.check_file_valid(file_0)
-                ok_flag = self.check_file_valid(file_1)
-                ok_flag = self.check_file_valid(file_2)
-                ok_flag = self.check_file_valid(file_3)
-                ok_flag = self.check_file_valid(file_4)
 
-                if(not ok_flag):
-                    sys.exit("BWA Database FILE has not been fully indexed. Try reindexing the database")
+                    if(not ok_flag):
+                        sys.exit("BWA Database FILE has not been fully indexed. Try reindexing the database")
+                    else:
+                        print(dt.today(), "BWA Database File OK")
+                        self.GA_DB_mode = "single"
                 else:
-                    print(dt.today(), "BWA Database File OK")
-                    self.GA_DB_mode = "single"
-            else:
-                sys.exit("Error: no fasta file found. BWA only accepts .fasta extensions")
-            
+                    sys.exit("Error: no fasta file found. BWA only accepts .fasta extensions")
+        else:
+            exit_string = str(dt.today()) + " " + "Error: path does not exist. "+ DNA_DB
+            sys.exit(exit_string)
+        
             
         #if it's a fastq or fasta
         #if it's been indexed (all files present)
@@ -158,6 +164,7 @@ class tool_path_obj:
     def check_blat_valid(self, DNA_DB):
         #check that there's at least 1 fasta in the dict
         #but truth-be-told, this doesn't do anything, since BWA will use the same DB
+        print(dt.today(), "BLAT DB check:", DNA_DB)
         if(os.path.isdir(DNA_DB)):
             file_list = os.listdir(DNA_DB)
             ok_flag = False
@@ -202,118 +209,6 @@ class tool_path_obj:
         custom_database_path    = "/pipeline/custom_databases/"
         
 
-        #----------------------------------------------------------
-        # Reference Databases
-        # Note: default host is Mouse CDS
-        
-        #if config:
-        self.UniVec_Core        = self.value_assignment(config, "Databases", "UniVec_Core", os.path.join(database_path, "univec_core/UniVec_Core.fasta")) 
-        self.Adapter            = self.value_assignment(config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"))
-        self.Host               = self.value_assignment(config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"))
-        self.Rfam               = self.value_assignment(config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
-        self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
-        self.source_taxa_DB     = self.value_assignment(config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"))
-        self.Prot_DB            = self.value_assignment(config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr"))
-        self.Prot_DB_reads      = self.value_assignment(config, "Databases", "Prot_DB_reads", os.path.join(database_path, "nr/nr"))
-        self.accession2taxid    = self.value_assignment(config, "Databases", "accession2taxid", os.path.join(database_path, "accession2taxid/accession2taxid"))
-        self.nodes              = self.value_assignment(config, "Databases", "nodes", os.path.join(database_path, "WEVOTE_db", "nodes.dmp"))
-        self.names              = self.value_assignment(config, "Databases", "names", os.path.join(database_path, "WEVOTE_db", "names.dmp"))
-        self.Kaiju_db           = self.value_assignment(config, "Databases", "Kaiju_db", os.path.join(database_path, "kaiju_db/kaiju_db_nr.fmi"))
-        self.Centrifuge_db      = self.value_assignment(config, "Databases", "Centrifuge_db", os.path.join(database_path, "centrifuge_db/nt"))
-        self.SWISS_PROT         = self.value_assignment(config, "Databases", "SWISS_PROT", os.path.join(database_path, "swiss_prot_db/swiss_prot_db"))
-        self.SWISS_PROT_map     = self.value_assignment(config, "Databases", "SWISS_PROT_map", os.path.join(database_path, "swiss_prot_db/SwissProt_EC_Mapping.tsv"))
-        self.PriamDB            = self.value_assignment(config, "Databases", "PriamDB", os.path.join(database_path, "PRIAM_db/"))
-        self.DetectDB           = self.value_assignment(config, "Databases", "DetectDB", os.path.join(database_path, "DETECTv2"))
-        self.WEVOTEDB           = self.value_assignment(config, "Databases", "WEVOTEDB", os.path.join(database_path, "WEVOTE_db/"))
-        self.EC_pathway         = self.value_assignment(config, "Databases", "EC_pathway", os.path.join(database_path, "EC_pathway.txt"))
-        self.path_to_superpath  = self.value_assignment(config, "Databases", "path_to_superpath", os.path.join(custom_database_path, "pathway_to_superpathway.csv"))
-        self.mgm_model          = self.value_assignment(config, "Databases", "MetaGeneMark_model", os.path.join(tool_path, "mgm/MetaGeneMark_v1.mod"))
-        self.enzyme_db          = self.value_assignment(config, "Databases", "enzyme_db", os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt"))
-        self.taxid_tree         = self.value_assignment(config, "Databases", "taxid_tree", os.path.join(custom_database_path, "taxid_trees", "family_tree.tsv"))
-        self.kraken2_db         = self.value_assignment(config, "Databases", "kraken2_db", os.path.join(custom_database_path, "kraken2_db"))
-
-        #-------------------------------------------------------
-        # test DBs
-        self.GA_DB_mode = "multi" #by default for the new DB changes.
-        self.check_dmd_valid()
-        #self.check_bwa_valid()
-        #self.check_blat_valid()
-
-        #----------------------------------------------------------
-        # external tools
-        
-        #if config:
-        self.Python         = self.value_assignment(config, "Tools", "Python", "python3")
-        self.Java           = self.value_assignment(config, "Tools", "Java", "java -jar")
-        self.cdhit_dup      = self.value_assignment(config, "Tools", "cdhit_dup",  os.path.join(tool_path, "cdhit_dup/cd-hit-dup"))
-        self.AdapterRemoval = self.value_assignment(config, "Tools", "AdapterRemoval", os.path.join(tool_path, "adapterremoval/AdapterRemoval"))
-        self.vsearch        = self.value_assignment(config, "Tools", "vsearch", os.path.join(tool_path, "vsearch/vsearch"))
-        self.BWA            = self.value_assignment(config, "Tools", "BWA", os.path.join(tool_path, "BWA/bwa"))
-        self.SAMTOOLS       = self.value_assignment(config, "Tools", "SAMTOOLS", os.path.join(tool_path, "samtools/samtools"))
-        self.BLAT           = self.value_assignment(config, "Tools", "BLAT", os.path.join(tool_path, "PBLAT/pblat"))
-        self.DIAMOND        = self.value_assignment(config, "Tools", "DIAMOND", os.path.join(tool_path, "DIAMOND/diamond"))
-        self.Blastp         = self.value_assignment(config, "Tools", "Blastp", os.path.join(tool_path, "BLAST_p/blastp"))
-        self.Needle         = self.value_assignment(config, "Tools", "Needle", os.path.join(tool_path, "EMBOSS-6.6.0/emboss/stretcher"))
-        self.Makeblastdb    = self.value_assignment(config, "Tools", "Makeblastdb", os.path.join(tool_path, "BLAST_p/makeblastdb"))
-        self.Barrnap        = self.value_assignment(config, "Tools", "Barrnap", os.path.join(tool_path, "Barrnap/bin/barrnap"))
-        self.Infernal       = self.value_assignment(config, "Tools", "Infernal", os.path.join(tool_path, "infernal/cmsearch"))
-        self.Kaiju          = self.value_assignment(config, "Tools", "Kaiju", os.path.join(tool_path, "kaiju/kaiju"))
-        self.Centrifuge     = self.value_assignment(config, "Tools", "Centrifuge", os.path.join(tool_path, "centrifuge/centrifuge"))
-        self.Priam          = self.value_assignment(config, "Tools", "Priam", os.path.join(tool_path, "PRIAM_search/PRIAM_search.jar"))
-        self.Detect         = self.value_assignment(config, "Tools", "Detect", os.path.join(script_path, "Detect_2.2.10.py"))
-        self.BLAST_dir      = self.value_assignment(config, "Tools", "BLAST_dir", os.path.join(tool_path, "BLAST_p"))
-        self.WEVOTE         = self.value_assignment(config, "Tools", "WEVOTE", os.path.join(tool_path, "WEVOTE/WEVOTE"))
-        self.Spades         = self.value_assignment(config, "Tools", "Spades", os.path.join(tool_path, "SPAdes/bin/spades.py"))
-        self.MetaGeneMark   = self.value_assignment(config, "Tools", "MetaGeneMark", os.path.join(tool_path, "mgm/gmhmmp"))
-        self.kraken2        = self.value_assignment(config, "Tools", "kraken2", os.path.join(tool_path, "kraken2/kraken2"))
-            
-        #--------------------------------------------
-        # Python scripts
-        #if config:
-        self.sam_trimmer                = self.value_assignment(config, "code", "sam_trimmer", os.path.join(script_path, "read_sam.py"))
-        self.sort_reads                 = self.value_assignment(config, "code", "sort_reads", os.path.join(script_path, "read_sort.py"))
-        self.duplicate_repopulate       = self.value_assignment(config, "code", "duplicate_repopulation", os.path.join(script_path, "read_repopulation.py"))
-        self.orphaned_read_filter       = self.value_assignment(config, "code", "orphaned_read_filter", os.path.join(script_path, "read_orphan.py"))
-        self.remove_tag                 = self.value_assignment(config, "code", "remove_tag", os.path.join(script_path, "read_remove_tag.py"))
-        self.BLAT_Contaminant_Filter    = self.value_assignment(config, "code", "blat_contaminant_filter", os.path.join(script_path, "read_BLAT_filter_v3.py"))
-        self.File_splitter              = self.value_assignment(config, "code", "file_splitter", os.path.join(script_path, "read_split.py"))
-        self.barrnap_post               = self.value_assignment(config, "code", "barrnap_post", os.path.join(script_path, "read_rRNA_barrnap.py"))
-        self.rRNA_filter                = self.value_assignment(config, "code", "rRNA_filter", os.path.join(script_path, "read_rRNA_infernal.py"))
-        self.Map_contig                 = self.value_assignment(config, "code", "map_contig", os.path.join(script_path, "assembly_make_contig_map.py"))
-        self.flush_bad_contigs          = self.value_assignment(config, "code", "flush_bad_contigs", os.path.join(script_path, "assembly_flush_bad_contigs.py"))
-        self.contig_duplicate_remover   = self.value_assignment(config, "code", "contig_duplicate_remover", os.path.join(script_path, "assembly_deduplicate.py"))
-        self.Map_reads_gene_BWA         = self.value_assignment(config, "code", "ga_bwa_pp", os.path.join(script_path, "ga_BWA_generic_v2.py"))
-        self.Map_reads_gene_BLAT        = self.value_assignment(config, "code", "ga_blat_pp", os.path.join(script_path, "ga_BLAT_generic_v3.py"))
-        self.Map_reads_prot_DMND        = self.value_assignment(config, "code", "ga_dmd_pp", os.path.join(script_path, "ga_Diamond_generic_v2.py"))
-        self.GA_final_merge             = self.value_assignment(config, "code", "ga_final_merge", os.path.join(script_path, "ga_Final_merge_v4.py"))
-        self.GA_merge_fasta             = self.value_assignment(config, "code", "ga_merge_fasta", os.path.join(script_path, "ga_merge_fasta.py"))
-        self.GA_final_merge_fasta       = self.value_assignment(config, "code", "ga_final_merge_fasta", os.path.join(script_path, "ga_final_merge_fastq.py"))
-        self.GA_final_merge_proteins    = self.value_assignment(config, "code", "ga_final_merge_proteins", os.path.join(script_path, "ga_final_merge_proteins.py"))
-        self.GA_final_merge_maps        = self.value_assignment(config, "code", "ga_final_merge_maps", os.path.join(script_path, "ga_final_merge_map.py"))
-        self.EC_Annotation_Post         = self.value_assignment(config, "code", "ec_combine", os.path.join(script_path, "ea_combine_v5.py"))
-        self.Annotated_taxid            = self.value_assignment(config, "code", "ta_taxid", os.path.join(script_path, "ta_taxid_v3.py"))
-        self.Constrain_classification   = self.value_assignment(config, "code", "ta_constrain", os.path.join(script_path, "ta_constrain_taxonomy_v2.py"))
-        self.Classification_combine     = self.value_assignment(config, "code", "ta_combine", os.path.join(script_path, "ta_combine_v2.py"))
-        self.Wevote_parser              = self.value_assignment(config, "code", "ta_wevote", os.path.join(script_path, "ta_wevote_parser.py"))
-        self.taxa_table                 = self.value_assignment(config, "code", "output_taxa", os.path.join(script_path, "output_taxa_groupby.py"))
-        self.RPKM                       = self.value_assignment(config, "code", "output_rpkm", os.path.join(script_path, "output_table_v3.py"))
-        self.format_RPKM                = self.value_assignment(config, "code", "output_reformat", os.path.join(script_path, "output_reformat_rpkm_table.py"))
-        self.read_count                 = self.value_assignment(config, "code", "output_read_count", os.path.join(script_path, "output_read_counts_v2.py"))
-        self.read_quality_metrics       = self.value_assignment(config, "code", "output_qual", os.path.join(script_path, "output_read_quality_metrics.py"))
-        self.contig_stats               = self.value_assignment(config, "code", "output_contig_stats", os.path.join(script_path, "output_contig_stats.py"))
-        self.ec_heatmap                 = self.value_assignment(config, "code", "output_heatmap", os.path.join(script_path, "output_EC_metrics.py"))
-        self.data_change_metrics        = self.value_assignment(config, "code", "output_data_change", os.path.join(script_path, "output_data_change_metrics.py"))
-        self.get_unique_host_reads      = self.value_assignment(config, "code", "output_unique_hosts", os.path.join(script_path, "output_get_host_reads.py"))
-        self.remove_gaps_in_fasta       = self.value_assignment(config, "code", "remove_fasta_gaps", os.path.join(script_path, "remove_gaps_in_fasta.py"))
-        self.parse_sam                  = self.value_assignment(config, "code", "output_sam", os.path.join(script_path, "output_parse_sam.py"))
-        self.are_you_in_a_contig        = self.value_assignment(config, "code", "output_contig_check", os.path.join(script_path, "output_are_you_in_a_contig.py"))
-        self.convert_contig_segments    = self.value_assignment(config, "code", "output_convert_gene_map", os.path.join(script_path, "output_convert_gene_map_contig_segments.py"))
-        self.output_filter_taxa         = self.value_assignment(config, "code", "output_filter_taxa", os.path.join(script_path, "output_filter_taxa.py"))
-        self.output_filter_ECs          = self.value_assignment(config, "code", "output_filter_ec", os.path.join(script_path, "output_filter_ECs.py"))
-        self.bwa_read_sorter            = self.value_assignment(config, "code", "bwa_read_sorter", os.path.join(script_path, "bwa_read_sorter.py"))
-        self.ta_contig_name_convert     = self.value_assignment(config, "code", "ta_name_convert", os.path.join(script_path, "ta_contig_name_convert.py"))
-        self.GA_pre_scan_get_lib        = self.value_assignment(config, "code", "ga_pre_scan_get_lib", os.path.join(script_path, "ga_pre_scan_get_libs.py"))
-        self.GA_pre_scan_assemble_lib   = self.value_assignment(config, "code", "ga_pre_scan_assemble_lib", os.path.join(script_path, "ga_pre_scan_assemble_libs.py"))
         
         #--------------------------------------------------
         # miscellaneous values
@@ -331,7 +226,7 @@ class tool_path_obj:
         GA_final_merge_mem_default = 5 
         EC_mem_threshold_default = 5
         
-        cpu_default = os.cpu_count()
+        cpu_default = int(math.ceil(os.cpu_count() * 0.75))
         rRNA_chunksize_default = 50000
         EC_chunksize_default = 50000
         GA_chunksize_default = 25000
@@ -393,9 +288,9 @@ class tool_path_obj:
         DIAMOND_score_default = 60
         
         #identity_cutoff= 85
-    #length_cutoff= 0.65
-    #score_cutoff= 60
-        #if config:
+        #length_cutoff= 0.65
+        #score_cutoff= 60
+        
         self.target_rank                = self.value_assignment(config, "Settings", "target_rank", "genus")
         self.adapterremoval_minlength   = self.value_assignment(config, "Settings", "AdapterRemoval_minlength", 30)
         self.show_unclassified          = self.value_assignment(config, "Settings", "Show_unclassified", "No")
@@ -405,6 +300,9 @@ class tool_path_obj:
         if(self.num_threads == 0):
             self.num_threads = 1
         self.taxa_exist_cutoff          = self.value_assignment(config, "Settings", "taxa_existence_cutoff", 0.1)
+        self.DNA_DB_mode                = self.value_assignment(config, "Settings", "DNA_DB_mode", "chocophlan") #used to indicate custom DB, or our grouped library
+        #other setting is "custom"
+        
         
         
         self.RPKM_cutoff                = self.value_assignment(config, "Settings", "RPKM_cutoff", 0.01)
@@ -606,3 +504,121 @@ class tool_path_obj:
         self.output_ec_heatmap_label                = self.value_assignment(config, "Labels", "output_ec_heatmap",                  output_ec_heatmap_label_default)
         self.output_taxa_groupby_label              = self.value_assignment(config, "Labels", "output_taxa_groupby",                output_taxa_groupby_label_default)
         self.output_read_count_label                = self.value_assignment(config, "Labels", "output_read_count",                  output_read_count_label_default)
+        
+        
+        
+        #----------------------------------------------------------
+        # Reference Databases
+        # Note: default host is Mouse CDS
+        
+        #if config:
+        self.UniVec_Core        = self.value_assignment(config, "Databases", "UniVec_Core", os.path.join(database_path, "univec_core/UniVec_Core.fasta")) 
+        self.Adapter            = self.value_assignment(config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"))
+        self.Host               = self.value_assignment(config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"))
+        self.Rfam               = self.value_assignment(config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
+        self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
+        self.source_taxa_DB     = self.value_assignment(config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"))
+        self.Prot_DB            = self.value_assignment(config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr"))
+        self.Prot_DB_reads      = self.value_assignment(config, "Databases", "Prot_DB_reads", os.path.join(database_path, "nr/nr"))
+        self.accession2taxid    = self.value_assignment(config, "Databases", "accession2taxid", os.path.join(database_path, "accession2taxid/accession2taxid"))
+        self.nodes              = self.value_assignment(config, "Databases", "nodes", os.path.join(database_path, "WEVOTE_db", "nodes.dmp"))
+        self.names              = self.value_assignment(config, "Databases", "names", os.path.join(database_path, "WEVOTE_db", "names.dmp"))
+        self.Kaiju_db           = self.value_assignment(config, "Databases", "Kaiju_db", os.path.join(database_path, "kaiju_db/kaiju_db_nr.fmi"))
+        self.Centrifuge_db      = self.value_assignment(config, "Databases", "Centrifuge_db", os.path.join(database_path, "centrifuge_db/nt"))
+        self.SWISS_PROT         = self.value_assignment(config, "Databases", "SWISS_PROT", os.path.join(database_path, "swiss_prot_db/swiss_prot_db"))
+        self.SWISS_PROT_map     = self.value_assignment(config, "Databases", "SWISS_PROT_map", os.path.join(database_path, "swiss_prot_db/SwissProt_EC_Mapping.tsv"))
+        self.PriamDB            = self.value_assignment(config, "Databases", "PriamDB", os.path.join(database_path, "PRIAM_db/"))
+        self.DetectDB           = self.value_assignment(config, "Databases", "DetectDB", os.path.join(database_path, "DETECTv2"))
+        self.WEVOTEDB           = self.value_assignment(config, "Databases", "WEVOTEDB", os.path.join(database_path, "WEVOTE_db/"))
+        self.EC_pathway         = self.value_assignment(config, "Databases", "EC_pathway", os.path.join(database_path, "EC_pathway.txt"))
+        self.path_to_superpath  = self.value_assignment(config, "Databases", "path_to_superpath", os.path.join(custom_database_path, "pathway_to_superpathway.csv"))
+        self.mgm_model          = self.value_assignment(config, "Databases", "MetaGeneMark_model", os.path.join(tool_path, "mgm/MetaGeneMark_v1.mod"))
+        self.enzyme_db          = self.value_assignment(config, "Databases", "enzyme_db", os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt"))
+        self.taxid_tree         = self.value_assignment(config, "Databases", "taxid_tree", os.path.join(custom_database_path, "taxid_trees", "family_tree.tsv"))
+        self.kraken2_db         = self.value_assignment(config, "Databases", "kraken2_db", os.path.join(custom_database_path, "kraken2_db"))
+
+        #-------------------------------------------------------
+        # test DBs
+        self.GA_DB_mode = "multi" #by default for the new DB changes.
+        self.check_dmd_valid()
+        if(self.DNA_DB_mode == "custom"):
+            self.check_bwa_valid(self.DNA_DB)
+            self.check_blat_valid(self.DNA_DB)
+        
+
+        #----------------------------------------------------------
+        # external tools
+        
+        #if config:
+        self.Python         = self.value_assignment(config, "Tools", "Python", "python3")
+        self.Java           = self.value_assignment(config, "Tools", "Java", "java -jar")
+        self.cdhit_dup      = self.value_assignment(config, "Tools", "cdhit_dup",  os.path.join(tool_path, "cdhit_dup/cd-hit-dup"))
+        self.AdapterRemoval = self.value_assignment(config, "Tools", "AdapterRemoval", os.path.join(tool_path, "adapterremoval/AdapterRemoval"))
+        self.vsearch        = self.value_assignment(config, "Tools", "vsearch", os.path.join(tool_path, "vsearch/vsearch"))
+        self.BWA            = self.value_assignment(config, "Tools", "BWA", os.path.join(tool_path, "BWA/bwa"))
+        self.SAMTOOLS       = self.value_assignment(config, "Tools", "SAMTOOLS", os.path.join(tool_path, "samtools/samtools"))
+        self.BLAT           = self.value_assignment(config, "Tools", "BLAT", os.path.join(tool_path, "PBLAT/pblat"))
+        self.DIAMOND        = self.value_assignment(config, "Tools", "DIAMOND", os.path.join(tool_path, "DIAMOND/diamond"))
+        self.Blastp         = self.value_assignment(config, "Tools", "Blastp", os.path.join(tool_path, "BLAST_p/blastp"))
+        self.Needle         = self.value_assignment(config, "Tools", "Needle", os.path.join(tool_path, "EMBOSS-6.6.0/emboss/stretcher"))
+        self.Makeblastdb    = self.value_assignment(config, "Tools", "Makeblastdb", os.path.join(tool_path, "BLAST_p/makeblastdb"))
+        self.Barrnap        = self.value_assignment(config, "Tools", "Barrnap", os.path.join(tool_path, "Barrnap/bin/barrnap"))
+        self.Infernal       = self.value_assignment(config, "Tools", "Infernal", os.path.join(tool_path, "infernal/cmsearch"))
+        self.Kaiju          = self.value_assignment(config, "Tools", "Kaiju", os.path.join(tool_path, "kaiju/kaiju"))
+        self.Centrifuge     = self.value_assignment(config, "Tools", "Centrifuge", os.path.join(tool_path, "centrifuge/centrifuge"))
+        self.Priam          = self.value_assignment(config, "Tools", "Priam", os.path.join(tool_path, "PRIAM_search/PRIAM_search.jar"))
+        self.Detect         = self.value_assignment(config, "Tools", "Detect", os.path.join(script_path, "Detect_2.2.10.py"))
+        self.BLAST_dir      = self.value_assignment(config, "Tools", "BLAST_dir", os.path.join(tool_path, "BLAST_p"))
+        self.WEVOTE         = self.value_assignment(config, "Tools", "WEVOTE", os.path.join(tool_path, "WEVOTE/WEVOTE"))
+        self.Spades         = self.value_assignment(config, "Tools", "Spades", os.path.join(tool_path, "SPAdes/bin/spades.py"))
+        self.MetaGeneMark   = self.value_assignment(config, "Tools", "MetaGeneMark", os.path.join(tool_path, "mgm/gmhmmp"))
+        self.kraken2        = self.value_assignment(config, "Tools", "kraken2", os.path.join(tool_path, "kraken2/kraken2"))
+            
+        #--------------------------------------------
+        # Python scripts
+        #if config:
+        self.sam_trimmer                = self.value_assignment(config, "code", "sam_trimmer", os.path.join(script_path, "read_sam.py"))
+        self.sort_reads                 = self.value_assignment(config, "code", "sort_reads", os.path.join(script_path, "read_sort.py"))
+        self.duplicate_repopulate       = self.value_assignment(config, "code", "duplicate_repopulation", os.path.join(script_path, "read_repopulation.py"))
+        self.orphaned_read_filter       = self.value_assignment(config, "code", "orphaned_read_filter", os.path.join(script_path, "read_orphan.py"))
+        self.remove_tag                 = self.value_assignment(config, "code", "remove_tag", os.path.join(script_path, "read_remove_tag.py"))
+        self.BLAT_Contaminant_Filter    = self.value_assignment(config, "code", "blat_contaminant_filter", os.path.join(script_path, "read_BLAT_filter_v3.py"))
+        self.File_splitter              = self.value_assignment(config, "code", "file_splitter", os.path.join(script_path, "read_split.py"))
+        self.barrnap_post               = self.value_assignment(config, "code", "barrnap_post", os.path.join(script_path, "read_rRNA_barrnap.py"))
+        self.rRNA_filter                = self.value_assignment(config, "code", "rRNA_filter", os.path.join(script_path, "read_rRNA_infernal.py"))
+        self.Map_contig                 = self.value_assignment(config, "code", "map_contig", os.path.join(script_path, "assembly_make_contig_map.py"))
+        self.flush_bad_contigs          = self.value_assignment(config, "code", "flush_bad_contigs", os.path.join(script_path, "assembly_flush_bad_contigs.py"))
+        self.contig_duplicate_remover   = self.value_assignment(config, "code", "contig_duplicate_remover", os.path.join(script_path, "assembly_deduplicate.py"))
+        self.Map_reads_gene_BWA         = self.value_assignment(config, "code", "ga_bwa_pp", os.path.join(script_path, "ga_BWA_generic_v2.py"))
+        self.Map_reads_gene_BLAT        = self.value_assignment(config, "code", "ga_blat_pp", os.path.join(script_path, "ga_BLAT_generic_v3.py"))
+        self.Map_reads_prot_DMND        = self.value_assignment(config, "code", "ga_dmd_pp", os.path.join(script_path, "ga_Diamond_generic_v2.py"))
+        self.GA_final_merge             = self.value_assignment(config, "code", "ga_final_merge", os.path.join(script_path, "ga_Final_merge_v4.py"))
+        self.GA_merge_fasta             = self.value_assignment(config, "code", "ga_merge_fasta", os.path.join(script_path, "ga_merge_fasta.py"))
+        self.GA_final_merge_fasta       = self.value_assignment(config, "code", "ga_final_merge_fasta", os.path.join(script_path, "ga_final_merge_fastq.py"))
+        self.GA_final_merge_proteins    = self.value_assignment(config, "code", "ga_final_merge_proteins", os.path.join(script_path, "ga_final_merge_proteins.py"))
+        self.GA_final_merge_maps        = self.value_assignment(config, "code", "ga_final_merge_maps", os.path.join(script_path, "ga_final_merge_map.py"))
+        self.EC_Annotation_Post         = self.value_assignment(config, "code", "ec_combine", os.path.join(script_path, "ea_combine_v5.py"))
+        self.Annotated_taxid            = self.value_assignment(config, "code", "ta_taxid", os.path.join(script_path, "ta_taxid_v3.py"))
+        self.Constrain_classification   = self.value_assignment(config, "code", "ta_constrain", os.path.join(script_path, "ta_constrain_taxonomy_v2.py"))
+        self.Classification_combine     = self.value_assignment(config, "code", "ta_combine", os.path.join(script_path, "ta_combine_v3.py"))
+        self.Wevote_parser              = self.value_assignment(config, "code", "ta_wevote", os.path.join(script_path, "ta_wevote_parser.py"))
+        self.taxa_table                 = self.value_assignment(config, "code", "output_taxa", os.path.join(script_path, "output_taxa_groupby.py"))
+        self.RPKM                       = self.value_assignment(config, "code", "output_rpkm", os.path.join(script_path, "output_table_v3.py"))
+        self.format_RPKM                = self.value_assignment(config, "code", "output_reformat", os.path.join(script_path, "output_reformat_rpkm_table.py"))
+        self.read_count                 = self.value_assignment(config, "code", "output_read_count", os.path.join(script_path, "output_read_counts_v2.py"))
+        self.read_quality_metrics       = self.value_assignment(config, "code", "output_qual", os.path.join(script_path, "output_read_quality_metrics.py"))
+        self.contig_stats               = self.value_assignment(config, "code", "output_contig_stats", os.path.join(script_path, "output_contig_stats.py"))
+        self.ec_heatmap                 = self.value_assignment(config, "code", "output_heatmap", os.path.join(script_path, "output_EC_metrics.py"))
+        self.data_change_metrics        = self.value_assignment(config, "code", "output_data_change", os.path.join(script_path, "output_data_change_metrics.py"))
+        self.get_unique_host_reads      = self.value_assignment(config, "code", "output_unique_hosts", os.path.join(script_path, "output_get_host_reads.py"))
+        self.remove_gaps_in_fasta       = self.value_assignment(config, "code", "remove_fasta_gaps", os.path.join(script_path, "remove_gaps_in_fasta.py"))
+        self.parse_sam                  = self.value_assignment(config, "code", "output_sam", os.path.join(script_path, "output_parse_sam.py"))
+        self.are_you_in_a_contig        = self.value_assignment(config, "code", "output_contig_check", os.path.join(script_path, "output_are_you_in_a_contig.py"))
+        self.convert_contig_segments    = self.value_assignment(config, "code", "output_convert_gene_map", os.path.join(script_path, "output_convert_gene_map_contig_segments.py"))
+        self.output_filter_taxa         = self.value_assignment(config, "code", "output_filter_taxa", os.path.join(script_path, "output_filter_taxa.py"))
+        self.output_filter_ECs          = self.value_assignment(config, "code", "output_filter_ec", os.path.join(script_path, "output_filter_ECs.py"))
+        self.bwa_read_sorter            = self.value_assignment(config, "code", "bwa_read_sorter", os.path.join(script_path, "bwa_read_sorter.py"))
+        self.ta_contig_name_convert     = self.value_assignment(config, "code", "ta_name_convert", os.path.join(script_path, "ta_contig_name_convert.py"))
+        self.GA_pre_scan_get_lib        = self.value_assignment(config, "code", "ga_pre_scan_get_lib", os.path.join(script_path, "ga_pre_scan_get_libs.py"))
+        self.GA_pre_scan_assemble_lib   = self.value_assignment(config, "code", "ga_pre_scan_assemble_lib", os.path.join(script_path, "ga_pre_scan_assemble_libs.py"))
+        
