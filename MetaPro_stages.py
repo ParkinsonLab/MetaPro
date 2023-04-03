@@ -879,7 +879,7 @@ class mp_stage:
             self.mp_util.wait_for_mp_store()
             
             #------------------------------------------
-            #merge kaiju + centrifuge into single file
+            #merge kraken + centrifuge into single file
             
             marker_file = "TA_kraken2_pp"
             marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)

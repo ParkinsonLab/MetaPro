@@ -1971,19 +1971,19 @@ class mt_pipe_commands:
         assemble_lib += os.path.join(dest_folder, "lib_list.txt") + " " 
         assemble_lib += self.tool_path_obj.source_taxa_DB +  " "
         assemble_lib += final_folder +  " " 
-        assemble_lib += "fasta"
+        assemble_lib += "all"
         
-        index_lib = "for i in $(ls " + final_folder + ");" + " "
-        index_lib += "do " + self.tool_path_obj.BWA + " index" + " "
-        index_lib += final_folder + "/$i; done" 
+        #index_lib = "for i in $(ls " + final_folder + ");" + " "
+        #index_lib += "do " + self.tool_path_obj.BWA + " index" + " "
+        #index_lib += final_folder + "/$i; done" 
         
         make_marker = "touch" + " "
         make_marker += os.path.join(jobs_folder, marker_file)
         
         self.tool_path_obj.DNA_DB = final_folder
         
-        return [assemble_lib + " && " + index_lib + " && " + make_marker]
-        
+        #return [assemble_lib + " && " + index_lib + " && " + make_marker]
+        return [assemble_lib + " && " + make_marker]
         
  
     def create_split_ga_fastq_data_command(self, stage_name, dependency_stage_name, category, marker_file):
