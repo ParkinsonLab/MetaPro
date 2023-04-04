@@ -1858,6 +1858,7 @@ class mp_stage:
             self.mp_util.wait_for_mp_store()
             self.mp_util.conditional_write_to_bypass_log(self.output_read_count_label, "outputs/final_results", "read_count.tsv")
             self.mp_util.conditional_write_to_bypass_log(self.output_ec_heatmap_label, "outputs/final_results", "EC_coverage.csv")
+            self.mp_util.conditional_write_to_bypass_log(self.output_per_read_scores_label, "outputs/final_results", "quality_filter_hist.jpg")
 
             
         self.cleanup_cytoscape_start = time.time()
