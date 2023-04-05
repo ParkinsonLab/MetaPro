@@ -153,13 +153,14 @@ We get our CDS databases from the NCBI, eg: ftp://ftp.ncbi.nlm.nih.gov/pub/CCDS/
 The Rfam Database is used by Infernal, the rRNA filter.
 A copy can be found here: http://rfam.xfam.org/
 * DNA_DB
-The DNA DB is what we use to annotate the sequence data against.  We use the ChocoPhlAn database.
+The DNA DB is what we use to annotate the sequence data against.  We use a specially-sorted version of the ChocoPhlAn database.
 A copy can be found at: http://huttenhower.sph.harvard.edu/humann2_data/chocophlan/chocophlan.tar.gz
+However, downloading a copy from the Huttenhower lab will not contain our modifications
+
 However, we also allow the use of custom databases.  
 Note: If a database is larger than 5GB, it can still be used, but it will need to be split.  Each file of the split database must not exceed 5GB.  pBLAT cannot handle a file larger than 5GB. 
 
-* DNA\_DB\_Split
-The ChocoPhlAn database too large for pBLAT to process.  We split it up and process the chunks simultaneously.  The pipeline will split it and dump the chunks at this location.
+
 * Prot_DB
 The Prot_DB is the protein db.  We use the non-redundant database from NCBI.  It will need to be indexed by DIAMOND before usage. (see DIAMOND for more details: https://github.com/bbuchfink/diamond)
 It can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/db/
@@ -171,9 +172,9 @@ This file is used in various parts in the pipeline.
 It can be found at: ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdmp.zip
 * names
 It can be found at the same location as nodes (above)
-* Kaiju_db
-The Kaiju Database is used by Kaiju for taxonomic annotation.  Kaiju requires that the database be indexed before usage.  
-Please see: https://github.com/bioinformatics-centre/kaiju/blob/master/README.md for more information.  Once the indexing is complete, the path to the database needs to be provided in this location
+* kraken2_db
+The Kraken2 Database is used by Kraken2 for taxonomic annotation.  The files can be found at: https://benlangmead.github.io/aws-indexes/k2
+We have curated a version for MetaPro to use.
 * Centrifuge_db
 The Centrifuge Database is used for the Centrifuge tool, which is a part of the enzyme annotation phase.  More information can be found here: https://ccb.jhu.edu/software/centrifuge/manual.shtml
 We use the Nucleotide Database, after it has been indexed.  Details can be found at the link to Centrifuge
@@ -251,17 +252,17 @@ The mem threshold settings control the amount of remaining RAM that must exist f
     Barrnap_mem_threshold: default 50(%)
     TA_mem_threshold: default 50(%)
     
-BWA_job_limit:  controls the amount of concurrent jobs allowed to launch at any one time.  This setting should be changed to fit the user's single-node thread-count
-    
-    BLAT_job_limit: default 80 (threads)
-    DIAMOND_job_limit: default 80 (threads)
-    BWA_pp_job_limit: default 80 (threads)
-    BLAT_pp_job_limit: default 80 (threads)
-    DIAMOND_pp_job_limit: default 80 (threads)
-    DETECT_job_limit: default 80 (threads)
-    Infernal_job_limit: default 80 (threads)
-    Barrnap_job_limit: default 80 (threads)
-    TA_job_limit: default 80 (threads)
+  Job limits: controls the amount of concurrent jobs allowed to launch at any one time.  This setting should be changed to fit the user's single-node thread-count
+    BWA_job_limit: default (80% of max CPUs on system)    
+    BLAT_job_limit: default (80% of max CPUs on system)
+    DIAMOND_job_limit: default (80% of max CPUs on system)
+    BWA_pp_job_limit: default (80% of max CPUs on system)
+    BLAT_pp_job_limit: default (80% of max CPUs on system)
+    DIAMOND_pp_job_limit: default (80% of max CPUs on system)
+    DETECT_job_limit: default (80% of max CPUs on system)
+    Infernal_job_limit: default (80% of max CPUs on system)
+    Barrnap_job_limit: default (80% of max CPUs on system)
+    TA_job_limit: default (80% of max CPUs on system)
     
 The job delay settings control the amount of time the master controller waits until a new process is started.  This is used in conjuction with the memory limit settings to avoid out-of-memory issues, and process-kill issues as the full RAM usage isn't realized until some of the programs get underway.
 
@@ -279,9 +280,15 @@ These other settings are for tweaks to the programs we exposed, due to various r
     RPKM_cutoff: for reporting purposes. It's the minimum RPKM value for a taxa to have representation
     rRNA_chunk_size: This parameter sets the number of sequences in each chunk of the rRNA removal step.  Setting this value high will reduce the amount of files created, but the step will run slower. (1-100000, due to infernal's safe limits)  
     GA_chunksize: This parameter sets the number of sequences in each chunk of the Gene Annotation step. 
-    filter_stringency: values: "high", or "low".  used to control the filter settings in rRNA removal.
+    filter_stringency: values: high, or low.  used to control the filter settings in rRNA removal.
+    DNA_DB_mode: values: chocophlan, or custom.  This setting tells MetaPro whether to use the existing GA database (ChocoPhlAn), or expect a custom user-provided database.  
 
     
+## Labels
+---
+Labels are how MetaPro names each stage.  In cases where users want to test different settings in GA/TA/EC, or to try a battery of trials using the same data, we now let users name their stages in customized ways:
+
+
 
 
 
