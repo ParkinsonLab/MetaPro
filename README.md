@@ -135,7 +135,7 @@ The libraries MetaPro uses are critically important for the user to use the pipe
 
 We intentionally did not include any database files in this distribution so as to allow the user more flexibility in how they want to use the pipeline.  Databases also become obselete quickly, and the image size would be enormous.  
 
-However, many of these databases require indexing, so we are curating ready-to-go versions these databases on our website:
+However, many of these databases require indexing, so we are curating ready-to-go versions these databases on our webserver:
 https://compsysbio.org/metapro_libs/
 
 Below is a description of each of the fields we used.  
@@ -174,7 +174,8 @@ It can be found at: ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdmp.zip
 It can be found at the same location as nodes (above)
 * kraken2_db
 The Kraken2 Database is used by Kraken2 for taxonomic annotation.  The files can be found at: https://benlangmead.github.io/aws-indexes/k2
-We have curated a version for MetaPro to use.
+The creators of this database update it frequently.  We recommend getting a copy from the source.  However, in case the database is not available, we host a copy 
+on our webserver.
 * Centrifuge_db
 The Centrifuge Database is used for the Centrifuge tool, which is a part of the enzyme annotation phase.  More information can be found here: https://ccb.jhu.edu/software/centrifuge/manual.shtml
 We use the Nucleotide Database, after it has been indexed.  Details can be found at the link to Centrifuge
@@ -238,7 +239,16 @@ If the user wants to change the tool version, they are free to, but the pipeline
 ## Settings
 ---
 The 3rd section of MetaPro's configuration file controls the various runtime resource settings.
-    
+
+- AdapterRemoval_minlength: sets the minimum basepair length for AdapterRemoval (default 30)
+- Show_unclassified: tells MetaPro's RPKM report to include unclassified reads as a column (default: No)
+- bypass_log_name: lets debuggers choose the file that will be the bypass log (default: bypass_log.txt)
+- debug_stop_flag: lets debuggers stop MetaPro after a specific stage (default: none)
+- num_threads: lets users set the number of threads that MetaPro can use (default: max system limit)
+- taxa_exist_cutoff: decides what the percentage cutoff of representative taxa found in the GA-pre-scan.  (default: 0.1)
+- DNA_DB_mode: indicates to MetaPro which database is being used (options: custom, default: chocophlan). If set to custom, MetaPro will bypass GA-pre-scan, but will perform a database check for the custom entry.
+  
+  
 The mem threshold settings control the amount of remaining RAM that must exist for additional instances of each tool to be launched (available RAM is measured during the initial launch)
     
     BWA_mem_threshold: default 50(%)
@@ -252,7 +262,7 @@ The mem threshold settings control the amount of remaining RAM that must exist f
     Barrnap_mem_threshold: default 50(%)
     TA_mem_threshold: default 50(%)
     
-  Job limits: controls the amount of concurrent jobs allowed to launch at any one time.  This setting should be changed to fit the user's single-node thread-count
+ Job limits: controls the amount of concurrent jobs allowed to launch at any one time.  This setting should be changed to fit the user's single-node thread-count
     BWA_job_limit: default (80% of max CPUs on system)    
     BLAT_job_limit: default (80% of max CPUs on system)
     DIAMOND_job_limit: default (80% of max CPUs on system)
