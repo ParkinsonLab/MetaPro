@@ -201,17 +201,21 @@ if __name__ == "__main__":
         url = "https://compsysbio.org/metapro_libs/centrifuge_db/nt.tar.gz"
         start_download(url, path, name, things_to_skip, bypass_log_file)
 
-    if(("chocophlan" in files_to_download) or ("all" in files_to_download)):
+    if(("chocophlan" in files_to_download) or ("all" in files_to_download) or ("choco_genus" in files_to_download)):
         #---------------------------------------------------------------------
         name = "choco_genus"
         path = os.path.join(outdir, "choco_h3_genus", "choco_h3_genus.tar.gz")
         url = "https://compsysbio.org/metapro_libs/choco_h3_genus.tar.gz"
         start_download(url, path, name, things_to_skip, bypass_log_file)
 
+    if(("chocophlan" in files_to_download) or ("all" in files_to_download) or ("choco_family" in files_to_download)):
+
         name = "choco_family"
         path = os.path.join(outdir, "choco_h3_family", "choco_h3_family.tar.gz")
         url = "https://compsysbio.org/metapro_libs/choco_h3_family.tar.gz"
         start_download(url, path, name, things_to_skip, bypass_log_file)
+
+    if(("chocophlan" in files_to_download) or ("all" in files_to_download) or ("choco_order" in files_to_download)):
 
         name = "choco_order"
         path = os.path.join(outdir, "choco_h3_order", "choco_h3_order.tar.gz")
