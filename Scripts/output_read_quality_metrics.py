@@ -5,11 +5,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
-<<<<<<< HEAD
-
-=======
 from datetime import datetime as dt
->>>>>>> db_shrink
 import math
 
 
@@ -18,22 +14,11 @@ import math
 class read_quality_metrics:
     def __init__(self, input_file):
         self.input_file = input_file
-<<<<<<< HEAD
-        self.input_suffix = os.path.split(self.input_file)[1].split(".")[1]
-        
-        if(self.input_suffix == "fastq"):
-<<<<<<< HEAD
-            self.df_file = pd.read_csv(self.input_file, header = None, names=None, sep='\n', skip_blank_lines=False)
-=======
-            self.df_file = pd.read_csv(self.input_file, header = None, names=None, sep='\n', skip_blank_lines=False, quoting = 3)
->>>>>>> 4d5286c... committing final-ish code.
-=======
         self.input_suffix = os.path.splitext(input_file)[1].strip(".")
         #self.df_orig = None
         
         if(self.input_suffix == "fastq"):
             self.df_file = pd.read_csv(self.input_file, header = None, names=None, sep='\n', skip_blank_lines=False, quoting = 3)
->>>>>>> db_shrink
             self.df_orig = pd.DataFrame(self.df_file.values.reshape(int(len(self.df_file)/4), 4))
             self.df_orig.columns = ["ID", "seq", "junk", "quality"]
             self.df_orig.drop(columns =["ID", "seq", "junk"], inplace = True)
@@ -61,15 +46,11 @@ class read_quality_metrics:
             #self.df_orig["names"] = self.df_orig.index
             #self.df_orig.index = range(self.df_orig.shape[0])
             # At this point, we've already got the number of reads.
-<<<<<<< HEAD
-            
-=======
         else:
             print(dt.today(), "import file:", self.input_file)
             print(dt.today(), "import suffix:", self.input_suffix)
             print(dt.today(), "error with importing in output read quality metrics")
             sys.exit()
->>>>>>> db_shrink
         
         
     def string_to_ascii_array(self, line):
