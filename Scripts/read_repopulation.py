@@ -10,6 +10,18 @@ import sys
 import pandas as pd
 
 def repopulate_single(ref_filename, mRNA_filename, cluster_filename, output_filename):
+<<<<<<< HEAD
+<<<<<<< HEAD
+    ref_file = pd.read_csv(ref_filename, header = None, names = [None], sep = '\n', skip_blank_lines = False)
+    ref_df = pd.DataFrame(ref_file.values.reshape(int(len(ref_file)/4), 4))
+    ref_df.columns = ["ID", "seq", "junk", "quality"]
+
+    mRNA_file = pd.read_csv(mRNA_filename, header=None, names=[None], sep = '\n', skip_blank_lines = False)
+    mRNA_df = pd.DataFrame(mRNA_file.values.reshape(int(len(mRNA_file)/4), 4))
+    mRNA_df.columns = ["ID", "seq", "junk", "quality"]
+=======
+=======
+>>>>>>> db_shrink
     ref_file = pd.read_csv(ref_filename, header = None, names = [None], sep = '\n', skip_blank_lines = False, quoting=3)
     ref_df = pd.DataFrame(ref_file.values.reshape(int(len(ref_file)/4), 4))
     ref_df.columns = ["ID", "seq", "junk", "quality"]
@@ -19,6 +31,10 @@ def repopulate_single(ref_filename, mRNA_filename, cluster_filename, output_file
     mRNA_df = pd.DataFrame(mRNA_file.values.reshape(int(len(mRNA_file)/4), 4))
     mRNA_df.columns = ["ID", "seq", "junk", "quality"]
     mRNA_df["ID"] = mRNA_df["ID"].apply(lambda x: x.split(" ")[0])
+<<<<<<< HEAD
+>>>>>>> 4d5286c... committing final-ish code.
+=======
+>>>>>>> db_shrink
     cluster_file = cluster_filename
     cluster_map = {}
     full_mRNA_file = output_filename
@@ -55,6 +71,20 @@ def repopulate_single(ref_filename, mRNA_filename, cluster_filename, output_file
             reduplicated_ids.add("@" + sequence)
 
     #exports the full mRNA by fetching from ref
+<<<<<<< HEAD
+<<<<<<< HEAD
+    ref_df[ref_df.ID.isin(sorted(reduplicated_ids))].to_csv(full_mRNA_file, sep = '\n', mode = "w+", header = False, index = False)
+=======
+    ref_df[ref_df.ID.isin(sorted(reduplicated_ids))].to_csv(full_mRNA_file, sep = '\n', mode = "w+", header = False, index = False, quoting = 3)
+>>>>>>> 4d5286c... committing final-ish code.
+
+
+if __name__ == "__main__":
+    ref_filename = sys.argv[1]
+    mRNA_filename = sys.argv[2]
+    cluster_filename = sys.argv[3]
+    output_filename = sys.argv[4]
+=======
     ref_df[ref_df.ID.isin(sorted(reduplicated_ids))].to_csv(full_mRNA_file, sep = '\n', mode = "w+", header = False, index = False, quoting = 3)
 
 
@@ -63,4 +93,5 @@ if __name__ == "__main__":
     mRNA_filename = sys.argv[2]     #in: the file that will contain the reads needing to be duplicated
     cluster_filename = sys.argv[3]  #in: the cluster file showing what was in-fact duplicated
     output_filename = sys.argv[4]   #out: the final output
+>>>>>>> db_shrink
     repopulate_single(ref_filename, mRNA_filename, cluster_filename, output_filename)

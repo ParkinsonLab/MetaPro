@@ -1,4 +1,180 @@
-FROM parkinsonlab/mpro_stash:v1
+<<<<<<< HEAD
+FROM continuumio/anaconda3
+MAINTAINER Billy Taj
+RUN apt-get update
+RUN apt-get install wget
+RUN apt-get install unzip
+RUN apt-get -y install g++
+RUN apt-get -y install gcc
+RUN apt-get -y install make
+RUN apt-get -y install libz-dev
+RUN apt-get -y install libbz2-dev
+RUN apt-get -y install autoconf
+RUN apt-get -y install build-essential
+RUN apt-get -y install libboost-all-dev
+RUN apt-get -y install flex
+RUN apt-get -y install cmake
+RUN apt-get -y install libncurses5-dev
+RUN apt-get -y install liblzma-dev
+RUN apt-get -y install perl
+RUN apt-get -y install openjdk-8-jre
+RUN apt-get -y install openjdk-8-jdk
+RUN conda update -n base conda -y
+RUN conda install Biopython -y 
+RUN conda install Pandas -y
+#needed for Needle
+RUN ln -s /bin/sed /usr/bin/sed   
+RUN apt-get install libgd-dev -y
+
+WORKDIR /pipeline_tools
+#----------------------------------------------------
+# Install AdapaterRemoval
+RUN wget https://github.com/MikkelSchubert/adapterremoval/archive/v2.1.7.tar.gz -O adapterremoval.tar.gz && mkdir /pipeline_tools/adapterremoval
+RUN tar -xzvf adapterremoval.tar.gz && rm adapterremoval.tar.gz
+WORKDIR adapterremoval-2.1.7
+RUN make && mv build/AdapterRemoval /pipeline_tools/adapterremoval/
+WORKDIR /pipeline_tools
+RUN rm -r adapterremoval-2.1.7 
+
+#---------------------------------------
+# Install Barrnap
+RUN wget https://github.com/tseemann/barrnap/archive/0.8.zip -O barrnap.zip && unzip barrnap.zip && rm barrnap.zip | mkdir Barrnap && mv barrnap-0.8/* /pipeline_tools/Barrnap && cd /pipeline_tools && rm -r barrnap-0.8
+ENV PATH="${PATH}:/pipeline_tools/Barrnap/bin"
+
+#------------------------------------
+# Install BLAST+
+# compiling from source takes a much longer time than downloading the executables
+RUN wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.7.1+-x64-linux.tar.gz -O BLAST_p.tar.gz   && tar --remove-files -xzvf BLAST_p.tar.gz && rm BLAST_p.tar.gz
+RUN mkdir BLAST_p && mv ncbi-blast-2.7.1+/bin/* BLAST_p && rm -r ncbi-blast-2.7.1+
+
+#---------------------------------------------------
+# Install BLAT (pblat)
+RUN wget https://github.com/icebert/pblat/tarball/master -O PBLAT.tar.gz | mkdir PBLAT
+RUN tar --remove-files -xzvf PBLAT.tar.gz && rm PBLAT.tar.gz
+WORKDIR /pipeline_tools/icebert-pblat-e05e284
+RUN make && mv pblat /pipeline_tools/PBLAT/
+WORKDIR /pipeline_tools
+RUN rm -r icebert-pblat-e05e284
+
+#------------------------------------------------------
+# Install BWA
+RUN wget https://sourceforge.net/projects/bio-bwa/files/bwa-0.7.17.tar.bz2 -O bwa.tar.bz2 && mkdir BWA && tar --remove-files -xjvf bwa.tar.bz2 && rm bwa.tar.bz2
+WORKDIR /pipeline_tools/bwa-0.7.17
+RUN make
+WORKDIR /pipeline_tools
+RUN mv bwa-0.7.17/bwa BWA/ && rm -r bwa-0.7.17
+
+
+#----------------------------------------------------
+# Install CD-HIT-DUP (from auxtools)
+RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.6.8/cd-hit-v4.6.8-2017-1208-source.tar.gz -O cdhit.tar.gz && tar --remove-files -xzvf cdhit.tar.gz && rm cdhit.tar.gz && mkdir cdhit_dup
+WORKDIR cd-hit-v4.6.8-2017-1208/
+RUN make && mv cd-hit-auxtools/cd-hit-dup /pipeline_tools/cdhit_dup/
+WORKDIR /pipeline_tools
+RUN rm -r cd-hit-v4.6.8-2017-1208
+
+
+
+#----------------------------------------------------
+# Install Centrifuge
+RUN wget https://github.com/infphilo/centrifuge/archive/v1.0.3.tar.gz -O centrifuge.tar.gz && tar --remove-files -xzvf centrifuge.tar.gz && rm centrifuge.tar.gz 
+WORKDIR centrifuge-1.0.3
+RUN make 
+WORKDIR /pipeline_tools
+RUN mv centrifuge-1.0.3 centrifuge
+
+
+#-----------------------------------------------------
+# Install DIAMOND
+RUN wget http://github.com/bbuchfink/diamond/releases/download/v0.9.19/diamond-linux64.tar.gz -O DIAMOND.tar.gz && mkdir DIAMOND
+RUN tar --remove-files -xzvf DIAMOND.tar.gz -C DIAMOND && rm DIAMOND.tar.gz
+
+
+#----------------------------------------------------
+# Install EMBOSS
+RUN mkdir EMBOSS && wget ftp://emboss.open-bio.org/pub/EMBOSS/EMBOSS-6.6.0.tar.gz && tar -xzvf EMBOSS-6.6.0.tar.gz
+WORKDIR EMBOSS-6.6.0
+RUN sh configure && make
+WORKDIR /pipeline_tools
+
+#------------------------------------------------------
+# Install FLASH (Fast length adjustment of Short Reads)
+RUN wget http://ccb.jhu.edu/software/FLASH/FLASH-1.2.11.tar.gz -O FLASH.tar.gz && tar --remove-files -xzvf FLASH.tar.gz && rm FLASH.tar.gz && mkdir FLASH
+WORKDIR FLASH-1.2.11
+RUN make && mv flash /pipeline_tools/FLASH
+WORKDIR /pipeline_tools
+RUN rm -r FLASH-1.2.11
+
+
+#-------------------------------------------
+# Install Infernal
+RUN wget http://eddylab.org/infernal/infernal-1.1.2-linux-intel-gcc.tar.gz -O infernal.tar.gz && tar --remove-files -xzvf infernal.tar.gz && rm infernal.tar.gz && mkdir infernal && mv infernal-1.1.2-linux-intel-gcc/binaries/* infernal && rm -r infernal-1.1.2-linux-intel-gcc
+WORKDIR /pipeline_tools
+
+#-------------------------------------------
+# Install Kaiju
+RUN wget https://github.com/bioinformatics-centre/kaiju/releases/download/v1.6.2/kaiju-1.6.2-linux-x86_64.tar.gz -O kaiju.tar.gz && tar --remove-files -xzvf kaiju.tar.gz && rm kaiju.tar.gz && mkdir kaiju && mv kaiju-v1.6.2-linux-x86_64-static/bin/* kaiju/ && rm -r kaiju-v1.6.2-linux-x86_64-static
+WORKDIR /pipeline_tools
+
+
+#---------------------------------------
+# Install KronaTools (for ktImportText)
+# note, ktImportText is now a perl script, not a binary.  We probably need most of this, if not all of this.  No cleaning
+RUN wget https://github.com/marbl/Krona/releases/download/v2.7/KronaTools-2.7.tar -O KronaTools.tar && tar --remove-files -xvf KronaTools.tar && rm KronaTools.tar && mkdir KronaTools && mv KronaTools-2.7/* KronaTools/ && rm -r KronaTools-2.7
+WORKDIR KronaTools
+RUN perl install.pl
+WORKDIR /pipeline_tools
+
+#----------------------------------------
+# Install k-SLAM
+RUN wget https://github.com/aindj/k-SLAM/archive/master.zip -O k_slam.zip && unzip k_slam.zip && rm k_slam.zip && mkdir k-SLAM
+WORKDIR k-SLAM-master
+RUN make -C build && mv build/SLAM /pipeline_tools/k-SLAM/
+WORKDIR /pipeline_tools
+RUN rm -r k-SLAM-master
+
+#--------------------------------------------
+# Install PRIAM
+RUN mkdir PRIAM_search && wget http://priam.prabi.fr/utilities/PRIAM_search.jar && mv PRIAM_search.jar PRIAM_search
+WORKDIR /pipeline_tools
+
+
+#------------------------------------------------------
+# Install SAMTools
+RUN wget https://sourceforge.net/projects/samtools/files/samtools/1.8/samtools-1.8.tar.bz2 -O samtools.tar.bz2 && tar --remove-files -xjvf samtools.tar.bz2 && rm samtools.tar.bz2 && mkdir samtools
+WORKDIR samtools-1.8
+RUN make && mv samtools /pipeline_tools/samtools
+WORKDIR /pipeline_tools
+RUN rm -r samtools-1.8
+
+#-------------------------------------------------------
+# Install SPAdes
+RUN wget http://cab.spbu.ru/files/release3.11.1/SPAdes-3.11.1-Linux.tar.gz -O SPAdes.tar.gz && tar --remove-files -xzvf SPAdes.tar.gz && rm SPAdes.tar.gz && mkdir SPAdes && mv SPAdes-3.11.1-Linux/* SPAdes && rm -r SPAdes-3.11.1-Linux
+
+
+#---------------------------------------------------
+# Install Trimmomatic and get the adapters files
+RUN wget http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.36.zip -O Trimmomatic.zip && unzip Trimmomatic.zip && rm Trimmomatic.zip && mkdir Trimmomatic && mv Trimmomatic-0.36/* Trimmomatic && rm -r Trimmomatic-0.36
+
+
+#----------------------------------------------------
+# Install vsearch
+RUN wget https://github.com/torognes/vsearch/archive/v2.7.1.tar.gz -O vsearch.tar.gz && mkdir vsearch && tar --remove-files -xzvf vsearch.tar.gz && rm vsearch.tar.gz 
+WORKDIR vsearch-2.7.1
+RUN sh autogen.sh && sh configure && make && mv bin/vsearch /pipeline_tools/vsearch
+WORKDIR /pipeline_tools
+RUN rm -r vsearch-2.7.1
+
+#------------------------------------
+# Install WEVOTE
+RUN wget https://github.com/aametwally/WEVOTE/archive/master.zip -O wevote.zip && unzip wevote.zip && rm wevote.zip
+WORKDIR WEVOTE-master
+RUN mkdir ../WEVOTE && ./install.sh && mkdir WEVOTE_db && mv bin/WEVOTE ../WEVOTE && mv downloadTaxonomyDB.sh ../WEVOTE && mkdir ../WEVOTE/WEVOTE_db
+WORKDIR /pipeline_tools
+RUN rm -r WEVOTE-master
+=======
+FROM parkinsonlab/mpro_stash:v1.0.1
+>>>>>>> db_shrink
 
 
 #-------------------------------------------
@@ -6,77 +182,149 @@ FROM parkinsonlab/mpro_stash:v1
 WORKDIR /pipeline
 RUN mkdir /pipeline/Scripts && mkdir /pipeline/custom_databases && mkdir /pipeline/setup_scripts
 
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/MetaPro.py /pipeline
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/MetaPro_paths.py /pipeline
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/MetaPro_commands.py /pipeline
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/MetaPro_utilities.py /pipeline
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/MetaPro_stages.py /pipeline
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Config.ini /pipeline
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/Detect_2.2.10.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/assembly_deduplicate.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/assembly_make_contig_map.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/assembly_flush_bad_contigs.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ea_combine_v5.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ga_BLAT_generic_v3.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ga_BWA_generic_v2.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ga_Diamond_generic_v2.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ga_Final_merge_v4.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ga_merge_fasta.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ga_final_merge_proteins.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ga_final_merge_map.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ga_final_merge_fastq.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_are_you_in_a_contig.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_contig_stats.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_convert_gene_map_contig_segments.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_data_change_metrics.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_EC_metrics.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_filter_ECs.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_filter_taxa.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_read_counts_v2.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_read_quality_metrics.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_taxa_groupby.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_table_v3.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_parse_sam.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_reformat_rpkm_table.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/output_get_host_reads.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/read_BLAT_filter_v3.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/read_orphan.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/read_remove_tag.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/read_rRNA_barrnap.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/read_rRNA_infernal.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/read_repopulation.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/read_sam.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/bwa_read_sorter.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/read_sort.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/read_split.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ta_combine_v2.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ta_constrain.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ta_constrain_taxonomy_v2.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ta_taxid_v3.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ta_wevote_parser.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/remove_gaps_in_fasta.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/ta_contig_name_convert.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Scripts/alter_taxa_for_krona.py /pipeline/Scripts
+<<<<<<< HEAD
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/MetaPro.py /pipeline
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/MetaPro_paths.py /pipeline
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/MetaPro_commands.py /pipeline
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Config.ini /pipeline
+<<<<<<< HEAD
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/Detect_2.1.py /pipeline/Scripts
+=======
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/Detect_2.2.7.py /pipeline/Scripts
+>>>>>>> 4d5286c... committing final-ish code.
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/assembly_deduplicate.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/assembly_map.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ea_combine.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ga_BLAT.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ga_BWA.py /pipeline/Scripts
+<<<<<<< HEAD
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ga_Diamond.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_contig_stats.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_EC_metrics.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_read_counts.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_read_quality_metrics.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_table.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_visualization.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/read_BLAT_filter.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/read_orphan.py /pipeline/Scripts
+=======
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ga_Diamond_v2.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_contig_stats.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_data_change_metrics.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_EC_metrics.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_read_counts.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_read_quality_metrics.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_table_with_taxonomy.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/output_table_v2.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/read_BLAT_filter.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/read_orphan.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/read_remove_tag.py /pipeline/Scripts
+>>>>>>> 4d5286c... committing final-ish code.
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/read_rRNA_barrnap.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/read_rRNA_infernal.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/read_repopulation.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/read_sam.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/read_sort.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/read_split.py /pipeline/Scripts
+<<<<<<< HEAD
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ta_combine.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ta_constrain.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ta_taxid.py /pipeline/Scripts
+=======
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ta_combine_v2.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ta_constrain.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ta_constrain_taxonomy_v2.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ta_taxid.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Scripts/ta_wevote_parser.py /pipeline/Scripts
+>>>>>>> 4d5286c... committing final-ish code.
+=======
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/MetaPro.py /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/MetaPro_paths.py /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/MetaPro_commands.py /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/MetaPro_utilities.py /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/MetaPro_stages.py /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Config.ini /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/Detect_2.2.10.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/assembly_deduplicate.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/assembly_make_contig_map.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/assembly_flush_bad_contigs.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ea_combine_v5.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ga_pre_scan_assemble_libs.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ga_pre_scan_get_libs.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ga_BLAT_generic_v3.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ga_BWA_generic_v2.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ga_Diamond_generic_v2.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ga_Final_merge_v4.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ga_merge_fasta.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ga_final_merge_proteins.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ga_final_merge_map.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ga_final_merge_fastq.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_are_you_in_a_contig.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_contig_stats.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_convert_gene_map_contig_segments.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_data_change_metrics.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_EC_metrics.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_filter_ECs.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_filter_taxa.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_read_counts_v2.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_read_quality_metrics.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_taxa_groupby.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_table_v3.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_parse_sam.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_reformat_rpkm_table.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/output_get_host_reads.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/read_BLAT_filter_v3.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/read_orphan.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/read_remove_tag.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/read_rRNA_barrnap.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/read_rRNA_infernal.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/read_repopulation.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/read_sam.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/bwa_read_sorter.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/read_sort.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/read_split.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ta_combine_v3.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ta_constrain.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ta_constrain_taxonomy_v2.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ta_taxid_v3.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ta_wevote_parser.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/remove_gaps_in_fasta.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/ta_contig_name_convert.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Scripts/alter_taxa_for_krona.py /pipeline/Scripts
 
+
+>>>>>>> db_shrink
 
 #--------------------------------------------
 # get reference files
 # 
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/custom_databases/EC_pathway.txt /pipeline/custom_databases
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/custom_databases/pathway_to_superpathway.csv /pipeline/custom_databases
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/custom_databases/FREQ_EC_pairs_3_mai_2020.txt /pipeline/custom_databases
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/custom_databases/SwissProt_EC_Mapping.tsv /pipeline/custom_databases
+<<<<<<< HEAD
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/custom_databases/EC_pathway.txt /pipeline/custom_databases
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/custom_databases/pathway_to_superpathway.csv /pipeline/custom_databases
+
+#--------------------------------------------
+# get setup scripts
+ADD https://raw.githubusercontent.com/billyc59/parkinson_int_meta_pipe/develop/Setup_scripts/Download_EC_Annotated_SwissProt.py /pipeline/setup_scripts
+
+
+RUN chmod -R 555 /pipeline
+
+=======
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/custom_databases/EC_pathway.txt /pipeline/custom_databases
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/custom_databases/pathway_to_superpathway.csv /pipeline/custom_databases
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/custom_databases/FREQ_EC_pairs_3_mai_2020.txt /pipeline/custom_databases
 
 
 #--------------------------------------------
 # get setup scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Setup_scripts/Download_EC_Annotated_SwissProt.py /pipeline/setup_scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Setup_scripts/Download_EC_Annotated_SwissProt.py /pipeline/setup_scripts
 
 # get the lib downloader
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/2.1.1/Setup_scripts/lib_downloader.py /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.0/Setup_scripts/lib_downloader.py /pipeline
 
 RUN chmod -R 555 /pipeline
 
 
+>>>>>>> db_shrink
 WORKDIR /
 CMD ["bash"]

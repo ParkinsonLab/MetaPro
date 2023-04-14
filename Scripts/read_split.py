@@ -14,6 +14,50 @@ import os
 import os.path
 import sys
 import pandas as pd
+<<<<<<< HEAD
+
+
+def split_fastq(file_name_in, file_name_out, split_count = 4):
+    #FASTQ has 4 lines per entry.
+    file_base_name = os.path.splitext(file_name_in)[0]
+<<<<<<< HEAD
+    fastq_df = pd.read_csv(file_name_in, header=None, names=[None], sep="\n", skip_blank_lines = False)
+=======
+    fastq_df = pd.read_csv(file_name_in, header=None, names=[None], sep="\n", skip_blank_lines = False, quoting=3)
+>>>>>>> 4d5286c... committing final-ish code.
+    fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
+    #At this point, we've already got the number of reads.
+    chunks = m.ceil(len(fastq_df) / split_count) #how many sequences each split file will have
+    print("total df length:", len(fastq_df))
+    print("chunk size:", chunks)
+    if(chunks < 1):
+        print("split count too large. not enough info to split")
+        chunks = 1
+        print("new split count:", split_count)
+        
+    for i in range(0, split_count):
+        print("working on segment :", i+1, "of", split_count)
+        #fancy naming
+        new_file_name = file_name_out + "_" + str(i) + ".fastq"
+        if(split_count == 1):
+            new_file_name = file_name_out + ".fastq"
+        #split file by selective selection, and writing
+        start_index = int(i * chunks)
+        end_index = int(((i+1) * chunks))
+        #if(chunks == 1):
+        #    end_index += 1 #override on splits that only have 1 
+        if not(fastq_df.iloc[start_index:end_index, :].empty):
+<<<<<<< HEAD
+            fastq_df.iloc[start_index:end_index, :].to_csv(new_file_name, chunksize = chunks, mode = "w+", index=False, sep='\n', header=False)
+=======
+            fastq_df.iloc[start_index:end_index, :].to_csv(new_file_name, chunksize = chunks, mode = "w+", index=False, sep='\n', header=False, quoting = 3)
+>>>>>>> 4d5286c... committing final-ish code.
+        else:
+            print("empty frame detected.  no sense in running the rest")
+            break
+
+def split_fasta(file_name_in, file_name_out, split_count = 4):
+=======
 from datetime import datetime as dt
 
 def split_fastq(file_name_in, file_name_out, chunks):#split_count = 4):
@@ -56,6 +100,7 @@ def split_fastq(file_name_in, file_name_out, chunks):#split_count = 4):
 
 def split_fasta(file_name_in, file_name_out, chunks):#split_count = 4):
     #modded to take in fixed chunks
+>>>>>>> db_shrink
     fasta_df = pd.read_csv(file_name_in, error_bad_lines=False, header=None, sep="\n")  # import the fasta
     fasta_df.columns = ["row"]
     #There's apparently a possibility for NaNs to be introduced in the raw fasta.  We have to strip it before we process (from DIAMOND proteins.faa)
@@ -74,7 +119,11 @@ def split_fasta(file_name_in, file_name_out, chunks):#split_count = 4):
     fasta_df["sequence"] = fasta_df[fasta_df.columns[:]].apply(lambda x: "".join(x.dropna()), axis=1)  # consolidate all cols into a single sequence
     fasta_df.drop(temp_columns, axis=1, inplace=True)
     # At this point, we've already got the number of reads.
+<<<<<<< HEAD
+    chunks = m.ceil(len(fasta_df) / split_count)  # how many sequences each split file will have
+=======
     #chunks = m.ceil(len(fasta_df) / split_count)  # how many sequences each split file will have
+>>>>>>> db_shrink
     print("total df length:", len(fasta_df))
     print("chunk size:", chunks)
     if (chunks < 1):
@@ -82,6 +131,23 @@ def split_fasta(file_name_in, file_name_out, chunks):#split_count = 4):
         chunks = 1
         print("new split count:", split_count)
 
+<<<<<<< HEAD
+    for i in range(0, split_count):
+        print("working on segment :", i + 1, "of", split_count)
+        # fancy naming
+        new_file_name = file_name_out + "_" + str(i) + ".fasta"
+        if (split_count == 1):
+            new_file_name = file_name_out + ".fasta"
+        # split file by selective selection, and writing
+        start_index = int(i * chunks)
+        end_index = int(((i + 1) * chunks))
+        # if(chunks == 1):
+        #    end_index += 1 #override on splits that only have 1
+        if not (fasta_df.iloc[start_index:end_index, :].empty):
+            fasta_df.iloc[start_index:end_index, :].to_csv(new_file_name, chunksize=chunks, mode="w+", sep='\n', header=False)
+        else:
+            print("empty frame detected.  no sense in running the rest")
+=======
 
     #for i in range(0, split_count):
     index_count = 0
@@ -100,6 +166,7 @@ def split_fasta(file_name_in, file_name_out, chunks):#split_count = 4):
             fasta_df.iloc[start_index:end_index, :].to_csv(new_file_name, chunksize=chunks, mode="w+", sep='\n', header=False)
         else:
             print("empty frame detected.  no sense in running the rest of FASTA splitter")
+>>>>>>> db_shrink
             break
     
 if __name__ == "__main__":
@@ -112,9 +179,19 @@ if __name__ == "__main__":
             split_count = 1
             
         input_extension = os.path.splitext(input_file)[1]
+<<<<<<< HEAD
+<<<<<<< HEAD
+        if input_extension == ".fastq":
+=======
+        if ((input_extension == ".fastq") or (input_extension ==".fq")):
+>>>>>>> 4d5286c... committing final-ish code.
+            split_fastq(input_file, output_name, split_count)
+        elif input_extension == ".fasta" or input_extension == ".ffn" or input_extension == ".fna" or input_extension == ".faa":
+=======
         if ((input_extension == ".fastq") or (input_extension ==".fq")):
             split_fastq(input_file, output_name, split_count)
         elif input_extension == ".fasta" or input_extension == ".ffn" or input_extension == ".fna" or input_extension == ".faa" or input_extension == ".fa":
+>>>>>>> db_shrink
             split_fasta(input_file, output_name, split_count)
         else:
             print("This is not a fastq or fasta.  Not splitting the file")

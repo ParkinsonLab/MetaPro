@@ -2,10 +2,17 @@ import os
 import os.path
 import sys
 import pandas as pd
+<<<<<<< HEAD
+
+
+#This module takes in the Output report of the barrnap tool, and the fastq it scanned.
+#The goal is to bisect the fastq into 2 piles:  entries with IDs that were located by Infernal (rRNA)
+=======
 import time
 
 #This module takes in the Output report of the barrnap tool, and the fastq it scanned.
 #The goal is to bisect the fastq into 2 piles:  entries with IDs that were located by Barrnap (rRNA)
+>>>>>>> db_shrink
 #-> and entries that weren't (mRNA), and then export them
 
 def extract_rRNA_ID(barrnap_file):
@@ -21,7 +28,15 @@ def extract_rRNA_ID(barrnap_file):
 
 def filter_rRNA(rRNA_ID_list, fastq_sequence, mRNA_loc, rRNA_loc, file_name):
     #import the fastq as a DF
+<<<<<<< HEAD
+<<<<<<< HEAD
+    fastq_df = pd.read_csv(fastq_sequence, sep="\n", skip_blank_lines=False, header=None, names = [None])
+=======
     fastq_df = pd.read_csv(fastq_sequence, sep="\n", skip_blank_lines=False, quoting=3, header=None, names = [None])
+>>>>>>> 4d5286c... committing final-ish code.
+=======
+    fastq_df = pd.read_csv(fastq_sequence, sep="\n", skip_blank_lines=False, quoting=3, header=None, names = [None])
+>>>>>>> db_shrink
     fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
     fastq_df.columns = ["ID", "seq", "junk", "quality"]
     
@@ -29,9 +44,20 @@ def filter_rRNA(rRNA_ID_list, fastq_sequence, mRNA_loc, rRNA_loc, file_name):
     #mRNA segment
     mRNA_export = os.path.join(mRNA_loc, file_name + "_mRNA.fastq")
     rRNA_export = os.path.join(rRNA_loc, file_name + "_rRNA.fastq")
+<<<<<<< HEAD
+<<<<<<< HEAD
+    fastq_df[~fastq_df["ID"].isin(rRNA_ID_list)].to_csv(mRNA_export, sep = "\n", mode = "w+", header=False, index=False)
+    fastq_df[fastq_df["ID"].isin(rRNA_ID_list)].to_csv(rRNA_export, sep="\n", mode = "w+", header=False, index=False)
+=======
+    fastq_df[~fastq_df["ID"].isin(rRNA_ID_list)].to_csv(mRNA_export, sep = "\n", mode = "w+", header=False, index=False, quoting = 3)
+    fastq_df[fastq_df["ID"].isin(rRNA_ID_list)].to_csv(rRNA_export, sep="\n", mode = "w+", header=False, index=False, quoting = 3)
+>>>>>>> 4d5286c... committing final-ish code.
+    
+=======
     fastq_df[fastq_df["ID"].isin(rRNA_ID_list)].to_csv(rRNA_export, sep="\n", mode = "w+", header=False, index=False, quoting = 3)
     fastq_df[~fastq_df["ID"].isin(rRNA_ID_list)].to_csv(mRNA_export, sep = "\n", mode = "w+", header=False, index=False, quoting = 3)
     #writing mRNA last, so we can use it to check the progress of the Barrnap step
+>>>>>>> db_shrink
     
 if __name__ == "__main__":
     

@@ -1,4 +1,15 @@
+<<<<<<< HEAD
 # MetaPro:  Meta-analysis pipeline for Transcriptomics + Genomics
+---
+The MetaPro Meta Transcriptomics/Genomics Pipeline is a software tool that will perform Transcriptomics and Genomic analysis
+on Paired and Single Reads of FASTQ data.
+
+# How to install
+---
+This package is meant to work in conjunction with Docker/Singularity.  All of the prerequisite tools, including the pipeline code
+is delivered via the Docker Hub. https://hub.docker.com/r/billyc59/parkinson_pipeline/
+=======
+# __MetaPro:  Meta-analysis pipeline for Transcriptomics + Genomics__
 ---
 The MetaPro Meta Transcriptomics/Genomics Pipeline is a software tool that will perform Transcriptomics and Genomic analysis
 on Paired and Single Reads of FASTQ data.
@@ -7,27 +18,108 @@ This readme is for getting started with setting up and using MetaPro.
 We have prepared a tutorial demonstrating bioinformatics concepts through the use of MetaPro.  It can be found here:
 https://github.com/ParkinsonLab/MetaPro_tutorial
 
-# How to get the pipeline
+# __How to get the pipeline__
 ---
 This package is meant to work in conjunction with Docker/Singularity.  All of the prerequisite tools, including the pipeline code
 is delivered via the Docker Hub. https://hub.docker.com/r/parkinsonlab/metapro/
+>>>>>>> db_shrink
 Alternatively, individual parts of the pipeline are avaiable from this Github repository.
 
 Therefore, to use this pipeline, Docker (https://www.docker.com/) or Singularity (https://www.sylabs.io/guides/2.6/user-guide/) is needed.
 This also means there is nothing to install (tools and code) besides Docker/Docker CE/Singularity
 
+<<<<<<< HEAD
+# How to use
+---
+This pipeline comes with a config.ini file.  The user is meant to change, configure, and contort the file to point to the location of local files and Databases.
+Our config file is written with Python's ConfigParser, using the basic interpretation.  
+The following is an outline of wwhat each of the sections mean:
 
-# How to install
+## Parameters
+---
+* Output_Folder
+Output_Folder is where the user would indicate to the pipeline where you want the output files to be dumped
+
+* Threads
+Threads is the number of threads that the pipeline is allowed to use.  The pipeline is dependent on threads and parallelization to operate efficiently
+
+## Sequences
+---
+* Single
+Single is for single reads.  Only fill this in if your sequence is a single file
+
+* Pair 1 and Pair 2
+Pair 1 is for Forward Reads.  Pair 2 is for Reverse Reads.  Some portions of the code rely on the quality of the Forward Read file as a leading indicator of quality for the data filtering processes.  It is imperative that Pair 1 be used for your Forward Reads only, else you run the risk of a bad analysis. 
+
+## Databases
+---
+We intentionally did not include any database files in this distribution so as to allow the user more flexibility in how they want to use the pipeline.  Databases also become obselete quickly, and the image size would be enormous.  
+Below is a description of each of the fields we used.  
+* database_path
+This field isn't a part of the parameters that the pipeline accepts.  It's a shortcut argument that makes filling the path to each database easier.
+
+* Univec_Core
+The Univec_Core Database is used in the Vector Contaminents removal stage.  A copy can be found at: https://www.ncbi.nlm.nih.gov/tools/vecscreen/univec/
+* Adapter
+The Adapter Database is used by Trimmomatic to trim Adapter segments out of the sequence files
+A copy can be found inside the Trimmomatic tool installer, located at: http://www.usadellab.org/cms/?page=trimmomatic
+This pipeline was built and tested using the TruSeq3-PE-2.fa Adapter Database
+* Host
+The Host Database is used to filter out Host Contaminents from your seuqence file.  You will need to change this with the CDS database of whichever animal was used in your experiment.
+We get our CDS databases from the NCBI, eg: ftp://ftp.ncbi.nlm.nih.gov/pub/CCDS/current_human
+* Rfam
+The Rfam Database is used by Infernal, the rRNA filter.
+A copy can be found here: http://rfam.xfam.org/
+* DNA_DB
+The DNA DB is what we use to annotate the sequence data against.  We use the ChocoPhlAn database.
+A copy can be found at: http://huttenhower.sph.harvard.edu/humann2_data/chocophlan/chocophlan.tar.gz
+* DNA_DB_Split
+The ChocoPhlAn database is big.  We split it up and process the chunks simultaneously.  The pipeline will split it and dump the chunks at this location
+* Prot_DB
+The Prot_DB is the protein db.  We use the non-redundant database from NCBI.  It will need to be indexed by DIAMOND before usage. (see DIAMOND for more details: https://github.com/bbuchfink/diamond)
+It can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/db/
+* accession2taxid
+This database links each accession to a taxid number.  It's used as part of a custom program in the pipeline.
+It can be found at: ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
+* nodes
+This file is used in various parts in the pipeline.
+It can be found at: ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdmp.zip
+* names
+It can be found at the same location as nodes (above)
+* Kaiju_db
+The Kaiju Database is used by Kaiju for taxonomic annotation.  Kaiju requires that the database be indexed before usage.  
+Please see: https://github.com/bioinformatics-centre/kaiju/blob/master/README.md for more information.  Once the indexing is complete, the path to the database needs to be provided in this location
+* Centrifuge_db
+The Centrifuge Database is used for the Centrifuge tool, which is a part of the enzyme annotation phase.  More information can be found here: https://ccb.jhu.edu/software/centrifuge/manual.shtml
+We use the Nucleotide Database, after it has been indexed.  Details can be found at the link to Centrifuge
+* SWISS_PROT
+SWISS_PROT is the SWISS Prot database, now called UniProt.  We use it in DIAMOND during the enzyme annotation stage.  A copy can be found here: https://www.uniprot.org/downloads
+Note that this also needs to be indexed by DIAMOND prior to use.
+* SWISS_PROT_map
+This is a special file generated by a setup script we have included with the pipeline.  To obtain this file, copy the file "Download_Annotated_EC_mapping.py" from /pipeline/setup_scripts to a 
+desired location, and run it.  The script will generate the tab-separated-value map file needed for the pipeline
+* PriamDB
+The database used by PRIAM.  To obtain this, the user needs to download a distribution of PRIAM.  The PriamDB path is looking for the location where the following files are found:
+- PROFILES folder
+- annotation_rules.xml
+- genome_rules.xml
+PRIAM can be downloaded here: http://priam.prabi.fr/
+* DetectDB
+Detect is an enzyme annotation tool. 
+
+=======
+
+# __How to install MetaPro__
 ---
 There is no installation for the pipeline. MetaPro is a script, bundled into a docker image. 
 However, in order to use MetaPro, there are a few steps to perform:
-## library files
-We recommend using the libraries we have created.
+## Database files
+We recommend using the Databases and libraries we have created for 
 We have created a convenient downloader/extractor program for you to use, bundled with the software
 
     singularity exec <singularity image.sif> python3 /pipeline/lib_downloader.py <your destination> 
 
-This script will download, and unpack the libraries we host to your desired location.
+This script will download, and unpack the libraries we host to your desired location.  The details of the libraries can be found further down this document, under the configurations section.
 
 ## MetaGeneMark license
 MetaPro uses MetaGeneMark in its workflow.  To use this software, the user must obtain a free license for the 64-bit version here:
@@ -38,7 +130,7 @@ The resulting license file (.gm_key) must be placed in the home directory of the
 
     /home/<your username>
 
-# How to use
+# __How to use MetaPro__
 ---
 Since the pipeline is a script, the commands require the user to have a basic understanding of how to invoke a python script. 
 This pipeline comes with a config.ini file.  The user is meant to modify the file to point to the location of local files and Databases.
@@ -85,7 +177,7 @@ The keywords are:
 - EC: performs enzyme classification (requires the GA step to be run first)
 - output: collects all the data from GA, TA, and EC to make tables. (requires GA, TA, and EC to be run first)
 
-## How to schedule on a job scheduler
+# __How to schedule on a job scheduler__
 ---
 MetaPro is a python script.  To schedule MetaPro on a job scheduler, the user should call on singularity to call on python, to call on the MetaPro.py script.
 An example would be:
@@ -104,105 +196,118 @@ An example would be:
     output='/scratch/j/jparkin/billyc59/kneaddata_run/mpro/501_cqy'
     singularity exec -B /home -B /project -B /scratch $image python3 /pipeline/MetaPro.py -c $config -1 $read1 -2 $read2 --verbose_mode leave -o $output
 
-## Configuration file
+# __Configuration file__
 ---
+MetaPro relies on a configuration file to set program operation directives, paths, and various filter limits.
+To get the most out of MetaPro, we recommend becoming familiar with the following:
 
-
-MetaPro uses a configuration file that drives many of its settings.
-We will explain below:
-
-# Parameters
----
-Output_Folder
-    
-    Output_Folder is where the user would indicate to the pipeline where you want the output files to be dumped
-
-Threads
-
-    Threads is the number of threads that the pipeline is allowed to use.  The pipeline is dependent on threads and parallelization to operate efficiently
-
-# Sequences
----
-* Single
-Single is for single reads.  Only fill this in if your sequence is a single file
-
-* Pair 1 and Pair 2
-Pair 1 is for Forward Reads.  Pair 2 is for Reverse Reads.  Some portions of the code rely on the quality of the Forward Read file as a leading indicator of quality for the data filtering processes.  It is imperative that Pair 1 be used for your Forward Reads only, else you run the risk of a bad analysis. 
-
-## Databases
+### Databases
 ---
 The libraries MetaPro uses are critically important for the user to use the pipeline properly.
 
-We intentionally did not include any database files in this distribution so as to allow the user more flexibility in how they want to use the pipeline.  Databases also become obselete quickly, and the image size would be enormous.  
+We intentionally did not include any database files in the Docker/Singularity image due to size constraints.
+We also want to highlight the fact that users can use their own databases for MetaPro based on their own needs.
 
-However, many of these databases require indexing, so we are curating ready-to-go versions these databases on our website:
-https://compsysbio.org/metapro_libs/
+However, many of these databases require indexing, so we are curating ready-to-go versions these databases on our webserver:
 
-Below is a description of each of the fields we used.  
-Database_path: This field isn't a part of the parameters that the pipeline accepts.  It's a shortcut argument that makes filling the path to each database easier.
-* Univec_Core
-The Univec_Core Database is used in the Vector Contaminents removal stage.  A copy can be found at: https://www.ncbi.nlm.nih.gov/tools/vecscreen/univec/
-* Adapter
-The Adapter Database is used by Trimmomatic to trim Adapter segments out of the sequence files
+    https://compsysbio.org/metapro_libs/
+    
+There is also a library downloader script embedded in MetaPro, located at:
+    
+    python3 /pipeline/lib_downloader.py <your destination folder> <optional keyword to download selective elements>
+    
+This downloader script is built automate the downloading and extraction of MetaPro's databases from our webserver.  However, it also comes with the ability to download and extract individual portions. The optional keywords are:
+
+    all: downloads + extacts everything, default for leaving the option blank is <all>
+    detect: detect2's libraries
+    ec_pathway: EC-to-pathway map <needed for reporting>
+    priam: PRIAM libraries
+    rfam: rfam libraries
+    wevote: wevote names and nodes
+    accession2taxid: accession -> taxid map for TA
+    centrifuge: centrifuge libraries
+    chocophlan: This option downloads + extracts all 3 copies of our taxa-grouped ChocoPhlAn
+    choco_genus: downloads + extracts only the genus-grouped ChocoPhlAn
+    choco_family: downloads + extracts only the family-grouped ChocoPhlAn
+    choco_order: downloads + extracts only the order-grouped ChocoPhlAn
+    kraken2: kraken2 libraries. k2_standard_20230314
+    nr: NR from October 10, 2021 
+    path_to_superpath: pathway-to-superpathway map
+    swissprot: june 10, 2020
+    trimmomatic: for version 0.36
+    univec: july 05, 2018
+    
+    
+Below is a description of each of the database fields we used.  
+
+    Database_path
+    Univec_Core
+    Adapter
+    Host
+    Rfam
+    source_taxa_db
+    DNA_DB
+    Prot_DB
+    Prot_DB_reads
+    accession2taxid
+    nodes
+    names
+    kraken2_db
+    Centrifuge_db
+    SWISS_PROT
+    SWISS_PROT_map
+    PriamDB
+    DetectDB
+    WEVOTEDB
+    EC_pathway
+    path_to_superpath
+    MetaGeneMark_model
+    taxid_tree
+    
+- Database_path: This field isn't a part of the parameters that the pipeline accepts.  It's a shortcut argument that makes filling the path to each database easier.
+- Univec_Core: The Univec_Core Database is used in the Vector Contaminents removal stage.  A copy can be found at: https://www.ncbi.nlm.nih.gov/tools/vecscreen/univec/
+- Adapter: The Adapter Database is used by Trimmomatic to trim Adapter segments out of the sequence files
 A copy can be found inside the Trimmomatic tool installer, located at: http://www.usadellab.org/cms/?page=trimmomatic
 This pipeline was built and tested using the TruSeq3-PE-2.fa Adapter Database
-* Host
-The Host Database is used to filter out Host Contaminents from your sequence file.  This stage is agnostic to which database you use.  We currently use coding sequences (CDS). You will need to change this with the CDS database of whichever animal was used in your experiment.
+- Host: The Host Database is used to filter out Host Contaminents from your sequence file.  This stage is agnostic to which database you use.  We currently use coding sequences (CDS). You will need to change this with the CDS database of whichever animal was used in your experiment.
 We get our CDS databases from the NCBI, eg: ftp://ftp.ncbi.nlm.nih.gov/pub/CCDS/current_human
-* Rfam
-The Rfam Database is used by Infernal, the rRNA filter.
+- Rfam: The Rfam Database is used by Infernal, the rRNA filter.
 A copy can be found here: http://rfam.xfam.org/
-* DNA_DB
-The DNA DB is what we use to annotate the sequence data against.  We use the ChocoPhlAn database.
-A copy can be found at: http://huttenhower.sph.harvard.edu/humann2_data/chocophlan/chocophlan.tar.gz
-However, we also allow the use of custom databases.  
-Note: If a database is larger than 5GB, it can still be used, but it will need to be split.  Each file of the split database must not exceed 5GB.  pBLAT cannot handle a file larger than 5GB. 
-
-* DNA\_DB\_Split
-The ChocoPhlAn database too large for pBLAT to process.  We split it up and process the chunks simultaneously.  The pipeline will split it and dump the chunks at this location.
-* Prot_DB
-The Prot_DB is the protein db.  We use the non-redundant database from NCBI.  It will need to be indexed by DIAMOND before usage. (see DIAMOND for more details: https://github.com/bbuchfink/diamond)
+- source_taxa_db: If using MetaPro's taxa-grouped ChocoPhlAn database, then this entry is important.  MetaPro will use the contents of this path to construct the gene annotation library.   
+- DNA_DB: The DNA DB is used on both BWA and BLAT for gene annotation.  If MetaPro's default taxa-grouped libraries are being used, this entry will be overwritten internally to refer to the constructed database.  If a custom database is being used, this line will need to be modified to refer to the custom library.  It can support a single-file fastq, or a directory of fastq files.
+A database integrity scan will occur and stop users from proceeding if the library files have not been indexed by BWA.
+A copy of the original ChocoPhlAn can be found at: http://huttenhower.sph.harvard.edu/humann2_data/chocophlan/chocophlan.tar.gz
+However, downloading a copy from the Huttenhower lab will not contain our modifications
+Note: If a database is larger than 5GB, it can still be used, but it will need to be split.  Each file of the split database must not exceed 5GB.  pBLAT cannot handle a reference file larger than 5GB. 
+- Prot_DB and Prot_DB_reads: The Prot_DB is the protein db.  We use the non-redundant database from NCBI.  It will need to be indexed by DIAMOND before usage. Prot_DB refers to the name of the DIAMOND-indexed files, while Prot_DB_reads should refer to the file containing the reads.
+(see DIAMOND for more details: https://github.com/bbuchfink/diamond)
 It can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/db/
-* accession2taxid
-This database links each accession to a taxid number.  It's used as part of a custom program in the pipeline.
+- accession2taxid: This database links each accession to a taxid number.  It's used as part of a custom program in the pipeline.
 It can be found at: ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
-* nodes
-This file is used in various parts in the pipeline.
+- nodes and names: These files are used in various parts in the pipeline.  They are NCBI's list of known taxa <nodes> and their associated scientific names <names>
 It can be found at: ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdmp.zip
-* names
-It can be found at the same location as nodes (above)
-* Kaiju_db
-The Kaiju Database is used by Kaiju for taxonomic annotation.  Kaiju requires that the database be indexed before usage.  
-Please see: https://github.com/bioinformatics-centre/kaiju/blob/master/README.md for more information.  Once the indexing is complete, the path to the database needs to be provided in this location
-* Centrifuge_db
-The Centrifuge Database is used for the Centrifuge tool, which is a part of the enzyme annotation phase.  More information can be found here: https://ccb.jhu.edu/software/centrifuge/manual.shtml
+- kraken2_db: The Kraken2 Database is used by Kraken2 for taxonomic annotation.  The files can be found at: https://benlangmead.github.io/aws-indexes/k2
+The creators of this database update it frequently.  We recommend getting a copy from the source.  However, in case the database is not available, we host a copy 
+on our webserver.
+- Centrfuge_db: The Centrifuge Database is used for the Centrifuge tool, which is a part of the enzyme annotation phase.  More information can be found here: https://ccb.jhu.edu/software/centrifuge/manual.shtml
 We use the Nucleotide Database, after it has been indexed.  Details can be found at the link to Centrifuge
-* SWISS_PROT
-SWISS_PROT is the SWISS Prot database, now called UniProt.  We use it in DIAMOND during the enzyme annotation stage.  A copy can be found here: https://www.uniprot.org/downloads
+- SWISS_PROT: SWISS_PROT is the SWISS Prot database, now called UniProt.  We use it in DIAMOND during the enzyme annotation stage.  A copy can be found here: https://www.uniprot.org/downloads
 Note that this also needs to be indexed by DIAMOND prior to use.
-* SWISS_PROT_map
-This is a special file generated by a setup script we have included with the pipeline.  To obtain this file, copy the file "Download_Annotated_EC_mapping.py" from /pipeline/setup_scripts to a 
+- SWISS_PROT_map: This is a file generated by a setup script we have included with the pipeline.  There is no need to change this.  However, if the need arises, to obtain this file, copy the file "Download_Annotated_EC_mapping.py" from /pipeline/setup_scripts to a 
 desired location, and run it.  The script will generate the tab-separated-value map file needed for the pipeline
-* PriamDB
-The database used by PRIAM.  To obtain this, the user needs to download a distribution of PRIAM.  The PriamDB path is looking for the location where the following files are found:
-- PROFILES folder
-- annotation_rules.xml
-- genome_rules.xml
-PRIAM can be downloaded here: http://priam.prabi.fr/
-* DetectDB
-Detect is an enzyme annotation tool. 
-
-* WEVOTEDB
-WeVote is a taxonomy consensus tool that determines taxonomy, given a collection of possible results.
-
-* EC_pathway
-This file translates ECs to pathways.  It is needed for the CytoScape data generation
-
-* path_to_superpath
-This file is also for the CytoScape data generation
-
-* MetaGeneMark_model
-The MetaGeneMark model used by MetaGeneMark to identify genes within contigs.
+- PriamDB: The database used by PRIAM.  To obtain this, the user needs to download a distribution of PRIAM.  PRIAM can be downloaded here: http://priam.prabi.fr/
+The PriamDB path is looking for the location where the following files are found:
+    - PROFILES folder
+    - annotation_rules.xml
+    - genome_rules.xml
+- DetectDB: The location for DETECT's database. 
+- WEVOTEDB: The location for WEVOTE's database
+- EC_pathway: This file translates ECs to pathways.  It is needed for the CytoScape data generation. 
+- path_to_superpath: This file is also for the CytoScape data generation
+- MetaGeneMark_model: The MetaGeneMark model used by MetaGeneMark to identify genes within contigs.  This is included in the MetaPro docker/singularity image.  No need to change this path.
+- taxid_tree: A map file that tells us the corresponding order/family/genus each taxa has.  Needed for GA-pre-scan
+    
+    
 
 ## Tools
 ---
@@ -234,10 +339,29 @@ All of the default tools are installed onto the docker/singularity container.
 
 If the user wants to change the tool version, they are free to, but the pipeline is not gauranteed to work if there are significant formatting changes to the input, or output
 
-## Settings
+# Settings
 ---
 The 3rd section of MetaPro's configuration file controls the various runtime resource settings.
+
+    AdapterRemoval_minlength
+    Show_unclassified
+    bypass_log_name
+    debug_stop_flat
+    num_threads
+    taxa_exist_cutoff
+    DNA_DB_mode
+    filter_stringency
     
+- AdapterRemoval_minlength: sets the minimum basepair length for AdapterRemoval (default 30)
+- Show_unclassified: tells MetaPro's RPKM report to include unclassified reads as a column (default: No)
+- bypass_log_name: lets debuggers choose the file that will be the bypass log (default: bypass_log.txt)
+- debug_stop_flag: lets debuggers stop MetaPro after a specific stage (default: none)
+- num_threads: lets users set the number of threads that MetaPro can use (default: max system limit)
+- taxa_exist_cutoff: decides what the percentage cutoff of representative taxa found in the GA-pre-scan.  (default: 0.1)
+- DNA_DB_mode: indicates to MetaPro which database is being used (options: custom, default: chocophlan). If set to custom, MetaPro will bypass GA-pre-scan, but will perform a database check for the custom entry.
+- filter_stringency: controls what MetaPro will do to resolve corner cases in paired-end read filtering. Options: high (accept reads only when forward and reverse end pass filter. |  low (reject reads only when forward and reverse match to a filter database). default: high
+  
+  
 The mem threshold settings control the amount of remaining RAM that must exist for additional instances of each tool to be launched (available RAM is measured during the initial launch)
     
     BWA_mem_threshold: default 50(%)
@@ -251,17 +375,18 @@ The mem threshold settings control the amount of remaining RAM that must exist f
     Barrnap_mem_threshold: default 50(%)
     TA_mem_threshold: default 50(%)
     
-BWA_job_limit:  controls the amount of concurrent jobs allowed to launch at any one time.  This setting should be changed to fit the user's single-node thread-count
-    
-    BLAT_job_limit: default 80 (threads)
-    DIAMOND_job_limit: default 80 (threads)
-    BWA_pp_job_limit: default 80 (threads)
-    BLAT_pp_job_limit: default 80 (threads)
-    DIAMOND_pp_job_limit: default 80 (threads)
-    DETECT_job_limit: default 80 (threads)
-    Infernal_job_limit: default 80 (threads)
-    Barrnap_job_limit: default 80 (threads)
-    TA_job_limit: default 80 (threads)
+Job limits: controls the amount of concurrent jobs allowed to launch at any one time.  This setting should be changed to fit the user's single-node thread-count
+
+    BWA_job_limit: default (80% of max CPUs on system)    
+    BLAT_job_limit: default (80% of max CPUs on system)
+    DIAMOND_job_limit: default (80% of max CPUs on system)
+    BWA_pp_job_limit: default (80% of max CPUs on system)
+    BLAT_pp_job_limit: default (80% of max CPUs on system)
+    DIAMOND_pp_job_limit: default (80% of max CPUs on system)
+    DETECT_job_limit: default (80% of max CPUs on system)
+    Infernal_job_limit: default (80% of max CPUs on system)
+    Barrnap_job_limit: default (80% of max CPUs on system)
+    TA_job_limit: default (80% of max CPUs on system)
     
 The job delay settings control the amount of time the master controller waits until a new process is started.  This is used in conjuction with the memory limit settings to avoid out-of-memory issues, and process-kill issues as the full RAM usage isn't realized until some of the programs get underway.
 
@@ -273,16 +398,43 @@ The job delay settings control the amount of time the master controller waits un
     DIAMOND_pp_job_delay: default 5 (seconds)
     TA_job_delay: default 5 (seconds)
     
-These other settings are for tweaks to the programs we exposed, due to various requests and controls from users.  More will be added later
+Keep settings: controls whether the interim data is kept in MetaPro. 
 
-    AdapterRemoval_minlength: A setting for AdapterRemoval's minimum length
-    RPKM_cutoff: for reporting purposes. It's the minimum RPKM value for a taxa to have representation
-    rRNA_chunk_size: This parameter sets the number of sequences in each chunk of the rRNA removal step.  Setting this value high will reduce the amount of files created, but the step will run slower. (1-100000, due to infernal's safe limits)  
-    GA_chunksize: This parameter sets the number of sequences in each chunk of the Gene Annotation step. 
-    filter_stringency: values: "high", or "low".  used to control the filter settings in rRNA removal.
-
+    keep_all | default: yes
+    keep_quality | default: no
+    keep_host | default: no
+    keep_vector | default: no
+    keep_rRNA | default: no
+    keep_repop | default: no
+    keep_assemble_contigs | default: no
+    keep_GA_BWA | default: no
+    keep_GA_BLAT | default: no
+    keep_GA_DIAMOND | default: no
+    keep_GA_final | default: no
+    keep_TA | default: no
+    keep_EC | default: no
+    keep_outputs | default: no
     
+## Labels
+---
+Labels are how MetaPro names each stage.  In cases where users want to test different settings in GA/TA/EC, or to try a battery of trials using the same data, we now let users name their stages in customized ways:
 
+    quality_filter | default: quality_filter
+    host_filter | default: host_filter
+    vector_filter | default: vector_filter
+    rRNA_filter | default: rRNA_filter
+    repop | default: duplicate_repopulation
+    assemble_contigs | default: assemble_contigs
+    GA_pre_scan | default: GA_pre_scan
+    GA_split | default: GA_split
+    GA_BWA | default: GA_BWA
+    GA_BLAT | default: GA_BLAT
+    GA_DIAMOND | default: GA_DMD
+    GA_final_merge | default: GA_final_merge
+    ta | default: taxonomic_annotation
+    ec | default: enzyme_annotation
+    outputs | default: outputw
+    
 
 
 ## Important note for MetaGeneMark
@@ -293,6 +445,7 @@ Select MetaGeneMark, along with the linux 64bit version, and fill in the require
 The expected location of the license file (.gm_key) is in the home folder of your singularity instance.
 Place your license in:
 > /home/<your user name>
+>>>>>>> db_shrink
 
 # Important Features
 ---
@@ -309,10 +462,35 @@ In an effort to save computational resources, the pipeline will shut itself down
 # Increasing performance
 ---
 ## Operating mode
+<<<<<<< HEAD
+The pipeline operates in a Singularity machine.  As of writing (Sept 28, 2018), Singularity does not support multi-machine parallelism.  This pipeline does not utilize MPI, but instead strives to use all the cores made available by the singularity machine through the Python Multiprocessing module.  To increase the performance of the pipeline, more cores should be given to the host machine, and increasing the number of cores the pipeline is allowed to use.
+
+## Verbose-mode
+---
+The "keep" and "quiet" settings to verbose_mode will use additional time to compress (keep) or delete (quiet) the interim files produced by the pipeline.  If the performance of a single run is the priority, the "verbose" option should be used to avoid this overhead. 
+
+
+# Adding a module
+---
+The pipeline framework is designed with the mindset that modules will want to be swapped.  The framework has 4 critical design components that should be considered:
+- The pipeline generates shellscripts which it runs inside a python process through MetaPro_commands.py.  Each stage is a new command.  Each command is its own class function.
+- The pipeline's control flow is controlled entirely by the main program: MetaPro.py.  The main program is responsible for the auto-resume, stage-dependency synchronization, file management system, and auto-kill features.
+- The pipeline's external tool paths are controlled by the MetaPro paths file.  This file is a single large object, where the MetaPro Commands file instantiates to use the tools.
+- Every stage ends with its final results placed inside a folder called "final_results"
+
+To add a module, the editor is expected to do the following:
+- 1) Either add a new member function to the MetaPro Commands class, or make a new class entirely
+- 2) Slot in the new stage at the appropriate section.  Should it be dependent on another stage, the pipeline already has examples of dependency-reliant stage integration
+Note:  Changes to the pipeline code will not persist in the Docker Container's default location of /pipeline.  To keep the changes, a local copy will have to be used.  The 
+=======
 MetaPro runs in a Singularity instance.  As of writing (Sept 28, 2018), Singularity does not support multi-machine parallelism.  This pipeline does not utilize MPI, but instead strives to use all the cores made available by the singularity machine through the Python Multiprocessing module.  To increase the performance of the pipeline, more cores should be given to the host machine, and increasing the number of cores the pipeline is allowed to use.
 
+## Taxa population settings
+Beginning from version 3.0.0, MetaPro can shrink the size of its native gene annotation database to speed up the BWA + BLAT portions of gene annotation.  
+By adjusting the 
 
-## Guide to outputs
+
+# Guide to outputs
 ---
 MetaPro produces many outputs for the user to use:
 ### read count
@@ -387,3 +565,4 @@ The columns are:
     taxa: the full taxonomic tree 
     count: the number of times a sequence read annotated to this specific taxa tree
 
+>>>>>>> db_shrink

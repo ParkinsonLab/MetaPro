@@ -201,25 +201,32 @@ if __name__ == "__main__":
         url = "https://compsysbio.org/metapro_libs/centrifuge_db/nt.tar.gz"
         start_download(url, path, name, things_to_skip, bypass_log_file)
 
-    if(("chocophlan_h3" in files_to_download) or ("all" in files_to_download)):
-        #-------------------------------------------------------------
-        #ChocoPhlan h3
-        name = "chocophlan_h3_chunks"
-        path = os.path.join(outdir, name, name+".tar.gz")
-        url = "https://compsysbio.org/metapro_libs/"+name + "/" + name + ".tar.gz"
+    if(("chocophlan" in files_to_download) or ("all" in files_to_download) or ("choco_genus" in files_to_download)):
+        #---------------------------------------------------------------------
+        name = "choco_genus"
+        path = os.path.join(outdir, "choco_h3_genus", "choco_h3_genus.tar.gz")
+        url = "https://compsysbio.org/metapro_libs/choco_h3_genus.tar.gz"
         start_download(url, path, name, things_to_skip, bypass_log_file)
 
-        name = "chocophlan_h3_unique"
-        path = os.path.join(outdir, name, name+".tar.gz")
-        url = "https://compsysbio.org/metapro_libs/"+name + "/" + name + ".tar.gz"
+    if(("chocophlan" in files_to_download) or ("all" in files_to_download) or ("choco_family" in files_to_download)):
+
+        name = "choco_family"
+        path = os.path.join(outdir, "choco_h3_family", "choco_h3_family.tar.gz")
+        url = "https://compsysbio.org/metapro_libs/choco_h3_family.tar.gz"
         start_download(url, path, name, things_to_skip, bypass_log_file)
 
-    if(("kaiju" in files_to_download) or ("all" in files_to_download)):
-        #-------------------------------------------------------------
-        #kaiju
-        name = "kaiju_db"
-        path = os.path.join(outdir, "kaiju_db", "kaiju.tar.gz")
-        url = "https://compsysbio.org/metapro_libs/kaiju_db/kaiju.tar.gz"
+    if(("chocophlan" in files_to_download) or ("all" in files_to_download) or ("choco_order" in files_to_download)):
+
+        name = "choco_order"
+        path = os.path.join(outdir, "choco_h3_order", "choco_h3_order.tar.gz")
+        url = "https://compsysbio.org/metapro_libs/choco_h3_order.tar.gz"
+        start_download(url, path, name, things_to_skip, bypass_log_file)
+
+        
+    if(("kraken2" in files_to_download) or ("all" in files_to_download)):
+        name = "kraken2_db"
+        path = os.path.join(outdir, "kraken2_db", "k2_standard_20230314.tar.gz")
+        url = "https://compsysbio.org/metapro_libs/k2_standard_20230314.tar.gz"
         start_download(url, path, name, things_to_skip, bypass_log_file)
 
     if(("nr" in files_to_download) or ("all" in files_to_download)):

@@ -19,7 +19,15 @@ if __name__ == "__main__":
     print("Output Location:", output_path)
     
     #imports all fastq files into df
+<<<<<<< HEAD
+<<<<<<< HEAD
+    read_df = pd.read_csv(read_path, header=None, names=[None], sep ='\n', skip_blank_lines = False)
+=======
     read_df = pd.read_csv(read_path, header=None, names=[None], sep ='\n', skip_blank_lines = False, quoting=3)
+>>>>>>> 4d5286c... committing final-ish code.
+=======
+    read_df = pd.read_csv(read_path, header=None, names=[None], sep ='\n', skip_blank_lines = False, quoting=3)
+>>>>>>> db_shrink
     read_df = pd.DataFrame(read_df.values.reshape(int(len(read_df) / 4), 4))
     
     read_df.columns = ["ID", "sequence", "junk", "quality"]
@@ -46,6 +54,18 @@ if __name__ == "__main__":
     #write it
     read_name = os.path.basename(read_path)
     # export only the rows that are unmapped
+<<<<<<< HEAD
+<<<<<<< HEAD
+    read_df[read_df.ID.isin(unmapped_read_sam_df)].to_csv(os.path.join(output_path, read_name), sep='\n', mode ="w+", header=False, index=False)
+    # then export only the rows that are mapped
+    read_df[read_df.ID.isin(mapped_read_sam_df)].to_csv(os.path.join(output_path, os.path.splitext(read_name)[0] + "_mapped" + os.path.splitext(read_name)[1]), sep='\n', mode ="w+", header=False, index=False)
+=======
     read_df[read_df.ID.isin(unmapped_read_sam_df)].to_csv(os.path.join(output_path, read_name), sep='\n', mode ="w+", header=False, index=False, quoting = 3)
     # then export only the rows that are mapped
     read_df[read_df.ID.isin(mapped_read_sam_df)].to_csv(os.path.join(output_path, os.path.splitext(read_name)[0] + "_mapped" + os.path.splitext(read_name)[1]), sep='\n', mode ="w+", header=False, index=False, quoting = 3)
+>>>>>>> 4d5286c... committing final-ish code.
+=======
+    read_df[read_df.ID.isin(unmapped_read_sam_df)].to_csv(os.path.join(output_path, read_name), sep='\n', mode ="w+", header=False, index=False, quoting = 3)
+    # then export only the rows that are mapped
+    read_df[read_df.ID.isin(mapped_read_sam_df)].to_csv(os.path.join(output_path, os.path.splitext(read_name)[0] + "_mapped" + os.path.splitext(read_name)[1]), sep='\n', mode ="w+", header=False, index=False, quoting = 3)
+>>>>>>> db_shrink

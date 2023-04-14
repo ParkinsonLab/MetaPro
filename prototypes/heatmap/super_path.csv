@@ -1,0 +1,14 @@
+Superpathway,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
+Amino acid metabolism,map00250,map00260,map00270,map00280,map00290,map00300,map00310,map00220,map00330,map00340,map00350,map00360,map00380,map00400,,,,,,,,,,,,,,,
+Biosynthesis of other secondary metabolites,map00940,map00945,map00941,map00944,map00942,map00943,map00901,map00403,map00950,map00960,map01058,map00232,map00965,map00966,map00402,map00311,map00332,map00261,map00331,map00521,map00524,map00525,map00231,map00401,map00404,map00405,map00333,map00254,map00999
+Carbohydrate metabolism,map00010,map00020,map00030,map00040,map00051,map00052,map00053,map00500,map00520,map00620,map00630,map00640,map00650,map00660,map00562,,,,,,,,,,,,,,
+Chemical structure transformation maps,map01010,map01060,map01061,map01062,map01063,map01064,map01065,map01066,map01070,,,,,,,,,,,,,,,,,,,,
+Energy metabolism,map00190,map00195,map00196,map00710,map00720,map00680,map00910,map00920,,,,,,,,,,,,,,,,,,,,,
+Global and overview maps,map01100,map01110,map01120,map01130,map01200,map01210,map01212,map01230,map01220,,,,,,,,,,,,,,,,,,,,
+Glycan biosynthesis and metabolism,map00510,map00513,map00512,map00515,map00514,map00532,map00534,map00533,map00531,map00563,map00601,map00603,map00604,map00540,map00550,map00511,map00571,map00572,,,,,,,,,,,
+Lipid metabolism,map00061,map00062,map00071,map00072,map00073,map00100,map00120,map00121,map00140,map00561,map00564,map00565,map00600,map00590,map00591,map00592,map01040,,,,,,,,,,,,
+Metabolism of cofactors and vitamins,map00730,map00740,map00750,map00760,map00770,map00780,map00785,map00790,map00670,map00830,map00860,map00130,,,,,,,,,,,,,,,,,
+Metabolism of other amino acids,map00410,map00430,map00440,map00450,map00460,map00471,map00472,map00473,map00480,,,,,,,,,,,,,,,,,,,,
+Metabolism of terpenoids and polyketides,map00900,map00902,map00909,map00904,map00906,map00905,map00981,map00908,map00903,map00281,map01052,map00522,map01051,map01059,map01056,map01057,map00253,map00523,map01054,map01053,map01055,,,,,,,,
+Nucleotide metabolism,map00230,map00240,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Xenobiotics biodegradation and metabolism,map00362,map00627,map00364,map00625,map00361,map00623,map00622,map00633,map00642,map00643,map00791,map00930,map00363,map00621,map00626,map00624,map00365,map00984,map00980,map00982,map00983,,,,,,,,
