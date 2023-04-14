@@ -1944,7 +1944,7 @@ class mt_pipe_commands:
         ga_get_lib += os.path.join(dest_folder, "lib_list.txt") + " "
         ga_get_lib += os.path.join(dest_folder, "lib_reject.txt") + " "
         ga_get_lib += self.tool_path_obj.source_taxa_DB + " "
-        ga_get_lib += self.tool_path_obj.taxa_exist_cutoff
+        ga_get_lib += str(self.tool_path_obj.taxa_exist_cutoff)
         
         make_marker = "touch" + " "
         make_marker += os.path.join(jobs_folder, marker_file)
