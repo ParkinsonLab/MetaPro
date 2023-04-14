@@ -8,18 +8,24 @@
 import sys
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 target_rank = sys.argv[1]
 classification_file = sys.argv[2]
 nodes_file = sys.argv[3]
 names_file = sys.argv[4]
 consensus_classification_file = sys.argv[5]
 =======
+=======
+>>>>>>> db_shrink
 target_rank = sys.argv[1]                   #IN (arg, not file)
 classification_file = sys.argv[2]           #IN
 nodes_file = sys.argv[3]                    # IN
 names_file = sys.argv[4]                    # IN
 consensus_classification_file = sys.argv[5] # OUT
+<<<<<<< HEAD
 >>>>>>> 4d5286c... committing final-ish code.
+=======
+>>>>>>> db_shrink
 
 #Read in library info "Nodes" and "Names"
 #These 2 files are the taxonomic keys of every microbe we're got.  

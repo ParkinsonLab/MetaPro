@@ -3,12 +3,14 @@
 #Why a V2?  because we need it to accept more than the prescribed number of input files originally laid out.
 #We also wanted to make it as explicit as possible, so it's easy to understand.
 
+#Why V3? replacing kaiju import with kraken2 import
+#kraken2 file will contain everything. contigs + singletons + p1 merged.
+
+
+
 import sys
-<<<<<<< HEAD
-=======
 import os
 from datetime import datetime as dt
->>>>>>> db_shrink
 
 def import_classifications(input_file, contig2read_map):
     #list of dictionaries
@@ -28,6 +30,20 @@ def import_classifications(input_file, contig2read_map):
                 Input_classification[Seq_ID] = Tax_ID
         #Input_classifications.append(Input_classification)
         return Input_classification
+        
+def import_kraken2(input_file, contig2read_map):
+    Input_classification = {}
+    with open(input_file, "r") as kraken_in:
+        for line in kraken_in:  
+            line_split = line.split("\t")
+            seq_id = line_split[1]
+            taxid = line_split[2]
+            if(seq_id in contig2read_map):
+                for Read_ID in contig2read_map[seq_id]:
+                    Input_classification[Read_ID] = taxid
+            else:
+                Input_classification[seq_id] = taxid
+    return Input_classification
 
 
 def combine_results(Input_classifications, ):
@@ -80,19 +96,11 @@ if __name__ == "__main__":
     ga_taxon_results_0 = sys.argv[3] 
     ga_taxon_results_1 = sys.argv[4]
     ga_taxon_results_2 = sys.argv[5]
-    kaiju_results = sys.argv[6]
+    #kaiju_results = sys.argv[6]
+    kraken_results = sys.argv[6]
     centrifuge_results = sys.argv[7]
     
     #import the contig map
-<<<<<<< HEAD
-    contig2read_map = import_contig2read_map(contig2read_file)
-
-    #import each classification result
-    Input_classifications = []
-    Input_classifications.append(import_classifications(ga_taxon_results_0, contig2read_map))
-    Input_classifications.append(import_classifications(ga_taxon_results_1, contig2read_map))
-    Input_classifications.append(import_classifications(ga_taxon_results_2, contig2read_map))
-=======
     contig2read_map = dict()
     if(os.path.exists(contig2read_file)):
         contig2read_map = import_contig2read_map(contig2read_file)
@@ -107,8 +115,8 @@ if __name__ == "__main__":
         Input_classifications.append(import_classifications(ga_taxon_results_1, contig2read_map))
     if(os.path.exists(ga_taxon_results_2)):
         Input_classifications.append(import_classifications(ga_taxon_results_2, contig2read_map))
->>>>>>> db_shrink
-    Input_classifications.append(import_classifications(kaiju_results, contig2read_map))
+    #Input_classifications.append(import_classifications(kaiju_results, contig2read_map))
+    Input_classifications.append(import_kraken2(kraken_results, contig2read_map))
     Input_classifications.append(import_classifications(centrifuge_results, contig2read_map))
 
     #combine them all for Wevote

@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+#removes tags from the read IDs
+
+>>>>>>> db_shrink
 import sys
 import time
 import pandas as pd

@@ -34,7 +34,11 @@ with open(names_file, "r") as infile:
         cols = line.split("\t|\t")
         taxid = cols[0]
         name = cols[1]
+<<<<<<< HEAD
         if "scientific name" in cols[3]:
+=======
+        if "scientific" in cols[3]:
+>>>>>>> db_shrink
             names[taxid] = name
     else:
         names["0"] = "unclassified"

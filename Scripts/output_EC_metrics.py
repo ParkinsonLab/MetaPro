@@ -6,6 +6,10 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import numpy as np
 import seaborn as sns
+<<<<<<< HEAD
+=======
+import textwrap
+>>>>>>> db_shrink
 
 #Sept 18, 2018:  This is not the greatest of scripts.  It's a series of DF manipulations, that produces what we need.  
 #Doesn't have to be pretty, just readable.  We don't expect to change anything here.  It manipulates 3 files, and spits out
@@ -16,16 +20,22 @@ if __name__ == "__main__":
     plt.ioff()
     
 <<<<<<< HEAD
+<<<<<<< HEAD
     ec_pathway_file = sys.argv[1]   #path->EC file  -> EC_pathway.txt
     rpkm_table_file = sys.argv[2]   #EC-> gene file -> RPKM_table.tsv
     pathway_superpathway_file = sys.argv[3] #path->superpath file -> pathway_to_superpathway.csv
     output_dir = sys.argv[4]
 =======
+=======
+>>>>>>> db_shrink
     ec_pathway_file                 = sys.argv[1]   #path->EC file  -> EC_pathway.txt
     rpkm_table_file                 = sys.argv[2]   #EC-> gene file -> RPKM_table.tsv
     pathway_superpathway_file       = sys.argv[3] #path->superpath file -> pathway_to_superpathway.csv
     output_dir                      = sys.argv[4]
+<<<<<<< HEAD
 >>>>>>> 4d5286c... committing final-ish code.
+=======
+>>>>>>> db_shrink
     if(not output_dir.endswith("/")):
         output_dir += "/"
     
@@ -122,6 +132,7 @@ if __name__ == "__main__":
         count+= 1
     
     selected_heatmap_df = selected_heatmap_df.groupby(["Superpathway"]).sum()           #collapse the rows, grouped by the superpath`
+<<<<<<< HEAD
     plt.subplots(figsize = (25,10))                                                     #set the image size    
 <<<<<<< HEAD
     heatmap = sns.heatmap(selected_heatmap_df)
@@ -136,6 +147,36 @@ if __name__ == "__main__":
 <<<<<<< HEAD
 =======
     
+=======
+    plt.subplots(figsize = (50,20))                                                     #set the image size 
+    
+    
+     
+    
+    new_cmap = sns.color_palette("deep")
+    sns.set(font_scale = 3)
+    #heatmap = sns.heatmap(selected_heatmap_df, cmap="Blues")                           #maek the heatmap.  Use a colour palette
+    heatmap = sns.heatmap(selected_heatmap_df, cmap="rocket_r")#new_cmap)                           #maek the heatmap.  Use a colour palette
+    wrap_text = 15 #number of chars to start the wrap
+    x_labels = heatmap.get_xticklabels()
+    test_x  = []
+    for item in x_labels:
+        test_x.append(textwrap.fill(item.get_text(), wrap_text))
+        
+    test_y = []
+    y_labels = heatmap.get_yticklabels()
+    for item in y_labels:
+        test_y.append(textwrap.fill(item.get_text(), wrap_text))
+    
+    #heatmap.set_ylabel("Chicken", font_size = 50)
+    font_size = 20
+    plt.ylabel("Superpathway", fontsize = font_size)
+    
+    heatmap.set_xticklabels(test_x, rotation = 40, ha = "right", fontsize = font_size)     #make the labels pretty
+    heatmap.set_yticklabels(test_y, rotation = 0, ha = "right", fontsize = font_size)
+    heatmap.figure.savefig(output_dir + "enzyme_superpathway_heatmap.jpg")              #export it
+    selected_heatmap_df.to_csv(output_dir + "enzyme_superpathway_heatmap.csv", mode="w")
+>>>>>>> db_shrink
     #redraw heatmap without unclassifieds
     if("Unclassified" in fixed_rpkm_df.columns):
         fixed_rpkm_df.drop(columns = ["Unclassified"], inplace = True)
@@ -152,13 +193,38 @@ if __name__ == "__main__":
             count+= 1
         
         selected_heatmap_df = selected_heatmap_df.groupby(["Superpathway"]).sum()           #collapse the rows, grouped by the superpath`
+<<<<<<< HEAD
         plt.subplots(figsize = (25,10))                                                     #set the image size    
         heatmap = sns.heatmap(selected_heatmap_df, cmap="Blues")                           #maek the heatmap.  Use a colour palette
         heatmap.set_xticklabels(heatmap.get_xticklabels(), rotation = 40, ha = "right")     #make the labels pretty
         heatmap.set_yticklabels(heatmap.get_yticklabels(), rotation = 40, ha = "right")
+=======
+        plt.subplots(figsize = (50,20))                                                     #set the image size    
+        heatmap = sns.heatmap(selected_heatmap_df, cmap="rocket_r")                           #maek the heatmap.  Use a colour palette
+        
+        x_labels = heatmap.get_xticklabels()
+        test_x  = []
+        for item in x_labels:
+            test_x.append(textwrap.fill(item.get_text(), wrap_text))
+            
+        test_y = []
+        y_labels = heatmap.get_yticklabels()
+        for item in y_labels:
+            test_y.append(textwrap.fill(item.get_text(), wrap_text))
+        
+        #heatmap.set_ylabel("Chicken", font_size = 50)
+        font_size = 20
+        plt.ylabel("Superpathway", fontsize = font_size, fontname = "Times")
+            
+        heatmap.set_xticklabels(test_x, rotation = 40, ha = "right", fontsize = font_size, fontname = "Times")     #make the labels pretty
+        heatmap.set_yticklabels(test_y, rotation = 0, ha = "right", fontsize = font_size, fontname = "Times")
+>>>>>>> db_shrink
         heatmap.figure.savefig(output_dir + "enzyme_superpathway_heatmap_no_unclassified.jpg")              #export it
         selected_heatmap_df.to_csv(output_dir + "enzyme_superpathway_heatmap_no_unclassified.csv", mode="w")    
     
     
+<<<<<<< HEAD
 >>>>>>> 4d5286c... committing final-ish code.
+=======
+>>>>>>> db_shrink
     
