@@ -231,7 +231,9 @@ class tool_path_obj:
         EC_chunksize_default = 50000
         GA_chunksize_default = 25000
         
-        
+        BWA_mem_footprint_default = 5
+        BLAT_mem_footprint_default = 5
+        DMD_mem_footprint_default = 10
         
         BWA_job_limit_default               = cpu_default
         BLAT_job_limit_default              = cpu_default
@@ -313,8 +315,12 @@ class tool_path_obj:
         self.DIAMOND_identity_cutoff    = self.value_assignment(config, "Settings", "DIAMOND_identity_cutoff", DIAMOND_identity_default)
         self.DIAMOND_length_cutoff      = self.value_assignment(config, "Settings", "DIAMOND_length_cutoff", DIAMOND_length_default)
         self.DIAMOND_score_cutoff       = self.value_assignment(config, "Settings", "DIAMOND_score_cutoff", DIAMOND_score_default)
-        #-----------------------------------------------------------------------------------------------    
-        
+        #-----------------------------------------------------------------------------------------------   
+        self.BWA_mem_footprint      = self.value_assignment(config, "Settings", "BWA_mem_footprint", BWA_mem_footprint_default)
+        self.BLAT_mem_footprint     = self.value_assignment(config, "Settings", "BLAT_mem_footprint", BLAT_mem_footprint_default)
+        self.DMD_mem_footprint      = self.value_assignment(config, "Settings", "DMD_mem_footprint", DMD_mem_footprint_default)
+
+        #-------------------------------------------------------------------------------------------------
         self.BWA_mem_threshold              = self.value_assignment(config, "Settings", "BWA_mem_threshold", BWA_mem_default)
         self.BLAT_mem_threshold             = self.value_assignment(config, "Settings", "BLAT_mem_threshold", BLAT_mem_default)
         self.DIAMOND_mem_threshold          = self.value_assignment(config, "Settings", "DIAMOND_mem_threshold", DIAMOND_mem_default)

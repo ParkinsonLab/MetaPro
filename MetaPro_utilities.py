@@ -52,6 +52,20 @@ class mp_util:
         else:
             return True
             
+    def mem_footprint_checker(self, count, mem_footprint):
+        #assumes some pre-determinted footprint for the program in question.
+        #then it doesn't let the program run
+        mem = psu.virtual_memory()
+        total_mem = mem.total/(1024*1024*1024)
+
+        occupied_mem = count * mem_footprint
+
+        max_limit = total_mem * 0.9
+        if(occupied_mem > max_limit):
+            return False
+        else:
+            return True
+
             
     def make_folder(self, folder_path):
         if not (os.path.exists(folder_path)):
@@ -317,7 +331,31 @@ class mp_util:
                 self.wait_for_mp_store()
         #final wait
         #self.wait_for_mp_store()
+    def launch_and_create_with_mem_footprint(self, mem_footprint, job_limit, job_location, job_name, command_obj, command):
+        #launch a job in launch-with-create mode
+        #this controller won't be optimized for the system. It's made to keep the node from exploding.
+        job_submitted = False
+        
+        while(not job_submitted):
 
+            if(len(self.mp_store) < job_limit):    
+                if(self.mem_footprint_checker(len(self.mp_store), mem_footprint)):
+                    process = mp.Process(
+                        target = command_obj.create_and_launch,
+                        args = (job_location, job_name, command)
+                    )
+                    process.start()
+                    self.mp_store.append(process)
+                    job_submitted = True
+                    
+                    print(dt.today(), job_name, "job submitted.  mem:", len(self.mp_store) * mem_footprint, "GB", end='\r')
+                else:
+                    print(dt.today(), "job limit reached.  waiting for queue to flush")
+                    self.wait_for_mp_store()
+            else:
+                print(dt.today(), "job limit reached.  waiting for queue to flush")
+                self.wait_for_mp_store()    
+                
 
     #check if all jobs ran
     def check_all_job_markers(self, job_marker_list, final_folder_checklist):

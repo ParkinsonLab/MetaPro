@@ -74,6 +74,10 @@ class mp_stage:
         self.repop_mem_threshold            = int(self.paths.repop_mem_threshold)
         self.GA_final_merge_mem_threshold   = int(self.paths.GA_final_merge_mem_threshold)
         self.EC_mem_threshold               = int(self.paths.EC_mem_threshold)
+
+        self.BWA_mem_footprint  = int(self.paths.BWA_mem_footprint)
+        self.BLAT_mem_footprint = int(self.paths.BLAT_mem_footprint)
+        self.DMD_mem_footprint  = int(self.paths.DMD_mem_footprint)
         
         
         
@@ -1047,7 +1051,8 @@ class mp_stage:
                                 #if the DB is still an old version, the tag should just say "chocophlan".  otherwise, it will say the chocophlan chunk name
                                 
                                 command_list = self.commands.create_BWA_annotate_command_v2(self.GA_BWA_label, ref_path, ref_tag, full_sample_path, marker_file)
-                                self.mp_util.launch_and_create_with_hold(self.BWA_mem_threshold, self.BWA_job_limit, self.BWA_job_delay, self.GA_BWA_label, job_name, self.commands, command_list)
+                                #self.mp_util.launch_and_create_with_hold(self.BWA_mem_threshold, self.BWA_job_limit, self.BWA_job_delay, self.GA_BWA_label, job_name, self.commands, command_list)
+                                self.mp_util.launch_and_create_with_mem_footprint(self.BWA_mem_footprint, self.BWA_job_limit, self.GA_BWA_label, job_name, self.commands, command_list)
                         else:
                             split_db = os.listdir(ref_path)
                             for db_segments in split_db:
@@ -1065,7 +1070,9 @@ class mp_stage:
                                     else:
                                         marker_path_list.append(marker_path)
                                         command_list = self.commands.create_BWA_annotate_command_v2(self.GA_BWA_label, segment_ref_path, ref_tag, full_sample_path, marker_file)
+                                        #footprint doesn't apply to a single-file BWA DB
                                         self.mp_util.launch_and_create_with_hold(self.BWA_mem_threshold, self.BWA_job_limit, self.BWA_job_delay, self.GA_BWA_label, job_name, self.commands, command_list)
+                                        
 
                 print(dt.today(), "all BWA jobs have launched.  waiting for them to finish")            
                 self.mp_util.wait_for_mp_store()
