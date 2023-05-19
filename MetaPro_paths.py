@@ -578,7 +578,7 @@ class tool_path_obj:
         self.WEVOTE         = self.value_assignment(config, "Tools", "WEVOTE", os.path.join(tool_path, "WEVOTE/WEVOTE"))
         self.Spades         = self.value_assignment(config, "Tools", "Spades", os.path.join(tool_path, "SPAdes/bin/spades.py"))
         self.MetaGeneMark   = self.value_assignment(config, "Tools", "MetaGeneMark", os.path.join(tool_path, "mgm/gmhmmp"))
-        self.kraken2        = self.value_assignment(config, "Tools", "kraken2", os.path.join(tool_path, "kraken2-2.1.2/kraken2"))
+        self.kraken2        = self.value_assignment(config, "Tools", "kraken2", os.path.join(tool_path, "kraken2/kraken2"))
             
         #--------------------------------------------
         # Python scripts
