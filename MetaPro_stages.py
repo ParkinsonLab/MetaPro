@@ -1053,6 +1053,7 @@ class mp_stage:
                                 command_list = self.commands.create_BWA_annotate_command_v2(self.GA_BWA_label, ref_path, ref_tag, full_sample_path, marker_file)
                                 #self.mp_util.launch_and_create_with_hold(self.BWA_mem_threshold, self.BWA_job_limit, self.BWA_job_delay, self.GA_BWA_label, job_name, self.commands, command_list)
                                 self.mp_util.launch_and_create_with_mem_footprint(self.BWA_mem_footprint, self.BWA_job_limit, self.GA_BWA_label, job_name, self.commands, command_list)
+                                
                         else:
                             split_db = os.listdir(ref_path)
                             for db_segments in split_db:
@@ -1071,7 +1072,8 @@ class mp_stage:
                                         marker_path_list.append(marker_path)
                                         command_list = self.commands.create_BWA_annotate_command_v2(self.GA_BWA_label, segment_ref_path, ref_tag, full_sample_path, marker_file)
                                         #footprint doesn't apply to a single-file BWA DB
-                                        self.mp_util.launch_and_create_with_hold(self.BWA_mem_threshold, self.BWA_job_limit, self.BWA_job_delay, self.GA_BWA_label, job_name, self.commands, command_list)
+                                        #self.mp_util.launch_and_create_with_hold(self.BWA_mem_threshold, self.BWA_job_limit, self.BWA_job_delay, self.GA_BWA_label, job_name, self.commands, command_list)
+                                        self.mp_util.launch_and_create_with_mem_footprint(self.BWA_mem_footprint, self.BWA_job_limit, self.GA_BWA_label, job_name, self.commands, command_list)
                                         
 
                 print(dt.today(), "all BWA jobs have launched.  waiting for them to finish")            
@@ -1253,8 +1255,8 @@ class mp_stage:
                                 
                                 marker_path_list.append(marker_path)
                                 command_list = self.commands.create_BLAT_annotate_command_v2(self.GA_BLAT_label, full_sample_path, self.paths.DNA_DB, fasta_db, marker_file)
-                                self.mp_util.launch_only_with_hold(self.BLAT_mem_threshold, self.BLAT_job_limit, self.BLAT_job_delay, job_name, self.commands, command_list)
-
+                                #self.mp_util.launch_only_with_hold(self.BLAT_mem_threshold, self.BLAT_job_limit, self.BLAT_job_delay, job_name, self.commands, command_list)
+                                self.mp_util.launch_and_create_with_mem_footprint(self.BLAT_mem_footprint, self.BLAT_job_limit, self.GA_BLAT_label, job_name, self.commands, command_list)
             #---------------------------------------------------------------------------
 
             
@@ -1406,8 +1408,9 @@ class mp_stage:
                     else:
                         marker_path_list.append(marker_path)
                         command_list = self.commands.create_DIAMOND_annotate_command_v2(self.GA_DIAMOND_label, full_sample_path, marker_file)
-                        self.mp_util.launch_and_create_with_hold(self.DIAMOND_mem_threshold, self.DIAMOND_job_limit, self.DIAMOND_job_delay, self.GA_DIAMOND_label, job_name, self.commands, command_list)
-                    
+                        #self.mp_util.launch_and_create_with_hold(self.DIAMOND_mem_threshold, self.DIAMOND_job_limit, self.DIAMOND_job_delay, self.GA_DIAMOND_label, job_name, self.commands, command_list)
+                        self.mp_util.launch_and_create_with_mem_footprint(self.DMD_mem_footprint, self.DIAMOND_job_limit, self.GA_DIAMOND_label, job_name, self.commands, command_list)
+
             print(dt.today(), "All DIAMOND jobs launched.  waiting for join")
             self.mp_util.wait_for_mp_store()
             final_checklist = os.path.join(self.GA_DIAMOND_path, "GA_DIAMOND.txt")
