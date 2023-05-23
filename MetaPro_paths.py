@@ -41,6 +41,9 @@ class tool_path_obj:
                         #print(var_name, "found! using:", value)
                         #time.sleep(1)
                     print(var_name, "found! using:", value)
+                    if(value == "0"):
+                    	print(var_name, "zero-setting detected: using default")
+                    	
                 else:
                     print(var_name, "no inner section found. using default", default)
                     value = default
@@ -316,9 +319,12 @@ class tool_path_obj:
         self.DIAMOND_length_cutoff      = self.value_assignment(config, "Settings", "DIAMOND_length_cutoff", DIAMOND_length_default)
         self.DIAMOND_score_cutoff       = self.value_assignment(config, "Settings", "DIAMOND_score_cutoff", DIAMOND_score_default)
         #-----------------------------------------------------------------------------------------------   
+
+        
         self.BWA_mem_footprint      = self.value_assignment(config, "Settings", "BWA_mem_footprint", BWA_mem_footprint_default)
         self.BLAT_mem_footprint     = self.value_assignment(config, "Settings", "BLAT_mem_footprint", BLAT_mem_footprint_default)
         self.DMD_mem_footprint      = self.value_assignment(config, "Settings", "DMD_mem_footprint", DMD_mem_footprint_default)
+        
 
         #-------------------------------------------------------------------------------------------------
         self.BWA_mem_threshold              = self.value_assignment(config, "Settings", "BWA_mem_threshold", BWA_mem_default)
