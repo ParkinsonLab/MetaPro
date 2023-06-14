@@ -94,6 +94,7 @@ class mp_stage:
         self.repop_job_limit            = int(self.paths.repop_job_limit)
         self.GA_final_merge_job_limit   = int(self.paths.GA_final_merge_job_limit)
         self.EC_job_limit               = int(self.paths.EC_job_limit)
+        self.Centrifuge_job_limit       = int(self.paths.Centrifuge_job_limit)
         
         self.Infernal_job_delay         = float(self.paths.Infernal_job_delay)
         self.Barrnap_job_delay          = float(self.paths.Barrnap_job_delay)
@@ -878,7 +879,7 @@ class mp_stage:
                 else:
                     marker_path_list.append(marker_path)
                     command_list = self.commands.create_TA_centrifuge_command(self.GA_pre_scan_label, self.rRNA_filter_label, self.assemble_contigs_label, read_cat, marker_file)
-                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.Centrifuge_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
             
             self.mp_util.wait_for_mp_store()
             
@@ -1550,7 +1551,7 @@ class mp_stage:
                 else:
                     marker_path_list.append(marker_path)
                     command_list = self.commands.create_TA_centrifuge_command(self.ta_label, self.rRNA_filter_label, self.assemble_contigs_label, section, marker_file)
-                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.Centrifuge_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
             
             marker_file = "TA_kraken2_pp"
             marker_path = os.path.join(self.TA_jobs_folder, marker_file)

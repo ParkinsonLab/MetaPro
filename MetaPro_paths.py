@@ -251,6 +251,7 @@ class tool_path_obj:
         repop_job_limit_default             = 1
         TA_job_limit_default                = cpu_default
         EC_job_limit_default                = cpu_default
+        Centrifuge_job_limit_default        = 1
 
         Barrnap_job_delay_default           = 5
         Infernal_job_delay_default          = 5
@@ -356,6 +357,7 @@ class tool_path_obj:
         self.TA_job_limit               = self.value_assignment(config, "Settings", "TA_job_limit", TA_job_limit_default)
         self.repop_job_limit            = self.value_assignment(config, "Settings", "repop_job_limit", repop_job_limit_default)
         self.EC_job_limit               = self.value_assignment(config, "Settings", "EC_job_limit", EC_job_limit_default)
+        self.Centrifuge_job_limit       = self.value_assignment(config, "Settings", "Centrifuge_job_limit", Centrifuge_job_limit_default)
         
         #------------------------------------------------------------------------
         
