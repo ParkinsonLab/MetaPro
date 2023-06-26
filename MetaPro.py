@@ -43,6 +43,8 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     
     metapro_stage_obj = mps.mp_stage(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
 
+    
+
     # This is the format we use to launch each stage of the pipeline.
     # We start a multiprocess that starts a subprocess.
     # The subprocess is created from the commands object
@@ -242,6 +244,14 @@ if __name__ == "__main__":
     print("no-host:", no_host)
     print("verbose_mode:", verbose_mode)
 
+    if(os.path.exists(pair_1)):
+        print("pair 1 valid")
+
+    if(os.path.exists(pair_2)):
+        print("pair 2 valid")
+
+    time.sleep(3)
+    
     if (tutorial_mode != "none"):
         print("working in tutorial mode:", tutorial_mode)
         tutorial_main(config_file, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode)

@@ -25,10 +25,25 @@ import math
 import time
 from configparser import ConfigParser, ExtendedInterpolation
 
+
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
+        
+def isint(num):
+    try:
+        int(num)
+        return True
+    except ValueError:
+        return False
+        
+
 class tool_path_obj:
     
-    
-    def value_assignment(self, config, config_section, var_name, default):
+    def value_assignment(self, config, config_section, var_name, default, expected_type):
         value = ""
         #print("CONFIG:", config)
         if config:
@@ -53,8 +68,41 @@ class tool_path_obj:
         else:
             print("no config, using default:", default)
             value = default
+            
+        #print(var_name, type(value))
 
-        return value
+        if(expected_type == "int"):
+            if not(isinstance(value, int)):
+                sys.exit(var_name, "wrong data. expecting int")
+        elif(expected_type == "float"):
+            if not(isinstance(value, float)):
+                sys.exit(var_name, "wrong data. expecting FLOAT")
+
+
+
+        if(isinstance(value, str)):
+            
+        #check if the var is a path, that it's actually a valid path
+        
+            if("\\" in value or "/" in value):
+                if(os.path.exists(value)):
+                    return value
+                else:
+                    #Special cases. these vars don't need filenames.
+                    if(var_name == "Centrifuge_db"):
+                        temp_name = value + ".1.cf"
+                        if(os.path.exists(temp_name)):
+                            return value
+                    elif(var_name == "SWISS_PROT"):
+                        temp_name = value + ".dmnd"
+                        if(os.path.exists(temp_name)):
+                            return value
+                    print(var_name, "does not exist:", value)
+                    sys.exit("path not valid")
+            else:
+                return value
+        else:
+            return value
         
     def check_file_valid(self, file_0):
         #checks that a file is there, and larger than 0kb
@@ -214,7 +262,7 @@ class tool_path_obj:
 
         
         #--------------------------------------------------
-        # miscellaneous values
+        # Memory percentage limits for applications. in INT
         BWA_mem_default = 50
         BLAT_mem_default = 10 #100MB
         DIAMOND_mem_default = 50 #60GB
@@ -297,41 +345,41 @@ class tool_path_obj:
         #length_cutoff= 0.65
         #score_cutoff= 60
         
-        self.target_rank                = self.value_assignment(config, "Settings", "target_rank", "genus")
-        self.adapterremoval_minlength   = self.value_assignment(config, "Settings", "AdapterRemoval_minlength", 30)
-        self.show_unclassified          = self.value_assignment(config, "Settings", "Show_unclassified", "No")
-        self.bypass_log_name            = self.value_assignment(config, "Settings", "bypass_log_name", "bypass_log.txt")
-        self.debug_stop_flag            = self.value_assignment(config, "Settings", "debug_stop_flag", "none")
-        self.num_threads                = self.value_assignment(config, "Settings", "num_threads", os.cpu_count())
+        self.target_rank                = self.value_assignment(config, "Settings", "target_rank", "genus", "string")
+        self.adapterremoval_minlength   = self.value_assignment(config, "Settings", "AdapterRemoval_minlength", 30, "int")
+        self.show_unclassified          = self.value_assignment(config, "Settings", "Show_unclassified", "No", str)
+        self.bypass_log_name            = self.value_assignment(config, "Settings", "bypass_log_name", "bypass_log.txt", "str")
+        self.debug_stop_flag            = self.value_assignment(config, "Settings", "debug_stop_flag", "none", "string")
+        self.num_threads                = self.value_assignment(config, "Settings", "num_threads", os.cpu_count(), "int")
         if(self.num_threads == 0):
             self.num_threads = 1
-        self.taxa_exist_cutoff          = self.value_assignment(config, "Settings", "taxa_existence_cutoff", 0.1)
-        self.DNA_DB_mode                = self.value_assignment(config, "Settings", "DNA_DB_mode", "chocophlan") #used to indicate custom DB, or our grouped library
+        self.taxa_exist_cutoff          = self.value_assignment(config, "Settings", "taxa_existence_cutoff", 0.1, "int")
+        self.DNA_DB_mode                = self.value_assignment(config, "Settings", "DNA_DB_mode", "chocophlan", "str") #used to indicate custom DB, or our grouped library
         #other setting is "custom"
         
         
         
-        self.RPKM_cutoff                = self.value_assignment(config, "Settings", "RPKM_cutoff", 0.01)
-        self.BWA_cigar_cutoff           = self.value_assignment(config, "Settings", "BWA_cigar_cutoff", BWA_cigar_default)
-        self.BLAT_identity_cutoff       = self.value_assignment(config, "Settings", "BLAT_identity_cutoff", BLAT_identity_default)
-        self.BLAT_length_cutoff         = self.value_assignment(config, "Settings", "BLAT_length_cutoff", BLAT_length_default)
-        self.BLAT_score_cutoff          = self.value_assignment(config, "Settings", "BLAT_score_cutoff", BLAT_score_default)            
-        self.DIAMOND_identity_cutoff    = self.value_assignment(config, "Settings", "DIAMOND_identity_cutoff", DIAMOND_identity_default)
-        self.DIAMOND_length_cutoff      = self.value_assignment(config, "Settings", "DIAMOND_length_cutoff", DIAMOND_length_default)
-        self.DIAMOND_score_cutoff       = self.value_assignment(config, "Settings", "DIAMOND_score_cutoff", DIAMOND_score_default)
+        self.RPKM_cutoff                = self.value_assignment(config, "Settings", "RPKM_cutoff", 0.01, "float")
+        self.BWA_cigar_cutoff           = self.value_assignment(config, "Settings", "BWA_cigar_cutoff", BWA_cigar_default, "int")
+        self.BLAT_identity_cutoff       = self.value_assignment(config, "Settings", "BLAT_identity_cutoff", BLAT_identity_default, "int")
+        self.BLAT_length_cutoff         = self.value_assignment(config, "Settings", "BLAT_length_cutoff", BLAT_length_default, "float")
+        self.BLAT_score_cutoff          = self.value_assignment(config, "Settings", "BLAT_score_cutoff", BLAT_score_default, "int")            
+        self.DIAMOND_identity_cutoff    = self.value_assignment(config, "Settings", "DIAMOND_identity_cutoff", DIAMOND_identity_default, "int")
+        self.DIAMOND_length_cutoff      = self.value_assignment(config, "Settings", "DIAMOND_length_cutoff", DIAMOND_length_default, "float")
+        self.DIAMOND_score_cutoff       = self.value_assignment(config, "Settings", "DIAMOND_score_cutoff", DIAMOND_score_default, "int")
         #-----------------------------------------------------------------------------------------------   
 
         
-        self.BWA_mem_footprint      = self.value_assignment(config, "Settings", "BWA_mem_footprint", BWA_mem_footprint_default)
-        self.BLAT_mem_footprint     = self.value_assignment(config, "Settings", "BLAT_mem_footprint", BLAT_mem_footprint_default)
-        self.DMD_mem_footprint      = self.value_assignment(config, "Settings", "DMD_mem_footprint", DMD_mem_footprint_default)
+        self.BWA_mem_footprint      = self.value_assignment(config, "Settings", "BWA_mem_footprint", BWA_mem_footprint_default, "int")
+        self.BLAT_mem_footprint     = self.value_assignment(config, "Settings", "BLAT_mem_footprint", BLAT_mem_footprint_default, "int")
+        self.DMD_mem_footprint      = self.value_assignment(config, "Settings", "DMD_mem_footprint", DMD_mem_footprint_default, "int")
         
 
         #-------------------------------------------------------------------------------------------------
-        self.BWA_mem_threshold              = self.value_assignment(config, "Settings", "BWA_mem_threshold", BWA_mem_default)
-        self.BLAT_mem_threshold             = self.value_assignment(config, "Settings", "BLAT_mem_threshold", BLAT_mem_default)
+        self.BWA_mem_threshold              = self.value_assignment(config, "Settings", "BWA_mem_threshold", BWA_mem_default, "int")
+        self.BLAT_mem_threshold             = self.value_assignment(config, "Settings", "BLAT_mem_threshold", BLAT_mem_default, "int")
         self.DIAMOND_mem_threshold          = self.value_assignment(config, "Settings", "DIAMOND_mem_threshold", DIAMOND_mem_default)
-        self.DETECT_mem_threshold           = self.value_assignment(config, "Settings", "DETECT_mem_threshold", DETECT_mem_default)
+        self.DETECT_mem_threshold           = self.value_assignment(config, "Settings", "DETECT_mem_threshold", DETECT_mem_default, "int")
         self.Infernal_mem_threshold         = self.value_assignment(config, "Settings", "Infernal_mem_threshold", Infernal_mem_default)
         self.Barrnap_mem_threshold          = self.value_assignment(config, "Settings", "Barrnap_mem_threshold", Barrnap_mem_default)
         self.BWA_pp_mem_threshold           = self.value_assignment(config, "Settings", "BWA_pp_mem_threshold", BWA_pp_mem_default)
@@ -530,7 +578,7 @@ class tool_path_obj:
         self.Adapter            = self.value_assignment(config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"))
         self.Host               = self.value_assignment(config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"))
         self.Rfam               = self.value_assignment(config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
-        self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
+        self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", "None")
         self.source_taxa_DB     = self.value_assignment(config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"))
         self.Prot_DB            = self.value_assignment(config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr"))
         self.Prot_DB_reads      = self.value_assignment(config, "Databases", "Prot_DB_reads", os.path.join(database_path, "nr/nr"))
