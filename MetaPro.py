@@ -43,8 +43,6 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     
     metapro_stage_obj = mps.mp_stage(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
 
-    
-
     # This is the format we use to launch each stage of the pipeline.
     # We start a multiprocess that starts a subprocess.
     # The subprocess is created from the commands object
@@ -187,7 +185,7 @@ if __name__ == "__main__":
     # There's a few operating modes, mainly "docker", and "singularity".  These modes edit the pipeline filepaths
 
     parser = ArgumentParser(description="MetaPro - Meta-omic sequence processing and analysis pipeline"
-                                        "Version 2.2.0 © 2023")
+                                        "Version 3.0.1 © 2023")
 
     parser.add_argument("-c", "--config",   type=str,   help="Path to the configureation file")
     parser.add_argument("-1", "--pair1",    type=str,   help="Path to the file containing the forward paired-end reads in fastq format")
@@ -203,9 +201,9 @@ if __name__ == "__main__":
     
     config_file     = args.config if args.config else ""
     contig          = args.contig if args.contig else "None"
-    pair_1          = args.pair1 if args.pair1 else ""
-    pair_2          = args.pair2 if args.pair2 else ""
-    single          = args.single if args.single else ""
+    pair_1          = args.pair1 if args.pair1 else "None"
+    pair_2          = args.pair2 if args.pair2 else "None"
+    single          = args.single if args.single else "None"
     output_folder   = args.output_folder
     no_host         = args.nhost if args.nhost else False
     verbose_mode    = args.verbose_mode if args.verbose_mode else "quiet"
@@ -244,16 +242,10 @@ if __name__ == "__main__":
     print("no-host:", no_host)
     print("verbose_mode:", verbose_mode)
 
-    if(os.path.exists(pair_1)):
-        print("pair 1 valid")
-
-    if(os.path.exists(pair_2)):
-        print("pair 2 valid")
-
-    time.sleep(3)
     
     if (tutorial_mode != "none"):
         print("working in tutorial mode:", tutorial_mode)
+        
         tutorial_main(config_file, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode)
     
     else:

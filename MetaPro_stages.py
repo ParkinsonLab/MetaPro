@@ -21,7 +21,7 @@ import queue as q
 #makes for a neat package/capsule
 
 class mp_stage:
-    def __init__ (self, config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
+    def __init__ (self, config_path, pair_1_path="None", pair_2_path="None", single_path="None", contig_path="None", output_folder_path="None", args_pack="None", tutorial_mode_string = None, test_mode = "no"):
         #make our util obj
         #refresher: self -> instance var.  not self: class var (shared among class obj instances)
         
@@ -29,8 +29,9 @@ class mp_stage:
         #Operational flags and state-recorders
         
         
-        
+        self.test_mode = test_mode
         self.tutorial_string = tutorial_mode_string
+        
         self.output_folder_path = output_folder_path
         self.mp_util = mpu.mp_util(self.output_folder_path, config_path)
         self.paths = mpp.tool_path_obj(config_path)
@@ -44,13 +45,14 @@ class mp_stage:
         self.EC_chunksize = int(self.paths.EC_chunksize)
         self.GA_chunksize = int(self.paths.GA_chunksize)
         self.config_path = config_path
-        self.pair_1_path = pair_1_path
-        self.pair_2_path = pair_2_path
-        self.single_path = single_path
-        self.contig_path = contig_path  #tutorial/single-shot use
+        
+        self.pair_1_path = None if (pair_1_path == "None") else pair_1_path
+        self.pair_2_path = None if (pair_2_path == "None") else pair_2_path
+        self.single_path = None if (single_path == "None") else single_path
+        self.contig_path = None if (contig_path == "None") else contig_path #tutorial/single-shot use
         self.quality_encoding = ""
         self.read_mode = "none"
-        if not single_path == "":
+        if not self.single_path == None:
             self.read_mode = "single"
             self.quality_encoding = self.mp_util.determine_encoding(single_path)
             print("ENCODING USED:", self.quality_encoding)
@@ -288,10 +290,10 @@ class mp_stage:
 
         # Creates our command object, for creating shellscripts.
 
-        if self.read_mode == "single":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=single_path, sequence_contigs = None)
-        elif self.read_mode == "paired":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=pair_1_path, sequence_path_2=pair_2_path, sequence_single=None, sequence_contigs = None)
+        #if self.read_mode == "single":
+        #    self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword=self.tutorial_string, sequence_path_1=self.pair_1_path, sequence_path_2=self.pair_2_path, sequence_single=self.single_path, sequence_contigs = self.contig_path)
+        #elif self.read_mode == "paired":
+        self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword=self.tutorial_string, sequence_path_1=self.pair_1_path, sequence_path_2=self.pair_2_path, sequence_single=self.single_path, sequence_contigs = self.contig_path)
     
 
         #--------------------------------------------------------
@@ -404,11 +406,17 @@ class mp_stage:
             self.host_start = time.time()
             #if not check_where_resume(host_path, None, self.quality_path):
             command_list = self.commands.create_host_filter_command(self.host_filter_label, self.quality_filter_label)
-            self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
-            self.host_end = time.time()
-            print("host filter:", '%1.1f' % (self.host_end - self.host_start - (self.cleanup_host_end - self.cleanup_host_start)), "s")
-            print("host filter cleanup:", '%1.1f' %(self.cleanup_host_end - self.cleanup_host_start),"s")
-            self.debug_stop_check(self.host_filter_label)
+            if(self.test_mode == "yes"):
+                for item in command_list:
+                    print(item)
+            else:        
+                self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
+                self.host_end = time.time()
+                print("host filter:", '%1.1f' % (self.host_end - self.host_start - (self.cleanup_host_end - self.cleanup_host_start)), "s")
+                print("host filter cleanup:", '%1.1f' %(self.cleanup_host_end - self.cleanup_host_start),"s")
+                self.debug_stop_check(self.host_filter_label)
+                
+
 
     def mp_vector_filter(self):
         self.vector_start = time.time()

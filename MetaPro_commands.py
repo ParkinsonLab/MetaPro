@@ -369,6 +369,8 @@ class mt_pipe_commands:
 
         return COMMANDS_qual
 
+
+
     def create_host_filter_command(self, stage_name, dependency_name):
         subfolder           = os.path.join(self.Output_Path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
@@ -460,28 +462,41 @@ class mt_pipe_commands:
         bwa_hr_filter_paired += os.path.join(host_removal_folder, "pair_2_no_host.fastq") + " "
         bwa_hr_filter_paired += os.path.join(host_removal_folder, "pair_1_host_only.fastq") + " "
         bwa_hr_filter_paired += os.path.join(host_removal_folder, "pair_2_host_only.fastq")
+        
+        bwa_hr_filter_tut_paired = ">&2 echo BWA host-removal PP on paired | "
+        bwa_hr_filter_tut_paired += self.tool_path_obj.Python + " "
+        bwa_hr_filter_tut_paired += self.tool_path_obj.bwa_read_sorter + " "
+        bwa_hr_filter_tut_paired += "paired" + " "
+        bwa_hr_filter_tut_paired += self.tool_path_obj.filter_stringency + " "
+        bwa_hr_filter_tut_paired += os.path.join(host_removal_folder, "paired_on_host.sam") + " "
+        bwa_hr_filter_tut_paired += self.sequence_path_1 + " "
+        bwa_hr_filter_tut_paired += self.sequence_path_2 + " "
+        bwa_hr_filter_tut_paired += os.path.join(host_removal_folder, "pair_1_no_host.fastq") + " "
+        bwa_hr_filter_tut_paired += os.path.join(host_removal_folder, "pair_2_no_host.fastq") + " "
+        bwa_hr_filter_tut_paired += os.path.join(host_removal_folder, "pair_1_host_only.fastq") + " "
+        bwa_hr_filter_tut_paired += os.path.join(host_removal_folder, "pair_2_host_only.fastq")
 
         # blat prep
         make_blast_db_host = ">&2 echo Make BLAST db for host contaminants | "
         make_blast_db_host += self.tool_path_obj.Makeblastdb + " -in " + Host_Contaminants + " -dbtype nucl"
 
-        vsearch_filter_3 = ">&2 echo Convert singletons for BLAT | "
-        vsearch_filter_3 += self.tool_path_obj.vsearch
-        vsearch_filter_3 += " --fastq_filter " + os.path.join(host_removal_folder, "singletons_no_host.fastq")
-        vsearch_filter_3 += " --fastq_ascii " + self.Qual_str
-        vsearch_filter_3 += " --fastaout " + os.path.join(host_removal_folder, "singletons_no_host.fasta")
+        vsearch_filter_s = ">&2 echo Convert singletons for BLAT | "
+        vsearch_filter_s += self.tool_path_obj.vsearch
+        vsearch_filter_s += " --fastq_filter " + os.path.join(host_removal_folder, "singletons_no_host.fastq")
+        vsearch_filter_s += " --fastq_ascii " + self.Qual_str
+        vsearch_filter_s += " --fastaout " + os.path.join(host_removal_folder, "singletons_no_host.fasta")
 
-        vsearch_filter_4 = ">&2 echo Convert pair 1 for BLAT | "
-        vsearch_filter_4 += self.tool_path_obj.vsearch
-        vsearch_filter_4 += " --fastq_filter " + os.path.join(host_removal_folder, "pair_1_no_host.fastq")
-        vsearch_filter_4 += " --fastq_ascii " + self.Qual_str
-        vsearch_filter_4 += " --fastaout " + os.path.join(host_removal_folder, "pair_1_no_host.fasta")
+        vsearch_filter_p1 = ">&2 echo Convert pair 1 for BLAT | "
+        vsearch_filter_p1 += self.tool_path_obj.vsearch
+        vsearch_filter_p1 += " --fastq_filter " + os.path.join(host_removal_folder, "pair_1_no_host.fastq")
+        vsearch_filter_p1 += " --fastq_ascii " + self.Qual_str
+        vsearch_filter_p1 += " --fastaout " + os.path.join(host_removal_folder, "pair_1_no_host.fasta")
 
-        vsearch_filter_5 = ">&2 echo Convert pair 2 for BLAT | "
-        vsearch_filter_5 += self.tool_path_obj.vsearch
-        vsearch_filter_5 += " --fastq_filter " + os.path.join(host_removal_folder, "pair_2_no_host.fastq")
-        vsearch_filter_5 += " --fastq_ascii " + self.Qual_str
-        vsearch_filter_5 += " --fastaout " + os.path.join(host_removal_folder, "pair_2_no_host.fasta")
+        vsearch_filter_p2 = ">&2 echo Convert pair 2 for BLAT | "
+        vsearch_filter_p2 += self.tool_path_obj.vsearch
+        vsearch_filter_p2 += " --fastq_filter " + os.path.join(host_removal_folder, "pair_2_no_host.fastq")
+        vsearch_filter_p2 += " --fastq_ascii " + self.Qual_str
+        vsearch_filter_p2 += " --fastaout " + os.path.join(host_removal_folder, "pair_2_no_host.fasta")
 
         blat_hr_singletons = ">&2 echo BLAT host singletons | "
         blat_hr_singletons += self.tool_path_obj.BLAT + " -noHead -minIdentity=90 -minScore=65 "
@@ -557,7 +572,7 @@ class mt_pipe_commands:
                     samtools_no_host_singletons_bam_to_fastq,
                     samtools_host_singletons_bam_to_fastq,
                     make_blast_db_host,
-                    vsearch_filter_3,
+                    vsearch_filter_s,
                     blat_hr_singletons,
                     hr_singletons,
                     copy_singletons
@@ -574,9 +589,9 @@ class mt_pipe_commands:
                     bwa_hr_paired,
                     bwa_hr_filter_paired,
                     make_blast_db_host,
-                    vsearch_filter_3,
-                    vsearch_filter_4,
-                    vsearch_filter_5,
+                    vsearch_filter_s,
+                    vsearch_filter_p1,
+                    vsearch_filter_p2,
                     blat_hr_singletons,
                     blat_hr_pair_1,
                     blat_hr_pair_2,
@@ -587,8 +602,8 @@ class mt_pipe_commands:
                     copy_pair_2
                 ]
         else:
-            print(dt.today(), "Host filter operating in tutorial-mode")
             if self.read_mode == "single":
+                print(dt.today(), "Host filter operating in tutorial-mode: SINGLE")
                 COMMANDS_host = [
                     copy_host,
                     bwa_hr_prep,
@@ -598,35 +613,56 @@ class mt_pipe_commands:
                     samtools_no_host_singletons_bam_to_fastq,
                     samtools_host_singletons_bam_to_fastq,
                     make_blast_db_host,
-                    vsearch_filter_3,
+                    vsearch_filter_s,
                     blat_hr_singletons,
                     hr_singletons,
                     copy_singletons
                 ]
             elif self.read_mode == "paired":
-                COMMANDS_host = [
-                    copy_host,
-                    bwa_hr_prep,
-                    samtools_hr_prep,
-                    bwa_hr_tut_singletons,
-                    samtools_hr_singletons_sam_to_bam,
-                    samtools_no_host_singletons_bam_to_fastq,
-                    samtools_host_singletons_bam_to_fastq,
-                    bwa_hr_tut_paired,
-                    bwa_hr_filter_paired,
-                    make_blast_db_host,
-                    vsearch_filter_3,
-                    vsearch_filter_4,
-                    vsearch_filter_5,
-                    blat_hr_singletons,
-                    blat_hr_pair_1,
-                    blat_hr_pair_2,
-                    hr_singletons,
-                    hr_paired,
-                    copy_singletons,
-                    copy_pair_1,
-                    copy_pair_2
-                ]
+                print(dt.today(), "Host filter operating in tutorial-mode: PAIRED")
+                if(self.sequence_single == ""):
+                    COMMANDS_host = [
+                        copy_host,
+                        bwa_hr_prep,
+                        samtools_hr_prep,
+                        bwa_hr_tut_paired,
+                        bwa_hr_filter_tut_paired,
+                        make_blast_db_host,
+                        vsearch_filter_p1,
+                        vsearch_filter_p2,
+                        blat_hr_pair_1,
+                        blat_hr_pair_2,
+                        hr_paired,
+                        copy_pair_1,
+                        copy_pair_2
+                    ]
+
+                else:
+                    COMMANDS_host = [
+                        copy_host,
+                        bwa_hr_prep,
+                        samtools_hr_prep,
+                        bwa_hr_tut_singletons,
+                        samtools_hr_singletons_sam_to_bam,
+                        samtools_no_host_singletons_bam_to_fastq,
+                        samtools_host_singletons_bam_to_fastq,
+                        bwa_hr_tut_paired,
+                        bwa_hr_filter_paired,
+                        make_blast_db_host,
+                        vsearch_filter_s,
+                        vsearch_filter_p1,
+                        vsearch_filter_p2,
+                        blat_hr_singletons,
+                        blat_hr_pair_1,
+                        blat_hr_pair_2,
+                        hr_singletons,
+                        hr_paired,
+                        copy_singletons,
+                        copy_pair_1,
+                        copy_pair_2
+                    ]
+                
+            
 
                 
         return COMMANDS_host
