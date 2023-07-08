@@ -13,7 +13,7 @@ def import_fastq(file_name_in):
     fastq_df = pd.read_csv(file_name_in, header=None, names=[None], sep="\n", skip_blank_lines = False, quoting=3)
     fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
     fastq_df.columns = ["ID", "sequences", "junk", "quality"]
-    fastq_df["ID"] = fastq_df["ID"].apply(lambda x: x.strip("@"))
+    fastq_df["ID"] = fastq_df["ID"].apply(lambda x: x.strip("@").split(" ")[0])
     return fastq_df
 
 def import_samfile(samfile, filter_stringency):
