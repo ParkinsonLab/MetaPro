@@ -254,7 +254,7 @@ class tool_path_obj:
                 print(dt.today(), "Error: no fasta file found.  BLAT accepts .fasta extensions only")
                 sys.exit()
 
-    def __init__ (self, config_path):
+    def __init__ (self, config_path, output_path):
         print("CHECKING CONFIG")
         if config_path:
             config = ConfigParser() #change this to ex
@@ -268,6 +268,7 @@ class tool_path_obj:
         tool_path               = "/pipeline_tools/"
         database_path           = "/project/j/jparkin/Lab_Databases/"
         custom_database_path    = "/pipeline/custom_databases/"
+        self.output_path        = output_path
         
 
         
@@ -693,3 +694,115 @@ class tool_path_obj:
         self.GA_pre_scan_get_lib        = self.value_assignment(config, "code", "ga_pre_scan_get_lib", os.path.join(script_path, "ga_pre_scan_get_libs.py"), "path")
         self.GA_pre_scan_assemble_lib   = self.value_assignment(config, "code", "ga_pre_scan_assemble_lib", os.path.join(script_path, "ga_pre_scan_assemble_libs.py"), "path")
         
+
+        #---------------------------------------------------------------------------------------
+        # Folder names + paths
+
+
+        self.qc_top_path            = os.path.join(self.output_folder_path, self.quality_filter_label)
+        self.qc_data_path           = os.path.join(self.qc_top_path, "data")
+        self.qc_sort_path           = os.path.join(self.qc_data_path, "0_sorted_raw_input")
+        self.qc_adaptor_path        = os.path.join(self.qc_data_path, "1_adapter_removal")
+        self.qc_tag_path            = os.path.join(self.qc_data_path, "2_tag_remove")
+        self.qc_merge_path          = os.path.join(self.qc_data_path, "3_vsearch_pair_merge")
+        self.qc_filter_path         = os.path.join(self.qc_data_path, "4_quality_filter")
+        self.qc_orphan_path         = os.path.join(self.qc_data_path, "5_orphan_read_filter")
+        self.qc_cdhit_path          = os.path.join(self.qc_data_path, "6_remove_duplicates")
+        self.qc_final_path          = os.path.join(self.qc_top_path, "final_results")
+
+        self.host_top_path          = os.path.join(self.output_folder_path, self.host_filter_label)
+        self.host_data_path         = os.path.join(self.host_top_path, "data")
+        self.host_bwa_path          = os.path.join(self.host_data_path, "0_remove_host")
+        self.host_blat_path         = os.path.join(self.host_data_path, "1_blat_host")
+        self.host_final_path        = os.path.join(self.host_top_path, "final_results")
+
+        self.vector_top_path        = os.path.join(self.output_folder_path, self.vector_filter_label)
+        self.vector_data_path       = os.path.join(self.vector_top_path, "data")
+        self.vector_bwa_path        = os.path.join(self.vector_data_path, "0_vector_removal")
+        self.vector_blat_path       = os.path.join(self.vector_data_path, "1_blat_containment_vr")
+        self.vector_final_path      = os.path.join(self.vector_top_path, "final_results")
+
+        self.rRNA_top_path          = os.path.join(self.output_folder_path, self.rRNA_filter_label)
+        self.rRNA_data_path         = os.path.join(self.rRNA_top_path, "data")
+        self.rRNA_p1_fq_path        = os.path.join(self.rRNA_data_path, "pair_1_fastq")
+        self.rRNA_p1_fa_path        = os.path.join(self.rRNA_data_path, "pair_1_fasta")
+        self.rRNA_p1_bar_path       = os.path.join(self.rRNA_data_path, "pair_1_barrnap")
+        self.rRNA_p1_bar_mRNA_path  = os.path.join(self.rRNA_data_path, "pair_1_barrnap_mRNA")
+        self.rRNA_p1_bar_tRNA_path  = os.path.join(self.rRNA_data_path, "pair_1_barrnap_other")
+        self.rRNA_p1_bar_fa_path    = os.path.join(self.rRNA_data_path, "pair_1_barrnap_mRNA_fasta")
+        self.rRNA_p1_inf_path       = os.path.join(self.rRNA_data_path, "pair_1_infernal")
+        self.rRNA_p1_inf_mRNA_path  = os.path.join(self.rRNA_data_path, "pair_1_infernal_mRNA")
+        self.rRNA_p1_inf_tRNA_path  = os.path.join(self.rRNA_data_path, "pair_1_infernal_other") 
+        self.rRNA_p2_fq_path        = os.path.join(self.rRNA_data_path, "pair_2_fastq")
+        self.rRNA_p2_fa_path        = os.path.join(self.rRNA_data_path, "pair_2_fasta")
+        self.rRNA_p2_bar_path       = os.path.join(self.rRNA_data_path, "pair_2_barrnap")
+        self.rRNA_p2_bar_mRNA_path  = os.path.join(self.rRNA_data_path, "pair_2_barrnap_mRNA")
+        self.rRNA_p2_bar_tRNA_path  = os.path.join(self.rRNA_data_path, "pair_2_barrnap_other")
+        self.rRNA_p2_bar_fa_path    = os.path.join(self.rRNA_data_path, "pair_2_barrnap_mRNA_fasta")
+        self.rRNA_p2_inf_path       = os.path.join(self.rRNA_data_path, "pair_2_infernal")
+        self.rRNA_p2_inf_mRNA_path  = os.path.join(self.rRNA_data_path, "pair_2_infernal_mRNA")
+        self.rRNA_p2_inf_tRNA_path  = os.path.join(self.rRNA_data_path, "pair_2_infernal_other")
+        self.rRNA_s_fq_path         = os.path.join(self.rRNA_data_path, "singletons_fastq")
+        self.rRNA_s_fa_path         = os.path.join(self.rRNA_data_path, "singletons_fasta")
+        self.rRNA_s_bar_path        = os.path.join(self.rRNA_data_path, "singletons_barrnap")
+        self.rRNA_s_bar_mRNA_path   = os.path.join(self.rRNA_data_path, "singletons_barrnap_mRNA")
+        self.rRNA_s_bar_tRNA_path   = os.path.join(self.rRNA_data_path, "singletons_barrnap_other")
+        self.rRNA_s_bar_fa_path     = os.path.join(self.rRNA_data_path, "singletons_barrnap_mRNA_fasta")
+        self.rRNA_s_inf_path        = os.path.join(self.rRNA_data_path, "singletons_infernal")
+        self.rRNA_s_inf_mRNA_path   = os.path.join(self.rRNA_data_path, "singletons_infernal_mRNA")
+        self.rRNA_s_inf_tRNA_path   = os.path.join(self.rRNA_data_path, "singletons_infernal_other")        
+        self.rRNA_final_path        = os.path.join(self.rRNA_top_path, "final_results")
+        self.rRNA_final_mRNA_path   = os.path.join(self.rRNA_final_path, "mRNA")
+        self.rRNA_final_tRNA_path   = os.path.join(self.rRNA_final_path, "other")
+        
+        self.repop_top_path         = os.path.join(self.output_folder_path, self.repop_job_label)
+        self.repop_data_path        = os.path.join(self.repop_top_path, "data")
+        self.repop_work_path        = os.path.join(self.repop_data_path, "0_repop")
+        self.repop_final_path       = os.path.join(self.repop_top_path, "final_results")
+
+
+        self.contigs_top_path       = os.path.join(self.output_folder_path, self.assemble_contigs_label)
+        self.contigs_data_path      = os.path.join(self.contigs_top_path, "data")
+        self.contigs_spades_path    = os.path.join(self.contigs_data_path, "0_spades")
+        self.contigs_mgm_path       = os.path.join(self.contigs_data_path, "1_mgm")
+        self.contigs_bwa_path       = os.path.join(self.contigs_data_path, "2_bwa_align")
+        self.contigs_map_path       = os.path.join(self.contigs_data_path, "3_mapped_reads")
+        self.contigs_final_path     = os.path.join(contigs_top_path, "final_results")
+
+
+        self.GA_pre_scan_path       = os.path.join(self.output_folder_path, self.GA_pre_scan_label)
+        self.GA_split_path          = os.path.join(self.output_folder_path, self.GA_split_label)
+        self.GA_BWA_path            = os.path.join(self.output_folder_path, self.GA_BWA_label)
+        self.GA_BLAT_path           = os.path.join(self.output_folder_path, self.GA_BLAT_label)
+        self.GA_DIAMOND_path        = os.path.join(self.output_folder_path, self.GA_DIAMOND_label)
+        self.ga_final_merge_path    = os.path.join(self.output_folder_path, self.GA_final_merge_label)
+        self.TA_path                = os.path.join(self.output_folder_path, self.ta_label)
+        self.ec_path                = os.path.join(self.output_folder_path, self.ec_label)
+        self.network_path           = os.path.join(self.output_folder_path, self.output_label)
+        
+
+        #working folders
+        self.GA_pre_scan_data_folder= os.path.join(self.GA_pre_scan_label, "data")
+        self.GA_pre_scan_jobs_folder= os.path.join(self.GA_pre_scan_data_folder, "jobs")
+        self.GA_split_data_folder   = os.path.join(self.GA_split_label, "data")
+        self.GA_split_jobs_folder   = os.path.join(self.GA_split_data_folder, "jobs")
+        self.GA_BWA_data_folder     = os.path.join(self.GA_BWA_label, "data")
+        self.GA_BWA_jobs_folder     = os.path.join(self.GA_BWA_data_folder, "jobs")
+        self.GA_BLAT_data_folder    = os.path.join(self.GA_BLAT_path, "data")
+        self.GA_BLAT_jobs_folder    = os.path.join(self.GA_BLAT_data_folder, "jobs")
+        self.GA_DIAMOND_data_folder = os.path.join(self.GA_DIAMOND_path, "data")
+        self.GA_DIAMOND_jobs_folder = os.path.join(self.GA_DIAMOND_data_folder, "jobs")
+        self.EC_data_folder         = os.path.join(self.ec_path, "data")
+        self.EC_jobs_folder         = os.path.join(self.EC_data_folder, "jobs")
+        self.TA_data_folder         = os.path.join(self.TA_path, "data")
+        self.TA_jobs_folder         = os.path.join(self.TA_data_folder, "jobs")
+        
+        self.GA_pre_scan_final_path = os.path.join(self.GA_pre_scan_path, "final_results")
+        
+        self.ec_detect_path         = os.path.join(self.EC_data_folder, "0_detect")
+        self.ec_priam_path          = os.path.join(self.EC_data_folder, "1_priam")
+        self.ec_split_path          = os.path.join(self.EC_data_folder, "1A_priam_split")
+        self.ec_diamond_path        = os.path.join(self.EC_data_folder, "2_diamond")
+        self.ec_detect_out          = os.path.join(self.EC_jobs_folder, "ec_detect")
+        self.ec_priam_out           = os.path.join(self.EC_jobs_folder, "ec_priam_cat")
+        self.ec_diamond_out         = os.path.join(self.EC_jobs_folder, "ec_diamond")

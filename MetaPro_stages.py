@@ -296,50 +296,6 @@ class mp_stage:
         self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword=self.tutorial_string, sequence_path_1=self.pair_1_path, sequence_path_2=self.pair_2_path, sequence_single=self.single_path, sequence_contigs = self.contig_path)
     
 
-        #--------------------------------------------------------
-        #working paths
-        self.quality_path           = os.path.join(self.output_folder_path, self.quality_filter_label)
-        self.host_path              = os.path.join(self.output_folder_path, self.host_filter_label)
-        self.vector_path            = os.path.join(self.output_folder_path, self.vector_filter_label)
-        self.rRNA_filter_path       = os.path.join(self.output_folder_path, self.rRNA_filter_label)
-        self.repop_path             = os.path.join(self.output_folder_path, self.repop_job_label)
-        self.assemble_contigs_path  = os.path.join(self.output_folder_path, self.assemble_contigs_label)
-        self.GA_pre_scan_path       = os.path.join(self.output_folder_path, self.GA_pre_scan_label)
-        self.GA_split_path          = os.path.join(self.output_folder_path, self.GA_split_label)
-        self.GA_BWA_path            = os.path.join(self.output_folder_path, self.GA_BWA_label)
-        self.GA_BLAT_path           = os.path.join(self.output_folder_path, self.GA_BLAT_label)
-        self.GA_DIAMOND_path        = os.path.join(self.output_folder_path, self.GA_DIAMOND_label)
-        self.ga_final_merge_path    = os.path.join(self.output_folder_path, self.GA_final_merge_label)
-        self.TA_path                = os.path.join(self.output_folder_path, self.ta_label)
-        self.ec_path                = os.path.join(self.output_folder_path, self.ec_label)
-        self.network_path           = os.path.join(self.output_folder_path, self.output_label)
-        
-
-        #working folders
-        self.GA_pre_scan_data_folder= os.path.join(self.GA_pre_scan_label, "data")
-        self.GA_pre_scan_jobs_folder= os.path.join(self.GA_pre_scan_data_folder, "jobs")
-        self.GA_split_data_folder   = os.path.join(self.GA_split_label, "data")
-        self.GA_split_jobs_folder   = os.path.join(self.GA_split_data_folder, "jobs")
-        self.GA_BWA_data_folder     = os.path.join(self.GA_BWA_label, "data")
-        self.GA_BWA_jobs_folder     = os.path.join(self.GA_BWA_data_folder, "jobs")
-        self.GA_BLAT_data_folder    = os.path.join(self.GA_BLAT_path, "data")
-        self.GA_BLAT_jobs_folder    = os.path.join(self.GA_BLAT_data_folder, "jobs")
-        self.GA_DIAMOND_data_folder = os.path.join(self.GA_DIAMOND_path, "data")
-        self.GA_DIAMOND_jobs_folder = os.path.join(self.GA_DIAMOND_data_folder, "jobs")
-        self.EC_data_folder         = os.path.join(self.ec_path, "data")
-        self.EC_jobs_folder         = os.path.join(self.EC_data_folder, "jobs")
-        self.TA_data_folder         = os.path.join(self.TA_path, "data")
-        self.TA_jobs_folder         = os.path.join(self.TA_data_folder, "jobs")
-        
-        self.GA_pre_scan_final_path = os.path.join(self.GA_pre_scan_path, "final_results")
-        
-        self.ec_detect_path         = os.path.join(self.EC_data_folder, "0_detect")
-        self.ec_priam_path          = os.path.join(self.EC_data_folder, "1_priam")
-        self.ec_split_path          = os.path.join(self.EC_data_folder, "1A_priam_split")
-        self.ec_diamond_path        = os.path.join(self.EC_data_folder, "2_diamond")
-        self.ec_detect_out          = os.path.join(self.EC_jobs_folder, "ec_detect")
-        self.ec_priam_out           = os.path.join(self.EC_jobs_folder, "ec_priam_cat")
-        self.ec_diamond_out         = os.path.join(self.EC_jobs_folder, "ec_diamond")
         
         #special contig-bypasser logic vars
         self.contigs_present = True  #for the contig/assembly bypasser
