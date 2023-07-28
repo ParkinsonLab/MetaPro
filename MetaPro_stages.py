@@ -33,8 +33,9 @@ class mp_stage:
         self.tutorial_string = tutorial_mode_string
         
         self.output_folder_path = output_folder_path
-        self.mp_util = mpu.mp_util(self.output_folder_path, config_path)
-        self.paths = mpp.tool_path_obj(config_path)
+        
+        self.paths = mpp.tool_path_obj(config_path, self.output_folder_path)
+        self.mp_util = mpu.mp_util(self.output_folder_path, self.paths)
         self.GA_DB_mode = self.paths.GA_DB_mode
         self.segmented_chocophlan_flag = True
         if(self.paths.DNA_DB.endswith(".fasta")):
@@ -142,7 +143,7 @@ class mp_stage:
 
 
 
-        self.quality_filter_label                   = self.paths.quality_filter_label
+        self.paths.qc_label                   = self.paths.quality_filter_label
         self.host_filter_label                      = self.paths.host_filter_label
         self.vector_filter_label                    = self.paths.vector_filter_label
         self.rRNA_filter_label                      = self.paths.rRNA_filter_label
@@ -293,7 +294,7 @@ class mp_stage:
         #if self.read_mode == "single":
         #    self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword=self.tutorial_string, sequence_path_1=self.pair_1_path, sequence_path_2=self.pair_2_path, sequence_single=self.single_path, sequence_contigs = self.contig_path)
         #elif self.read_mode == "paired":
-        self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword=self.tutorial_string, sequence_path_1=self.pair_1_path, sequence_path_2=self.pair_2_path, sequence_single=self.single_path, sequence_contigs = self.contig_path)
+        self.commands = mpcom.mt_pipe_commands(self.no_host, self.paths, Quality_score=self.quality_encoding, tutorial_keyword=self.tutorial_string, sequence_path_1=self.pair_1_path, sequence_path_2=self.pair_2_path, sequence_single=self.single_path, sequence_contigs = self.contig_path)
     
 
         
@@ -349,19 +350,19 @@ class mp_stage:
     # main calls
     def mp_quality_filter(self):
         self.quality_start = time.time()
-        command_list = self.commands.create_quality_control_command(self.quality_filter_label)
-        self.cleanup_quality_start, self.cleanup_quality_end = self.mp_util.launch_stage_simple(self.quality_filter_label, self.quality_path, self.commands, command_list, self.keep_all, self.keep_quality)
+        command_list = self.commands.create_quality_control_command()
+        self.cleanup_quality_start, self.cleanup_quality_end = self.mp_util.launch_stage_simple(self.paths.qc_label, self.quality_path, self.commands, command_list, self.keep_all, self.keep_quality)
         self.quality_end = time.time()
         print("quality filter:", '%1.1f' % (self.quality_end - self.quality_start - (self.cleanup_quality_end - self.cleanup_quality_start)), "s")
         print("quality filter cleanup:", '%1.1f' %(self.cleanup_quality_end - self.cleanup_quality_start), "s")
-        self.debug_stop_check(self.quality_filter_label)
+        self.debug_stop_check(self.paths.qc_label)
         
 
     def mp_host_filter(self):
         if not self.no_host:
             self.host_start = time.time()
             #if not check_where_resume(host_path, None, self.quality_path):
-            command_list = self.commands.create_host_filter_command(self.host_filter_label, self.quality_filter_label)
+            command_list = self.commands.create_host_filter_command()
             if(self.test_mode == "yes"):
                 for item in command_list:
                     print(item)
@@ -380,7 +381,7 @@ class mp_stage:
         if self.no_host:
             #get dep args from quality filter
             #if not check_where_resume(vector_path, None, self.quality_path):
-            command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.quality_filter_label)
+            command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.paths.qc_label)
             self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.keep_all, self.keep_vector)
 
         else:
@@ -694,13 +695,13 @@ class mp_stage:
         #if not check_where_resume(repop_job_path, None, rRNA_filter_path):
         if self.mp_util.check_bypass_log(self.output_folder_path, self.repop_job_label):
             job_name = self.repop_job_label
-            command_list = self.commands.create_repop_command_v2_step_1(self.repop_job_label, self.quality_filter_label, self.rRNA_filter_label)
+            command_list = self.commands.create_repop_command_v2_step_1(self.repop_job_label, self.paths.qc_label, self.rRNA_filter_label)
             self.mp_util.subdivide_and_launch(self.repop_job_delay, self.repop_mem_threshold, self.repop_job_limit, self.repop_job_label, job_name, self.commands, command_list)
             self.mp_util.wait_for_mp_store()
             
             if(self.read_mode == "paired"):
                 job_name = self.repop_job_label
-                command_list = self.commands.create_repop_command_v2_step_2(self.repop_job_label, self.quality_filter_label, self.rRNA_filter_label)
+                command_list = self.commands.create_repop_command_v2_step_2(self.repop_job_label, self.paths.qc_label, self.rRNA_filter_label)
                 self.mp_util.subdivide_and_launch(self.repop_job_delay, self.repop_mem_threshold, self.repop_job_limit, self.repop_job_label, job_name, self.commands, command_list)
                 self.mp_util.wait_for_mp_store()
             
@@ -1747,36 +1748,36 @@ class mp_stage:
                 print(dt.today(), "repopulating hosts for output")
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_singletons_label):
                     job_name = self.output_unique_hosts_singletons_label
-                    command_list = self.commands.create_output_unique_hosts_singletons_command(self.output_label, self.quality_filter_label, self.host_filter_label)
+                    command_list = self.commands.create_output_unique_hosts_singletons_command(self.output_label, self.paths.qc_label, self.host_filter_label)
                     self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
                 
                 if(self.read_mode == "paired"):
                     if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_pair_1_label):
                         job_name = self.output_unique_hosts_pair_1_label
-                        command_list = self.commands.create_output_unique_hosts_pair_1_command(self.output_label, self.quality_filter_label, self.host_filter_label)
+                        command_list = self.commands.create_output_unique_hosts_pair_1_command(self.output_label, self.paths.qc_label, self.host_filter_label)
                         self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
                         
                     if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_pair_2_label):
                         job_name = self.output_unique_hosts_pair_2_label
-                        command_list = self.commands.create_output_unique_hosts_pair_2_command(self.output_label, self.quality_filter_label, self.host_filter_label)
+                        command_list = self.commands.create_output_unique_hosts_pair_2_command(self.output_label, self.paths.qc_label, self.host_filter_label)
                         self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
                         
                         
             #repop vectors
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_vectors_singletons_label):
                 job_name = self.output_unique_vectors_singletons_label
-                command_list = self.commands.create_output_unique_vectors_singletons_command(self.output_label, self.quality_filter_label, self.host_filter_label, self.vector_filter_label)
+                command_list = self.commands.create_output_unique_vectors_singletons_command(self.output_label, self.paths.qc_label, self.host_filter_label, self.vector_filter_label)
                 self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
             
             if(self.read_mode == "paired"):
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_vectors_pair_1_label):
                     job_name = self.output_unique_vectors_pair_1_label
-                    command_list = self.commands.create_output_unique_vectors_pair_1_command(self.output_label, self.quality_filter_label, self.host_filter_label, self.vector_filter_label)
+                    command_list = self.commands.create_output_unique_vectors_pair_1_command(self.output_label, self.paths.qc_label, self.host_filter_label, self.vector_filter_label)
                     self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
                     
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_vectors_pair_2_label):
                     job_name = self.output_unique_vectors_pair_2_label
-                    command_list = self.commands.create_output_unique_vectors_pair_2_command(self.output_label, self.quality_filter_label, self.host_filter_label, self.vector_filter_label)
+                    command_list = self.commands.create_output_unique_vectors_pair_2_command(self.output_label, self.paths.qc_label, self.host_filter_label, self.vector_filter_label)
                     self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
                     
             print(dt.today(), "output report phase 1 launched.  waiting for sync")
@@ -1815,13 +1816,13 @@ class mp_stage:
             #Phase 3
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_read_count_label):
                 job_name = self.output_read_count_label
-                command_list = self.commands.create_output_read_count_command(self.output_label, self.quality_filter_label, self.repop_job_label, self.GA_final_merge_label, self.ec_label)
+                command_list = self.commands.create_output_read_count_command(self.output_label, self.paths.qc_label, self.repop_job_label, self.GA_final_merge_label, self.ec_label)
                 self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
                                 
 
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_per_read_scores_label):
                 job_name = self.output_per_read_scores_label
-                command_list = self.commands.create_output_per_read_scores_command(self.output_label, self.quality_filter_label)
+                command_list = self.commands.create_output_per_read_scores_command(self.output_label, self.paths.qc_label)
                 self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
                 
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_ec_heatmap_label):

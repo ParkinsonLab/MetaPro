@@ -467,7 +467,7 @@ class tool_path_obj:
         # Labels.  
         # why? to change them during integration + new feature testing
 
-        quality_filter_label_default                    = "quality_filter"
+        qc_label_default                    = "quality_filter"
         host_filter_label_default                       = "host_filter"
         vector_filter_label_default                     = "vector_filter"
         rRNA_filter_label_default                       = "rRNA_filter"
@@ -523,7 +523,7 @@ class tool_path_obj:
         output_read_count_label_default                 = "output_read_count"
         
 
-        self.quality_filter_label                   = self.value_assignment(config, "Labels", "quality_filter",                     quality_filter_label_default, "string")
+        self.qc_label                   = self.value_assignment(config, "Labels", "quality_filter",                     qc_label_default, "string")
         self.host_filter_label                      = self.value_assignment(config, "Labels", "host_filter",                        host_filter_label_default, "string")
         self.vector_filter_label                    = self.value_assignment(config, "Labels", "vector_filter",                      vector_filter_label_default, "string")
         self.rRNA_filter_label                      = self.value_assignment(config, "Labels", "rRNA_filter",                        rRNA_filter_label_default, "string")
@@ -699,10 +699,10 @@ class tool_path_obj:
         # Folder names + paths
 
 
-        self.qc_top_path                = os.path.join(self.output_folder_path, self.quality_filter_label)
+        self.qc_top_path                = os.path.join(self.output_path, self.qc_label)
         self.qc_data_path               = os.path.join(self.qc_top_path, "data")
         self.qc_sort_path               = os.path.join(self.qc_data_path, "0_sorted_raw_input")
-        self.qc_adaptor_path            = os.path.join(self.qc_data_path, "1_adapter_removal")
+        self.qc_adapter_path            = os.path.join(self.qc_data_path, "1_adapter_removal")
         self.qc_tag_path                = os.path.join(self.qc_data_path, "2_tag_remove")
         self.qc_merge_path              = os.path.join(self.qc_data_path, "3_vsearch_pair_merge")
         self.qc_filter_path             = os.path.join(self.qc_data_path, "4_quality_filter")
@@ -710,19 +710,19 @@ class tool_path_obj:
         self.qc_cdhit_path              = os.path.join(self.qc_data_path, "6_remove_duplicates")
         self.qc_final_path              = os.path.join(self.qc_top_path, "final_results")
 
-        self.host_top_path          = os.path.join(self.output_folder_path, self.host_filter_label)
+        self.host_top_path          = os.path.join(self.output_path, self.host_filter_label)
         self.host_data_path         = os.path.join(self.host_top_path, "data")
         self.host_bwa_path          = os.path.join(self.host_data_path, "0_remove_host")
         self.host_blat_path         = os.path.join(self.host_data_path, "1_blat_host")
         self.host_final_path        = os.path.join(self.host_top_path, "final_results")
 
-        self.vector_top_path        = os.path.join(self.output_folder_path, self.vector_filter_label)
+        self.vector_top_path        = os.path.join(self.output_path, self.vector_filter_label)
         self.vector_data_path       = os.path.join(self.vector_top_path, "data")
         self.vector_bwa_path        = os.path.join(self.vector_data_path, "0_vector_removal")
         self.vector_blat_path       = os.path.join(self.vector_data_path, "1_blat_containment_vr")
         self.vector_final_path      = os.path.join(self.vector_top_path, "final_results")
 
-        self.rRNA_top_path          = os.path.join(self.output_folder_path, self.rRNA_filter_label)
+        self.rRNA_top_path          = os.path.join(self.output_path, self.rRNA_filter_label)
         self.rRNA_data_path         = os.path.join(self.rRNA_top_path, "data")
         self.rRNA_p1_fq_path        = os.path.join(self.rRNA_data_path, "pair_1_fastq")
         self.rRNA_p1_fa_path        = os.path.join(self.rRNA_data_path, "pair_1_fasta")
@@ -755,13 +755,13 @@ class tool_path_obj:
         self.rRNA_final_mRNA_path   = os.path.join(self.rRNA_final_path, "mRNA")
         self.rRNA_final_tRNA_path   = os.path.join(self.rRNA_final_path, "other")
         
-        self.repop_top_path         = os.path.join(self.output_folder_path, self.repop_job_label)
+        self.repop_top_path         = os.path.join(self.output_path, self.repop_job_label)
         self.repop_data_path        = os.path.join(self.repop_top_path, "data")
         self.repop_work_path        = os.path.join(self.repop_data_path, "0_repop")
         self.repop_final_path       = os.path.join(self.repop_top_path, "final_results")
 
 
-        self.contigs_top_path           = os.path.join(self.output_folder_path, self.assemble_contigs_label)
+        self.contigs_top_path           = os.path.join(self.output_path, self.assemble_contigs_label)
         self.contigs_data_path          = os.path.join(self.contigs_top_path, "data")
         self.contigs_spades_path        = os.path.join(self.contigs_data_path, "0_spades")
         self.contigs_mgm_path           = os.path.join(self.contigs_data_path, "1_mgm")
@@ -770,7 +770,7 @@ class tool_path_obj:
         self.contigs_final_path         = os.path.join(contigs_top_path, "final_results")
 
 
-        self.GA_pre_scan_top_path       = os.path.join(self.output_folder_path, self.GA_pre_scan_label)
+        self.GA_pre_scan_top_path       = os.path.join(self.output_path, self.GA_pre_scan_label)
         self.GA_pre_scan_data_path      = os.path.join(self.GA_pre_scan_top_path, "data")
         self.GA_pre_scan_jobs_path      = os.path.join(self.GA_pre_scan_top_path, "jobs")
         self.GA_pre_scan_kraken_path    = os.path.join(self.GA_pre_scan_data_path, "1_kraken2")
@@ -779,7 +779,7 @@ class tool_path_obj:
         self.GA_pre_scan_libs_path      = os.path.join(self.GA_pre_scan_data_path, "4_libs")
         self.GA_pre_scan_final_path     = os.path.join(self.GA_pre_scan_top_path, "final_results")
 
-        self.GA_split_top_path      = os.path.join(self.output_folder_path, self.GA_split_label)
+        self.GA_split_top_path      = os.path.join(self.output_path, self.GA_split_label)
         self.GA_split_data_path     = os.path.join(self.GA_split_top_path, "data")
         self.GA_split_jobs_path     = os.path.join(self.GA_split_top_path, "jobs")
         self.GA_split_p1_path       = os.path.join(self.GA_split_data_path, "pair_1")
@@ -788,7 +788,7 @@ class tool_path_obj:
         self.GA_split_s_path        = os.path.join(self.GA_split_data_path, "contigs")
         self.GA_split_final_path    = os.path.join(self.GA_split_top_path, "final_result")
 
-        self.GA_BWA_top_path        = os.path.join(self.output_folder_path, self.GA_BWA_label)
+        self.GA_BWA_top_path        = os.path.join(self.output_path, self.GA_BWA_label)
         self.GA_BWA_data_path       = os.path.join(self.GA_BWA_top_path, "data")
         self.GA_BWA_jobs_path       = os.path.join(self.GA_BWA_top_path, "jobs")
         self.GA_BWA_split_path      = os.path.join(self.GA_BWA_data_path, "0_read_split")
@@ -796,26 +796,26 @@ class tool_path_obj:
         self.GA_BWA_pp_path         = os.path.join(self.GA_BWA_data_path, "2_bwa_pp")
         self.GA_BWA_final_path      = os.path.join(self.GA_BWA_top_path, "final_results")
 
-        self.GA_BLAT_top_path           = os.path.join(self.output_folder_path, self.GA_BLAT_label)
+        self.GA_BLAT_top_path           = os.path.join(self.output_path, self.GA_BLAT_label)
         self.GA_BLAT_data_path      = os.path.join(self.GA_BLAT_top_path, "data")
         self.GA_BLAT_jobs_path      = os.path.join(self.GA_BLAT_top_path, "jobs")
         self.GA_BLAT_run_path       = os.path.join(self.GA_BLAT_data_path, "0_blat")
         self.GA_BLAT_pp_path        = os.path.join(self.GA_BLAT_data_path, "1_pp")
         self.GA_BLAT_final_path     = os.path.join(self.GA_BLAT_top_path, "final_results")
 
-        self.GA_DMD_top_path        = os.path.join(self.output_folder_path, self.GA_DMD_label)
+        self.GA_DMD_top_path        = os.path.join(self.output_path, self.GA_DMD_label)
         self.GA_DMD_data_path       = os.path.join(self.GA_DMD_top_path, "data")
         self.GA_DMD_jobs_path       = os.path.join(self.GA_DMD_top_path, "jobs")
         self.GA_DMD_tool_path       = os.path.join(self.GA_DMD_data_path, "0_dmd")
         self.GA_DMD_temp_path       = os.path.join(self.GA_DMD_tool_path, "temp")
         self.GA_DMD_final_path      = os.path.join(self.GA_DMD_top_path, "final_results")
 
-        self.GA_merge_top_path      = os.path.join(self.output_folder_path, self.GA_merge_label)
+        self.GA_merge_top_path      = os.path.join(self.output_path, self.GA_merge_label)
         self.GA_merge_data_path     = os.path.join(self.GA_merge_top_path, "data")
         self.GA_merge_jobs_path     = os.path.join(self.GA_merge_top_path, "jobs")
         self.GA_merge_final_path    = os.path.join(self.GA_merge_top_path, "final_results")
 
-        self.TA_top_path            = os.path.join(self.output_folder_path, self.ta_label)
+        self.TA_top_path            = os.path.join(self.output_path, self.ta_label)
         self.TA_data_path           = os.path.join(self.TA_top_path, "data")
         self.TA_jobs_path           = os.path.join(self.TA_top_path, "jobs")
         self.TA_ga_path             = os.path.join(self.TA_data_path, "0_gene_taxa")
@@ -824,7 +824,7 @@ class tool_path_obj:
         self.TA_wevote_path         = os.path.join(self.TA_data_path, "3_wevote")
         self.TA_final_path          = os.path.join(self.TA_top_path, "final_results")
 
-        self.EC_top_path            = os.path.join(self.output_folder_path, self.EC_label)
+        self.EC_top_path            = os.path.join(self.output_path, self.EC_label)
         self.EC_data_path           = os.path.join(self.EC_top_path, "data")
         self.EC_jobs_path           = os.path.join(self.EC_top_path, "jobs")
         self.EC_detect_path         = os.path.join(self.EC_data_path, "0_detect")
@@ -832,7 +832,7 @@ class tool_path_obj:
         self.EC_dmd_path            = os.path.join(self.EC_data_path, "2_diamond")
         self.EC_final_path          = os.path.join(self.EC_top_path, "final_results")
 
-        self.reports_top_path       = os.path.join(self.output_folder_path, self.output_label)
+        self.reports_top_path       = os.path.join(self.output_path, self.output_label)
         self.reports_data_path      = os.path.join(self.reports_top_path, "data")
         self.reports_jobs_path      = os.path.join(self.reports_top_path, "jobs")
         self.reports_uhosts_path    = os.path.join(self.reports_data_path, "1_unique_hosts")

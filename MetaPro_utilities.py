@@ -32,11 +32,10 @@ from datetime import datetime as dt
 import psutil as psu
 
 class mp_util:
-    def __init__(self, output_folder_path, config_path):
+    def __init__(self, output_folder_path, path_obj):
         self.mp_store = []
         self.output_folder_path = output_folder_path
-        self.paths = mpp.tool_path_obj(config_path)
-        self.bypass_log_name = self.paths.bypass_log_name
+        self.bypass_log_name = path_obj.bypass_log_name
 
     def mem_checker(self, threshold):
         #threshold is a percentage for available memory.  
