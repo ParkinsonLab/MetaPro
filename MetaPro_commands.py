@@ -16,9 +16,9 @@ class mt_pipe_commands:
     # --------------------------------------------------------------------
     # constructor:
     # there should only be one of these objects used for an entire pipeline.
-    def __init__(self, no_host, Config_path, Quality_score=33, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=None, sequence_contigs = None):
+    def __init__(self, no_host, tool_path_obj, Quality_score=33, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=None, sequence_contigs = None):
 
-        self.tool_path_obj = mpp.tool_path_obj(Config_path)
+        self.tool_path_obj = tool_path_obj #mpp.tool_path_obj(Config_path)
         self.no_host_flag = no_host
         # path to the genome sequence file
 

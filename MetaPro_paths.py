@@ -285,7 +285,7 @@ class tool_path_obj:
         BWA_pp_mem_default = 50
         BLAT_pp_mem_default = 50
         DIAMOND_pp_mem_default = 50
-        GA_final_merge_mem_default = 5 
+        GA_merge_mem_default = 5 
         EC_mem_threshold_default = 5
         
         cpu_default = int(math.ceil(os.cpu_count() * 0.75))
@@ -306,7 +306,7 @@ class tool_path_obj:
         BWA_pp_job_limit_default            = cpu_default
         BLAT_pp_job_limit_default           = cpu_default
         DIAMOND_pp_job_limit_default        = cpu_default
-        GA_final_merge_job_limit_default    = cpu_default
+        GA_merge_job_limit_default          = cpu_default
         repop_job_limit_default             = 1
         TA_job_limit_default                = cpu_default
         EC_job_limit_default                = cpu_default
@@ -321,7 +321,7 @@ class tool_path_obj:
         BWA_pp_job_delay_default            = 5
         BLAT_pp_job_delay_default           = 5
         DIAMOND_pp_job_delay_default        = 5
-        GA_final_merge_job_delay_default    = 5
+        GA_merge_job_delay_default    = 5
         repop_job_delay_default             = 10
         TA_job_delay_default                = 5
         EC_job_delay_default                = 1
@@ -335,7 +335,7 @@ class tool_path_obj:
         keep_rRNA_default = "no"
         keep_GA_BWA_default = "no"
         keep_GA_BLAT_default = "no"
-        keep_GA_DIAMOND_default = "no"
+        keep_GA_DMD_default = "no"
         keep_GA_final_default = "no"
         keep_TA_default = "no"
         keep_EC_default = "no"
@@ -396,7 +396,7 @@ class tool_path_obj:
         self.BWA_pp_mem_threshold           = self.value_assignment(config, "Settings", "BWA_pp_mem_threshold", BWA_pp_mem_default)
         self.BLAT_pp_mem_threshold          = self.value_assignment(config, "Settings", "BLAT_pp_mem_threshold", BLAT_pp_mem_default)
         self.DIAMOND_pp_mem_threshold       = self.value_assignment(config, "Settings", "DIAMOND_pp_mem_threshold", DIAMOND_pp_mem_default)
-        self.GA_final_merge_mem_threshold   = self.value_assignment(config, "Settings", "GA_final_merge_mem_threshold", GA_final_merge_mem_default)
+        self.GA_merge_mem_threshold   = self.value_assignment(config, "Settings", "GA_merge_mem_threshold", GA_merge_mem_default)
         self.TA_mem_threshold               = self.value_assignment(config, "Settings", "TA_mem_threshold", TA_mem_threshold_default)
         self.repop_mem_threshold            = self.value_assignment(config, "Settings", "repop_mem_threshold", repop_mem_default)
         self.EC_mem_threshold               = self.value_assignment(config, "Settings", "EC_mem_threshold", EC_mem_threshold_default)
@@ -412,7 +412,7 @@ class tool_path_obj:
         self.BWA_pp_job_limit           = self.value_assignment(config, "Settings", "BWA_pp_job_limit", BWA_pp_job_limit_default)
         self.BLAT_pp_job_limit          = self.value_assignment(config, "Settings", "BLAT_pp_job_limit", BLAT_pp_job_limit_default)
         self.DIAMOND_pp_job_limit       = self.value_assignment(config, "Settings", "DIAMOND_pp_job_limit", DIAMOND_pp_job_limit_default)
-        self.GA_final_merge_job_limit   = self.value_assignment(config, "Settings", "GA_final_merge_job_limit", GA_final_merge_job_limit_default)
+        self.GA_merge_job_limit   = self.value_assignment(config, "Settings", "GA_merge_job_limit", GA_merge_job_limit_default)
         self.TA_job_limit               = self.value_assignment(config, "Settings", "TA_job_limit", TA_job_limit_default)
         self.repop_job_limit            = self.value_assignment(config, "Settings", "repop_job_limit", repop_job_limit_default)
         self.EC_job_limit               = self.value_assignment(config, "Settings", "EC_job_limit", EC_job_limit_default)
@@ -429,7 +429,7 @@ class tool_path_obj:
         self.BWA_pp_job_delay           = self.value_assignment(config, "Settings", "BWA_pp_job_delay", BWA_pp_job_delay_default)
         self.BLAT_pp_job_delay          = self.value_assignment(config, "Settings", "BLAT_pp_job_delay", BLAT_pp_job_delay_default)
         self.DIAMOND_pp_job_delay       = self.value_assignment(config, "Settings", "DIAMOND_pp_job_delay", DIAMOND_pp_job_delay_default)
-        self.GA_final_merge_job_delay   = self.value_assignment(config, "Settings", "GA_final_merge_job_delay", GA_final_merge_job_delay_default)
+        self.GA_merge_job_delay   = self.value_assignment(config, "Settings", "GA_merge_job_delay", GA_merge_job_delay_default)
         self.TA_job_delay               = self.value_assignment(config, "Settings", "TA_job_delay", TA_job_delay_default)
         self.repop_job_delay            = self.value_assignment(config, "Settings", "repop_job_delay", repop_job_delay_default)
         self.EC_job_delay               = self.value_assignment(config, "Settings", "EC_job_delay", EC_job_delay_default)
@@ -444,7 +444,7 @@ class tool_path_obj:
         self.keep_assemble_contigs      = self.value_assignment(config, "Settings", "keep_assemble_contigs", keep_assemble_contigs_default, "string")
         self.keep_GA_BWA                = self.value_assignment(config, "Settings", "keep_GA_BWA", keep_GA_BWA_default, "string")
         self.keep_GA_BLAT               = self.value_assignment(config, "Settings", "keep_GA_BLAT", keep_GA_BLAT_default, "string")
-        self.keep_GA_DIAMOND            = self.value_assignment(config, "Settings", "keep_GA_DIAMOND", keep_GA_DIAMOND_default, "string")
+        self.keep_GA_DMD            = self.value_assignment(config, "Settings", "keep_GA_DMD", keep_GA_DMD_default, "string")
         self.keep_GA_final              = self.value_assignment(config, "Settings", "keep_GA_final", keep_GA_final_default, "string")
         self.keep_TA                    = self.value_assignment(config, "Settings", "keep_TA", keep_TA_default, "string")
         self.keep_EC                    = self.value_assignment(config, "Settings", "keep_EC", keep_EC_default, "string")
@@ -493,9 +493,9 @@ class tool_path_obj:
         GA_BLAT_cat_label_default                       = "GA_BLAT_cat"
         GA_BLAT_pp_label_default                        = "GA_BLAT_pp"
         GA_BLAT_merge_label_default                     = "GA_BLAT_merge"
-        GA_DIAMOND_label_default                        = "GA_DMD"
-        GA_DIAMOND_pp_label_default                     = "GA_DMD_pp"
-        GA_final_merge_label_default                    = "GA_final_merge"
+        GA_DMD_label_default                            = "GA_DMD"
+        GA_DMD_pp_label_default                         = "GA_DMD_pp"
+        GA_merge_label_default                    = "GA_merge"
         taxon_annotation_label_default                  = "taxonomic_annotation"
         ec_annotation_label_default                     = "enzyme_annotation"
         ec_annotation_detect_label_default              = "enzyme_annotation_detect"
@@ -549,11 +549,11 @@ class tool_path_obj:
         self.GA_BLAT_cat_label                      = self.value_assignment(config, "Labels", "GA_BLAT_cat",                        GA_BLAT_cat_label_default, "string")
         self.GA_BLAT_pp_label                       = self.value_assignment(config, "Labels", "GA_BLAT_pp",                         GA_BLAT_pp_label_default, "string")
         self.GA_BLAT_merge_label                    = self.value_assignment(config, "Labels", "GA_BLAT_merge",                      GA_BLAT_merge_label_default, "string")
-        self.GA_DIAMOND_label                       = self.value_assignment(config, "Labels", "GA_DIAMOND",                         GA_DIAMOND_label_default, "string")
-        self.GA_DIAMOND_pp_label                    = self.value_assignment(config, "Labels", "GA_DIAMOND_pp",                      GA_DIAMOND_pp_label_default, "string")
-        self.GA_final_merge_label                   = self.value_assignment(config, "Labels", "GA_final_merge",                     GA_final_merge_label_default, "string")
+        self.GA_DMD_label                           = self.value_assignment(config, "Labels", "GA_DMD",                             GA_DMD_label_default, "string")
+        self.GA_DMD_pp_label                        = self.value_assignment(config, "Labels", "GA_DMD_pp",                          GA_DMD_pp_label_default, "string")
+        self.GA_merge_label                   = self.value_assignment(config, "Labels", "GA_merge",                     GA_merge_label_default, "string")
         self.ta_label                               = self.value_assignment(config, "Labels", "ta",                                 taxon_annotation_label_default, "string")
-        self.ec_label                               = self.value_assignment(config, "Labels", "ec",                                 ec_annotation_label_default, "string")
+        self.EC_label                               = self.value_assignment(config, "Labels", "ec",                                 ec_annotation_label_default, "string")
         self.ec_detect_label                        = self.value_assignment(config, "Labels", "ec_detect",                          ec_annotation_detect_label_default, "string")
         self.ec_priam_label                         = self.value_assignment(config, "Labels", "ec_priam",                           ec_annotation_priam_label_default, "string")
         self.ec_priam_split_label                   = self.value_assignment(config, "Labels", "ec_priam_split",                     ec_annotation_priam_split_label_default, "string")
@@ -562,7 +562,7 @@ class tool_path_obj:
         self.ec_pp_label                            = self.value_assignment(config, "Labels", "ec_pp",                              ec_annotation_pp_label_default, "string")
         self.output_label                           = self.value_assignment(config, "Labels", "outputs",                            output_label_default, "string")
         self.output_copy_gene_map_label             = self.value_assignment(config, "Labels", "output_copy_gene_map",               output_copy_gene_map_label_default, "string")
-        self.output_clean_ec_label                  = self.value_assignment(config, "Labels", "output_clean_ec",                    output_clean_EC_label_default, "string")
+        self.output_clean_EC_label                  = self.value_assignment(config, "Labels", "output_clean_ec",                    output_clean_EC_label_default, "string")
         self.output_copy_taxa_label                 = self.value_assignment(config, "Labels", "output_copy_taxa",                   output_copy_taxa_label_default, "string")
         self.output_network_generation_label        = self.value_assignment(config, "Labels", "output_network_generation",          output_network_gen_label_default, "string")
         self.output_unique_hosts_singletons_label   = self.value_assignment(config, "Labels", "output_unique_hosts_singletons",     output_unique_hosts_singletons_label_default, "string")
@@ -663,12 +663,12 @@ class tool_path_obj:
         self.contig_duplicate_remover   = self.value_assignment(config, "code", "contig_duplicate_remover", os.path.join(script_path, "assembly_deduplicate.py"), "path")
         self.Map_reads_gene_BWA         = self.value_assignment(config, "code", "ga_bwa_pp", os.path.join(script_path, "ga_BWA_generic_v2.py"), "path")
         self.Map_reads_gene_BLAT        = self.value_assignment(config, "code", "ga_blat_pp", os.path.join(script_path, "ga_BLAT_generic_v3.py"), "path")
-        self.Map_reads_prot_DMND        = self.value_assignment(config, "code", "ga_dmd_pp", os.path.join(script_path, "ga_Diamond_generic_v2.py"), "path")
-        self.GA_final_merge             = self.value_assignment(config, "code", "ga_final_merge", os.path.join(script_path, "ga_Final_merge_v4.py"), "path")
+        self.Map_reads_prot_DMND        = self.value_assignment(config, "code", "ga_dmd_pp", os.path.join(script_path, "GA_DMD_generic_v2.py"), "path")
+        self.GA_merge             = self.value_assignment(config, "code", "GA_merge", os.path.join(script_path, "GA_merge_v4.py"), "path")
         self.GA_merge_fasta             = self.value_assignment(config, "code", "ga_merge_fasta", os.path.join(script_path, "ga_merge_fasta.py"), "path")
-        self.GA_final_merge_fasta       = self.value_assignment(config, "code", "ga_final_merge_fasta", os.path.join(script_path, "ga_final_merge_fastq.py"), "path")
-        self.GA_final_merge_proteins    = self.value_assignment(config, "code", "ga_final_merge_proteins", os.path.join(script_path, "ga_final_merge_proteins.py"), "path")
-        self.GA_final_merge_maps        = self.value_assignment(config, "code", "ga_final_merge_maps", os.path.join(script_path, "ga_final_merge_map.py"), "path")
+        self.GA_merge_fasta       = self.value_assignment(config, "code", "GA_merge_fasta", os.path.join(script_path, "GA_merge_fastq.py"), "path")
+        self.GA_merge_proteins    = self.value_assignment(config, "code", "GA_merge_proteins", os.path.join(script_path, "GA_merge_proteins.py"), "path")
+        self.GA_merge_maps        = self.value_assignment(config, "code", "GA_merge_maps", os.path.join(script_path, "GA_merge_map.py"), "path")
         self.EC_Annotation_Post         = self.value_assignment(config, "code", "ec_combine", os.path.join(script_path, "ea_combine_v5.py"), "path")
         self.Annotated_taxid            = self.value_assignment(config, "code", "ta_taxid", os.path.join(script_path, "ta_taxid_v3.py"), "path")
         self.Constrain_classification   = self.value_assignment(config, "code", "ta_constrain", os.path.join(script_path, "ta_constrain_taxonomy_v2.py"), "path")
@@ -699,16 +699,16 @@ class tool_path_obj:
         # Folder names + paths
 
 
-        self.qc_top_path            = os.path.join(self.output_folder_path, self.quality_filter_label)
-        self.qc_data_path           = os.path.join(self.qc_top_path, "data")
-        self.qc_sort_path           = os.path.join(self.qc_data_path, "0_sorted_raw_input")
-        self.qc_adaptor_path        = os.path.join(self.qc_data_path, "1_adapter_removal")
-        self.qc_tag_path            = os.path.join(self.qc_data_path, "2_tag_remove")
-        self.qc_merge_path          = os.path.join(self.qc_data_path, "3_vsearch_pair_merge")
-        self.qc_filter_path         = os.path.join(self.qc_data_path, "4_quality_filter")
-        self.qc_orphan_path         = os.path.join(self.qc_data_path, "5_orphan_read_filter")
-        self.qc_cdhit_path          = os.path.join(self.qc_data_path, "6_remove_duplicates")
-        self.qc_final_path          = os.path.join(self.qc_top_path, "final_results")
+        self.qc_top_path                = os.path.join(self.output_folder_path, self.quality_filter_label)
+        self.qc_data_path               = os.path.join(self.qc_top_path, "data")
+        self.qc_sort_path               = os.path.join(self.qc_data_path, "0_sorted_raw_input")
+        self.qc_adaptor_path            = os.path.join(self.qc_data_path, "1_adapter_removal")
+        self.qc_tag_path                = os.path.join(self.qc_data_path, "2_tag_remove")
+        self.qc_merge_path              = os.path.join(self.qc_data_path, "3_vsearch_pair_merge")
+        self.qc_filter_path             = os.path.join(self.qc_data_path, "4_quality_filter")
+        self.qc_orphan_path             = os.path.join(self.qc_data_path, "5_orphan_read_filter")
+        self.qc_cdhit_path              = os.path.join(self.qc_data_path, "6_remove_duplicates")
+        self.qc_final_path              = os.path.join(self.qc_top_path, "final_results")
 
         self.host_top_path          = os.path.join(self.output_folder_path, self.host_filter_label)
         self.host_data_path         = os.path.join(self.host_top_path, "data")
@@ -761,48 +761,85 @@ class tool_path_obj:
         self.repop_final_path       = os.path.join(self.repop_top_path, "final_results")
 
 
-        self.contigs_top_path       = os.path.join(self.output_folder_path, self.assemble_contigs_label)
-        self.contigs_data_path      = os.path.join(self.contigs_top_path, "data")
-        self.contigs_spades_path    = os.path.join(self.contigs_data_path, "0_spades")
-        self.contigs_mgm_path       = os.path.join(self.contigs_data_path, "1_mgm")
-        self.contigs_bwa_path       = os.path.join(self.contigs_data_path, "2_bwa_align")
-        self.contigs_map_path       = os.path.join(self.contigs_data_path, "3_mapped_reads")
-        self.contigs_final_path     = os.path.join(contigs_top_path, "final_results")
+        self.contigs_top_path           = os.path.join(self.output_folder_path, self.assemble_contigs_label)
+        self.contigs_data_path          = os.path.join(self.contigs_top_path, "data")
+        self.contigs_spades_path        = os.path.join(self.contigs_data_path, "0_spades")
+        self.contigs_mgm_path           = os.path.join(self.contigs_data_path, "1_mgm")
+        self.contigs_bwa_path           = os.path.join(self.contigs_data_path, "2_bwa_align")
+        self.contigs_map_path           = os.path.join(self.contigs_data_path, "3_mapped_reads")
+        self.contigs_final_path         = os.path.join(contigs_top_path, "final_results")
 
 
-        self.GA_pre_scan_path       = os.path.join(self.output_folder_path, self.GA_pre_scan_label)
-        self.GA_split_path          = os.path.join(self.output_folder_path, self.GA_split_label)
-        self.GA_BWA_path            = os.path.join(self.output_folder_path, self.GA_BWA_label)
-        self.GA_BLAT_path           = os.path.join(self.output_folder_path, self.GA_BLAT_label)
-        self.GA_DIAMOND_path        = os.path.join(self.output_folder_path, self.GA_DIAMOND_label)
-        self.ga_final_merge_path    = os.path.join(self.output_folder_path, self.GA_final_merge_label)
-        self.TA_path                = os.path.join(self.output_folder_path, self.ta_label)
-        self.ec_path                = os.path.join(self.output_folder_path, self.ec_label)
-        self.network_path           = os.path.join(self.output_folder_path, self.output_label)
-        
+        self.GA_pre_scan_top_path       = os.path.join(self.output_folder_path, self.GA_pre_scan_label)
+        self.GA_pre_scan_data_path      = os.path.join(self.GA_pre_scan_top_path, "data")
+        self.GA_pre_scan_jobs_path      = os.path.join(self.GA_pre_scan_top_path, "jobs")
+        self.GA_pre_scan_kraken_path    = os.path.join(self.GA_pre_scan_data_path, "1_kraken2")
+        self.GA_pre_scan_centr_path     = os.path.join(self.GA_pre_scan_data_path, "2_centrifuge")
+        self.GA_pre_scan_wevote_path    = os.path.join(self.GA_pre_scan_data_path, "3_wevote")
+        self.GA_pre_scan_libs_path      = os.path.join(self.GA_pre_scan_data_path, "4_libs")
+        self.GA_pre_scan_final_path     = os.path.join(self.GA_pre_scan_top_path, "final_results")
 
-        #working folders
-        self.GA_pre_scan_data_folder= os.path.join(self.GA_pre_scan_label, "data")
-        self.GA_pre_scan_jobs_folder= os.path.join(self.GA_pre_scan_data_folder, "jobs")
-        self.GA_split_data_folder   = os.path.join(self.GA_split_label, "data")
-        self.GA_split_jobs_folder   = os.path.join(self.GA_split_data_folder, "jobs")
-        self.GA_BWA_data_folder     = os.path.join(self.GA_BWA_label, "data")
-        self.GA_BWA_jobs_folder     = os.path.join(self.GA_BWA_data_folder, "jobs")
-        self.GA_BLAT_data_folder    = os.path.join(self.GA_BLAT_path, "data")
-        self.GA_BLAT_jobs_folder    = os.path.join(self.GA_BLAT_data_folder, "jobs")
-        self.GA_DIAMOND_data_folder = os.path.join(self.GA_DIAMOND_path, "data")
-        self.GA_DIAMOND_jobs_folder = os.path.join(self.GA_DIAMOND_data_folder, "jobs")
-        self.EC_data_folder         = os.path.join(self.ec_path, "data")
-        self.EC_jobs_folder         = os.path.join(self.EC_data_folder, "jobs")
-        self.TA_data_folder         = os.path.join(self.TA_path, "data")
-        self.TA_jobs_folder         = os.path.join(self.TA_data_folder, "jobs")
-        
-        self.GA_pre_scan_final_path = os.path.join(self.GA_pre_scan_path, "final_results")
-        
-        self.ec_detect_path         = os.path.join(self.EC_data_folder, "0_detect")
-        self.ec_priam_path          = os.path.join(self.EC_data_folder, "1_priam")
-        self.ec_split_path          = os.path.join(self.EC_data_folder, "1A_priam_split")
-        self.ec_diamond_path        = os.path.join(self.EC_data_folder, "2_diamond")
-        self.ec_detect_out          = os.path.join(self.EC_jobs_folder, "ec_detect")
-        self.ec_priam_out           = os.path.join(self.EC_jobs_folder, "ec_priam_cat")
-        self.ec_diamond_out         = os.path.join(self.EC_jobs_folder, "ec_diamond")
+        self.GA_split_top_path      = os.path.join(self.output_folder_path, self.GA_split_label)
+        self.GA_split_data_path     = os.path.join(self.GA_split_top_path, "data")
+        self.GA_split_jobs_path     = os.path.join(self.GA_split_top_path, "jobs")
+        self.GA_split_p1_path       = os.path.join(self.GA_split_data_path, "pair_1")
+        self.GA_split_p2_path       = os.path.join(self.GA_split_data_path, "pair_2")
+        self.GA_split_c_path        = os.path.join(self.GA_split_data_path, "contigs")
+        self.GA_split_s_path        = os.path.join(self.GA_split_data_path, "contigs")
+        self.GA_split_final_path    = os.path.join(self.GA_split_top_path, "final_result")
+
+        self.GA_BWA_top_path        = os.path.join(self.output_folder_path, self.GA_BWA_label)
+        self.GA_BWA_data_path       = os.path.join(self.GA_BWA_top_path, "data")
+        self.GA_BWA_jobs_path       = os.path.join(self.GA_BWA_top_path, "jobs")
+        self.GA_BWA_split_path      = os.path.join(self.GA_BWA_data_path, "0_read_split")
+        self.GA_BWA_run_path        = os.path.join(self.GA_BWA_data_path, "1_bwa")
+        self.GA_BWA_pp_path         = os.path.join(self.GA_BWA_data_path, "2_bwa_pp")
+        self.GA_BWA_final_path      = os.path.join(self.GA_BWA_top_path, "final_results")
+
+        self.GA_BLAT_top_path           = os.path.join(self.output_folder_path, self.GA_BLAT_label)
+        self.GA_BLAT_data_path      = os.path.join(self.GA_BLAT_top_path, "data")
+        self.GA_BLAT_jobs_path      = os.path.join(self.GA_BLAT_top_path, "jobs")
+        self.GA_BLAT_run_path       = os.path.join(self.GA_BLAT_data_path, "0_blat")
+        self.GA_BLAT_pp_path        = os.path.join(self.GA_BLAT_data_path, "1_pp")
+        self.GA_BLAT_final_path     = os.path.join(self.GA_BLAT_top_path, "final_results")
+
+        self.GA_DMD_top_path        = os.path.join(self.output_folder_path, self.GA_DMD_label)
+        self.GA_DMD_data_path       = os.path.join(self.GA_DMD_top_path, "data")
+        self.GA_DMD_jobs_path       = os.path.join(self.GA_DMD_top_path, "jobs")
+        self.GA_DMD_tool_path       = os.path.join(self.GA_DMD_data_path, "0_dmd")
+        self.GA_DMD_temp_path       = os.path.join(self.GA_DMD_tool_path, "temp")
+        self.GA_DMD_final_path      = os.path.join(self.GA_DMD_top_path, "final_results")
+
+        self.GA_merge_top_path      = os.path.join(self.output_folder_path, self.GA_merge_label)
+        self.GA_merge_data_path     = os.path.join(self.GA_merge_top_path, "data")
+        self.GA_merge_jobs_path     = os.path.join(self.GA_merge_top_path, "jobs")
+        self.GA_merge_final_path    = os.path.join(self.GA_merge_top_path, "final_results")
+
+        self.TA_top_path            = os.path.join(self.output_folder_path, self.ta_label)
+        self.TA_data_path           = os.path.join(self.TA_top_path, "data")
+        self.TA_jobs_path           = os.path.join(self.TA_top_path, "jobs")
+        self.TA_ga_path             = os.path.join(self.TA_data_path, "0_gene_taxa")
+        self.TA_kraken_path         = os.path.join(self.TA_data_path, "1_kraken2")
+        self.TA_centr_path          = os.path.join(self.TA_data_path, "2_centrifuge")
+        self.TA_wevote_path         = os.path.join(self.TA_data_path, "3_wevote")
+        self.TA_final_path          = os.path.join(self.TA_top_path, "final_results")
+
+        self.EC_top_path            = os.path.join(self.output_folder_path, self.EC_label)
+        self.EC_data_path           = os.path.join(self.EC_top_path, "data")
+        self.EC_jobs_path           = os.path.join(self.EC_top_path, "jobs")
+        self.EC_detect_path         = os.path.join(self.EC_data_path, "0_detect")
+        self.EC_priam_path          = os.path.join(self.EC_data_path, "1_priam")
+        self.EC_dmd_path            = os.path.join(self.EC_data_path, "2_diamond")
+        self.EC_final_path          = os.path.join(self.EC_top_path, "final_results")
+
+        self.reports_top_path       = os.path.join(self.output_folder_path, self.output_label)
+        self.reports_data_path      = os.path.join(self.reports_top_path, "data")
+        self.reports_jobs_path      = os.path.join(self.reports_top_path, "jobs")
+        self.reports_uhosts_path    = os.path.join(self.reports_data_path, "1_unique_hosts")
+        self.reports_fhosts_path    = os.path.join(self.reports_data_path, "2_full_hosts")
+        self.reports_uvecs_path     = os.path.join(self.reports_data_path, "3_unique_vectors")
+        self.reports_fvecs_path     = os.path.join(self.reports_data_path, "4_full_vectors")
+        self.reports_final_path     = os.path.join(self.reports_top_path, "final_results")
+
+
+      
