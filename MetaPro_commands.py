@@ -154,6 +154,7 @@ class mt_pipe_commands:
         
         self.make_folder(self.path_obj.qc_top_path)
         self.make_folder(self.path_obj.qc_data_path)
+        self.make_fodler(self.path_obj.qc_jobs_path)
         self.make_folder(self.path_obj.qc_sort_path)
         self.make_folder(self.path_obj.qc_adapter_path)
         self.make_folder(self.path_obj.qc_tag_path)
@@ -365,6 +366,7 @@ class mt_pipe_commands:
     def create_host_filter_command(self):
         self.make_folder(self.path_obj.host_top_path)
         self.make_folder(self.path_obj.host_data_path)
+        self.make_folder(self.path_obj.host_jobs_path)
         self.make_folder(self.path_obj.host_bwa_path)
         self.make_folder(self.path_obj.host_blat_path)
         self.make_folder(self.path_obj.host_final_path)
@@ -651,23 +653,17 @@ class mt_pipe_commands:
                 
         return COMMANDS_host
 
-    def create_vector_filter_command(self, stage_name, dependency_name):
-        # why do we leave all the interim files intact?
-        # because science needs repeatable data, and the process needs to be able to start at any point
-        subfolder                       = os.path.join(self.Output_Path, stage_name)
-        data_folder                     = os.path.join(subfolder, "data")
-        dependency_folder               = os.path.join(self.Output_Path, dependency_name, "final_results")
-        vector_removal_folder           = os.path.join(data_folder, "0_vector_removal")
-        blat_containment_vector_folder  = os.path.join(data_folder, "1_blat_containment_vr")
-        final_folder                    = os.path.join(subfolder, "final_results")
+    def create_vector_filter_command(self):
 
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(vector_removal_folder)
-        self.make_folder(blat_containment_vector_folder)
-        self.make_folder(final_folder)
 
-        Vector_Contaminants = os.path.join(vector_removal_folder, "vector_contaminants_seq.fasta")
+        self.make_folder(self.path_obj.vector_top_path)
+        self.make_folder(self.path_obj.vector_data_path)
+        self.make_folder(self.path_obj.vector_jobs_path)
+        self.make_folder(self.path_obj.vector_bwa_path)
+        self.make_folder(self.path_obj.vector_blat_path)
+        self.make_folder(self.path_obj.vector_final_path)
+
+        Vector_Contaminants = os.path.join(self.path_obj.vector_bwa_path, "vector_contaminants_seq.fasta")
 
         copy_vector = ">&2 echo copy vector prep | "
         copy_vector += "cp " + self.path_obj.UniVec_Core + " " + Vector_Contaminants
@@ -681,57 +677,57 @@ class mt_pipe_commands:
         bwa_vr_singletons = ">&2 echo BWA vector oprhans | "
         bwa_vr_singletons += self.path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_vr_singletons += Vector_Contaminants + " "
-        bwa_vr_singletons += os.path.join(dependency_folder, "singletons.fastq")
-        bwa_vr_singletons += " > " + os.path.join(vector_removal_folder, "singletons_no_vectors.sam")
+        bwa_vr_singletons += os.path.join(self.path_obj.qc_final_path, "singletons.fastq")
+        bwa_vr_singletons += " > " + os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.sam")
         
         
         bwa_vr_tut_singletons = ">&2 echo BWA vector oprhans TUTORIAL MODE | "
         bwa_vr_tut_singletons += self.path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_vr_tut_singletons += Vector_Contaminants + " "
         bwa_vr_tut_singletons += self.sequence_single
-        bwa_vr_tut_singletons += " > " + os.path.join(vector_removal_folder, "singletons_no_vectors.sam")
+        bwa_vr_tut_singletons += " > " + os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.sam")
 
         samtools_no_vector_singletons_convert = ">&2 echo samtools vector oprhans pt 1 | "
         samtools_no_vector_singletons_convert += self.path_obj.SAMTOOLS + " view -bS "
-        samtools_no_vector_singletons_convert += os.path.join(vector_removal_folder, "singletons_no_vectors.sam")
-        samtools_no_vector_singletons_convert += " > " + os.path.join(vector_removal_folder, "singletons_no_vectors.bam")
+        samtools_no_vector_singletons_convert += os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.sam")
+        samtools_no_vector_singletons_convert += " > " + os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.bam")
 
         samtools_no_vector_singletons_export = ">&2 echo samtools vector singletons pt 2 | "
         samtools_no_vector_singletons_export += self.path_obj.SAMTOOLS + " fastq -n -f 4"
-        samtools_no_vector_singletons_export += " -0 " + os.path.join(vector_removal_folder, "singletons_no_vectors.fastq") + " "
-        samtools_no_vector_singletons_export += os.path.join(vector_removal_folder, "singletons_no_vectors.bam")
+        samtools_no_vector_singletons_export += " -0 " + os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.fastq") + " "
+        samtools_no_vector_singletons_export += os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.bam")
 
         samtools_vector_singletons_export = ">&2 echo samtools vector singletons pt 3 | "
         samtools_vector_singletons_export += self.path_obj.SAMTOOLS + " fastq -n -F 4"
-        samtools_vector_singletons_export += " -0 " + os.path.join(vector_removal_folder, "singletons_vectors_only.fastq") + " "
-        samtools_vector_singletons_export += os.path.join(vector_removal_folder, "singletons_no_vectors.bam")
+        samtools_vector_singletons_export += " -0 " + os.path.join(self.path_obj.vector_bwa_path, "singletons_vectors_only.fastq") + " "
+        samtools_vector_singletons_export += os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.bam")
 
         bwa_vr_paired = ">&2 echo bwa vector paired | "
         bwa_vr_paired += self.path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_vr_paired += Vector_Contaminants + " "
         bwa_vr_paired += os.path.join(dependency_folder, "pair_1.fastq") + " "
         bwa_vr_paired += os.path.join(dependency_folder, "pair_2.fastq") + " "
-        bwa_vr_paired += " > " + os.path.join(vector_removal_folder, "paired_on_vectors.sam")
+        bwa_vr_paired += " > " + os.path.join(self.path_obj.vector_bwa_path, "paired_on_vectors.sam")
 
         bwa_vr_tut_paired = ">&2 echo bwa vector paired TUTORIAL MODE | "
         bwa_vr_tut_paired += self.path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_vr_tut_paired += Vector_Contaminants + " "
         bwa_vr_tut_paired += self.sequence_path_1 + " "
         bwa_vr_tut_paired += self.sequence_path_2 + " "
-        bwa_vr_tut_paired += " > " + os.path.join(vector_removal_folder, "paired_on_vectors.sam")
+        bwa_vr_tut_paired += " > " + os.path.join(self.path_obj.vector_bwa_path, "paired_on_vectors.sam")
         
         bwa_vr_filter_paired = ">&2 echo BWA vector filter on paired | "
         bwa_vr_filter_paired += self.path_obj.Python + " "
         bwa_vr_filter_paired += self.path_obj.bwa_read_sorter + " "
         bwa_vr_filter_paired += "paired" + " "
         bwa_vr_filter_paired += self.path_obj.filter_stringency + " "
-        bwa_vr_filter_paired += os.path.join(vector_removal_folder, "paired_on_vectors.sam") + " "
+        bwa_vr_filter_paired += os.path.join(self.path_obj.vector_bwa_path, "paired_on_vectors.sam") + " "
         bwa_vr_filter_paired += os.path.join(dependency_folder, "pair_1.fastq") + " "
         bwa_vr_filter_paired += os.path.join(dependency_folder, "pair_2.fastq") + " "
-        bwa_vr_filter_paired += os.path.join(vector_removal_folder, "pair_1_no_vectors.fastq") + " "
-        bwa_vr_filter_paired += os.path.join(vector_removal_folder, "pair_2_no_vectors.fastq") + " "
-        bwa_vr_filter_paired += os.path.join(vector_removal_folder, "pair_1_vectors_only.fastq") + " "
-        bwa_vr_filter_paired += os.path.join(vector_removal_folder, "pair_2_vectors_only.fastq")
+        bwa_vr_filter_paired += os.path.join(self.path_obj.vector_bwa_path, "pair_1_no_vectors.fastq") + " "
+        bwa_vr_filter_paired += os.path.join(self.path_obj.vector_bwa_path, "pair_2_no_vectors.fastq") + " "
+        bwa_vr_filter_paired += os.path.join(self.path_obj.vector_bwa_path, "pair_1_vectors_only.fastq") + " "
+        bwa_vr_filter_paired += os.path.join(self.path_obj.vector_bwa_path, "pair_2_vectors_only.fastq")
 
 
         make_blast_db_vector = ">&2 echo BLAST make db vectors | "
@@ -739,74 +735,74 @@ class mt_pipe_commands:
 
         vsearch_filter_6 = ">&2 echo convert vector singletons for BLAT | "
         vsearch_filter_6 += self.path_obj.vsearch
-        vsearch_filter_6 += " --fastq_filter " + os.path.join(vector_removal_folder, "singletons_no_vectors.fastq")
+        vsearch_filter_6 += " --fastq_filter " + os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.fastq")
         vsearch_filter_6 += " --fastq_ascii " + self.Qual_str
-        vsearch_filter_6 += " --fastaout " + os.path.join(vector_removal_folder, "singletons_no_vectors.fasta")
+        vsearch_filter_6 += " --fastaout " + os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.fasta")
 
         vsearch_filter_7 = ">&2 echo convert vector pair 1 for BLAT | "
         vsearch_filter_7 += self.path_obj.vsearch
-        vsearch_filter_7 += " --fastq_filter " + os.path.join(vector_removal_folder, "pair_1_no_vectors.fastq")
+        vsearch_filter_7 += " --fastq_filter " + os.path.join(self.path_obj.vector_bwa_path, "pair_1_no_vectors.fastq")
         vsearch_filter_7 += " --fastq_ascii " + self.Qual_str
-        vsearch_filter_7 += " --fastaout " + os.path.join(vector_removal_folder, "pair_1_no_vectors.fasta")
+        vsearch_filter_7 += " --fastaout " + os.path.join(self.path_obj.vector_bwa_path, "pair_1_no_vectors.fasta")
 
         vsearch_filter_8 = ">&2 echo convert vector pair 2 for BLAT | "
         vsearch_filter_8 += self.path_obj.vsearch
-        vsearch_filter_8 += " --fastq_filter " + os.path.join(vector_removal_folder, "pair_2_no_vectors.fastq")
+        vsearch_filter_8 += " --fastq_filter " + os.path.join(self.path_obj.vector_bwa_path, "pair_2_no_vectors.fastq")
         vsearch_filter_8 += " --fastq_ascii " + self.Qual_str
-        vsearch_filter_8 += " --fastaout " + os.path.join(vector_removal_folder, "pair_2_no_vectors.fasta")
+        vsearch_filter_8 += " --fastaout " + os.path.join(self.path_obj.vector_bwa_path, "pair_2_no_vectors.fasta")
 
         blat_vr_singletons = ">&2 echo BLAT vector singletons | "
         blat_vr_singletons += self.path_obj.BLAT
         blat_vr_singletons += " -noHead -minIdentity=90 -minScore=65 "
         blat_vr_singletons += Vector_Contaminants + " "
-        blat_vr_singletons += os.path.join(vector_removal_folder, "singletons_no_vectors.fasta")
+        blat_vr_singletons += os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.fasta")
         blat_vr_singletons += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str + " "
-        blat_vr_singletons += os.path.join(vector_removal_folder, "singletons_no_vectors.blatout")
+        blat_vr_singletons += os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.blatout")
 
         blat_vr_pair_1 = ">&2 echo BLAT vector pair 1 | "
         blat_vr_pair_1 += self.path_obj.BLAT + " -noHead -minIdentity=90 -minScore=65 "
         blat_vr_pair_1 += Vector_Contaminants + " "
-        blat_vr_pair_1 += os.path.join(vector_removal_folder, "pair_1_no_vectors.fasta")
+        blat_vr_pair_1 += os.path.join(self.path_obj.vector_bwa_path, "pair_1_no_vectors.fasta")
         blat_vr_pair_1 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str + " "
-        blat_vr_pair_1 += os.path.join(vector_removal_folder, "pair_1_no_vectors.blatout")
+        blat_vr_pair_1 += os.path.join(self.path_obj.vector_bwa_path, "pair_1_no_vectors.blatout")
 
         blat_vr_pair_2 = ">&2 echo BLAT vector pair 2 | "
         blat_vr_pair_2 += self.path_obj.BLAT + " -noHead -minIdentity=90 -minScore=65 "
         blat_vr_pair_2 += Vector_Contaminants + " "
-        blat_vr_pair_2 += os.path.join(vector_removal_folder, "pair_2_no_vectors.fasta")
+        blat_vr_pair_2 += os.path.join(self.path_obj.vector_bwa_path, "pair_2_no_vectors.fasta")
         blat_vr_pair_2 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str + " "
-        blat_vr_pair_2 += os.path.join(vector_removal_folder, "pair_2_no_vectors.blatout")
+        blat_vr_pair_2 += os.path.join(self.path_obj.vector_bwa_path, "pair_2_no_vectors.blatout")
 
         blat_filter_vector_singletons = ">&2 echo BLAT contaminant singletons | "
         blat_filter_vector_singletons += self.path_obj.Python + " " + self.path_obj.BLAT_Contaminant_Filter + " "
         blat_filter_vector_singletons += "single" + " "
         blat_filter_vector_singletons += self.path_obj.filter_stringency + " "
-        blat_filter_vector_singletons += os.path.join(vector_removal_folder, "singletons_no_vectors.fastq") + " "  # in
-        blat_filter_vector_singletons += os.path.join(vector_removal_folder, "singletons_no_vectors.blatout") + " "  # in
-        blat_filter_vector_singletons += os.path.join(blat_containment_vector_folder, "singletons_no_vectors.fastq") + " "  # out
-        blat_filter_vector_singletons += os.path.join(blat_containment_vector_folder, "singletons_vectors_only.fastq")  # out
+        blat_filter_vector_singletons += os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.fastq") + " "  # in
+        blat_filter_vector_singletons += os.path.join(self.path_obj.vector_bwa_path, "singletons_no_vectors.blatout") + " "  # in
+        blat_filter_vector_singletons += os.path.join(self.path_obj.vector_blat_path, "singletons_no_vectors.fastq") + " "  # out
+        blat_filter_vector_singletons += os.path.join(self.path_obj.vector_blat_path, "singletons_vectors_only.fastq")  # out
 
         blat_filter_vector_paired = ">&2 echo BLAT contaminant pair 1 | "
         blat_filter_vector_paired += self.path_obj.Python + " " + self.path_obj.BLAT_Contaminant_Filter + " "
         blat_filter_vector_paired += "paired" + " "
         blat_filter_vector_paired += self.path_obj.filter_stringency + " "
-        blat_filter_vector_paired += os.path.join(vector_removal_folder, "pair_1_no_vectors.fastq") + " "
-        blat_filter_vector_paired += os.path.join(vector_removal_folder, "pair_2_no_vectors.fastq") + " "
-        blat_filter_vector_paired += os.path.join(vector_removal_folder, "pair_1_no_vectors.blatout") + " "
-        blat_filter_vector_paired += os.path.join(vector_removal_folder, "pair_2_no_vectors.blatout") + " "
-        blat_filter_vector_paired += os.path.join(blat_containment_vector_folder, "pair_1_no_vectors.fastq") + " "
-        blat_filter_vector_paired += os.path.join(blat_containment_vector_folder, "pair_2_no_vectors.fastq") + " "
-        blat_filter_vector_paired += os.path.join(blat_containment_vector_folder, "pair_1_vectors_only.fastq") + " "
-        blat_filter_vector_paired += os.path.join(blat_containment_vector_folder, "pair_2_vectors_only.fastq")
+        blat_filter_vector_paired += os.path.join(self.path_obj.vector_bwa_path, "pair_1_no_vectors.fastq") + " "
+        blat_filter_vector_paired += os.path.join(self.path_obj.vector_bwa_path, "pair_2_no_vectors.fastq") + " "
+        blat_filter_vector_paired += os.path.join(self.path_obj.vector_bwa_path, "pair_1_no_vectors.blatout") + " "
+        blat_filter_vector_paired += os.path.join(self.path_obj.vector_bwa_path, "pair_2_no_vectors.blatout") + " "
+        blat_filter_vector_paired += os.path.join(self.path_obj.vector_blat_path, "pair_1_no_vectors.fastq") + " "
+        blat_filter_vector_paired += os.path.join(self.path_obj.vector_blat_path, "pair_2_no_vectors.fastq") + " "
+        blat_filter_vector_paired += os.path.join(self.path_obj.vector_blat_path, "pair_1_vectors_only.fastq") + " "
+        blat_filter_vector_paired += os.path.join(self.path_obj.vector_blat_path, "pair_2_vectors_only.fastq")
 
-        copy_singletons = "cp " + os.path.join(blat_containment_vector_folder, "singletons_no_vectors.fastq") + " "
-        copy_singletons += os.path.join(final_folder, "singletons.fastq")
+        copy_singletons = "cp " + os.path.join(self.path_obj.vector_blat_path, "singletons_no_vectors.fastq") + " "
+        copy_singletons += os.path.join(self.path_obj.vector_final_path, "singletons.fastq")
 
-        copy_pair_1 = "cp " + os.path.join(blat_containment_vector_folder, "pair_1_no_vectors.fastq") + " "
-        copy_pair_1 += os.path.join(final_folder, "pair_1.fastq")
+        copy_pair_1 = "cp " + os.path.join(self.path_obj.vector_blat_path, "pair_1_no_vectors.fastq") + " "
+        copy_pair_1 += os.path.join(self.path_obj.vector_final_path, "pair_1.fastq")
 
-        copy_pair_2 = "cp " + os.path.join(blat_containment_vector_folder, "pair_2_no_vectors.fastq") + " "
-        copy_pair_2 += os.path.join(final_folder, "pair_2.fastq")
+        copy_pair_2 = "cp " + os.path.join(self.path_obj.vector_blat_path, "pair_2_no_vectors.fastq") + " "
+        copy_pair_2 += os.path.join(self.path_obj.vector_final_path, "pair_2.fastq")
         
         if(self.tutorial_keyword == "vectors" or self.tutorial_keyword == "vector"):
             if self.read_mode == "single":
@@ -1988,7 +1984,11 @@ class mt_pipe_commands:
         assemble_lib = ">&2 echo GA assemble libs | " 
         assemble_lib += self.path_obj.Python + " " 
         assemble_lib += self.path_obj.GA_pre_scan_assemble_lib + " "
-        assemble_lib += os.path.join(dest_folder, "lib_list.txt") + " " 
+        if(os.path.exists(self.path_obj.taxa_lib_list)):
+            assemble_lib += self.path_obj.taxa_lib_list + " "
+        else:
+            assemble_lib += os.path.join(dest_folder, "lib_list.txt") + " " 
+            
         assemble_lib += self.path_obj.source_taxa_DB +  " "
         assemble_lib += final_folder +  " " 
         assemble_lib += "all"

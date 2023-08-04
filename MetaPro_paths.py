@@ -608,6 +608,9 @@ class tool_path_obj:
         self.enzyme_db          = self.value_assignment(config, "Databases", "enzyme_db", os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt"), "path")
         self.taxid_tree         = self.value_assignment(config, "Databases", "taxid_tree", os.path.join(custom_database_path, "taxid_trees", "family_tree.tsv"), "path")
         self.kraken2_db         = self.value_assignment(config, "Databases", "kraken2_db", os.path.join(custom_database_path, "kraken2_db"), "path")
+        self.taxa_lib_list      = self.value_assignment(config, "Databases", "taxa_lib_list", os.path.join(database_path, "taxa_lib_list.txt"), "path")
+
+        sys.exit("stop to check")
 
         #-------------------------------------------------------
         # test DBs
