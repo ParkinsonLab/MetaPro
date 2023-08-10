@@ -44,7 +44,7 @@ def isint(num):
 
 class tool_path_obj:
     
-    def value_assignment(self, config, config_section, var_name, default, expected_type = "int"):
+    def value_assignment(self, config, config_section, var_name, default, expected_type = "float"):
         value = ""
         #print("CONFIG:", config)
         if config:
@@ -53,6 +53,54 @@ class tool_path_obj:
                     value = config[config_section][var_name]
                     if('"' in value):
                         value = value.strip('"')
+
+                    if(expected_type == "int"):
+                        if not isint(value):
+                            exit_msg = var_name + ", wrong data, expecting int"
+                            sys.exit(exit_msg)
+                        else:
+                            value = int(value)
+                    elif(expected_type == "float"):
+                        if not isfloat(value):
+                            exit_msg = var_name + ", wrong data. expecting float"
+                            sys.exit(exit_msg)
+                        
+                    
+
+                    elif(expected_type == "string"):
+                        wrong_value_flag = False
+                        if isfloat(value):
+                            wrong_value_flag = True
+                        if isint(value):
+                            wrong_value_flag = True
+                        if(wrong_value_flag):
+                            exit_msg = var_name + ", wrong data. expected a name"
+                            sys.exit(exit_msg)
+
+                    elif(expected_type == "path"):
+                        if(os.path.exists(value)):
+                            return value
+                        else:
+                            #Special cases. these vars don't need filenames.
+                            if(var_name == "Centrifuge_db"):
+                                temp_name = value + ".1.cf"
+                                if(os.path.exists(temp_name)):
+                                    return value
+                            elif(var_name == "SWISS_PROT"):
+                                temp_name = value + ".dmnd"
+                                if(os.path.exists(temp_name)):
+                                    return value
+                            print(var_name, "does not exist:", value)
+                            sys.exit("path not valid")
+                    elif(expected_type == "dir"):
+                        if(os.path.isdir(value)):
+                            return value
+                        else:
+                            exit_msg = var_name + ", wrong data. expected a file directory"
+                            sys.exit(exit_msg)
+
+
+                    
                         #print("quotes cleaned")
                         #print(var_name, "found! using:", value)
                         #time.sleep(1)
@@ -60,58 +108,19 @@ class tool_path_obj:
                     if(value == "0"):
                         print(var_name, "zero-setting detected: using default")
                 else:
-                    print(var_name, "no inner section found. using default", default)
+                    print(var_name, "no inner section found. using default:", default)
                     value = default
             else:
-                print(config_section, "no section found, using default:", default)
+                print(config_section, "no config section found, using default:", default)
                 value = default
         else:
             print("no config, using default:", default)
             value = default
             
-        #print(var_name, type(value))
-
-        if(expected_type == "int"):
-            if not(isinstance(value, int)):
-                sys.exit(var_name, "wrong data. expecting int")
-            else:
-                return value
-        elif(expected_type == "float"):
-            if not(isinstance(value, float)):
-                sys.exit(var_name, "wrong data. expecting FLOAT")
-            else:
-                return value
-        elif(expected_type == "path"):
-            if(os.path.exists(value)):
-                return value
-            else:
-                #Special cases. these vars don't need filenames.
-                if(var_name == "Centrifuge_db"):
-                    temp_name = value + ".1.cf"
-                    if(os.path.exists(temp_name)):
-                        return value
-                elif(var_name == "SWISS_PROT"):
-                    temp_name = value + ".dmnd"
-                    if(os.path.exists(temp_name)):
-                        return value
-                print(var_name, "does not exist:", value)
-                sys.exit("path not valid")
-        elif(expected_type == "dir"):
-            if(os.path.isdir(value)):
-                return value
-            else:
-                sys.exit(var_name, "wrong data. expected a file directory")
+        print(var_name, type(value))
+        return value
         
-        elif(expected_type == "string"):
-            if(isinstance(value, str)):
-                return value
-            else:
-                sys.exit(var_name, "wrong data. expected STRING")
-            #check if the var is a path, that it's actually a valid path
-            
-                
-        else:
-            sys.exit(var_name, "wrong data. expected String")
+        
 
             
     def check_file_valid(self, file_0):
@@ -269,6 +278,7 @@ class tool_path_obj:
         database_path           = "/project/j/jparkin/Lab_Databases/"
         custom_database_path    = "/pipeline/custom_databases/"
         self.output_path        = output_path
+        print("output path:", self.output_path)
         
 
         
@@ -364,7 +374,7 @@ class tool_path_obj:
         self.num_threads                = self.value_assignment(config, "Settings", "num_threads", os.cpu_count())
         if(self.num_threads == 0):
             self.num_threads = 1
-        self.taxa_exist_cutoff          = self.value_assignment(config, "Settings", "taxa_existence_cutoff", 0.1)
+        self.taxa_exist_cutoff          = self.value_assignment(config, "Settings", "taxa_existence_cutoff", 0.1, "float")
         self.DNA_DB_mode                = self.value_assignment(config, "Settings", "DNA_DB_mode", "chocophlan", "string") #used to indicate custom DB, or our grouped library
         #other setting is "custom"
         
@@ -467,7 +477,7 @@ class tool_path_obj:
         # Labels.  
         # why? to change them during integration + new feature testing
 
-        qc_label_default                    = "quality_filter"
+        qc_label_default                                = "quality_filter"
         host_filter_label_default                       = "host_filter"
         vector_filter_label_default                     = "vector_filter"
         rRNA_filter_label_default                       = "rRNA_filter"
@@ -523,7 +533,8 @@ class tool_path_obj:
         output_read_count_label_default                 = "output_read_count"
         
 
-        self.qc_label                   = self.value_assignment(config, "Labels", "quality_filter",                     qc_label_default, "string")
+        self.qc_label                               = self.value_assignment(config, "Labels", "quality_filter",                     qc_label_default, "string")
+        
         self.host_filter_label                      = self.value_assignment(config, "Labels", "host_filter",                        host_filter_label_default, "string")
         self.vector_filter_label                    = self.value_assignment(config, "Labels", "vector_filter",                      vector_filter_label_default, "string")
         self.rRNA_filter_label                      = self.value_assignment(config, "Labels", "rRNA_filter",                        rRNA_filter_label_default, "string")
@@ -610,8 +621,7 @@ class tool_path_obj:
         self.kraken2_db         = self.value_assignment(config, "Databases", "kraken2_db", os.path.join(custom_database_path, "kraken2_db"), "path")
         self.taxa_lib_list      = self.value_assignment(config, "Databases", "taxa_lib_list", os.path.join(database_path, "taxa_lib_list.txt"), "path")
 
-        sys.exit("stop to check")
-
+        
         #-------------------------------------------------------
         # test DBs
         self.GA_DB_mode = "multi" #by default for the new DB changes.
@@ -627,7 +637,7 @@ class tool_path_obj:
         #if config:
         self.Python         = self.value_assignment(config, "Tools", "Python", "python3", "string")
         self.Java           = self.value_assignment(config, "Tools", "Java", "java -jar", "string")
-        self.cdhit_dup      = self.value_assignment(config, "Tools", "cdhit_dup",  os.path.join(tool_path, "cdhit_dup/cd-hit-dup"), "path"
+        self.cdhit_dup      = self.value_assignment(config, "Tools", "cdhit_dup",  os.path.join(tool_path, "cdhit_dup/cd-hit-dup"), "path")
         self.AdapterRemoval = self.value_assignment(config, "Tools", "AdapterRemoval", os.path.join(tool_path, "adapterremoval/AdapterRemoval"), "path")
         self.vsearch        = self.value_assignment(config, "Tools", "vsearch", os.path.join(tool_path, "vsearch/vsearch"), "path")
         self.BWA            = self.value_assignment(config, "Tools", "BWA", os.path.join(tool_path, "BWA/bwa"), "path")
@@ -701,7 +711,7 @@ class tool_path_obj:
         #---------------------------------------------------------------------------------------
         # Folder names + paths
 
-
+        print("QC label:", self.qc_label)
         self.qc_top_path                = os.path.join(self.output_path, self.qc_label)
         self.qc_data_path               = os.path.join(self.qc_top_path, "data")
         self.qc_sort_path               = os.path.join(self.qc_data_path, "0_sorted_raw_input")
@@ -758,7 +768,7 @@ class tool_path_obj:
         self.rRNA_final_mRNA_path   = os.path.join(self.rRNA_final_path, "mRNA")
         self.rRNA_final_tRNA_path   = os.path.join(self.rRNA_final_path, "other")
         
-        self.repop_top_path         = os.path.join(self.output_path, self.repop_job_label)
+        self.repop_top_path         = os.path.join(self.output_path, self.repop_label)
         self.repop_data_path        = os.path.join(self.repop_top_path, "data")
         self.repop_work_path        = os.path.join(self.repop_data_path, "0_repop")
         self.repop_final_path       = os.path.join(self.repop_top_path, "final_results")
@@ -770,7 +780,7 @@ class tool_path_obj:
         self.contigs_mgm_path           = os.path.join(self.contigs_data_path, "1_mgm")
         self.contigs_bwa_path           = os.path.join(self.contigs_data_path, "2_bwa_align")
         self.contigs_map_path           = os.path.join(self.contigs_data_path, "3_mapped_reads")
-        self.contigs_final_path         = os.path.join(contigs_top_path, "final_results")
+        self.contigs_final_path         = os.path.join(self.contigs_top_path, "final_results")
 
 
         self.GA_pre_scan_top_path       = os.path.join(self.output_path, self.GA_pre_scan_label)

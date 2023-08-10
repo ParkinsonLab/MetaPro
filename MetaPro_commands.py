@@ -705,8 +705,8 @@ class mt_pipe_commands:
         bwa_vr_paired = ">&2 echo bwa vector paired | "
         bwa_vr_paired += self.path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_vr_paired += Vector_Contaminants + " "
-        bwa_vr_paired += os.path.join(dependency_folder, "pair_1.fastq") + " "
-        bwa_vr_paired += os.path.join(dependency_folder, "pair_2.fastq") + " "
+        bwa_vr_paired += os.path.join(self.path_obj.qc_final_path, "pair_1.fastq") + " "
+        bwa_vr_paired += os.path.join(self.path_obj.qc_final_path, "pair_2.fastq") + " "
         bwa_vr_paired += " > " + os.path.join(self.path_obj.vector_bwa_path, "paired_on_vectors.sam")
 
         bwa_vr_tut_paired = ">&2 echo bwa vector paired TUTORIAL MODE | "
@@ -722,8 +722,8 @@ class mt_pipe_commands:
         bwa_vr_filter_paired += "paired" + " "
         bwa_vr_filter_paired += self.path_obj.filter_stringency + " "
         bwa_vr_filter_paired += os.path.join(self.path_obj.vector_bwa_path, "paired_on_vectors.sam") + " "
-        bwa_vr_filter_paired += os.path.join(dependency_folder, "pair_1.fastq") + " "
-        bwa_vr_filter_paired += os.path.join(dependency_folder, "pair_2.fastq") + " "
+        bwa_vr_filter_paired += os.path.join(self.path_obj.qc_final_path, "pair_1.fastq") + " "
+        bwa_vr_filter_paired += os.path.join(self.path_obj.qc_final_path, "pair_2.fastq") + " "
         bwa_vr_filter_paired += os.path.join(self.path_obj.vector_bwa_path, "pair_1_no_vectors.fastq") + " "
         bwa_vr_filter_paired += os.path.join(self.path_obj.vector_bwa_path, "pair_2_no_vectors.fastq") + " "
         bwa_vr_filter_paired += os.path.join(self.path_obj.vector_bwa_path, "pair_1_vectors_only.fastq") + " "

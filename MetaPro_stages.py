@@ -75,12 +75,12 @@ class mp_stage:
         self.DETECT_mem_threshold           = int(self.paths.DETECT_mem_threshold)
         self.TA_mem_threshold               = int(self.paths.TA_mem_threshold)
         self.repop_mem_threshold            = int(self.paths.repop_mem_threshold)
-        self.GA_final_merge_mem_threshold   = int(self.paths.GA_final_merge_mem_threshold)
+        self.GA_merge_mem_threshold         = int(self.paths.GA_merge_mem_threshold)
         self.EC_mem_threshold               = int(self.paths.EC_mem_threshold)
 
-        self.BWA_mem_footprint  = int(self.paths.BWA_mem_footprint)
-        self.BLAT_mem_footprint = int(self.paths.BLAT_mem_footprint)
-        self.DMD_mem_footprint  = int(self.paths.DMD_mem_footprint)
+        self.BWA_mem_footprint              = int(self.paths.BWA_mem_footprint)
+        self.BLAT_mem_footprint             = int(self.paths.BLAT_mem_footprint)
+        self.DMD_mem_footprint              = int(self.paths.DMD_mem_footprint)
         
         
         
@@ -381,7 +381,7 @@ class mp_stage:
         if self.no_host:
             #get dep args from quality filter
             #if not check_where_resume(vector_path, None, self.quality_path):
-            command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.paths.qc_label)
+            command_list = self.commands.create_vector_filter_command()
             self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.keep_all, self.keep_vector)
 
         else:
@@ -1437,7 +1437,7 @@ class mp_stage:
             else:
                 command_list = self.commands.create_GA_final_merge_command(self.GA_final_merge_label, self.assemble_contigs_label, self.GA_BWA_label, self.GA_BLAT_label, self.GA_DIAMOND_label,  marker_file)
                 job_name = "GA_final_merge"
-                self.mp_util.subdivide_and_launch(self.GA_final_merge_job_delay, self.GA_final_merge_mem_threshold, self.GA_final_merge_job_limit, self.GA_final_merge_label, job_name, self.commands, command_list)
+                self.mp_util.subdivide_and_launch(self.GA_final_merge_job_delay, self.GA_merge_mem_threshold, self.GA_final_merge_job_limit, self.GA_final_merge_label, job_name, self.commands, command_list)
             
             #check if all_proteins.faa was generated
             all_proteins_path = os.path.join(self.output_folder_path, self.GA_final_merge_label, "final_results", "all_proteins.faa")
