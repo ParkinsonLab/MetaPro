@@ -42,9 +42,7 @@ class mp_stage:
             self.segmented_chocophlan_flag = False
         self.no_host = args_pack["no_host"]
         self.verbose_mode = args_pack["verbose_mode"]
-        self.rRNA_chunks = int(self.paths.rRNA_chunksize)
-        self.EC_chunksize = int(self.paths.EC_chunksize)
-        self.GA_chunksize = int(self.paths.GA_chunksize)
+
         self.config_path = config_path
         
         self.pair_1_path = None if (pair_1_path == "None") else pair_1_path
@@ -63,141 +61,6 @@ class mp_stage:
             self.quality_encoding = self.mp_util.determine_encoding(pair_1_path)
             print("ENCODING USED:", self.quality_encoding)
             print("OPERATING IN PAIRED-MODE")
-        
-        self.BWA_mem_threshold              = int(self.paths.BWA_mem_threshold)
-        self.BLAT_mem_threshold             = int(self.paths.BLAT_mem_threshold)
-        self.DIAMOND_mem_threshold          = int(self.paths.DIAMOND_mem_threshold)
-        self.BWA_pp_mem_threshold           = int(self.paths.BWA_pp_mem_threshold)
-        self.BLAT_pp_mem_threshold          = int(self.paths.BLAT_pp_mem_threshold)
-        self.DIAMOND_pp_mem_threshold       = int(self.paths.DIAMOND_pp_mem_threshold)
-        self.Infernal_mem_threshold         = int(self.paths.Infernal_mem_threshold)
-        self.Barrnap_mem_threshold          = int(self.paths.Barrnap_mem_threshold)
-        self.DETECT_mem_threshold           = int(self.paths.DETECT_mem_threshold)
-        self.TA_mem_threshold               = int(self.paths.TA_mem_threshold)
-        self.repop_mem_threshold            = int(self.paths.repop_mem_threshold)
-        self.GA_merge_mem_threshold         = int(self.paths.GA_merge_mem_threshold)
-        self.EC_mem_threshold               = int(self.paths.EC_mem_threshold)
-
-        self.BWA_mem_footprint              = int(self.paths.BWA_mem_footprint)
-        self.BLAT_mem_footprint             = int(self.paths.BLAT_mem_footprint)
-        self.DMD_mem_footprint              = int(self.paths.DMD_mem_footprint)
-        
-        
-        
-        self.BWA_job_limit              = int(self.paths.BWA_job_limit)
-        self.BLAT_job_limit             = int(self.paths.BLAT_job_limit)
-        self.DIAMOND_job_limit          = int(self.paths.DIAMOND_job_limit)
-        self.BWA_pp_job_limit           = int(self.paths.BWA_pp_job_limit)
-        self.BLAT_pp_job_limit          = int(self.paths.BLAT_pp_job_limit)
-        self.DIAMOND_pp_job_limit       = int(self.paths.DIAMOND_pp_job_limit)
-        self.Infernal_job_limit         = int(self.paths.Infernal_job_limit)
-        self.Barrnap_job_limit          = int(self.paths.Barrnap_job_limit)
-        self.DETECT_job_limit           = int(self.paths.DETECT_job_limit)
-        self.TA_job_limit               = int(self.paths.TA_job_limit)
-        self.repop_job_limit            = int(self.paths.repop_job_limit)
-        self.GA_final_merge_job_limit   = int(self.paths.GA_final_merge_job_limit)
-        self.EC_job_limit               = int(self.paths.EC_job_limit)
-        self.Centrifuge_job_limit       = int(self.paths.Centrifuge_job_limit)
-        
-        self.Infernal_job_delay         = float(self.paths.Infernal_job_delay)
-        self.Barrnap_job_delay          = float(self.paths.Barrnap_job_delay)
-        self.BWA_job_delay              = float(self.paths.BWA_job_delay)
-        self.BLAT_job_delay             = float(self.paths.BLAT_job_delay)
-        self.DIAMOND_job_delay          = float(self.paths.DIAMOND_job_delay)
-        self.BWA_pp_job_delay           = float(self.paths.BWA_pp_job_delay)
-        self.BLAT_pp_job_delay          = float(self.paths.BLAT_pp_job_delay)
-        self.DIAMOND_pp_job_delay       = float(self.paths.DIAMOND_pp_job_delay)
-        self.DETECT_job_delay           = float(self.paths.DETECT_job_delay)
-        self.TA_job_delay               = float(self.paths.TA_job_delay)
-        self.repop_job_delay            = float(self.paths.repop_job_delay)
-        self.GA_final_merge_job_delay   = float(self.paths.GA_final_merge_job_delay)
-        self.EC_job_delay               = float(self.paths.EC_job_delay)                              
-
-        self.filter_stringency = self.paths.filter_stringency
-        
-        #-----------------------------------------------------
-        self.keep_all                = self.paths.keep_all
-        self.keep_quality            = self.paths.keep_quality
-        self.keep_vector             = self.paths.keep_vector
-        self.keep_host               = self.paths.keep_host
-        self.keep_rRNA               = self.paths.keep_rRNA
-        self.keep_repop              = self.paths.keep_repop
-        self.keep_assemble_contigs   = self.paths.keep_assemble_contigs
-        self.keep_GA_BWA             = self.paths.keep_GA_BWA
-        self.keep_GA_BLAT            = self.paths.keep_GA_BLAT
-        self.keep_GA_DIAMOND         = self.paths.keep_GA_DIAMOND
-        self.keep_GA_final           = self.paths.keep_GA_final
-        self.keep_TA                 = self.paths.keep_TA
-        self.keep_EC                 = self.paths.keep_EC
-        self.keep_outputs            = self.paths.keep_outputs
-        
-        #------------------------------------------------------------------------
-        
-        self.BWA_cigar_cutoff        = self.paths.BWA_cigar_cutoff
-        self.BLAT_identity_cutoff    = self.paths.BLAT_identity_cutoff
-        self.BLAT_length_cutoff      = self.paths.BLAT_length_cutoff
-        self.BLAT_score_cutoff       = self.paths.BLAT_score_cutoff
-        self.DIAMOND_identity_cutoff = self.paths.DIAMOND_identity_cutoff
-        self.DIAMOND_length_cutoff   = self.paths.DIAMOND_length_cutoff
-        self.DIAMOND_score_cutoff    = self.paths.DIAMOND_score_cutoff
-
-
-
-        self.paths.qc_label                   = self.paths.quality_filter_label
-        self.host_filter_label                      = self.paths.host_filter_label
-        self.vector_filter_label                    = self.paths.vector_filter_label
-        self.rRNA_filter_label                      = self.paths.rRNA_filter_label
-        self.rRNA_filter_split_label                = self.paths.rRNA_filter_split_label
-        self.rRNA_filter_convert_label              = self.paths.rRNA_filter_convert_label
-        self.rRNA_filter_barrnap_label              = self.paths.rRNA_filter_barrnap_label
-        self.rRNA_filter_barrnap_merge_label        = self.paths.rRNA_filter_barrnap_merge_label
-        self.rRNA_filter_barrnap_pp_label           = self.paths.rRNA_filter_barrnap_pp_label
-        self.rRNA_filter_infernal_label             = self.paths.rRNA_filter_infernal_label
-        self.rRNA_filter_infernal_prep_label        = self.paths.rRNA_filter_infernal_prep_label
-        self.rRNA_filter_splitter_label             = self.paths.rRNA_filter_splitter_label
-        self.rRNA_filter_post_label                 = self.paths.rRNA_filter_post_label
-        self.repop_job_label                        = self.paths.repop_label
-        self.assemble_contigs_label                 = self.paths.assemble_contigs_label
-        self.destroy_contigs_label                  = self.paths.destroy_contigs_label
-        self.GA_pre_scan_label                      = self.paths.GA_pre_scan_label
-        self.GA_split_label                         = self.paths.GA_split_label
-        self.GA_BWA_label                           = self.paths.GA_BWA_label
-        self.GA_BWA_pp_label                        = self.paths.GA_BWA_pp_label
-        self.GA_BWA_merge_label                     = self.paths.GA_BWA_merge_label
-        self.GA_BLAT_label                          = self.paths.GA_BLAT_label
-        self.GA_BLAT_cleanup_label                  = self.paths.GA_BLAT_cleanup_label
-        self.GA_BLAT_cat_label                      = self.paths.GA_BLAT_cat_label
-        self.GA_BLAT_pp_label                       = self.paths.GA_BLAT_pp_label
-        self.GA_BLAT_merge_label                    = self.paths.GA_BLAT_merge_label
-        self.GA_DIAMOND_label                       = self.paths.GA_DIAMOND_label
-        self.GA_DIAMOND_pp_label                    = self.paths.GA_DIAMOND_pp_label
-        self.GA_final_merge_label                   = self.paths.GA_final_merge_label
-        self.ta_label                               = self.paths.ta_label
-        self.ec_label                               = self.paths.ec_label
-        self.ec_detect_label                        = self.paths.ec_detect_label
-        self.ec_priam_label                         = self.paths.ec_priam_label
-        self.ec_priam_split_label                   = self.paths.ec_priam_split_label
-        self.ec_priam_cat_label                     = self.paths.ec_priam_cat_label
-        self.ec_DIAMOND_label                       = self.paths.ec_DIAMOND_label
-        self.ec_pp_label                            = self.paths.ec_pp_label
-        self.output_label                           = self.paths.output_label
-        self.output_copy_gene_map_label             = self.paths.output_copy_gene_map_label
-        self.output_clean_EC_label                  = self.paths.output_clean_ec_label
-        self.output_copy_taxa_label                 = self.paths.output_copy_taxa_label
-        self.output_network_gen_label               = self.paths.output_network_generation_label
-        self.output_unique_hosts_singletons_label   = self.paths.output_unique_hosts_singletons_label
-        self.output_unique_hosts_pair_1_label       = self.paths.output_unique_hosts_pair_1_label
-        self.output_unique_hosts_pair_2_label       = self.paths.output_unique_hosts_pair_2_label
-        self.output_unique_vectors_singletons_label = self.paths.output_unique_vectors_singletons_label
-        self.output_unique_vectors_pair_1_label     = self.paths.output_unique_vectors_pair_1_label
-        self.output_unique_vectors_pair_2_label     = self.paths.output_unique_vectors_pair_2_label
-        self.output_combine_hosts_label             = self.paths.output_combine_hosts_label
-        self.output_per_read_scores_label           = self.paths.output_per_read_scores_label
-        self.output_contig_stats_label              = self.paths.output_contig_stats_label
-        self.output_ec_heatmap_label                = self.paths.output_ec_heatmap_label
-        self.output_taxa_groupby_label              = self.paths.output_taxa_groupby_label
-        self.output_read_count_label                = self.paths.output_read_count_label
-        
         
         self.debug_stop_flag = self.paths.debug_stop_flag
         
@@ -351,7 +214,7 @@ class mp_stage:
     def mp_quality_filter(self):
         self.quality_start = time.time()
         command_list = self.commands.create_quality_control_command()
-        self.cleanup_quality_start, self.cleanup_quality_end = self.mp_util.launch_stage_simple(self.paths.qc_label, self.quality_path, self.commands, command_list, self.keep_all, self.keep_quality)
+        self.cleanup_quality_start, self.cleanup_quality_end = self.mp_util.launch_stage_simple(self.paths.qc_label, self.paths.qc_top_path, self.commands, command_list, self.keep_all, self.keep_quality)
         self.quality_end = time.time()
         print("quality filter:", '%1.1f' % (self.quality_end - self.quality_start - (self.cleanup_quality_end - self.cleanup_quality_start)), "s")
         print("quality filter cleanup:", '%1.1f' %(self.cleanup_quality_end - self.cleanup_quality_start), "s")
@@ -367,7 +230,7 @@ class mp_stage:
                 for item in command_list:
                     print(item)
             else:        
-                self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
+                self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_simple(self.paths.host_filter_label, self.paths.host_top_path, self.commands, command_list, self.keep_all, self.keep_host)
                 self.host_end = time.time()
                 print("host filter:", '%1.1f' % (self.host_end - self.host_start - (self.cleanup_host_end - self.cleanup_host_start)), "s")
                 print("host filter cleanup:", '%1.1f' %(self.cleanup_host_end - self.cleanup_host_start),"s")
@@ -378,18 +241,13 @@ class mp_stage:
     def mp_vector_filter(self):
         self.vector_start = time.time()
         
-        if self.no_host:
+        
             #get dep args from quality filter
             #if not check_where_resume(vector_path, None, self.quality_path):
-            command_list = self.commands.create_vector_filter_command()
-            self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.keep_all, self.keep_vector)
+        command_list = self.commands.create_vector_filter_command(self.no_host)
+        self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.paths.vector_filter_label, self.paths.vector_top_path, self.commands, command_list, self.keep_all, self.keep_vector)
 
-        else:
-            #get the dep args from host filter
-            #if not check_where_resume(vector_path, None, self.host_path):
-            command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.host_filter_label)
-            self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.keep_all, self.keep_vector)
-            
+        
         self.vector_end = time.time()
         print("vector filter:", '%1.1f' % (self.vector_end - self.vector_start - (self.cleanup_vector_end - self.cleanup_vector_start)), "s")
         print("vector filter cleanup:", '%1.1f' % (self.cleanup_vector_end - self.cleanup_vector_start), "s")
@@ -1437,7 +1295,7 @@ class mp_stage:
             else:
                 command_list = self.commands.create_GA_final_merge_command(self.GA_final_merge_label, self.assemble_contigs_label, self.GA_BWA_label, self.GA_BLAT_label, self.GA_DIAMOND_label,  marker_file)
                 job_name = "GA_final_merge"
-                self.mp_util.subdivide_and_launch(self.GA_final_merge_job_delay, self.GA_merge_mem_threshold, self.GA_final_merge_job_limit, self.GA_final_merge_label, job_name, self.commands, command_list)
+                self.mp_util.subdivide_and_launch(self.GA_final_merge_job_delay, self.GA_final_merge_mem_threshold, self.GA_final_merge_job_limit, self.GA_final_merge_label, job_name, self.commands, command_list)
             
             #check if all_proteins.faa was generated
             all_proteins_path = os.path.join(self.output_folder_path, self.GA_final_merge_label, "final_results", "all_proteins.faa")
