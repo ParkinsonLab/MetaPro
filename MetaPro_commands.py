@@ -899,6 +899,26 @@ class mt_pipe_commands:
 
         return COMMANDS_vector
         
+    def create_rRNA_fliter_split_command(self, operating_mode):
+        split_s_fastq = self.path_obj.Python + " "
+        split_s_fastq += self.path_obj.read_split_convert + " "
+        split_s_fastq += os.path.join(self.path_obj.vector_final_path, "singletons.fastq") + " "
+        split_s_fastq += self.path_obj.rRNA_s_fa_path + " "
+        split_s_fastq += self.path_obj.rRNA_chunksize
+
+
+
+        split_p1_fastq = self.path_obj.Python + " "
+        split_p1_fastq += self.path_obj.read_split_convert + " "
+        split_p1_fastq += os.path.join(self.path_obj.vector_final_path, "pair_1.fastq") + " "
+        split_p1_fastq += self.path_obj.rRNA_p1_fa_path + " "  
+        split_p1_fastq += self.path_obj.rRNA_chunksize 
+
+
+
+
+
+
     def create_rRNA_filter_prep_command_v3(self, stage_name, category, dependency_name, marker_file):
         #split the data into tiny shards.  called once
         dep_loc                 = os.path.join(self.Output_Path, dependency_name, "final_results")

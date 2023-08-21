@@ -671,6 +671,7 @@ class tool_path_obj:
         self.File_splitter              = self.value_assignment(config, "code", "file_splitter", os.path.join(script_path, "read_split.py"), "path")
         self.barrnap_post               = self.value_assignment(config, "code", "barrnap_post", os.path.join(script_path, "read_rRNA_barrnap.py"), "path")
         self.rRNA_filter                = self.value_assignment(config, "code", "rRNA_filter", os.path.join(script_path, "read_rRNA_infernal.py"), "path")
+        self.read_split_convert         = self.value_assignment(config, "code", "read_split_convert", os.path.join(script_path, "read_split_and_convert.py"), "path")
         self.Map_contig                 = self.value_assignment(config, "code", "map_contig", os.path.join(script_path, "assembly_make_contig_map.py"), "path")
         self.flush_bad_contigs          = self.value_assignment(config, "code", "flush_bad_contigs", os.path.join(script_path, "assembly_flush_bad_contigs.py"), "path")
         self.contig_duplicate_remover   = self.value_assignment(config, "code", "contig_duplicate_remover", os.path.join(script_path, "assembly_deduplicate.py"), "path")
