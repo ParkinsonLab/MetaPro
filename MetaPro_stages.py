@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+w#!/usr/bin/env python
 import sys
 import os
 import os.path
@@ -207,7 +207,6 @@ class mp_stage:
         else:
             print(dt.today(), "continuing from:", stop_signal)
             
-    
 
     #--------------------------------------------------------------------------------------------------------------
     # main calls
@@ -220,7 +219,6 @@ class mp_stage:
         print("quality filter cleanup:", '%1.1f' %(self.cleanup_quality_end - self.cleanup_quality_start), "s")
         self.debug_stop_check(self.paths.qc_label)
         
-
     def mp_host_filter(self):
         if not self.no_host:
             self.host_start = time.time()
@@ -236,8 +234,6 @@ class mp_stage:
                 print("host filter cleanup:", '%1.1f' %(self.cleanup_host_end - self.cleanup_host_start),"s")
                 self.debug_stop_check(self.host_filter_label)
                 
-
-
     def mp_vector_filter(self):
         self.vector_start = time.time()
         
@@ -1742,6 +1738,7 @@ class mp_stage:
         print("Outputs:", '%1.1f' % (self.Cytoscape_end - self.Cytoscape_start - (self.cleanup_cytoscape_end - self.cleanup_cytoscape_start)), "s")
         print("Outputs cleanup:", '%1.1f' % (self.cleanup_cytoscape_end - self.cleanup_cytoscape_start), "s")
         
+#---------------------------------------------------------------------------------------------------------------------------------
 
 
     

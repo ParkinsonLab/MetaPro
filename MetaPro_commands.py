@@ -361,8 +361,6 @@ class mt_pipe_commands:
 
         return COMMANDS_qual
 
-
-
     def create_host_filter_command(self):
         self.make_folder(self.path_obj.host_top_path)
         self.make_folder(self.path_obj.host_data_path)
@@ -655,7 +653,6 @@ class mt_pipe_commands:
 
     def create_vector_filter_command(self, no_host_flag = False):
 
-
         self.make_folder(self.path_obj.vector_top_path)
         self.make_folder(self.path_obj.vector_data_path)
         self.make_folder(self.path_obj.vector_jobs_path)
@@ -900,13 +897,13 @@ class mt_pipe_commands:
         return COMMANDS_vector
         
     def create_rRNA_fliter_split_command(self, operating_mode):
+        #using a new splitter that doesn't need an external tool to convert fastq -> fasta
+        #so we split and convert in 1 go.
         split_s_fastq = self.path_obj.Python + " "
         split_s_fastq += self.path_obj.read_split_convert + " "
         split_s_fastq += os.path.join(self.path_obj.vector_final_path, "singletons.fastq") + " "
         split_s_fastq += self.path_obj.rRNA_s_fa_path + " "
         split_s_fastq += self.path_obj.rRNA_chunksize
-
-
 
         split_p1_fastq = self.path_obj.Python + " "
         split_p1_fastq += self.path_obj.read_split_convert + " "
@@ -914,9 +911,40 @@ class mt_pipe_commands:
         split_p1_fastq += self.path_obj.rRNA_p1_fa_path + " "  
         split_p1_fastq += self.path_obj.rRNA_chunksize 
 
+        split_p2_fastq = self.path_obj.Python + " "
+        split_p2_fastq += self.path_obj.read_split_convert  + " "
+        split_p2_fastq += os.path.join(self.path_obj.vector_final_path, "pair_2.fastq") + " "
+        split_p2_fastq += self.path_obj.rRNA_p2_fa_path + " "
+        split_p2_fastq += self.path_obj.rRNA_chunksize 
 
 
+        split_s_tut = self.path_obj.Python + " "
+        split_s_tut += self.path_obj.read_split_convert + " " 
+        split_s_tut += self.sequence_single + " "
+        split_s_tut += self.path_obj.rRNA_s_fa_path + " "
+        split_s_tut += self.path_obj.rRNA_chunksize
 
+        split_p1_tut = self.path_obj.Python + " "
+        split_p1_tut += self.path_obj.read_split_convert + " "
+        split_p1_tut += self.sequence_path_1 + " "
+        split_p1_tut += self.path_obj.rRNA_p1_fa_path + " "
+        split_p1_tut += self.path_obj.rRNA_chunksize
+
+        split_p2_tut = self.path_obj.Python + " "
+        split_p2_tut += self.path_obj.read_split_convert + " "
+        split_p2_tut += self.sequence_path_2 + " "
+        split_p2_tut += self.path_obj.rRNA_p2_fa_path + " "
+        split_p2_tut += self.path_obj.rRNA_chunksize
+
+        command = []
+        if(self.tutorial_keyword == "rRNA"):
+            if(self.read_mode == "single"):
+                command = [split_s_tut]
+            else:
+                command = [split_p1_tut, split_p2_tut]
+        else:
+            command = [split_s_fastq, split_p1_fastq, split_p2_fastq]
+        return command
 
 
     def create_rRNA_filter_prep_command_v3(self, stage_name, category, dependency_name, marker_file):
