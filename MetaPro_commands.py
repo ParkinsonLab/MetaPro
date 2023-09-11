@@ -896,7 +896,7 @@ class mt_pipe_commands:
 
         return COMMANDS_vector
         
-    def create_rRNA_fliter_split_command(self, operating_mode):
+    def create_rRNA_filter_split_command(self):
         #using a new splitter that doesn't need an external tool to convert fastq -> fasta
         #so we split and convert in 1 go.
         split_s_fastq = self.path_obj.Python + " "
@@ -916,7 +916,6 @@ class mt_pipe_commands:
         split_p2_fastq += os.path.join(self.path_obj.vector_final_path, "pair_2.fastq") + " "
         split_p2_fastq += self.path_obj.rRNA_p2_fa_path + " "
         split_p2_fastq += self.path_obj.rRNA_chunksize 
-
 
         split_s_tut = self.path_obj.Python + " "
         split_s_tut += self.path_obj.read_split_convert + " " 
@@ -946,150 +945,37 @@ class mt_pipe_commands:
             command = [split_s_fastq, split_p1_fastq, split_p2_fastq]
         return command
 
+    def create_rRNA_filter_barrnap_command(self, fasta_segment, barrnap_out_file):
+        
+        barrnap_a = ">&2 echo Running Barrnap -> Archae: "
+        barrnap_a += self.path_obj.Barrnap + " " 
+        barrnap_a += "--quiet --reject 0.01 --kingdom arc --threads " + self.threads_str + " "
+        barrnap_a += fasta_segment + " "
+        barrnap_a += ">> " + barrnap_out_file
 
-    def create_rRNA_filter_prep_command_v3(self, stage_name, category, dependency_name, marker_file):
-        #split the data into tiny shards.  called once
-        dep_loc                 = os.path.join(self.Output_Path, dependency_name, "final_results")
-        subfolder               = os.path.join(self.Output_Path, stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        
-        jobs_folder             = os.path.join(data_folder, "jobs")
-        
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(jobs_folder)
-        
-        
-        if(self.tutorial_keyword == "rRNA"):
-            category = "singletons"
-            split_folder            = os.path.join(data_folder, category + "_fastq")
-            self.make_folder(split_folder)
-            split_tut_single_fastq = ">&2 echo splitting fastq for " + category + " | " 
-            split_tut_single_fastq += self.path_obj.Python + " "
-            split_tut_single_fastq += self.path_obj.File_splitter + " "
-            split_tut_single_fastq += self.sequence_single + " " #os.path.join(dep_loc, category + ".fastq") + " "
-            split_tut_single_fastq += os.path.join(split_folder, category) + " "
-            split_tut_single_fastq += str(self.path_obj.rRNA_chunksize)
 
-            if(self.read_mode == "paired"):
-                category = "pair_1"
-                split_folder            = os.path.join(data_folder, category + "_fastq")
-                self.make_folder(split_folder)
-                split_tut_pair_1_fastq = ">&2 echo splitting fastq for " + category + " | " 
-                split_tut_pair_1_fastq += self.path_obj.Python + " "
-                split_tut_pair_1_fastq += self.path_obj.File_splitter + " "
-                split_tut_pair_1_fastq += self.sequence_path_1 + " "#os.path.join(dep_loc, category + ".fastq") + " "
-                split_tut_pair_1_fastq += os.path.join(split_folder, category) + " "
-                split_tut_pair_1_fastq += str(self.path_obj.rRNA_chunksize)
-                
-                category = "pair_2"
-                split_folder            = os.path.join(data_folder, category + "_fastq")
-                self.make_folder(split_folder)
-                split_tut_pair_2_fastq = ">&2 echo splitting fastq for " + category + " | " 
-                split_tut_pair_2_fastq += self.path_obj.Python + " "
-                split_tut_pair_2_fastq += self.path_obj.File_splitter + " "
-                split_tut_pair_2_fastq += self.sequence_path_2 + " "#os.path.join(dep_loc, category + ".fastq") + " "
-                split_tut_pair_2_fastq += os.path.join(split_folder, category) + " "
-                split_tut_pair_2_fastq += str(self.path_obj.rRNA_chunksize)
-            
-                return [split_tut_single_fastq + " && " + split_tut_pair_1_fastq + " && " + split_tut_pair_2_fastq]
-            else:
-                return [split_tut_single_fastq]
-        
-        else:
-            split_folder            = os.path.join(data_folder, category + "_fastq")
-            self.make_folder(split_folder)
-            
-            
-            split_fastq = ">&2 echo splitting fastq for " + category + " | " 
-            split_fastq += self.path_obj.Python + " "
-            split_fastq += self.path_obj.File_splitter + " "
-            split_fastq += os.path.join(dep_loc, category + ".fastq") + " "
-            split_fastq += os.path.join(split_folder, category) + " "
-            split_fastq += str(self.path_obj.rRNA_chunksize)
-            
-        
-        
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
-        
-        return [split_fastq + " && " + make_marker]
+        barrnap_b = ">&2 echo Running Barrnap -> Bacteria: "
+        barrnap_b += self.path_obj.Barrnap + " "
+        barrnap_b += "--quiet --reject 0.01 --kingdom bac --threads " + self.threads_str + " "
+        barrnap_b += fasta_segment + " "
+        barrnap_b += ">> " + barrnap_out_file
 
-    def create_rRNA_filter_convert_fastq_command(self, stage_name, category, fastq_name, marker_file):
-        subfolder           = os.path.join(self.Output_Path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        fasta_folder        = os.path.join(data_folder, category + "_fasta")
-        fastq_folder        = os.path.join(data_folder, category + "_fastq")
-        file_name           = fastq_name.split(".")[0]
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        
-        fastq_seqs          = os.path.join(fastq_folder, fastq_name)
-        
-        fasta_seqs          = os.path.join(fasta_folder, file_name + ".fasta")
-        
-        tut_fasta_folder    = os.path.join(data_folder, "tutorial_fasta")
+        barrnap_e = ">&2 echo Running Barrnap -> Eukaryota: "
+        barrnap_e += self.path_obj.Barrnap + " "
+        barrnap_e += "--quiet --reject 0.01 --kingdom euk --threads " + self.threads_str + " "
+        barrnap_e += fasta_segment + " "
+        barrnap_e += ">> " + barrnap_out_file
 
-        self.make_folder(jobs_folder)
-        
-        #if(self.tutorial_keyword == "rRNA"):
-        #    self.make_folder(tut_fasta_folder)
-        #else:
-        self.make_folder(fasta_folder)
-            
-        
-        convert_fastq_to_fasta = ">&2 echo " + " converting " + file_name + " file to fasta | "
-        convert_fastq_to_fasta += self.path_obj.vsearch
-        convert_fastq_to_fasta += " --fastq_filter " + fastq_seqs
-        convert_fastq_to_fasta += " --fastq_ascii " + self.Qual_str
-        convert_fastq_to_fasta += " --fastaout " + fasta_seqs
-        
-        
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
- 
-        return [convert_fastq_to_fasta + " && " + make_marker]
-    
-    def create_rRNA_filter_barrnap_arc_command(self, stage_name, category, fastq_name, marker_file):
-        # called by each split file
-        # category -> singletons, pair 1, pair 2
-        # file name -> the specific split section of the category (the fastq segments)
-        # stage_name -> "rRNA_Filter"
-        subfolder           = os.path.join(self.Output_Path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        fasta_folder        = os.path.join(data_folder, category + "_fasta")
-        fastq_folder        = os.path.join(data_folder, category + "_fastq")
-        Barrnap_out_folder  = os.path.join(data_folder, category + "_barrnap")
-        file_name           = fastq_name.split(".")[0]
-        Barrnap_arc_out     = os.path.join(Barrnap_out_folder, file_name + "_arc.barrnap_out")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        fasta_seqs          = os.path.join(fasta_folder, file_name + ".fasta")
-        tut_fasta_folder    = os.path.join(data_folder, "tutorial_fasta")
-        tut_Barrnap_out_folder = os.path.join(data_folder, "tutorial_barrnap")
-        
-        
-        #if(self.tutorial_keyword == "rRNA"):
-        #    self.make_folder(tut_fasta_folder)
-        #    self.make_folder(tut_Barrnap_out_folder)
-        #else:
-        self.make_folder(fasta_folder)
-        self.make_folder(Barrnap_out_folder)
-        self.make_folder(jobs_folder)
-    
-        
-        Barrnap_archaea = ">&2 echo running Barrnap on " + file_name + " file: arc | "
-        Barrnap_archaea += self.path_obj.Barrnap
-        Barrnap_archaea += " --quiet --reject 0.01 --kingdom " + "arc"
-        Barrnap_archaea += " --threads " + self.threads_str
-        Barrnap_archaea += " " + fasta_seqs
-        Barrnap_archaea += " >> " + Barrnap_arc_out
-        
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
-  
+        barrnap_m = ">&2 echo Running Barrnap -> Metazon Mitochondria" + " "
+        barrnap_m += self.path_obj.Barrnap + " "
+        barrnap_m += "--quiet --reject 0.01 --kingdom mit --threads " + self.threads_str + " "
+        barrnap_m += fasta_segment + " "
+        barrnap_m += ">> " + barrnap_out_file
 
-        return [Barrnap_archaea + " && " + make_marker]
+        
+
+        command = [barrnap_a, barrnap_b, barrnap_e, barrnap_m]
+        return command
               
     def create_rRNA_filter_barrnap_bac_command(self, stage_name, category, fastq_name, marker_file):
 

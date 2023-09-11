@@ -256,34 +256,34 @@ class mp_stage:
         #if not check_where_resume(self.rRNA_filter_path, None, self.vector_path):
         if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_label): 
             marker_path_list = []
-            sections = ["singletons"]
-            if self.read_mode == "paired":
-                sections.extend(["pair_1", "pair_2"])
-            
-            for section in reversed(sections):  #we go backwards due to a request by Ana.  pairs first, if applicable, then singletons
-                #split the data, if necessary.
-                #initial split -> by lines.  we can do both
-                split_path = os.path.join(self.rRNA_filter_path, "data", section + "_fastq")
-                barrnap_path = os.path.join(self.output_folder_path, self.rRNA_filter_label, "data", section, section + "_barrnap")
-                infernal_path = os.path.join(self.output_folder_path, self.rRNA_filter_label, "data", section, section + "_infernal") 
-                marker_file = "rRNA_filter_prep_" + section
-                marker_path = os.path.join(rRNA_filter_jobs_folder, marker_file)
-                #if not check_where_resume(job_label = None, full_path = second_split_path, dep_job_path = vector_path):
-                if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_split_label + "_" + section):
-                    print(dt.today(), "splitting:", section, " for rRNA filtration")
-                    job_name = "rRNA_filter_prep_" + section
-                    marker_path_list.append(marker_path)
-                    command_list = self.commands.create_rRNA_filter_prep_command_v3(self.rRNA_filter_label, section, self.vector_filter_label, marker_file)
-                    self.mp_util.launch_and_create_with_mp_store(self.rRNA_filter_label, job_name, self.commands, command_list)
+            #split and convert fastq -> fasta
+            command_list = self.commands.create_rRNA_filter_split_command()
+            self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+
             self.mp_util.wait_for_mp_store()
-            final_checklist = os.path.join(self.rRNA_filter_path, "rRNA_filter_prep.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            for element in sections:
-                if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_split_label + "_" + element):
-                    self.mp_util.write_to_bypass_log(self.output_folder_path, self.rRNA_filter_split_label + "_" + element)
-                
-            #-------------------------------------------------------------------------------------------------
-            # Convert fastq segments to fasta
+
+
+            for split_fasta in os.listdir(self.paths.rRNA_p1_fa_path):
+                file_name = split_fasta.split(".")[0]
+                barrnap_out = os.path.join(self.paths.rRNA_p1_bar_path, file_name + ".barrnap_out")
+                command = self.commands.create_rRNA_filter_barrnap_command(split_fasta, barrnap_out)
+                self.my_util.launch_only_with_mp_store(self.commands, command_list)
+
+            for split_fasta in os.listdir(self.paths.rRNA_p2_fa_path):
+                file_name = split_fasta.split(".")[0]
+                barrnap_out = os.path.join(self.paths.rRNA_p1_bar_path, file_name + ".barrnap_out")
+                command = self.commands.create_rRNA_filter_barrnap_command(split_fasta, barrnap_out)
+                self.my_util.launch_only_with_mp_store(self.commands, command_list)
+
+            for split_fasta in os.listdir(self.paths.rRNA_s_fa_path):
+                file_name = split_fasta.split(".")[0]
+                barrnap_out = os.path.join(self.paths.rRNA_p1_bar_path, file_name + ".barrnap_out")
+                command = self.commands.create_rRNA_filter_barrnap_command(split_fasta, barrnap_out)
+                self.my_util.launch_only_with_mp_store(self.commands, command_list)
+
+
+            
+            self.mp_util.wait_for_mp_store()
             
             for section in reversed(sections):
                 split_path = os.path.join(self.rRNA_filter_path, "data", section + "_fastq")

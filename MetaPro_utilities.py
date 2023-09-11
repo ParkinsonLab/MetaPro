@@ -254,6 +254,15 @@ class mp_util:
         )
         process.start()
         process.join()
+
+    def launch_only_with_mp_store(self, command_obj, commands):
+        process = mp.Process(
+            target = command_obj.launch_only, 
+            args=(commands, len(commands))
+        )
+
+        process.start()
+        self.mp_store.append(process)
         
     def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_location, job_label, command_obj, commands):
         #just launches a job.  no multi-process.
