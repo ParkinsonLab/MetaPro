@@ -945,7 +945,7 @@ class mt_pipe_commands:
             command = [split_s_fastq, split_p1_fastq, split_p2_fastq]
         return command
 
-    def create_rRNA_filter_barrnap_command(self, fasta_segment, barrnap_out_file):
+    def create_rRNA_filter_barrnap_command(self, fasta_segment, barrnap_out_file, mRNA_file, junk_file, marker_file):
         
         barrnap_a = ">&2 echo Running Barrnap -> Archae: "
         barrnap_a += self.path_obj.Barrnap + " " 
@@ -972,196 +972,21 @@ class mt_pipe_commands:
         barrnap_m += fasta_segment + " "
         barrnap_m += ">> " + barrnap_out_file
 
-        
 
-        command = [barrnap_a, barrnap_b, barrnap_e, barrnap_m]
+        barrnap_pp = ">&2 echo getting mRNA from barrnap" + " "
+        barrnap_pp += self.path_obj.Python + " "
+        barrnap_pp += self.path_obj.barrnap_post + " "
+        barrnap_pp += barrnap_out_file + " "
+        barrnap_pp += fasta_segment + " "
+        barrnap_pp += mRNA_file + " "
+        barrnap_pp += junk_file
+        
+        command = [barrnap_a, barrnap_b, barrnap_e, barrnap_m, barrnap_pp]
         return command
               
-    def create_rRNA_filter_barrnap_bac_command(self, stage_name, category, fastq_name, marker_file):
-
-        subfolder           = os.path.join(self.Output_Path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        fasta_folder        = os.path.join(data_folder, category + "_fasta")
-        Barrnap_out_folder  = os.path.join(data_folder, category + "_barrnap")
-        file_name           = fastq_name.split(".")[0]
-        Barrnap_bac_out     = os.path.join(Barrnap_out_folder, file_name + "_bac.barrnap_out")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        fasta_seqs          = os.path.join(fasta_folder, file_name + ".fasta")
-        tut_fasta_folder    = os.path.join(data_folder, "tutorial_fasta")
-        tut_Barrnap_out_folder = os.path.join(data_folder, "tutorial_barrnap")
-        
-        #if(self.tutorial_keyword == "rRNA"):
-        #    self.make_folder(tut_fasta_folder)
-        #    self.make_folder(tut_Barrnap_out_folder)
-        #else:
-        self.make_folder(fasta_folder)
-        self.make_folder(Barrnap_out_folder)
-        self.make_folder(jobs_folder)
     
-        
-
-        Barrnap_bacteria = ">&2 echo Running Barrnap on " + file_name + " file:  bac | "
-        Barrnap_bacteria += self.path_obj.Barrnap
-        Barrnap_bacteria += " --quiet --reject 0.01 --kingdom " + "bac"
-        Barrnap_bacteria += " --threads " + self.threads_str
-        Barrnap_bacteria += " " + fasta_seqs
-        Barrnap_bacteria += " >> " + Barrnap_bac_out
-  
-        
-        make_marker = "touch"  + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
-        
-        # if(self.tutorial_keyword == "rRNA"):
-            # if(self.read_mode == "single"):
-                # return [Barrnap_tut_singletons_bacteria]
-            # elif(self.read_mode == "paired"):
-                # return [Barrnap_tut_singletons_bacteria + " && " + Barrnap_tut_pair_1_bacteria + " && " + Barrnap_tut_pair_2_bacteria]
-        # else:
-        return [Barrnap_bacteria + " && " + make_marker]
-        
-    def create_rRNA_filter_barrnap_euk_command(self, stage_name, category, fastq_name, marker_file):
-
-        subfolder           = os.path.join(self.Output_Path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        fasta_folder        = os.path.join(data_folder, category + "_fasta")
-        Barrnap_out_folder  = os.path.join(data_folder, category + "_barrnap")
-        file_name           = fastq_name.split(".")[0]
-        Barrnap_euk_out     = os.path.join(Barrnap_out_folder, file_name + "_euk.barrnap_out")
-        fasta_seqs          = os.path.join(fasta_folder, file_name + ".fasta")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        
-        tut_fasta_folder    = os.path.join(data_folder, "tutorial_fasta")
-        tut_Barrnap_out_folder = os.path.join(data_folder, "tutorial_barrnap")
-        
-
-        self.make_folder(fasta_folder)
-        self.make_folder(Barrnap_out_folder)
-        self.make_folder(jobs_folder)
-
-        Barrnap_eukaryote = ">&2 echo Running Barrnap on " + file_name + " file: euk | "
-        Barrnap_eukaryote += self.path_obj.Barrnap
-        Barrnap_eukaryote += " --quiet --reject 0.01 --kingdom " + "euk"
-        Barrnap_eukaryote += " --threads " + self.threads_str
-        Barrnap_eukaryote += " " + fasta_seqs
-        Barrnap_eukaryote += " >> " + Barrnap_euk_out
-        
-
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
-    
-    
-        return [Barrnap_eukaryote + " && " + make_marker]
-        
-    def create_rRNA_filter_barrnap_mit_command(self, stage_name, category, fastq_name, marker_file):
-        #designed to run on a single split sample.
-        #expected to be merged later with all the other runs of the same fastq name
-        subfolder           = os.path.join(self.Output_Path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        fasta_folder        = os.path.join(data_folder, category + "_fasta")
-        Barrnap_out_folder  = os.path.join(data_folder, category + "_barrnap")
-        file_name           = fastq_name.split(".")[0]
-        Barrnap_mit_out     = os.path.join(Barrnap_out_folder, file_name + "_mit.barrnap_out")
-        fasta_seqs          = os.path.join(fasta_folder, file_name + ".fasta")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        
-        tut_fasta_folder    = os.path.join(data_folder, "tutorial_fasta")
-        tut_Barrnap_out_folder = os.path.join(data_folder, "tutorial_barrnap")
-        
-
-        self.make_folder(fasta_folder)
-        self.make_folder(Barrnap_out_folder)
-        self.make_folder(jobs_folder)
-
-        Barrnap_mitochondria = ">&2 echo Running Barrnap on " + file_name + " file: mito | " 
-        Barrnap_mitochondria += self.path_obj.Barrnap
-        Barrnap_mitochondria += " --quiet --reject 0.01 --kingdom " + "mito"
-        Barrnap_mitochondria += " --threads " + self.threads_str
-        Barrnap_mitochondria += " " + fasta_seqs
-        Barrnap_mitochondria += " >> " + Barrnap_mit_out
-        
-
-
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
-        
-
-        return [Barrnap_mitochondria + " && " + make_marker]
-               
-    def create_rRNA_filter_barrnap_cat_command(self, stage_name, category, fastq_name, marker_file):
-        #this is expected to run on each sample split
-        subfolder           = os.path.join(self.Output_Path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        fasta_folder        = os.path.join(data_folder, category + "_fasta")
-        fastq_folder        = os.path.join(data_folder, category + "_fastq")
-        Barrnap_out_folder  = os.path.join(data_folder, category + "_barrnap")
-        infernal_out_folder = os.path.join(data_folder, category + "_infernal")
-        file_name           = fastq_name.split(".")[0]
-        Barrnap_arc_out     = os.path.join(Barrnap_out_folder, file_name + "_arc.barrnap_out")
-        Barrnap_bac_out     = os.path.join(Barrnap_out_folder, file_name + "_bac.barrnap_out")
-        Barrnap_euk_out     = os.path.join(Barrnap_out_folder, file_name + "_euk.barrnap_out")
-        Barrnap_mit_out     = os.path.join(Barrnap_out_folder, file_name + "_mit.barrnap_out")
-        infernal_out        = os.path.join(infernal_out_folder, file_name + ".infernal_out")
-        fasta_seqs          = os.path.join(fasta_folder, file_name + ".fasta")
-        Barrnap_out         = os.path.join(Barrnap_out_folder, file_name + ".barrnap_out")
-
-        tut_fasta_folder    = os.path.join(data_folder, "tutorial_fasta")
-        tut_Barrnap_out_folder = os.path.join(data_folder, "tutorial_barrnap")
-        
-
-        self.make_folder(fasta_folder)
-        self.make_folder(Barrnap_out_folder)
-        self.make_folder(infernal_out_folder)
-        self.make_folder(jobs_folder)
-   
-        #combine the arc, bac, euk, mit files into 1
-        cat_command = ">&2 echo Combining files for:" + file_name + " | "
-        cat_command += "cat" + " "
-        cat_command += Barrnap_arc_out + " " + Barrnap_bac_out + " " + Barrnap_euk_out + " " + Barrnap_mit_out + " "
-        cat_command += ">>" + " " + Barrnap_out
-        
-        rm_arc = ">&2 echo delete arc: " + file_name + " | "
-        rm_arc += "rm" + " "
-        rm_arc += Barrnap_arc_out
-        
-        rm_bac = ">&2 echo delete bac: " + file_name + " | "
-        rm_bac += "rm" + " "
-        rm_bac += Barrnap_bac_out
-        
-        rm_euk = ">&2 echo delete euk: " + file_name + " | "
-        rm_euk += "rm" + " "
-        rm_euk += Barrnap_euk_out
-        
-        rm_mit = ">&2 echo delete mit: " + file_name + " | "
-        rm_mit += "rm" + " "
-        rm_mit += Barrnap_mit_out
-        
-        make_marker = "touch" + " " 
-        make_marker += os.path.join(jobs_folder, marker_file)
-        
-
-        return [cat_command + " && " + make_marker + " && " + rm_arc  + " && " + rm_bac  + " && " +  rm_euk  + " && " +  rm_mit]
              
     def create_rRNA_filter_barrnap_pp_command(self, stage_name, category, fastq_name, marker_file):
-        subfolder           = os.path.join(self.Output_Path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        fasta_folder        = os.path.join(data_folder, category + "_fasta")
-        fastq_folder        = os.path.join(data_folder, category + "_fastq")
-        Barrnap_out_folder  = os.path.join(data_folder, category + "_barrnap")
-        infernal_out_folder = os.path.join(data_folder, category + "_infernal")
-        mRNA_folder         = os.path.join(data_folder, category + "_barrnap_mRNA")
-        rRNA_folder         = os.path.join(data_folder, category + "_barrnap_other")
-        file_name           = fastq_name.split(".")[0]
-        Barrnap_out         = os.path.join(Barrnap_out_folder, file_name + ".barrnap_out")
-        fastq_seqs          = os.path.join(fastq_folder, fastq_name)
-        
-        self.make_folder(fasta_folder)
-        self.make_folder(Barrnap_out_folder)
-        self.make_folder(infernal_out_folder)
-        self.make_folder(mRNA_folder)
-        self.make_folder(rRNA_folder)
-        self.make_folder(jobs_folder)
         
         
         Barrnap_pp = ">&2 echo Running Barrnap pp scripts | "

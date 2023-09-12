@@ -669,7 +669,7 @@ class tool_path_obj:
         self.remove_tag                 = self.value_assignment(config, "code", "remove_tag", os.path.join(script_path, "read_remove_tag.py"), "path")
         self.BLAT_Contaminant_Filter    = self.value_assignment(config, "code", "blat_contaminant_filter", os.path.join(script_path, "read_BLAT_filter_v3.py"), "path")
         self.File_splitter              = self.value_assignment(config, "code", "file_splitter", os.path.join(script_path, "read_split.py"), "path")
-        self.barrnap_post               = self.value_assignment(config, "code", "barrnap_post", os.path.join(script_path, "read_rRNA_barrnap.py"), "path")
+        self.barrnap_post               = self.value_assignment(config, "code", "barrnap_post", os.path.join(script_path, "read_rRNA_barrnap_v2.py"), "path")
         self.rRNA_filter                = self.value_assignment(config, "code", "rRNA_filter", os.path.join(script_path, "read_rRNA_infernal.py"), "path")
         self.read_split_convert         = self.value_assignment(config, "code", "read_split_convert", os.path.join(script_path, "read_split_and_convert.py"), "path")
         self.Map_contig                 = self.value_assignment(config, "code", "map_contig", os.path.join(script_path, "assembly_make_contig_map.py"), "path")
@@ -738,6 +738,7 @@ class tool_path_obj:
 
         self.rRNA_top_path          = os.path.join(self.output_path, self.rRNA_filter_label)
         self.rRNA_data_path         = os.path.join(self.rRNA_top_path, "data")
+        self.rRNA_jobs_path         = os.path.join(self.rRNA_top_path, "jobs")
         self.rRNA_p1_fq_path        = os.path.join(self.rRNA_data_path, "pair_1_fastq")
         self.rRNA_p1_fa_path        = os.path.join(self.rRNA_data_path, "pair_1_fasta")
         self.rRNA_p1_bar_path       = os.path.join(self.rRNA_data_path, "pair_1_barrnap")
