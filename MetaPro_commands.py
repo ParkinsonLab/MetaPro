@@ -985,105 +985,21 @@ class mt_pipe_commands:
         return command
               
     
-             
-    def create_rRNA_filter_barrnap_pp_command(self, stage_name, category, fastq_name, marker_file):
-        
-        
-        Barrnap_pp = ">&2 echo Running Barrnap pp scripts | "
-        Barrnap_pp += self.path_obj.Python + " "
-        Barrnap_pp += self.path_obj.barrnap_post + " "
-        Barrnap_pp += Barrnap_out + " "
-        Barrnap_pp += fastq_seqs + " "
-        Barrnap_pp += mRNA_folder + " "
-        Barrnap_pp += rRNA_folder + " "
-        Barrnap_pp += file_name + "_barrnap"
-        
 
-        
-        
-        #make_marker = ">&2 echo " + file_name + "_barrnap Marking job completed | " 
-        make_marker = "touch" + " " 
-        make_marker += os.path.join(jobs_folder, marker_file)
-        
 
-        return [Barrnap_pp + " && " + make_marker]
-               
-    def create_rRNA_filter_infernal_prep_command(self, stage_name, category, fastq_name, root_name, marker_file):
-        #expecting full file name in fastq_name
-        subfolder           = os.path.join(self.Output_Path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        fasta_folder        = os.path.join(data_folder, category + "_fasta")
-        fastq_folder        = os.path.join(data_folder, category + "_fastq")
-        Barrnap_out_folder  = os.path.join(data_folder, category + "_barrnap_mRNA_fasta")
-        infernal_out_folder = os.path.join(data_folder, category + "_infernal")
-        mRNA_folder         = os.path.join(data_folder, category + "_barrnap_mRNA")
-        file_name           = fastq_name.split(".")[0]
-        Barrnap_out         = os.path.join(Barrnap_out_folder, file_name + ".barrnap_out")
-        infernal_out        = os.path.join(infernal_out_folder, file_name + ".infernal_out")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        fastq_seqs          = os.path.join(fastq_folder, fastq_name)
+    def create_rRNA_filter_infernal_command(self, fasta_segment, infernal_out_file):
         
-        fasta_seqs          = os.path.join(fasta_folder, file_name + ".fasta")
-        
-        tut_Barrnap_mRNA_folder     = os.path.join(data_folder, "tutorial_barrnap_mRNA")
-        tut_infernal_input_folder   = os.path.join(data_folder, "tutorial_infernal_input")
-        # if(self.tutorial_keyword == "rRNA"):
-            # self.make_folder(tut_Barrnap_mRNA_folder)
-            # self.make_folder(tut_infernal_input_folder)
-        # else:
-        self.make_folder(infernal_out_folder)
-        self.make_folder(mRNA_folder)
-        self.make_folder(Barrnap_out_folder)
-        self.make_folder(jobs_folder)
-        
-        convert_fastq_to_fasta_barrnap = ">&2 echo converting barrnap fastq to fasta:" + file_name + " | "
-        convert_fastq_to_fasta_barrnap += self.path_obj.vsearch
-        convert_fastq_to_fasta_barrnap += " --fastq_filter " + os.path.join(mRNA_folder, fastq_name)
-        convert_fastq_to_fasta_barrnap += " --fastq_ascii " + self.Qual_str
-        convert_fastq_to_fasta_barrnap += " --fastaout " + os.path.join(Barrnap_out_folder, file_name + ".fasta")
-        
-
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
-        
-
-        return [convert_fastq_to_fasta_barrnap + " && " + make_marker]
-
-    def create_rRNA_filter_infernal_command(self, stage_name, category, file_name, marker_file):
-        subfolder           = os.path.join(self.Output_Path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        fasta_folder        = os.path.join(data_folder, category + "_fasta")
-        fastq_folder        = os.path.join(data_folder, category + "_fastq")
-        Barrnap_out_folder  = os.path.join(data_folder, category + "_barrnap_mRNA_fasta")
-        infernal_out_folder = os.path.join(data_folder, category + "_infernal")
-        mRNA_folder         = os.path.join(data_folder, category + "_barrnap_mRNA")
-        Barrnap_out         = os.path.join(Barrnap_out_folder, file_name + ".barrnap_out")
-        infernal_out        = os.path.join(infernal_out_folder, file_name + ".infernal_out")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        
-        tut_Barrnap_mRNA_folder     = os.path.join(data_folder, "tutorial_barrnap_mRNA")
-        tut_infernal_input_folder   = os.path.join(data_folder, "tutorial_infernal_input")
-        # if(self.tutorial_keyword == "rRNA"):
-            # self.make_folder(tut_Barrnap_mRNA_folder)
-            # self.make_folder(tut_infernal_input_folder)
-            # self.make_folder(infernal_out_folder)
-        # else:
-
-        self.make_folder(infernal_out_folder)
-        self.make_folder(mRNA_folder)
-        self.make_folder(Barrnap_out_folder)
-        self.make_folder(jobs_folder)
-        
-
-        infernal_command = ">&2 echo " + str(dt.today()) + " running infernal on " + file_name + " file | "
-        infernal_command += self.path_obj.Infernal
-        infernal_command += " -o /dev/null --tblout "
-        infernal_command += infernal_out
-        #infernal_command += " --cpu " + self.threads_str -> lined nerf'd because infernal's parallelism is not good
-        infernal_command += " --cpu 1"
-        infernal_command += " --anytrunc --rfam -E 0.001 "
-        infernal_command += self.path_obj.Rfam + " "
-        infernal_command += os.path.join(Barrnap_out_folder, file_name + "_barrnap_mRNA.fasta")
+        infernal_command = self.path_obj.Infernal
+        infernal_command += " -o /dev/null --tblout"        + " "
+        infernal_command += infernal_out_file               + " "
+        #infernal's parallelism is only good up to 4 CPUs
+        if (self.threads_str < 4):
+            infernal_command += "--cpu 1"                   + " "
+        else:
+            infernal_command += "--cpu 4"                   + " "
+        infernal_command += "--anytrunc --rfam -E 0.001"    + " "
+        infernal_command += self.path_obj.Rfam              + " "
+        infernal_command += fasta_segment
   
         
         #make_marker = ">&2 echo " + file_name + "_infernal Marking job completed | " 

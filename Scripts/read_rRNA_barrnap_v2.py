@@ -9,6 +9,7 @@ import time
 #-> and entries that weren't (mRNA), and then export them
 
 #Aug 14, 2023: Changed to work only with FASTA, and not FASTQ.
+#Sept 13, 2023: changed to export a list of IDs for the discards.  To save disc space
 
 def extract_rRNA_ID(barrnap_file):
     ID_list = set()
@@ -61,5 +62,5 @@ if __name__ == "__main__":
         for item in fasta_dict.keys():
             if not (item in fasta_ID_list):
                 junk_out.write(item + "\n")
-                junk_out.write(fasta_dict[item])
+                #junk_out.write(fasta_dict[item])
 
