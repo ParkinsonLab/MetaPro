@@ -44,13 +44,12 @@ if __name__ == "__main__":
     barrnap_file    = sys.argv[1]
     fasta_seq_file  = sys.argv[2]
     mRNA_file   = sys.argv[3]
-    junk_file  = sys.argv[4]
+    #junk_file  = sys.argv[4]
 
     fasta_dict = import_fasta(fasta_seq_file)
     fasta_ID_list = extract_rRNA_ID(barrnap_file)
 
     mRNA_export_path = mRNA_file
-    junk_export_path = junk_file
 
     with open(mRNA_export_path, "w") as mRNA_out:
         for item in fasta_dict.keys():
@@ -58,9 +57,9 @@ if __name__ == "__main__":
                 mRNA_out.write(item + '\n')
                 mRNA_out.write(fasta_dict[item])
 
-    with open(junk_export_path, "w") as junk_out:
-        for item in fasta_dict.keys():
-            if not (item in fasta_ID_list):
-                junk_out.write(item + "\n")
-                #junk_out.write(fasta_dict[item])
+    #with open(junk_export_path, "w") as junk_out:
+    #    for item in fasta_dict.keys():
+    #        if not (item in fasta_ID_list):
+    #            junk_out.write(item + "\n")
+    #            #junk_out.write(fasta_dict[item])
 

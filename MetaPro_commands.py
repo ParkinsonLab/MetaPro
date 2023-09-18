@@ -945,7 +945,7 @@ class mt_pipe_commands:
             command = [split_s_fastq, split_p1_fastq, split_p2_fastq]
         return command
 
-    def create_rRNA_filter_barrnap_command(self, fasta_segment, barrnap_out_file, mRNA_file, junk_file, marker_file):
+    def create_rRNA_filter_barrnap_command(self, fasta_segment, barrnap_out_file, mRNA_file):
         
         barrnap_a = ">&2 echo Running Barrnap -> Archae: "
         barrnap_a += self.path_obj.Barrnap + " " 
@@ -978,9 +978,8 @@ class mt_pipe_commands:
         barrnap_pp += self.path_obj.barrnap_post + " "
         barrnap_pp += barrnap_out_file + " "
         barrnap_pp += fasta_segment + " "
-        barrnap_pp += mRNA_file + " "
-        barrnap_pp += junk_file
-        
+        barrnap_pp += mRNA_file
+
         command = [barrnap_a, barrnap_b, barrnap_e, barrnap_m, barrnap_pp]
         return command
               

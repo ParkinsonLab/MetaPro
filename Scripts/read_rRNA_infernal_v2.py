@@ -4,7 +4,8 @@
 #this replaces the read_rRNA_infernal 
 
 #Sept 13, 2023: exports the junk as ID lists. but it won't bother exporting infernal-only mRNA.
-#Also: 
+#Also: we don't really care about what tool removes what.  If we needed it, that could be reverse-engineered.  
+
 
 import pandas as pd
 from datetime import datetime as dt
@@ -38,16 +39,8 @@ def import_fastq(read_file):
     
     return fastq_df
 
-def import_barrnap(barrnap_file):
-    #If there's a better way to do this, I'd like to see it.
-    ID_list = set()
-    barrnap_list = open(barrnap_file, mode='r')
-    
-    for item in barrnap_list:
-        if(not item.startswith("#")):
-            ID_list.add("@" + item.split("\t")[0])
-    #pandas can't deal with sets, but we only need unique elements        
-    return list(ID_list)
+
+
 
 
 if __name__ == "__main__":
