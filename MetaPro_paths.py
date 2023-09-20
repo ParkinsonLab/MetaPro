@@ -669,8 +669,8 @@ class tool_path_obj:
         self.remove_tag                 = self.value_assignment(config, "code", "remove_tag", os.path.join(script_path, "read_remove_tag.py"), "path")
         self.BLAT_Contaminant_Filter    = self.value_assignment(config, "code", "blat_contaminant_filter", os.path.join(script_path, "read_BLAT_filter_v3.py"), "path")
         self.File_splitter              = self.value_assignment(config, "code", "file_splitter", os.path.join(script_path, "read_split.py"), "path")
-        self.barrnap_post               = self.value_assignment(config, "code", "barrnap_post", os.path.join(script_path, "read_rRNA_barrnap_v2.py"), "path")
-        self.rRNA_filter                = self.value_assignment(config, "code", "rRNA_filter", os.path.join(script_path, "read_rRNA_infernal.py"), "path")
+        self.rRNA_barrnap_pp            = self.value_assignment(config, "code", "rRNA_barrnap_pp", os.path.join(script_path, "read_rRNA_barrnap_v2.py"), "path")
+        self.rRNA_infernal_pp           = self.value_assignment(config, "code", "rRNA_infernal_pp", os.path.join(script_path, "read_rRNA_infernal_v2.py"), "path")
         self.read_split_convert         = self.value_assignment(config, "code", "read_split_convert", os.path.join(script_path, "read_split_and_convert.py"), "path")
         self.Map_contig                 = self.value_assignment(config, "code", "map_contig", os.path.join(script_path, "assembly_make_contig_map.py"), "path")
         self.flush_bad_contigs          = self.value_assignment(config, "code", "flush_bad_contigs", os.path.join(script_path, "assembly_flush_bad_contigs.py"), "path")
@@ -678,11 +678,11 @@ class tool_path_obj:
         self.Map_reads_gene_BWA         = self.value_assignment(config, "code", "ga_bwa_pp", os.path.join(script_path, "ga_BWA_generic_v2.py"), "path")
         self.Map_reads_gene_BLAT        = self.value_assignment(config, "code", "ga_blat_pp", os.path.join(script_path, "ga_BLAT_generic_v3.py"), "path")
         self.Map_reads_prot_DMND        = self.value_assignment(config, "code", "ga_dmd_pp", os.path.join(script_path, "GA_DMD_generic_v2.py"), "path")
-        self.GA_merge             = self.value_assignment(config, "code", "GA_merge", os.path.join(script_path, "GA_merge_v4.py"), "path")
+        self.GA_merge                   = self.value_assignment(config, "code", "GA_merge", os.path.join(script_path, "GA_merge_v4.py"), "path")
         self.GA_merge_fasta             = self.value_assignment(config, "code", "ga_merge_fasta", os.path.join(script_path, "ga_merge_fasta.py"), "path")
-        self.GA_merge_fasta       = self.value_assignment(config, "code", "GA_merge_fasta", os.path.join(script_path, "GA_merge_fastq.py"), "path")
-        self.GA_merge_proteins    = self.value_assignment(config, "code", "GA_merge_proteins", os.path.join(script_path, "GA_merge_proteins.py"), "path")
-        self.GA_merge_maps        = self.value_assignment(config, "code", "GA_merge_maps", os.path.join(script_path, "GA_merge_map.py"), "path")
+        self.GA_merge_fasta             = self.value_assignment(config, "code", "GA_merge_fasta", os.path.join(script_path, "GA_merge_fastq.py"), "path")
+        self.GA_merge_proteins          = self.value_assignment(config, "code", "GA_merge_proteins", os.path.join(script_path, "GA_merge_proteins.py"), "path")
+        self.GA_merge_maps              = self.value_assignment(config, "code", "GA_merge_maps", os.path.join(script_path, "GA_merge_map.py"), "path")
         self.EC_Annotation_Post         = self.value_assignment(config, "code", "ec_combine", os.path.join(script_path, "ea_combine_v5.py"), "path")
         self.Annotated_taxid            = self.value_assignment(config, "code", "ta_taxid", os.path.join(script_path, "ta_taxid_v3.py"), "path")
         self.Constrain_classification   = self.value_assignment(config, "code", "ta_constrain", os.path.join(script_path, "ta_constrain_taxonomy_v2.py"), "path")
@@ -708,6 +708,10 @@ class tool_path_obj:
         self.GA_pre_scan_get_lib        = self.value_assignment(config, "code", "ga_pre_scan_get_lib", os.path.join(script_path, "ga_pre_scan_get_libs.py"), "path")
         self.GA_pre_scan_assemble_lib   = self.value_assignment(config, "code", "ga_pre_scan_assemble_lib", os.path.join(script_path, "ga_pre_scan_assemble_libs.py"), "path")
         
+        #---------------------------------------------------------
+        #marker file names
+        self.qc_marker_name = "quality_marker"
+
 
         #---------------------------------------------------------------------------------------
         # Folder names + paths

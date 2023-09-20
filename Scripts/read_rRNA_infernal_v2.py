@@ -7,6 +7,7 @@
 #Also: we don't really care about what tool removes what.  If we needed it, that could be reverse-engineered.  
 
 
+
 import pandas as pd
 from datetime import datetime as dt
 import os
@@ -58,24 +59,20 @@ if __name__ == "__main__":
         pair_1_inf_file = sys.argv[3]       #the post-filter infernal_file
         pair_2_inf_file = sys.argv[4]       #IN
         
-        pair_1_barrnap_file = sys.argv[5]   #the post-filter barrnap file
-        pair_2_barrnap_file = sys.argv[6]   #IN
+        pair_1_raw_file = sys.argv[5]       #the input data, to populate
+        pair_2_raw_file = sys.argv[6]       #IN
     
-        pair_1_raw_file = sys.argv[7]       #the input data, to populate
-        pair_2_raw_file = sys.argv[8]       #IN
+        pair_1_accepted_file = sys.argv[7]  #the read files that get accepted
+        pair_2_accepted_file = sys.argv[8]  #OUT
     
-        pair_1_accepted_file = sys.argv[9]  #the read files that get accepted
-        pair_2_accepted_file = sys.argv[10]  #OUT
-    
-        pair_1_rejected_file = sys.argv[11]  #the read files that get rejected 
-        pair_2_rejected_file = sys.argv[12]  #OUT
+        pair_1_rejected_file = sys.argv[9]  #the read files that get rejected 
+        pair_2_rejected_file = sys.argv[10]  #OUT
     
     else:
         single_inf_file = sys.argv[3]
-        single_barrnap_file = sys.argv[4]
-        single_raw_file = sys.argv[5]
-        single_accepted_file = sys.argv[6]
-        single_rejected_file = sys.argv[7]
+        single_raw_file = sys.argv[4]
+        single_accepted_file = sys.argv[5]
+        single_rejected_file = sys.argv[6]
     #-------------------------------------------------------
     
     if(data_flag == "paired"):
@@ -85,14 +82,9 @@ if __name__ == "__main__":
         
         pair_1_raw_df = import_fastq(pair_1_raw_file)
         pair_2_raw_df = import_fastq(pair_2_raw_file)
+
         
-        pair_1_barrnap_list = import_barrnap(pair_1_barrnap_file)
-        pair_2_barrnap_list = import_barrnap(pair_2_barrnap_file)
-        
-        pair_1_id_list += pair_1_barrnap_list
-        pair_2_id_list += pair_2_barrnap_list
-        
-        #grab the common IDs.  They'll be the ones we want. The ones that meet the filter
+        #grab the common IDs between 1 and 2.  They'll be the ones we want. The ones that meet the filter
         if(operating_mode == "low"):     #liberal:  only things that are included on both sides is rRNA
             common_id_list = list(set(pair_1_id_list).intersection(pair_2_id_list)) 
         elif(operating_mode == "high"):  #conservative: anything in this unioned list is rRNA
@@ -118,10 +110,8 @@ if __name__ == "__main__":
         
     else:
         single_id_list = import_infernal_rRNA(single_inf_file)
-        single_barrnap_list = import_barrnap(single_barrnap_file)
         single_raw_df = import_fastq(single_raw_file)
         
-        single_id_list += single_barrnap_list
         
         single_accepted_df = single_raw_df[~single_raw_df["ID"].isin(single_id_list)]
         single_rejected_df = single_raw_df[single_raw_df["ID"].isin(single_id_list)]
