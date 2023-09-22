@@ -899,6 +899,13 @@ class mt_pipe_commands:
     def create_rRNA_filter_split_command(self):
         #using a new splitter that doesn't need an external tool to convert fastq -> fasta
         #so we split and convert in 1 go.
+        self.make_folder(self.path_obj.rRNA_top_path)
+        self.make_folder(self.path_obj.rRNA_data_path)
+        self.make_folder(self.path_obj.rRNA_jobs_path)
+        self.make_folder(self.path_obj.rRNA_s_fa_path)
+        self.make_folder(self.path_obj.rRNA_p1_fa_path)
+        self.make_folder(self.path_obj.rRNA_p2_fa_path)
+
         split_s_fastq = self.path_obj.Python + " "
         split_s_fastq += self.path_obj.read_split_convert + " "
         split_s_fastq += os.path.join(self.path_obj.vector_final_path, "singletons.fastq") + " "
@@ -945,8 +952,13 @@ class mt_pipe_commands:
             command = [split_s_fastq, split_p1_fastq, split_p2_fastq]
         return command
 
-    def create_rRNA_filter_barrnap_command(self, fasta_segment, barrnap_out_file, mRNA_file):
-        
+    def create_rRNA_filter_barrnap_command(self, fasta_segment, barrnap_out_file, mRNA_file, marker_path):
+        self.make_folder(self.path_obj.rRNA_s_bar_path)
+        self.make_folder(self.path_obj.rRNA_p1_bar_path)
+        self.make_folder(self.path_obj.rRNA_p2_bar_path)
+
+
+        fasta_basename = os.path.basename(fasta_segment).split(".")[0]
         barrnap_a = ">&2 echo Running Barrnap -> Archae: "
         barrnap_a += self.path_obj.Barrnap + " " 
         barrnap_a += "--quiet --reject 0.01 --kingdom arc --threads " + self.threads_str + " "
@@ -980,18 +992,24 @@ class mt_pipe_commands:
         barrnap_pp += fasta_segment + " "
         barrnap_pp += mRNA_file
 
-        make_marker = "touch" + " " 
-        make_marker += os.path.join(jobs_folder, marker_file_name)
+        make_marker = "touch" + " " + marker_path
 
-        command = [barrnap_a, barrnap_b, barrnap_e, barrnap_m, barrnap_pp]
+        command = [barrnap_a, barrnap_b, barrnap_e, barrnap_m, barrnap_pp + " && " + make_marker]
         return command
               
     
 
 
-    def create_rRNA_filter_infernal_command(self, fasta_segment, data_style, infernal_out_file):
+    def create_rRNA_filter_infernal_command(self, fasta_segment, data_style, infernal_out_file, marker_path):
+
+        self.make_folder(self.path_obj.rRNA_s_inf_path)
+        self.make_folder(self.path_obj.rRNA_p1_inf_path)
+        self.make_folder(self.path_obj.rRNA_p2_inf_path)
+        self.make_folder(self.path_obj.rRNA_final_path)
+        self.make_folder(self.path_obj.rRNA_final_mRNA_path)
+        self.make_folder(self.path_obj.rRNA_final_tRNA_path)
         
-        fasta_basename = os.basename(fasta_segment).split(".")[0]
+        
 
         infernal_command = self.path_obj.Infernal
         infernal_command += " -o /dev/null --tblout"        + " "
@@ -1005,13 +1023,18 @@ class mt_pipe_commands:
         infernal_command += self.path_obj.Rfam              + " "
         infernal_command += fasta_segment
 
+        
+        make_marker = "touch" + " " + marker_path
+        return [infernal_command + " && " + make_marker]
+          
+    def create_rRNA_cleanup_command(self, data_style, fasta_segment, infernal_out_file):
+        fasta_basename = os.basename(fasta_segment).split(".")[0]
         infernal_pp = self.path_obj.Python + " "
         infernal_pp += self.path_obj.rRNA_infernal_pp + " "
         infernal_pp += self.path_obj.filter_stringency + " "
         infernal_pp += data_style + " "
         infernal_pp += infernal_out_file + " "
             
-        marker_file_name = ""    
         if(data_style == "single"):
             infernal_pp += os.path.join(self.path_obj.rRNA_s_fq_path, fasta_basename + ".fastq") + " " 
             infernal_pp += os.path.join(self.path_obj.rRNA_s_inf_mRNA_path, fasta_basename + "_mRNA.fastq") + " "
@@ -1027,52 +1050,7 @@ class mt_pipe_commands:
             infernal_pp += os.path.join(self.path_obj.rRNA_p2_inf_tRNA_path, fasta_basename + "_other.fastq") 
             
     
-        make_marker = "touch" + " " 
-        make_marker += os.path.join(jobs_folder, marker_file_name)
-        
-
-        return [infernal_command, infernal_pp + " && " + make_marker]
-          
-    def create_rRNA_filter_splitter_command(self, stage_name, category, file_name, marker_file):
-    #file name expected to have no extensions.  eg: pair_1_0
-    #expected to be called for each category (pair1, singletons).  not pair 2.  paired data is handled in combination
-        subfolder           = os.path.join(self.Output_Path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        fasta_folder        = os.path.join(data_folder, category + "_fasta")
-        fastq_folder        = os.path.join(data_folder, category + "_fastq")
-        infernal_out_folder = os.path.join(data_folder, category + "_infernal")
-        mRNA_barrnap_folder = os.path.join(data_folder, category + "_mRNA")
-        mRNA_infernal_folder= os.path.join(data_folder, category + "_infernal_mRNA")
-        rRNA_folder         = os.path.join(data_folder, category + "_infernal_rRNA")
-        infernal_out        = os.path.join(infernal_out_folder, file_name + ".infernal_out")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        
-        file_name_code = file_name.split("_")[-1]
-        self.make_folder(mRNA_infernal_folder)
-        self.make_folder(jobs_folder)
-        
-        
-        if(category == "pair_1"):            
-            infernal_pair_1_out_folder = os.path.join(data_folder, "pair_1_infernal")
-            infernal_pair_2_out_folder = os.path.join(data_folder, "pair_2_infernal")
-            
-            infernal_mRNA_pair_1_folder = os.path.join(data_folder, "pair_1_infernal_mRNA")
-            infernal_mRNA_pair_2_folder = os.path.join(data_folder, "pair_2_infernal_mRNA")
-            
-            infernal_rRNA_pair_1_folder = os.path.join(data_folder, "pair_1_infernal_other")
-            infernal_rRNA_pair_2_folder = os.path.join(data_folder, "pair_2_infernal_other")
-            
-            Barrnap_pair_1_out_folder = os.path.join(data_folder, "pair_1_barrnap")
-            Barrnap_pair_2_out_folder = os.path.join(data_folder, "pair_2_barrnap")
-            
-            self.make_folder(infernal_mRNA_pair_1_folder)
-            self.make_folder(infernal_mRNA_pair_2_folder)
-            self.make_folder(infernal_rRNA_pair_1_folder)
-            self.make_folder(infernal_rRNA_pair_2_folder)
-            self.make_folder(Barrnap_pair_1_out_folder)
-            self.make_folder(Barrnap_pair_2_out_folder)
-            
-            rRNA_filtration = ">&2 echo extracting mRNA with infernal repor
+        make_marker = "touch" + " " + marker_path
 
 
     def create_repop_command(self, stage_name, preprocess_stage_name, dependency_stage_name):

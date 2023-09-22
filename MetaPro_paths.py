@@ -708,9 +708,8 @@ class tool_path_obj:
         self.GA_pre_scan_get_lib        = self.value_assignment(config, "code", "ga_pre_scan_get_lib", os.path.join(script_path, "ga_pre_scan_get_libs.py"), "path")
         self.GA_pre_scan_assemble_lib   = self.value_assignment(config, "code", "ga_pre_scan_assemble_lib", os.path.join(script_path, "ga_pre_scan_assemble_libs.py"), "path")
         
-        #---------------------------------------------------------
-        #marker file names
-        self.qc_marker_name = "quality_marker"
+        
+         
 
 
         #---------------------------------------------------------------------------------------
@@ -743,33 +742,24 @@ class tool_path_obj:
         self.rRNA_top_path          = os.path.join(self.output_path, self.rRNA_filter_label)
         self.rRNA_data_path         = os.path.join(self.rRNA_top_path, "data")
         self.rRNA_jobs_path         = os.path.join(self.rRNA_top_path, "jobs")
-        self.rRNA_p1_fq_path        = os.path.join(self.rRNA_data_path, "pair_1_fastq")
         self.rRNA_p1_fa_path        = os.path.join(self.rRNA_data_path, "pair_1_fasta")
         self.rRNA_p1_bar_path       = os.path.join(self.rRNA_data_path, "pair_1_barrnap")
-        self.rRNA_p1_bar_mRNA_path  = os.path.join(self.rRNA_data_path, "pair_1_barrnap_mRNA")
-        self.rRNA_p1_bar_tRNA_path  = os.path.join(self.rRNA_data_path, "pair_1_barrnap_other")
-        self.rRNA_p1_bar_fa_path    = os.path.join(self.rRNA_data_path, "pair_1_barrnap_mRNA_fasta")
         self.rRNA_p1_inf_path       = os.path.join(self.rRNA_data_path, "pair_1_infernal")
         self.rRNA_p1_inf_mRNA_path  = os.path.join(self.rRNA_data_path, "pair_1_infernal_mRNA")
         self.rRNA_p1_inf_tRNA_path  = os.path.join(self.rRNA_data_path, "pair_1_infernal_other") 
-        self.rRNA_p2_fq_path        = os.path.join(self.rRNA_data_path, "pair_2_fastq")
+
         self.rRNA_p2_fa_path        = os.path.join(self.rRNA_data_path, "pair_2_fasta")
         self.rRNA_p2_bar_path       = os.path.join(self.rRNA_data_path, "pair_2_barrnap")
-        self.rRNA_p2_bar_mRNA_path  = os.path.join(self.rRNA_data_path, "pair_2_barrnap_mRNA")
-        self.rRNA_p2_bar_tRNA_path  = os.path.join(self.rRNA_data_path, "pair_2_barrnap_other")
-        self.rRNA_p2_bar_fa_path    = os.path.join(self.rRNA_data_path, "pair_2_barrnap_mRNA_fasta")
         self.rRNA_p2_inf_path       = os.path.join(self.rRNA_data_path, "pair_2_infernal")
         self.rRNA_p2_inf_mRNA_path  = os.path.join(self.rRNA_data_path, "pair_2_infernal_mRNA")
         self.rRNA_p2_inf_tRNA_path  = os.path.join(self.rRNA_data_path, "pair_2_infernal_other")
-        self.rRNA_s_fq_path         = os.path.join(self.rRNA_data_path, "singletons_fastq")
+
         self.rRNA_s_fa_path         = os.path.join(self.rRNA_data_path, "singletons_fasta")
         self.rRNA_s_bar_path        = os.path.join(self.rRNA_data_path, "singletons_barrnap")
-        self.rRNA_s_bar_mRNA_path   = os.path.join(self.rRNA_data_path, "singletons_barrnap_mRNA")
-        self.rRNA_s_bar_tRNA_path   = os.path.join(self.rRNA_data_path, "singletons_barrnap_other")
-        self.rRNA_s_bar_fa_path     = os.path.join(self.rRNA_data_path, "singletons_barrnap_mRNA_fasta")
         self.rRNA_s_inf_path        = os.path.join(self.rRNA_data_path, "singletons_infernal")
         self.rRNA_s_inf_mRNA_path   = os.path.join(self.rRNA_data_path, "singletons_infernal_mRNA")
         self.rRNA_s_inf_tRNA_path   = os.path.join(self.rRNA_data_path, "singletons_infernal_other")        
+        
         self.rRNA_final_path        = os.path.join(self.rRNA_top_path, "final_results")
         self.rRNA_final_mRNA_path   = os.path.join(self.rRNA_final_path, "mRNA")
         self.rRNA_final_tRNA_path   = os.path.join(self.rRNA_final_path, "other")
@@ -859,6 +849,23 @@ class tool_path_obj:
         self.reports_uvecs_path     = os.path.join(self.reports_data_path, "3_unique_vectors")
         self.reports_fvecs_path     = os.path.join(self.reports_data_path, "4_full_vectors")
         self.reports_final_path     = os.path.join(self.reports_top_path, "final_results")
+
+
+#---------------------------------------------------------
+        #top-level marker names
+        self.qc_marker              = "qc_marker"
+        self.host_rem_mark          = "host_rem"
+        self.vec_rem_marker         = "vec_rem"
+        self.rRNA_rem_marker        = "rRNA_rem"
+        self.repop_marker           = "repop"
+        self.contig_marker          = "assemble_contigs"
+
+
+#---------------------------------------------------------
+        #internal markers
+
+        self.rRNA_barrnap_marker    = "barrnap_"
+        self.rRNA_inf_marker        = "inf_"
 
 
       
