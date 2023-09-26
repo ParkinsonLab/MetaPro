@@ -1000,8 +1000,9 @@ class mt_pipe_commands:
     
 
 
-    def create_rRNA_filter_infernal_command(self, fasta_segment, data_style, infernal_out_file, marker_path):
-
+    def create_rRNA_filter_infernal_command(self, fasta_segment, infernal_out_file):
+        
+        fasta_basename = os.basename(fasta_segment).split(".")[0]
         self.make_folder(self.path_obj.rRNA_s_inf_path)
         self.make_folder(self.path_obj.rRNA_p1_inf_path)
         self.make_folder(self.path_obj.rRNA_p2_inf_path)
@@ -1009,8 +1010,7 @@ class mt_pipe_commands:
         self.make_folder(self.path_obj.rRNA_final_mRNA_path)
         self.make_folder(self.path_obj.rRNA_final_tRNA_path)
         
-        
-
+       
         infernal_command = self.path_obj.Infernal
         infernal_command += " -o /dev/null --tblout"        + " "
         infernal_command += infernal_out_file               + " "
@@ -1023,35 +1023,36 @@ class mt_pipe_commands:
         infernal_command += self.path_obj.Rfam              + " "
         infernal_command += fasta_segment
 
-        
+        marker_path = os.path.join(self.path_obj.rRNA_jobs_path, fasta_basename + "_inf")
         make_marker = "touch" + " " + marker_path
         return [infernal_command + " && " + make_marker]
           
-    def create_rRNA_cleanup_command(self, data_style, fasta_segment, infernal_out_file):
+    def create_rRNA_cleanup_command(self, data_style, fasta_segment, marker_path):
         fasta_basename = os.basename(fasta_segment).split(".")[0]
         infernal_pp = self.path_obj.Python + " "
         infernal_pp += self.path_obj.rRNA_infernal_pp + " "
         infernal_pp += self.path_obj.filter_stringency + " "
         infernal_pp += data_style + " "
-        infernal_pp += infernal_out_file + " "
             
         if(data_style == "single"):
-            infernal_pp += os.path.join(self.path_obj.rRNA_s_fq_path, fasta_basename + ".fastq") + " " 
+            infernal_pp += os.path.join(self.path_obj.rRNA_s_inf_path, fasta_basename + ".infernal_out")    + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_s_fq_path, fasta_basename + ".fastq")            + " " 
             infernal_pp += os.path.join(self.path_obj.rRNA_s_inf_mRNA_path, fasta_basename + "_mRNA.fastq") + " "
             infernal_pp += os.path.join(self.path_obj.rRNA_s_inf_tRNA_path, fasta_basename + "_other.fastq")
-            
 
         else:
-            infernal_pp += os.path.join(self.path_obj.rRNA_p1_fq_path, fasta_basename + ".fastq") + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_p2_fq_path, fasta_basename + ".fastq") + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_p1_inf_mRNA_path, fasta_basename + "_mRNA.fastq") + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_p2_inf_mRNA_path, fasta_basename + "_mRNA.fastq") + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_p1_inf_tRNA_path, fasta_basename + "_other.fastq") + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_p1_inf_path, fasta_basename + ".infernal_out")       + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_p2_inf_path, fasta_basename + ".infernal_out")       + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_p1_fq_path, fasta_basename + ".fastq")               + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_p2_fq_path, fasta_basename + ".fastq")               + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_p1_inf_mRNA_path, fasta_basename + "_mRNA.fastq")    + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_p2_inf_mRNA_path, fasta_basename + "_mRNA.fastq")    + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_p1_inf_tRNA_path, fasta_basename + "_other.fastq")   + " "
             infernal_pp += os.path.join(self.path_obj.rRNA_p2_inf_tRNA_path, fasta_basename + "_other.fastq") 
             
-    
         make_marker = "touch" + " " + marker_path
 
+        return [infernal_pp +  " && " +  make_marker]
 
     def create_repop_command(self, stage_name, preprocess_stage_name, dependency_stage_name):
         # This stage reintroduces the duplicate reads into the data.  We need it to count towards things.

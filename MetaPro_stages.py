@@ -252,10 +252,9 @@ class mp_stage:
     def mp_rRNA_filter(self):
         self.rRNA_filter_start = time.time()
         
-        rRNA_filter_jobs_folder = os.path.join(self.rRNA_filter_path, "data", "jobs")
         #if not check_where_resume(self.rRNA_filter_path, None, self.vector_path):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_label): 
-            marker_path_list = []
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.paths.rRNA_filter_label): 
+            
             #split and convert fastq -> fasta
             command_list = self.commands.create_rRNA_filter_split_command()
             self.mp_util.launch_only_with_mp_store(self.commands, command_list)
@@ -272,7 +271,7 @@ class mp_stage:
                 mRNA_out = os.path.join(self.paths.rRNA_p1_bar_path, file_name + ".fasta")
                 marker_path = os.path.join(self.paths.rRNA_jobs_path, self.paths.rRNA_barrnap_marker + file_name)
                 command_list = self.commands.create_rRNA_filter_barrnap_command(split_fasta, barrnap_out, mRNA_out, marker_path)
-                if(not os.path.exists(marker_path)):
+                if not os.path.exists(marker_path):
                     self.mp_util.launch_only_with_mp_store(self.commands, command_list)
 
             for split_fasta in os.listdir(self.paths.rRNA_p2_fa_path):
@@ -281,7 +280,8 @@ class mp_stage:
                 mRNA_out = os.path.join(self.paths.rRNA_p2_bar_path, file_name + ".fasta")
                 marker_path = os.path.join(self.paths.rRNA_jobs_path, self.paths.rRNA_barrnap_marker + file_name)
                 command_list = self.commands.create_rRNA_filter_barrnap_command(split_fasta, barrnap_out, mRNA_out, marker_path)
-                self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                if not os.path.exists(marker_path):
+                    self.mp_util.launch_only_with_mp_store(self.commands, command_list)
 
             for split_fasta in os.listdir(self.paths.rRNA_s_fa_path):
                 file_name = split_fasta.split(".")[0]
@@ -289,7 +289,8 @@ class mp_stage:
                 mRNA_out = os.path.join(self.paths.rRNA_s_bar_path, file_name + ".fasta")
                 marker_path = os.path.join(self.paths.rRNA_jobs_path, self.paths.rRNA_barrnap_marker + file_name)
                 command_list = self.commands.create_rRNA_filter_barrnap_command(split_fasta, barrnap_out, mRNA_out, marker_path)
-                self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                if not os.path.exists(marker_path):
+                    self.mp_util.launch_only_with_mp_store(self.commands, command_list)
 
             self.mp_util.wait_for_mp_store()
             
@@ -304,7 +305,8 @@ class mp_stage:
                 infernal_out_file = os.path.join(self.paths.rRNA_p1_inf_path, file_name + ".infernal_out")
                 marker_path = os.path.join(self.paths.rRNA_jobs_path, self.paths.rRNA_inf_marker + file_name)
                 command_list = self.commands.create_rRNA_filter_infernal_command(fasta_segment, infernal_out_file, marker_path)
-                self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                if not os.path.exists(marker_path):
+                    self.mp_util.launch_only_with_mp_store(self.commands, command_list)
 
             for split_fasta in os.listdir(self.paths.rRNA_p2_bar_mRNA_path):
                 file_name = split_fasta.split(".")[0]
@@ -312,7 +314,8 @@ class mp_stage:
                 infernal_out_file = os.path.join(self.paths.rRNA_p2_inf_path, file_name + ".infernal_out")
                 marker_path = os.path.join(self.paths.rRNA_jobs_path, self.paths.rRNA_inf_marker + file_name)
                 command_list = self.commands.create_rRNA_filter_internal_command(fasta_segment, infernal_out_file, marker_path)
-                self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                if not os.path.exists(marker_path):
+                    self.mp_util.launch_only_with_mp_store(self.commands, command_list)
 
             for split_fasta in os.listdir(self.paths.rRNA_s_bar_mRNA_path):   
                 file_name = split_fasta.split(".")[0]
@@ -320,18 +323,35 @@ class mp_stage:
                 infernal_out_file = os.path.join(self.paths.rRNA_s_inf_path, file_name + ".infernal_out")
                 marker_path = os.path.join(self.paths.rRNA_jobs_path, self.paths.rRNA_inf_marker + file_name)
                 command_list = self.commands.create_rRNA_filter_internal_command(fasta_segment, infernal_out_file, marker_path)
-                self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                if not os.path.exists(marker_path):
+                    self.mp_util.launch_only_with_mp_store(self.commands, command_list)
 
             self.mp_util.wait_for_mp_store()
 
 
-            for split_
+            for split_fasta in os.listdir(self.paths.rRNA_p1_bar_mRNA_path):
+                fasta_basename = split_fasta.split(".")[0]
+                marker_path = os.path.join(self.paths.rRNA_jobs_path, fasta_basename + "_inf_pp")
+                command_list = self.commands.create_rRNA_cleanup_command("paired", split_fasta, marker_path)
+                if not os.path.exists(marker_path):
+                    self.mp_util.launch_only_with_mp_store(self.commands, command_list)
 
+
+            for split_fasta in os.listdir(self.paths.rRNA_s_bar_mRNA_path):
+                fasta_basename = split_fasta.split(".")[0]
+                marker_path = os.path.join(self.paths.rRNA_jobs_path, fasta_basename + "_inf_pp")
+                command_list = self.commands.create_rRNA_cleanup_command("single", split_fasta, marker_path)
+                if not os.path.exists(marker_path):
+                    self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+
+
+            self.mp_util.wait_for_mp_store()
 
         
         print("rRNA filter:", '%1.1f' % (self.rRNA_filter_end - self.rRNA_filter_start - (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start)), "s")
         print("rRNA filter cleanup:", '%1.1f' % (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start), "s")
         self.debug_stop_check(self.rRNA_filter_label)
+        self.mp_util.write_to_bypass_log(self.output_folder_path, self.paths.rRNA_filter_label)
 
     def mp_repop(self):
         
