@@ -868,4 +868,7 @@ class tool_path_obj:
         self.rRNA_inf_marker        = "inf_"
 
 
-      
+#----------------------------------------------------------
+        #special contig-bypasser logic vars
+        self.spades_done_file = os.path.join(self.contigs_spades_path, "pipeline_state", "stage_7_terminate")
+        self.spades_transcripts_file = os.path.join(self.contigs_spades_path, "transcripts.fasta")      

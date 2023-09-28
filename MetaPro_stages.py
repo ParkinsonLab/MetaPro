@@ -159,19 +159,17 @@ class mp_stage:
         #elif self.read_mode == "paired":
         self.commands = mpcom.mt_pipe_commands(self.no_host, self.paths, Quality_score=self.quality_encoding, tutorial_keyword=self.tutorial_string, sequence_path_1=self.pair_1_path, sequence_path_2=self.pair_2_path, sequence_single=self.single_path, sequence_contigs = self.contig_path)
     
-
+        #special var to track contigs.
+        self.contigs_present = True
         
-        #special contig-bypasser logic vars
-        self.contigs_present = True  #for the contig/assembly bypasser
-        self.spades_done_file = os.path.join(self.assemble_contigs_path, "data", "0_spades", "pipeline_state", "stage_7_terminate")
-        self.spades_transcripts_file = os.path.join(self.assemble_contigs_path, "data", "0_spades", "transcripts.fasta")
+        
     
     #--------------------------------------------------------------------------------
     # helpers
     def mp_contig_statecheck(self):
         
-        if(os.path.exists(self.spades_done_file)):
-            if(os.path.exists(self.spades_transcripts_file)):
+        if(os.path.exists(self.paths.spades_done_file)):
+            if(os.path.exists(self.paths.spades_transcripts_file)):
                 self.contigs_present = True
                 print(dt.today(), "contigs present")
             else:
@@ -213,7 +211,7 @@ class mp_stage:
     def mp_quality_filter(self):
         self.quality_start = time.time()
         command_list = self.commands.create_quality_control_command()
-        self.cleanup_quality_start, self.cleanup_quality_end = self.mp_util.launch_stage_simple(self.paths.qc_label, self.paths.qc_top_path, self.commands, command_list, self.keep_all, self.keep_quality)
+        self.cleanup_quality_start, self.cleanup_quality_end = self.mp_util.launch_stage_simple(self.paths.qc_label, self.paths.qc_top_path, self.commands, command_list, self.paths.keep_all, self.paths.keep_quality)
         self.quality_end = time.time()
         print("quality filter:", '%1.1f' % (self.quality_end - self.quality_start - (self.cleanup_quality_end - self.cleanup_quality_start)), "s")
         print("quality filter cleanup:", '%1.1f' %(self.cleanup_quality_end - self.cleanup_quality_start), "s")

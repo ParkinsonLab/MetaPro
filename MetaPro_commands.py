@@ -154,7 +154,6 @@ class mt_pipe_commands:
         
         self.make_folder(self.path_obj.qc_top_path)
         self.make_folder(self.path_obj.qc_data_path)
-        self.make_fodler(self.path_obj.qc_jobs_path)
         self.make_folder(self.path_obj.qc_sort_path)
         self.make_folder(self.path_obj.qc_adapter_path)
         self.make_folder(self.path_obj.qc_tag_path)
