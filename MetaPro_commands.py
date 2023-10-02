@@ -125,6 +125,32 @@ class mt_pipe_commands:
             if return_code != 1:
                 raise
                 
+    def create_and_launch_v2(self, job_path, command_list):
+        # create the pbs job, and launch items
+        # job name: string tag for export file name
+        # command list:  list of command statements for writing
+        # mode: selection of which pbs template to use: default -> low memory
+        # dependency_list: if not empty, will append wait args to sbatch subprocess call. it's polymorphic
+        # returns back the job ID given from sbatch
+
+        # docker mode: single cpu
+        # no ID, no sbatch.  just run the command
+        
+        #shell_script_full_path = os.path.join(self.Output_Path, job_folder, inner_name + ".sh")
+
+        with open(job_path, "w") as PBS_script_out:
+            for item in command_list:
+                PBS_script_out.write(item + "\n")
+            PBS_script_out.close()
+        #if not work_in_background:
+        output = ""
+        try:
+            sp.check_output(["sh", job_path])#, stderr = sp.STDOUT)
+        except sp.CalledProcessError as e:
+            return_code = e.returncode
+            if return_code != 1:
+                raise                
+                
     def launch_only(self, command_list, command_list_length):
         #just launch the job.  Don't make a script file.
         #print(dt.today(), "inside launch_only:", len(command_list))
@@ -363,7 +389,6 @@ class mt_pipe_commands:
     def create_host_filter_command(self):
         self.make_folder(self.path_obj.host_top_path)
         self.make_folder(self.path_obj.host_data_path)
-        self.make_folder(self.path_obj.host_jobs_path)
         self.make_folder(self.path_obj.host_bwa_path)
         self.make_folder(self.path_obj.host_blat_path)
         self.make_folder(self.path_obj.host_final_path)
@@ -654,7 +679,6 @@ class mt_pipe_commands:
 
         self.make_folder(self.path_obj.vector_top_path)
         self.make_folder(self.path_obj.vector_data_path)
-        self.make_folder(self.path_obj.vector_jobs_path)
         self.make_folder(self.path_obj.vector_bwa_path)
         self.make_folder(self.path_obj.vector_blat_path)
         self.make_folder(self.path_obj.vector_final_path)
@@ -901,6 +925,7 @@ class mt_pipe_commands:
         self.make_folder(self.path_obj.rRNA_top_path)
         self.make_folder(self.path_obj.rRNA_data_path)
         self.make_folder(self.path_obj.rRNA_jobs_path)
+        self.make_folder(self.path_obj.rRNA_exe_path)
         self.make_folder(self.path_obj.rRNA_s_fa_path)
         self.make_folder(self.path_obj.rRNA_p1_fa_path)
         self.make_folder(self.path_obj.rRNA_p2_fa_path)
@@ -957,35 +982,29 @@ class mt_pipe_commands:
         self.make_folder(self.path_obj.rRNA_p2_bar_path)
 
 
-        fasta_basename = os.path.basename(fasta_segment).split(".")[0]
-        barrnap_a = ">&2 echo Running Barrnap -> Archae: "
-        barrnap_a += self.path_obj.Barrnap + " " 
+        barrnap_a = self.path_obj.Barrnap + " " 
         barrnap_a += "--quiet --reject 0.01 --kingdom arc --threads " + self.threads_str + " "
         barrnap_a += fasta_segment + " "
         barrnap_a += ">> " + barrnap_out_file
 
 
-        barrnap_b = ">&2 echo Running Barrnap -> Bacteria: "
-        barrnap_b += self.path_obj.Barrnap + " "
+        barrnap_b = self.path_obj.Barrnap + " "
         barrnap_b += "--quiet --reject 0.01 --kingdom bac --threads " + self.threads_str + " "
         barrnap_b += fasta_segment + " "
         barrnap_b += ">> " + barrnap_out_file
 
-        barrnap_e = ">&2 echo Running Barrnap -> Eukaryota: "
-        barrnap_e += self.path_obj.Barrnap + " "
+        barrnap_e = self.path_obj.Barrnap + " "
         barrnap_e += "--quiet --reject 0.01 --kingdom euk --threads " + self.threads_str + " "
         barrnap_e += fasta_segment + " "
         barrnap_e += ">> " + barrnap_out_file
 
-        barrnap_m = ">&2 echo Running Barrnap -> Metazon Mitochondria" + " "
-        barrnap_m += self.path_obj.Barrnap + " "
+        barrnap_m = self.path_obj.Barrnap + " "
         barrnap_m += "--quiet --reject 0.01 --kingdom mit --threads " + self.threads_str + " "
         barrnap_m += fasta_segment + " "
         barrnap_m += ">> " + barrnap_out_file
 
 
-        barrnap_pp = ">&2 echo getting mRNA from barrnap" + " "
-        barrnap_pp += self.path_obj.Python + " "
+        barrnap_pp = self.path_obj.Python + " "
         barrnap_pp += self.path_obj.rRNA_barrnap_pp + " "
         barrnap_pp += barrnap_out_file + " "
         barrnap_pp += fasta_segment + " "
