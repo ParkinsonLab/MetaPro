@@ -6,6 +6,8 @@
 #Sept 13, 2023: exports the junk as ID lists. but it won't bother exporting infernal-only mRNA.
 #Also: we don't really care about what tool removes what.  If we needed it, that could be reverse-engineered.  
 
+#Oct 06, 2023: It doesn't need to iterate over all split samples. We need to merge the inf reports as one single entity. 
+
 
 
 import pandas as pd
@@ -56,8 +58,8 @@ if __name__ == "__main__":
         
     if(data_flag == "paired"):
         
-        pair_1_inf_file = sys.argv[3]       #the post-filter infernal_file
-        pair_2_inf_file = sys.argv[4]       #IN
+        pair_1_inf_dir = sys.argv[3]       #the post-filter infernal_file
+        pair_2_inf_dir = sys.argv[4]       #IN
         
         pair_1_raw_file = sys.argv[5]       #the input data, to populate
         pair_2_raw_file = sys.argv[6]       #IN
@@ -69,16 +71,22 @@ if __name__ == "__main__":
         pair_2_rejected_file = sys.argv[10]  #OUT
     
     else:
-        single_inf_file = sys.argv[3]
+        single_inf_dir = sys.argv[3]
         single_raw_file = sys.argv[4]
         single_accepted_file = sys.argv[5]
         single_rejected_file = sys.argv[6]
     #-------------------------------------------------------
     
     if(data_flag == "paired"):
+        pair_1_id_list = list()
+        pair_2_id_list = list()
+        for item in os.listdir(pair_1_inf_dir):
+            if(item.endswith(".inf_out")):
+                pair_1_id_list += import_infernal_rRNA(os.path.join(pair_1_inf_dir, item))
         
-        pair_1_id_list = import_infernal_rRNA(pair_1_inf_file)
-        pair_2_id_list = import_infernal_rRNA(pair_2_inf_file)
+        for item in os.listdir(pair_2_inf_dir):
+            if(item.endswith(".inf_out")):
+                pair_2_id_list += import_infernal_rRNA(os.path.join(pair_2_inf_dir, item))
         
         pair_1_raw_df = import_fastq(pair_1_raw_file)
         pair_2_raw_df = import_fastq(pair_2_raw_file)
@@ -109,7 +117,10 @@ if __name__ == "__main__":
         pair_2_rejected_df.to_csv(pair_2_rejected_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
         
     else:
-        single_id_list = import_infernal_rRNA(single_inf_file)
+        single_id_list = list()
+        for item in os.listdir(single_inf_dir):
+            if(item.endswith(".inf_out")):
+                single_id_list += import_infernal_rRNA(os.path.join(single_inf_dir, item))
         single_raw_df = import_fastq(single_raw_file)
         
         

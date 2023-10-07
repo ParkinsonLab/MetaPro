@@ -919,7 +919,7 @@ class mt_pipe_commands:
 
         return COMMANDS_vector
         
-    def create_rRNA_filter_split_command(self):
+    def create_rRNA_filter_split_command(self, marker_path):
         #using a new splitter that doesn't need an external tool to convert fastq -> fasta
         #so we split and convert in 1 go.
         self.make_folder(self.path_obj.rRNA_top_path)
@@ -965,15 +965,17 @@ class mt_pipe_commands:
         split_p2_tut += self.sequence_path_2 + " "
         split_p2_tut += self.path_obj.rRNA_p2_fa_path + " "
         split_p2_tut += self.path_obj.rRNA_chunksize
+        
+        make_marker = "touch" + " " + marker_path
 
         command = []
         if(self.tutorial_keyword == "rRNA"):
             if(self.read_mode == "single"):
                 command = [split_s_tut]
             else:
-                command = [split_p1_tut, split_p2_tut]
+                command = [split_p1_tut, split_p2_tut + " && " + make_marker]
         else:
-            command = [split_s_fastq, split_p1_fastq, split_p2_fastq]
+            command = [split_s_fastq, split_p1_fastq, split_p2_fastq + " && " + make_marker]
         return command
 
     def create_rRNA_filter_barrnap_command(self, fasta_segment, barrnap_out_file, mRNA_file, marker_path):
@@ -1020,7 +1022,7 @@ class mt_pipe_commands:
 
     def create_rRNA_filter_infernal_command(self, fasta_segment, infernal_out_file):
         
-        fasta_basename = os.basename(fasta_segment).split(".")[0]
+        fasta_basename = os.path.basename(fasta_segment).split(".")[0]
         self.make_folder(self.path_obj.rRNA_s_inf_path)
         self.make_folder(self.path_obj.rRNA_p1_inf_path)
         self.make_folder(self.path_obj.rRNA_p2_inf_path)
@@ -1033,7 +1035,7 @@ class mt_pipe_commands:
         infernal_command += " -o /dev/null --tblout"        + " "
         infernal_command += infernal_out_file               + " "
         #infernal's parallelism is only good up to 4 CPUs
-        if (self.threads_str < 4):
+        if (int(self.threads_str) < 4):
             infernal_command += "--cpu 1"                   + " "
         else:
             infernal_command += "--cpu 4"                   + " "
@@ -1045,28 +1047,27 @@ class mt_pipe_commands:
         make_marker = "touch" + " " + marker_path
         return [infernal_command + " && " + make_marker]
           
-    def create_rRNA_cleanup_command(self, data_style, fasta_segment, marker_path):
-        fasta_basename = os.basename(fasta_segment).split(".")[0]
+    def create_rRNA_cleanup_command(self, data_style, marker_path):
         infernal_pp = self.path_obj.Python + " "
         infernal_pp += self.path_obj.rRNA_infernal_pp + " "
         infernal_pp += self.path_obj.filter_stringency + " "
         infernal_pp += data_style + " "
             
         if(data_style == "single"):
-            infernal_pp += os.path.join(self.path_obj.rRNA_s_inf_path, fasta_basename + ".infernal_out")    + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_s_fq_path, fasta_basename + ".fastq")            + " " 
-            infernal_pp += os.path.join(self.path_obj.rRNA_s_inf_mRNA_path, fasta_basename + "_mRNA.fastq") + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_s_inf_tRNA_path, fasta_basename + "_other.fastq")
+            infernal_pp += os.path.join(self.path_obj.rRNA_s_inf_path)    + " "
+            infernal_pp += os.path.join(self.path_obj.vector_final_path,  "singletons.fastq")            + " " 
+            infernal_pp += os.path.join(self.path_obj.rRNA_final_mRNA_path, "singletons_mRNA.fastq") + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_final_tRNA_path, "singletons_other.fastq")
 
         else:
-            infernal_pp += os.path.join(self.path_obj.rRNA_p1_inf_path, fasta_basename + ".infernal_out")       + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_p2_inf_path, fasta_basename + ".infernal_out")       + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_p1_fq_path, fasta_basename + ".fastq")               + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_p2_fq_path, fasta_basename + ".fastq")               + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_p1_inf_mRNA_path, fasta_basename + "_mRNA.fastq")    + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_p2_inf_mRNA_path, fasta_basename + "_mRNA.fastq")    + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_p1_inf_tRNA_path, fasta_basename + "_other.fastq")   + " "
-            infernal_pp += os.path.join(self.path_obj.rRNA_p2_inf_tRNA_path, fasta_basename + "_other.fastq") 
+            infernal_pp += os.path.join(self.path_obj.rRNA_p1_inf_path)       + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_p2_inf_path)       + " "
+            infernal_pp += os.path.join(self.path_obj.vector_final_path, "pair_1.fastq")               + " "
+            infernal_pp += os.path.join(self.path_obj.vector_final_path, "pair_2.fastq")               + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_final_mRNA_path, "pair_1_mRNA.fastq")    + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_final_mRNA_path, "pair_2_mRNA.fastq")    + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_final_tRNA_path, "pair_1_other.fastq")   + " "
+            infernal_pp += os.path.join(self.path_obj.rRNA_final_tRNA_path, "pair_2_other.fastq") 
             
         make_marker = "touch" + " " + marker_path
 

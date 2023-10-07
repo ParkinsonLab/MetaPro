@@ -742,6 +742,8 @@ class tool_path_obj:
         self.rRNA_top_path          = os.path.join(self.output_path, self.rRNA_filter_label)
         self.rRNA_data_path         = os.path.join(self.rRNA_top_path, "data")
         self.rRNA_jobs_path         = os.path.join(self.rRNA_top_path, "jobs")
+        self.rRNA_exe_path          = os.path.join(self.rRNA_top_path, "exe")
+        
         self.rRNA_p1_fa_path        = os.path.join(self.rRNA_data_path, "pair_1_fasta")
         self.rRNA_p1_bar_path       = os.path.join(self.rRNA_data_path, "pair_1_barrnap")
         self.rRNA_p1_inf_path       = os.path.join(self.rRNA_data_path, "pair_1_infernal")
@@ -865,7 +867,8 @@ class tool_path_obj:
         #internal markers
 
         self.rRNA_barrnap_marker    = "barrnap_"
-        self.rRNA_inf_marker        = "inf_"
+        self.rRNA_inf_marker        = "_inf"
+        self.rRNA_split_marker      = "split_fasta"
 
 
 #----------------------------------------------------------

@@ -237,6 +237,15 @@ class mp_util:
         )
         process.start()
         process.join()
+        
+    def launch_and_create_v2(self, job_path, command_obj, commands):
+        #just launches a job.  no multi-process.
+        process = mp.Process(
+            target=command_obj.create_and_launch_v2,
+            args=(job_path, commands)
+        )
+        process.start()
+        process.join()
 
     def launch_and_create_with_mp_store(self, job_location, job_label, command_obj, commands):
         #launches a job. doesn't wait. but stores it in the mp_store queue
