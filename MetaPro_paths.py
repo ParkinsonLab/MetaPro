@@ -596,9 +596,9 @@ class tool_path_obj:
         # Note: default host is Mouse CDS
         
         #if config:
-        self.UniVec_Core        = self.value_assignment(config, "Databases", "UniVec_Core", os.path.join(database_path, "univec_core/UniVec_Core.fasta"), "path") 
+        self.Vector_DB          = self.value_assignment(config, "Databases", "Vector_DB", os.path.join(database_path, "univec_core/UniVec_Core.fasta"), "path") 
         self.Adapter            = self.value_assignment(config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"), "path")
-        self.Host               = self.value_assignment(config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"), "path")
+        self.Host_DB            = self.value_assignment(config, "Databases", "Host_DB",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"), "path")
         self.Rfam               = self.value_assignment(config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"), "path")
         self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", "None", "string")
         self.source_taxa_DB     = self.value_assignment(config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"), "dir")
@@ -729,12 +729,14 @@ class tool_path_obj:
 
         self.host_top_path          = os.path.join(self.output_path, self.host_filter_label)
         self.host_data_path         = os.path.join(self.host_top_path, "data")
+        self.host_jobs_path         = os.path.join(self.host_top_path, "jobs")
         self.host_bwa_path          = os.path.join(self.host_data_path, "0_remove_host")
         self.host_blat_path         = os.path.join(self.host_data_path, "1_blat_host")
         self.host_final_path        = os.path.join(self.host_top_path, "final_results")
 
         self.vector_top_path        = os.path.join(self.output_path, self.vector_filter_label)
         self.vector_data_path       = os.path.join(self.vector_top_path, "data")
+        self.vector_jobs_path       = os.path.join(self.vector_top_path, "jobs")
         self.vector_bwa_path        = os.path.join(self.vector_data_path, "0_vector_removal")
         self.vector_blat_path       = os.path.join(self.vector_data_path, "1_blat_containment_vr")
         self.vector_final_path      = os.path.join(self.vector_top_path, "final_results")
@@ -855,12 +857,13 @@ class tool_path_obj:
 
 #---------------------------------------------------------
         #top-level marker names
-        self.qc_marker              = "qc_marker"
-        self.host_rem_mark          = "host_rem"
-        self.vec_rem_marker         = "vec_rem"
-        self.rRNA_rem_marker        = "rRNA_rem"
-        self.repop_marker           = "repop"
-        self.contig_marker          = "assemble_contigs"
+        self.top_qc_marker              = "qc_marker"
+        self.top_host_index_marker      = "host_index"
+        self.top_host_rem_marker        = "host_rem"
+        self.top_vec_marker             = "vec_rem"
+        self.top_rRNA_marker            = "rRNA_rem"
+        self.top_repop_marker           = "repop"
+        self.contig_marker              = "assemble_contigs"
 
 
 #---------------------------------------------------------

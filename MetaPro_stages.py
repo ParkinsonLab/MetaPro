@@ -218,16 +218,25 @@ class mp_stage:
         print("quality filter cleanup:", '%1.1f' %(self.cleanup_quality_end - self.cleanup_quality_start), "s")
         self.debug_stop_check(self.paths.qc_label)
         
+
+        
     def mp_host_filter(self):
         if not self.no_host:
             self.host_start = time.time()
-            #if not check_where_resume(host_path, None, self.quality_path):
-            command_list = self.commands.create_host_filter_command()
+            
+            if not (os.path.exists(self.paths.top_host_index_marker)):
+                command_list = self.commands.create_host_index_command(self.paths.top_host_index_marker)
+                self.mp_util.launch_only_with_mp_store(command_list, self.commands)
+
+            else:
+                print("skipping Host index")
+
+            command_list = self.commands.create_host_filter_command(self.paths.top_host_rem_marker)
             if(self.test_mode == "yes"):
                 for item in command_list:
                     print(item)
             else:        
-                self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_simple(self.paths.host_filter_label, self.paths.host_top_path, self.commands, command_list, self.paths.keep_all, self.paths.keep_host)
+                self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_with_cleanup(self.commands, command_list, self.paths.host_data_path, self.paths.host_filter_label, self.paths.keep_all, self.paths.keep_host)
                 self.host_end = time.time()
                 print("host filter:", '%1.1f' % (self.host_end - self.host_start - (self.cleanup_host_end - self.cleanup_host_start)), "s")
                 print("host filter cleanup:", '%1.1f' %(self.cleanup_host_end - self.cleanup_host_start),"s")
@@ -239,8 +248,9 @@ class mp_stage:
         
             #get dep args from quality filter
             #if not check_where_resume(vector_path, None, self.quality_path):
-        command_list = self.commands.create_vector_filter_command(self.no_host)
-        self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.paths.vector_filter_label, self.paths.vector_top_path, self.commands, command_list, self.paths.keep_all, self.paths.keep_vector)
+        marker_path = os.path.join(self.paths.vector_jobs_path, "vector_filter")
+        command_list = self.commands.create_vector_filter_command(marker_path, self.no_host)
+        self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_with_cleanup(self.commands, command_list, self.paths.vector_data_path, self.paths.keep_all, self.paths.keep_vector)
 
         
         self.vector_end = time.time()
@@ -389,11 +399,12 @@ class mp_stage:
 
             self.mp_util.wait_for_mp_store()
 
+        if(os.path.exists(marker_path)):    
+            print("rRNA filter:", '%1.1f' % (self.rRNA_filter_end - self.rRNA_filter_start - (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start)), "s")
+            print("rRNA filter cleanup:", '%1.1f' % (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start), "s")
+            self.debug_stop_check(self.paths.rRNA_filter_label)
+            self.mp_util.write_to_bypass_log(self.output_folder_path, self.paths.rRNA_filter_label)
         
-        print("rRNA filter:", '%1.1f' % (self.rRNA_filter_end - self.rRNA_filter_start - (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start)), "s")
-        print("rRNA filter cleanup:", '%1.1f' % (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start), "s")
-        self.debug_stop_check(self.paths.rRNA_filter_label)
-        self.mp_util.write_to_bypass_log(self.output_folder_path, self.paths.rRNA_filter_label)
 
     def mp_repop(self):
         

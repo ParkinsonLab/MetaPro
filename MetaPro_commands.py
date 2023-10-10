@@ -319,44 +319,44 @@ class mt_pipe_commands:
         cdhit_paired += "-o2"   + " " + os.path.join(self.path_obj.qc_cdhit_path, "pair_2_unique.fastq")
 
         #move data to appropriate places
-        copy_singletons = "cp " + os.path.join(self.path_obj.qc_cdhit_path, "singletons_unique.fastq") + " "
-        copy_singletons += os.path.join(self.path_obj.qc_final_path, "singletons.fastq")
+        mv_singletons = "mv " + os.path.join(self.path_obj.qc_cdhit_path, "singletons_unique.fastq") + " "
+        mv_singletons += os.path.join(self.path_obj.qc_final_path, "singletons.fastq")
 
-        copy_pair_1 = "cp " + os.path.join(self.path_obj.qc_cdhit_path, "pair_1_unique.fastq") + " "
-        copy_pair_1 += os.path.join(self.path_obj.qc_final_path, "pair_1.fastq")
+        mv_pair_1 = "mv " + os.path.join(self.path_obj.qc_cdhit_path, "pair_1_unique.fastq") + " "
+        mv_pair_1 += os.path.join(self.path_obj.qc_final_path, "pair_1.fastq")
 
-        copy_pair_2 = "cp " + os.path.join(self.path_obj.qc_cdhit_path, "pair_2_unique.fastq") + " "
-        copy_pair_2 += os.path.join(self.path_obj.qc_final_path, "pair_2.fastq")
+        mv_pair_2 = "mv " + os.path.join(self.path_obj.qc_cdhit_path, "pair_2_unique.fastq") + " "
+        mv_pair_2 += os.path.join(self.path_obj.qc_final_path, "pair_2.fastq")
         
         # move these particular files to final_folder because they'll be needed by another stage.
-        copy_duplicate_singletons = "cp "
+        mv_duplicate_singletons = "mv "
         if(self.read_mode == "single"):
-            copy_duplicate_singletons += os.path.join(self.path_obj.qc_filter_path, "singletons_hq.fastq") + " "
-            copy_duplicate_singletons += os.path.join(self.path_obj.qc_final_path, "singletons_hq.fastq")
+            mv_duplicate_singletons += os.path.join(self.path_obj.qc_filter_path, "singletons_hq.fastq") + " "
+            mv_duplicate_singletons += os.path.join(self.path_obj.qc_final_path, "singletons_hq.fastq")
         else:
-            copy_duplicate_singletons += os.path.join(self.path_obj.qc_orphan_path, "singletons_with_duplicates.fastq") + " "
-            copy_duplicate_singletons += os.path.join(self.path_obj.qc_final_path, "singletons_with_duplicates.fastq")
+            mv_duplicate_singletons += os.path.join(self.path_obj.qc_orphan_path, "singletons_with_duplicates.fastq") + " "
+            mv_duplicate_singletons += os.path.join(self.path_obj.qc_final_path, "singletons_with_duplicates.fastq")
 
-        copy_pair_1_match = "cp " + os.path.join(self.path_obj.qc_orphan_path, "pair_1_match.fastq") + " "
-        copy_pair_1_match += os.path.join(self.path_obj.qc_final_path, "pair_1_match.fastq")
+        mv_pair_1_match = "mv " + os.path.join(self.path_obj.qc_orphan_path, "pair_1_match.fastq") + " "
+        mv_pair_1_match += os.path.join(self.path_obj.qc_final_path, "pair_1_match.fastq")
 
-        copy_pair_2_match = "cp " + os.path.join(self.path_obj.qc_orphan_path, "pair_2_match.fastq") + " "
-        copy_pair_2_match += os.path.join(self.path_obj.qc_final_path, "pair_2_match.fastq")
+        mv_pair_2_match = "mv " + os.path.join(self.path_obj.qc_orphan_path, "pair_2_match.fastq") + " "
+        mv_pair_2_match += os.path.join(self.path_obj.qc_final_path, "pair_2_match.fastq")
 
-        copy_singletons_cluster = "cp " + os.path.join(self.path_obj.qc_cdhit_path, "singletons_unique.fastq.clstr") + " "
-        copy_singletons_cluster += os.path.join(self.path_obj.qc_final_path, "singletons_unique.fastq.clstr")
+        mv_singletons_cluster = "mv " + os.path.join(self.path_obj.qc_cdhit_path, "singletons_unique.fastq.clstr") + " "
+        mv_singletons_cluster += os.path.join(self.path_obj.qc_final_path, "singletons_unique.fastq.clstr")
 
-        copy_paired_cluster = "cp " + os.path.join(self.path_obj.qc_cdhit_path, "pair_1_unique.fastq.clstr") + " "
-        copy_paired_cluster += os.path.join(self.path_obj.qc_final_path, "pair_1_unique.fastq.clstr")
+        mv_paired_cluster = "mv " + os.path.join(self.path_obj.qc_cdhit_path, "pair_1_unique.fastq.clstr") + " "
+        mv_paired_cluster += os.path.join(self.path_obj.qc_final_path, "pair_1_unique.fastq.clstr")
 
         if self.read_mode == "single":
             COMMANDS_qual = [
                 adapter_removal_line,
                 vsearch_filter_0,
                 cdhit_singletons,
-                copy_singletons,
-                copy_duplicate_singletons,
-                copy_singletons_cluster
+                mv_singletons,
+                mv_duplicate_singletons,
+                mv_singletons_cluster
             ]
         elif self.read_mode == "paired":
             COMMANDS_qual = [
@@ -374,41 +374,59 @@ class mt_pipe_commands:
                 orphan_read_filter,
                 cdhit_singletons,
                 cdhit_paired,
-                copy_singletons,
-                copy_pair_1,
-                copy_pair_2,
-                copy_duplicate_singletons,
-                copy_singletons_cluster,
-                copy_pair_1_match,
-                copy_paired_cluster,
-                copy_pair_2_match
+                mv_singletons,
+                mv_pair_1,
+                mv_pair_2,
+                mv_duplicate_singletons,
+                mv_singletons_cluster,
+                mv_pair_1_match,
+                mv_paired_cluster,
+                mv_pair_2_match
             ]
 
         return COMMANDS_qual
 
-    def create_host_filter_command(self):
+    def create_host_index_command(self, marker_path):
+        self.make_folder(self.path_obj.host_top_path)
+        self.make_folder(self.path_obj.host_data_path)
+        self.make_folder(self.path_obj.host_bwa_path)
+        self.make_folder(self.path_obj.host_blat_path)
+        self.make_folder(self.path_obj.host_final_path)
+        #indexing takes long.  It's broken up so that we have control over it. 
+
+        # craft a BWA index for the host sequences
+        bwa_hr_prep = ">&2 echo make host contaminants index for BWA | "
+        bwa_hr_prep += self.path_obj.BWA + " index -a bwtsw " + self.path_obj.Host_DB
+
+        samtools_hr_prep = ">&2 echo SAMTOOLS host contaminant prep | "
+        samtools_hr_prep += self.path_obj.SAMTOOLS + " faidx " + self.path_obj.Host_DB
+
+        make_marker = "touch " + marker_path
+        command = [
+                    bwa_hr_prep,
+                    samtools_hr_prep + " && " + make_marker
+        ]
+
+        return command
+
+
+    def create_host_filter_command(self, marker_path):
         self.make_folder(self.path_obj.host_top_path)
         self.make_folder(self.path_obj.host_data_path)
         self.make_folder(self.path_obj.host_bwa_path)
         self.make_folder(self.path_obj.host_blat_path)
         self.make_folder(self.path_obj.host_final_path)
 
-        Host_Contaminants = os.path.join(self.path_obj.host_bwa_path, "host_contaminents_seq.fasta")
-        copy_host = ">&2 echo Copy the host file over | "
-        copy_host += "cp " + self.path_obj.Host + " " + Host_Contaminants
+        #copy_host = ">&2 echo Copy the host file over | "
+        #copy_host += "cp " + self.path_obj.Host + " " + self.path_obj.Host_DB
 
-        # craft a BWA index for the host sequences
-        bwa_hr_prep = ">&2 echo make host contaminants index for BWA | "
-        bwa_hr_prep += self.path_obj.BWA + " index -a bwtsw " + Host_Contaminants
-
-        samtools_hr_prep = ">&2 echo SAMTOOLS host contaminant prep | "
-        samtools_hr_prep += self.path_obj.SAMTOOLS + " faidx " + Host_Contaminants
+        
 
         # host removal on unique singletons
         bwa_hr_singletons = ">&2 echo BWA host remove on singletons | "
         bwa_hr_singletons += self.path_obj.BWA + " mem -t "
         bwa_hr_singletons += self.threads_str + " "
-        bwa_hr_singletons += Host_Contaminants + " "
+        bwa_hr_singletons += self.path_obj.Host_DB + " "
         bwa_hr_singletons += os.path.join(self.path_obj.qc_final_path, "singletons.fastq") + " " 
         bwa_hr_singletons += ">" + " "
         bwa_hr_singletons += os.path.join(self.path_obj.host_bwa_path, "singletons_no_host.sam")
@@ -417,7 +435,7 @@ class mt_pipe_commands:
         bwa_hr_tut_singletons = ">&2 echo BWA host remove on singletons | "
         bwa_hr_tut_singletons += self.path_obj.BWA + " mem -t "
         bwa_hr_tut_singletons += self.threads_str + " "
-        bwa_hr_tut_singletons += Host_Contaminants + " "
+        bwa_hr_tut_singletons += self.path_obj.Host_DB + " "
         bwa_hr_tut_singletons += self.sequence_single 
         bwa_hr_tut_singletons += " > " + os.path.join(self.path_obj.host_bwa_path, "singletons_no_host.sam")
 
@@ -441,7 +459,7 @@ class mt_pipe_commands:
         bwa_hr_paired = ">&2 echo bwa host-removal on paired | " 
         bwa_hr_paired += self.path_obj.BWA + " "
         bwa_hr_paired += "mem" + " "  + "-t" + " " + self.threads_str + " "
-        bwa_hr_paired += Host_Contaminants + " "
+        bwa_hr_paired += self.path_obj.Host_DB + " "
         bwa_hr_paired += os.path.join(self.path_obj.qc_final_path, "pair_1.fastq") + " "
         bwa_hr_paired += os.path.join(self.path_obj.qc_final_path, "pair_2.fastq") + " "
         bwa_hr_paired += ">" + " "
@@ -451,7 +469,7 @@ class mt_pipe_commands:
         bwa_hr_tut_paired = ">&2 echo bwa host-removal on paired | " 
         bwa_hr_tut_paired += self.path_obj.BWA + " "
         bwa_hr_tut_paired += "mem" + " "  + "-t" + " " + self.threads_str + " "
-        bwa_hr_tut_paired += Host_Contaminants + " "
+        bwa_hr_tut_paired += self.path_obj.Host_DB + " "
         bwa_hr_tut_paired += self.sequence_path_1 + " "
         bwa_hr_tut_paired += self.sequence_path_2 + " "
         bwa_hr_tut_paired += ">" + " "
@@ -486,7 +504,7 @@ class mt_pipe_commands:
 
         # blat prep
         make_blast_db_host = ">&2 echo Make BLAST db for host contaminants | "
-        make_blast_db_host += self.path_obj.Makeblastdb + " -in " + Host_Contaminants + " -dbtype nucl"
+        make_blast_db_host += self.path_obj.Makeblastdb + " -in " + self.path_obj.Host_DB + " -dbtype nucl"
 
         vsearch_filter_s = ">&2 echo Convert singletons for BLAT | "
         vsearch_filter_s += self.path_obj.vsearch
@@ -508,21 +526,21 @@ class mt_pipe_commands:
 
         blat_hr_singletons = ">&2 echo BLAT host singletons | "
         blat_hr_singletons += self.path_obj.BLAT + " -noHead -minIdentity=90 -minScore=65 "
-        blat_hr_singletons += Host_Contaminants + " "
+        blat_hr_singletons += self.path_obj.Host_DB + " "
         blat_hr_singletons += os.path.join(self.path_obj.host_bwa_path, "singletons_no_host.fasta")
         blat_hr_singletons += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str
         blat_hr_singletons += " " + os.path.join(self.path_obj.host_bwa_path, "singletons_no_host.blatout")
 
         blat_hr_pair_1 = ">&2 echo BLAT host pair 1 | "
         blat_hr_pair_1 += self.path_obj.BLAT
-        blat_hr_pair_1 += " -noHead -minIdentity=90 -minScore=65 " + Host_Contaminants + " "
+        blat_hr_pair_1 += " -noHead -minIdentity=90 -minScore=65 " + self.path_obj.Host_DB + " "
         blat_hr_pair_1 += os.path.join(self.path_obj.host_bwa_path, "pair_1_no_host.fasta")
         blat_hr_pair_1 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str
         blat_hr_pair_1 += " " + os.path.join(self.path_obj.host_bwa_path, "pair_1_no_host.blatout")
 
         blat_hr_pair_2 = ">&2 echo BLAT host pair 2 | "
         blat_hr_pair_2 += self.path_obj.BLAT
-        blat_hr_pair_2 += " -noHead -minIdentity=90 -minScore=65 " + Host_Contaminants + " "
+        blat_hr_pair_2 += " -noHead -minIdentity=90 -minScore=65 " + self.path_obj.Host_DB + " "
         blat_hr_pair_2 += os.path.join(self.path_obj.host_bwa_path, "pair_2_no_host.fasta")
         blat_hr_pair_2 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str
         blat_hr_pair_2 += " " + os.path.join(self.path_obj.host_bwa_path, "pair_2_no_host.blatout")
@@ -551,6 +569,7 @@ class mt_pipe_commands:
         hr_paired += os.path.join(self.path_obj.host_blat_path, "pair_1_host_only.fastq") + " "
         hr_paired += os.path.join(self.path_obj.host_blat_path, "pair_2_host_only.fastq")
         
+        
 
         
         #-----------------------------
@@ -558,23 +577,24 @@ class mt_pipe_commands:
         
         
 
-        copy_singletons = "cp " + os.path.join(self.path_obj.host_blat_path, "singletons_no_host.fastq") + " "
-        copy_singletons += os.path.join(self.path_obj.host_final_path, "singletons.fastq")
+        mv_singletons = "mv " + os.path.join(self.path_obj.host_blat_path, "singletons_no_host.fastq") + " "
+        mv_singletons += os.path.join(self.path_obj.host_final_path, "singletons.fastq")
 
-        copy_pair_1 = "cp " + os.path.join(self.path_obj.host_blat_path, "pair_1_no_host.fastq") + " "
-        copy_pair_1 += os.path.join(self.path_obj.host_final_path, "pair_1.fastq")
+        mv_pair_1 = "mv " + os.path.join(self.path_obj.host_blat_path, "pair_1_no_host.fastq") + " "
+        mv_pair_1 += os.path.join(self.path_obj.host_final_path, "pair_1.fastq")
 
-        copy_pair_2 = "cp " + os.path.join(self.path_obj.host_blat_path, "pair_2_no_host.fastq") + " "
-        copy_pair_2 += os.path.join(self.path_obj.host_final_path, "pair_2.fastq")
+        mv_pair_2 = "mv " + os.path.join(self.path_obj.host_blat_path, "pair_2_no_host.fastq") + " "
+        mv_pair_2 += os.path.join(self.path_obj.host_final_path, "pair_2.fastq")
         
-        
+        #----------------------------------
+        #final check against false-positive bypass-log writes
+        make_marker = "touch" + " "
+        make_marker += marker_path
         
         if(self.tutorial_keyword is None):
             if self.read_mode == "single":
                 COMMANDS_host = [
-                    copy_host,
-                    bwa_hr_prep,
-                    samtools_hr_prep,
+                    
                     bwa_hr_singletons,
                     samtools_hr_singletons_sam_to_bam,
                     samtools_no_host_singletons_bam_to_fastq,
@@ -583,13 +603,10 @@ class mt_pipe_commands:
                     vsearch_filter_s,
                     blat_hr_singletons,
                     hr_singletons,
-                    copy_singletons
+                    mv_singletons + " && " + make_marker
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_host = [
-                    copy_host,
-                    bwa_hr_prep,
-                    samtools_hr_prep,
                     bwa_hr_singletons,
                     samtools_hr_singletons_sam_to_bam,
                     samtools_no_host_singletons_bam_to_fastq,
@@ -605,17 +622,15 @@ class mt_pipe_commands:
                     blat_hr_pair_2,
                     hr_singletons,
                     hr_paired,
-                    copy_singletons,
-                    copy_pair_1,
-                    copy_pair_2
+                    mv_singletons,
+                    mv_pair_1,
+                    mv_pair_2 + " && " + make_marker
                 ]
         else:
             if self.read_mode == "single":
                 print(dt.today(), "Host filter operating in tutorial-mode: SINGLE")
                 COMMANDS_host = [
-                    copy_host,
-                    bwa_hr_prep,
-                    samtools_hr_prep,
+                    
                     bwa_hr_tut_singletons,
                     samtools_hr_singletons_sam_to_bam,
                     samtools_no_host_singletons_bam_to_fastq,
@@ -624,15 +639,13 @@ class mt_pipe_commands:
                     vsearch_filter_s,
                     blat_hr_singletons,
                     hr_singletons,
-                    copy_singletons
+                    mv_singletons + " && " + make_marker
                 ]
             elif self.read_mode == "paired":
                 print(dt.today(), "Host filter operating in tutorial-mode: PAIRED")
                 if(self.sequence_single == ""):
                     COMMANDS_host = [
-                        copy_host,
-                        bwa_hr_prep,
-                        samtools_hr_prep,
+                        
                         bwa_hr_tut_paired,
                         bwa_hr_filter_tut_paired,
                         make_blast_db_host,
@@ -641,15 +654,12 @@ class mt_pipe_commands:
                         blat_hr_pair_1,
                         blat_hr_pair_2,
                         hr_paired,
-                        copy_pair_1,
-                        copy_pair_2
+                        mv_pair_1,
+                        mv_pair_2 + " && " + make_marker
                     ]
 
                 else:
                     COMMANDS_host = [
-                        copy_host,
-                        bwa_hr_prep,
-                        samtools_hr_prep,
                         bwa_hr_tut_singletons,
                         samtools_hr_singletons_sam_to_bam,
                         samtools_no_host_singletons_bam_to_fastq,
@@ -665,9 +675,9 @@ class mt_pipe_commands:
                         blat_hr_pair_2,
                         hr_singletons,
                         hr_paired,
-                        copy_singletons,
-                        copy_pair_1,
-                        copy_pair_2
+                        mv_singletons,
+                        mv_pair_1,
+                        mv_pair_2 + " && " + make_marker
                     ]
                 
             
@@ -675,7 +685,7 @@ class mt_pipe_commands:
                 
         return COMMANDS_host
 
-    def create_vector_filter_command(self, no_host_flag = False):
+    def create_vector_filter_command(self, marker_path, no_host_flag = False):
 
         self.make_folder(self.path_obj.vector_top_path)
         self.make_folder(self.path_obj.vector_data_path)
@@ -683,11 +693,12 @@ class mt_pipe_commands:
         self.make_folder(self.path_obj.vector_blat_path)
         self.make_folder(self.path_obj.vector_final_path)
 
-        Vector_Contaminants = os.path.join(self.path_obj.vector_bwa_path, "vector_contaminants_seq.fasta")
+        #Vector_Contaminants = os.path.join(self.path_obj.vector_bwa_path, "vector_contaminants_seq.fasta")
+        Vector_Contaminants = self.path_obj.Vector_DB
+        #copy_vector = ">&2 echo copy vector prep | "
+        #copy_vector += "cp " + self.path_obj.UniVec_Core + " " + Vector_Contaminants
 
-        copy_vector = ">&2 echo copy vector prep | "
-        copy_vector += "cp " + self.path_obj.UniVec_Core + " " + Vector_Contaminants
-
+        #univec core is tiny. we can spend time indexing. 
         bwa_vr_prep = ">&2 echo BWA vector prep | "
         bwa_vr_prep += self.path_obj.BWA + " index -a bwtsw " + Vector_Contaminants
 
@@ -827,19 +838,22 @@ class mt_pipe_commands:
         blat_filter_vector_paired += os.path.join(self.path_obj.vector_blat_path, "pair_1_vectors_only.fastq") + " "
         blat_filter_vector_paired += os.path.join(self.path_obj.vector_blat_path, "pair_2_vectors_only.fastq")
 
-        copy_singletons = "cp " + os.path.join(self.path_obj.vector_blat_path, "singletons_no_vectors.fastq") + " "
-        copy_singletons += os.path.join(self.path_obj.vector_final_path, "singletons.fastq")
+        mv_singletons = "cp " + os.path.join(self.path_obj.vector_blat_path, "singletons_no_vectors.fastq") + " "
+        mv_singletons += os.path.join(self.path_obj.vector_final_path, "singletons.fastq")
 
-        copy_pair_1 = "cp " + os.path.join(self.path_obj.vector_blat_path, "pair_1_no_vectors.fastq") + " "
-        copy_pair_1 += os.path.join(self.path_obj.vector_final_path, "pair_1.fastq")
+        mv_pair_1 = "cp " + os.path.join(self.path_obj.vector_blat_path, "pair_1_no_vectors.fastq") + " "
+        mv_pair_1 += os.path.join(self.path_obj.vector_final_path, "pair_1.fastq")
 
-        copy_pair_2 = "cp " + os.path.join(self.path_obj.vector_blat_path, "pair_2_no_vectors.fastq") + " "
-        copy_pair_2 += os.path.join(self.path_obj.vector_final_path, "pair_2.fastq")
+        mv_pair_2 = "cp " + os.path.join(self.path_obj.vector_blat_path, "pair_2_no_vectors.fastq") + " "
+        mv_pair_2 += os.path.join(self.path_obj.vector_final_path, "pair_2.fastq")
+
+        make_marker = "touch" + " "
+        make_marker += marker_path
         
         if(self.tutorial_keyword == "vectors" or self.tutorial_keyword == "vector"):
             if self.read_mode == "single":
                 COMMANDS_vector = [
-                    copy_vector,
+                    
                     bwa_vr_prep,
                     samtools_vr_prep,
                     bwa_vr_tut_singletons,
@@ -850,11 +864,10 @@ class mt_pipe_commands:
                     vsearch_filter_6,
                     blat_vr_singletons,
                     blat_filter_vector_singletons,
-                    copy_singletons
+                    mv_singletons + " && " + make_marker
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_vector = [
-                    copy_vector,
                     bwa_vr_prep,
                     samtools_vr_prep,
                     bwa_vr_tut_singletons,
@@ -872,14 +885,13 @@ class mt_pipe_commands:
                     blat_vr_pair_2,
                     blat_filter_vector_singletons,
                     blat_filter_vector_paired,
-                    copy_singletons,
-                    copy_pair_1,
-                    copy_pair_2
+                    mv_singletons,
+                    mv_pair_1,
+                    mv_pair_2 + " && " + make_marker
                 ]
         else:    
             if self.read_mode == "single":
                 COMMANDS_vector = [
-                    copy_vector,
                     bwa_vr_prep,
                     samtools_vr_prep,
                     bwa_vr_singletons,
@@ -890,11 +902,10 @@ class mt_pipe_commands:
                     vsearch_filter_6,
                     blat_vr_singletons,
                     blat_filter_vector_singletons,
-                    copy_singletons
+                    mv_singletons + " && " + make_marker
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_vector = [
-                    copy_vector,
                     bwa_vr_prep,
                     samtools_vr_prep,
                     bwa_vr_singletons,
@@ -912,9 +923,9 @@ class mt_pipe_commands:
                     blat_vr_pair_2,
                     blat_filter_vector_singletons,
                     blat_filter_vector_paired,
-                    copy_singletons,
-                    copy_pair_1,
-                    copy_pair_2
+                    mv_singletons,
+                    mv_pair_1,
+                    mv_pair_2 + " && " + make_marker
                 ]    
 
         return COMMANDS_vector

@@ -452,3 +452,26 @@ class mp_util:
             print(dt.today(), "skipping job:", job_label)
 
         return cleanup_job_start, cleanup_job_end
+    
+    def launch_stage_with_cleanup(self, commands, command_list, marker_path, data_path, job_label, keep_all, keep_job):
+        #wrapper for simple job launches (quality, host)
+        cleanup_job_start = 0
+        cleanup_job_end = 0
+        
+        if self.check_bypass_log(self.output_folder_path, job_label):
+            print(dt.today(), "NEW CHECK running:", job_label)
+            self.launch_and_create_simple(job_label, job_label, commands, command_list)
+            if os.path.exists(marker_path):
+                self.write_to_bypass_log(self.output_folder_path, job_label)
+                cleanup_job_start = time.time()
+                self.clean_or_compress(data_path, keep_all, keep_job)
+                cleanup_job_end = time.time()  
+            else:
+                print("error on job:", job_label)
+                sys.exit("unclean exit")
+              
+        else:
+            print(dt.today(), "skipping job:", job_label)
+            cleanup_job_end = time.time() 
+
+        return cleanup_job_start, cleanup_job_end
