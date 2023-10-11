@@ -227,29 +227,29 @@ class mt_pipe_commands:
             adapter_removal_line += " --singleton " + os.path.join(self.path_obj.qc_adapter_path, "singletons_adptr_rem.fastq")
 
         #Sort-reads introduces tags at the read-level of the 
-        tag_remove_pair_1 = ">&2 echo Remove tags pair 1 | "
-        tag_remove_pair_1 += self.path_obj.Python + " "
-        tag_remove_pair_1 += self.path_obj.remove_tag + " "
-        tag_remove_pair_1 += os.path.join(self.path_obj.qc_adapter_path, "pair_1_adptr_rem.fastq") + " "
-        tag_remove_pair_1 += os.path.join(self.path_obj.qc_tag_path, "pair_1_no_tags.fastq")
+        #tag_remove_pair_1 = ">&2 echo Remove tags pair 1 | "
+        #tag_remove_pair_1 += self.path_obj.Python + " "
+        #tag_remove_pair_1 += self.path_obj.remove_tag + " "
+        #tag_remove_pair_1 += os.path.join(self.path_obj.qc_adapter_path, "pair_1_adptr_rem.fastq") + " "
+        #tag_remove_pair_1 += os.path.join(self.path_obj.qc_tag_path, "pair_1_no_tags.fastq")
         
-        tag_remove_pair_2 = ">&2 echo Remove tags pair 2 | "
-        tag_remove_pair_2 += self.path_obj.Python + " "
-        tag_remove_pair_2 += self.path_obj.remove_tag + " "
-        tag_remove_pair_2 += os.path.join(self.path_obj.qc_adapter_path, "pair_2_adptr_rem.fastq") + " "
-        tag_remove_pair_2 += os.path.join(self.path_obj.qc_tag_path, "pair_2_no_tags.fastq")
+        #tag_remove_pair_2 = ">&2 echo Remove tags pair 2 | "
+        #tag_remove_pair_2 += self.path_obj.Python + " "
+        #tag_remove_pair_2 += self.path_obj.remove_tag + " "
+        #tag_remove_pair_2 += os.path.join(self.path_obj.qc_adapter_path, "pair_2_adptr_rem.fastq") + " "
+        #tag_remove_pair_2 += os.path.join(self.path_obj.qc_tag_path, "pair_2_no_tags.fastq")
 
-        tag_remove_singletons =  ">&2 echo Remove tags singletons | " 
-        tag_remove_singletons += self.path_obj.Python + " "
-        tag_remove_singletons += self.path_obj.remove_tag + " "
-        tag_remove_singletons += os.path.join(self.path_obj.qc_adapter_path, "singletons_adptr_rem.fastq") + " "
-        tag_remove_singletons += os.path.join(self.path_obj.qc_tag_path, "singletons_no_tags.fastq")
+        #tag_remove_singletons =  ">&2 echo Remove tags singletons | " 
+        #tag_remove_singletons += self.path_obj.Python + " "
+        #tag_remove_singletons += self.path_obj.remove_tag + " "
+        #tag_remove_singletons += os.path.join(self.path_obj.qc_adapter_path, "singletons_adptr_rem.fastq") + " "
+        #tag_remove_singletons += os.path.join(self.path_obj.qc_tag_path, "singletons_no_tags.fastq")
         # tries to merge the cleaned pairs
         # rejects get sent out
         vsearch_merge = ">&2 echo " + "Vsearch Merge pairs | "
         vsearch_merge += self.path_obj.vsearch
-        vsearch_merge += " --fastq_mergepairs " + os.path.join(self.path_obj.qc_tag_path, "pair_1_no_tags.fastq")
-        vsearch_merge += " --reverse " + os.path.join(self.path_obj.qc_tag_path, "pair_2_no_tags.fastq")
+        vsearch_merge += " --fastq_mergepairs " + os.path.join(self.path_obj.qc_tag_path, "pair_1_adptr_rem.fastq")
+        vsearch_merge += " --reverse " + os.path.join(self.path_obj.qc_tag_path, "pair_2_adptr_rem.fastq")
         vsearch_merge += " --fastq_ascii " + str(self.Qual_str)
         vsearch_merge += " --fastqout " + os.path.join(self.path_obj.qc_merge_path, "merge_success.fastq")
         vsearch_merge += " --fastqout_notmerged_fwd " + os.path.join(self.path_obj.qc_merge_path, "pair_1_merge_reject.fastq")
@@ -259,7 +259,7 @@ class mt_pipe_commands:
         cat_glue = ">&2 echo concatenating singletons | "
         cat_glue += "cat "
         cat_glue += os.path.join(self.path_obj.qc_merge_path, "merge_success.fastq") + " "
-        cat_glue += os.path.join(self.path_obj.qc_tag_path, "singletons_no_tags.fastq")
+        cat_glue += os.path.join(self.path_obj.qc_tag_path, "singletons_adptr_rem.fastq")
         cat_glue += " > " + os.path.join(self.path_obj.qc_merge_path, "singletons.fastq")
 
         # Filter out low-quality reads
@@ -363,9 +363,6 @@ class mt_pipe_commands:
                 sort_pair_1,
                 sort_pair_2,
                 adapter_removal_line,
-                tag_remove_pair_1,
-                tag_remove_pair_2,
-                tag_remove_singletons,
                 vsearch_merge,
                 cat_glue,
                 vsearch_filter_0,

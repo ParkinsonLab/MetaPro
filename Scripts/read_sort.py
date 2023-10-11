@@ -5,6 +5,8 @@ import pandas as pd
 # This code started off as a testbed to develop a method to import FASTQs effectively into pandas.
 # It simply imports the FASTQ file, sorts by the ID, and exports it back. 
 
+#Oct 11, 2023:  Code now also scrubs the ID portion of all nonsensical garbage that messes with ID-matching.
+
 def sort_and_export(input_file, output_file, direction):
 
     start_total_call = time.clock()
@@ -18,6 +20,7 @@ def sort_and_export(input_file, output_file, direction):
     df.columns = ["ID", "sequences", "junk", "quality"]
     df["ID"] = df["ID"].apply(lambda x: x.split(" ")[0])
     df["ID"] = df["ID"].apply(lambda x: x.replace(".", "_"))
+    df["ID"] = df["ID"].apply(lambda x: x.split("/")[0])  #line to remove tags
     df = df.sort_values(by=['ID'])
     
         
