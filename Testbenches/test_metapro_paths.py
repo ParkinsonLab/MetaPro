@@ -1,3 +1,11 @@
-#Oct 12, 2018
-# This is a test for MetaPro_Paths.py.  
-# There's some potential corner cases that we'd like tested and verified for sanity.
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import MetaPro_paths as mpp
+
+
+if __name__ == "__main__":
+    config_path = sys.argv[1]
+    output_dir = sys.argv[2]
+
+    path_obj = mpp.tool_path_obj(config_path, output_dir)

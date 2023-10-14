@@ -117,11 +117,16 @@ class tool_path_obj:
             print("no config, using default:", default)
             value = default
             
-        print(var_name, type(value))
+        #print(var_name, type(value))
         return value
         
         
-
+    def check_if_indexed(self, db_path):
+        if(os.path.exists(os.path.join(db_path, "index_complete"))):
+            return True
+        else:
+            print("not indexed")
+            return False
             
     def check_file_valid(self, file_0):
         #checks that a file is there, and larger than 0kb
@@ -596,8 +601,14 @@ class tool_path_obj:
         # Note: default host is Mouse CDS
         
         #if config:
-        self.Vector_DB          = self.value_assignment(config, "Databases", "Vector_DB", os.path.join(database_path, "univec_core/UniVec_Core.fasta"), "path") 
-        self.Adapter            = self.value_assignment(config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"), "path")
+        self.Vector_DB_file     = self.value_assignment(config, "Databases", "Vector_DB", os.path.join(database_path, "univec_core/UniVec_Core.fasta"), "path") 
+        if(self.check_if_indexed(os.path.dirname(self.Vector_DB_file))):
+            print("Vector DB indexed!")
+        else:
+            print("Vector DB not indexed")
+
+        sys.exit("paused")
+
         self.Host_DB            = self.value_assignment(config, "Databases", "Host_DB",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"), "path")
         self.Rfam               = self.value_assignment(config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"), "path")
         self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", "None", "string")
@@ -715,9 +726,9 @@ class tool_path_obj:
         #---------------------------------------------------------------------------------------
         # Folder names + paths
 
-        print("QC label:", self.qc_label)
         self.qc_top_path                = os.path.join(self.output_path, self.qc_label)
         self.qc_data_path               = os.path.join(self.qc_top_path, "data")
+        self.qc_jobs_path               = os.path.join(self.qc_top_path, "jobs")
         self.qc_sort_path               = os.path.join(self.qc_data_path, "0_sorted_raw_input")
         self.qc_adapter_path            = os.path.join(self.qc_data_path, "1_adapter_removal")
         self.qc_merge_path              = os.path.join(self.qc_data_path, "2_vsearch_pair_merge")
