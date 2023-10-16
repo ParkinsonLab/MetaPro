@@ -285,6 +285,49 @@ class tool_path_obj:
         self.output_path        = output_path
         print("output path:", self.output_path)
         
+        
+
+        #----------------------------------------------------------
+        # Reference Databases
+        # Note: default host is Mouse CDS
+        
+        #if config:
+        self.Vector_DB          = self.value_assignment(config, "Databases", "Vector_DB", os.path.join(database_path, "univec_core/UniVec_Core.fasta"), "path") 
+        self.Adapter            = self.value_assignment(config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"), "path")
+        self.Host_DB            = self.value_assignment(config, "Databases", "Host_DB",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"), "path")
+        
+        sys.exit("kill here")
+        self.Rfam               = self.value_assignment(config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"), "path")
+        self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", "None", "string")
+        self.source_taxa_DB     = self.value_assignment(config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"), "dir")
+        self.Prot_DB            = self.value_assignment(config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr"), "path")
+        self.Prot_DB_reads      = self.value_assignment(config, "Databases", "Prot_DB_reads", os.path.join(database_path, "nr/nr"), "path")
+        self.accession2taxid    = self.value_assignment(config, "Databases", "accession2taxid", os.path.join(database_path, "accession2taxid/accession2taxid"), "path")
+        self.nodes              = self.value_assignment(config, "Databases", "nodes", os.path.join(database_path, "WEVOTE_db", "nodes.dmp"), "path")
+        self.names              = self.value_assignment(config, "Databases", "names", os.path.join(database_path, "WEVOTE_db", "names.dmp"), "path")
+        self.Kaiju_db           = self.value_assignment(config, "Databases", "Kaiju_db", os.path.join(database_path, "kaiju_db/kaiju_db_nr.fmi"), "path")
+        self.Centrifuge_db      = self.value_assignment(config, "Databases", "Centrifuge_db", os.path.join(database_path, "centrifuge_db/nt"), "path")
+        self.SWISS_PROT         = self.value_assignment(config, "Databases", "SWISS_PROT", os.path.join(database_path, "swiss_prot_db/swiss_prot_db"), "path")
+        self.SWISS_PROT_map     = self.value_assignment(config, "Databases", "SWISS_PROT_map", os.path.join(database_path, "swiss_prot_db/SwissProt_EC_Mapping.tsv"), "path")
+        self.PriamDB            = self.value_assignment(config, "Databases", "PriamDB", os.path.join(database_path, "PRIAM_db/"), "path")
+        self.DetectDB           = self.value_assignment(config, "Databases", "DetectDB", os.path.join(database_path, "DETECTv2"), "path")
+        self.WEVOTEDB           = self.value_assignment(config, "Databases", "WEVOTEDB", os.path.join(database_path, "WEVOTE_db/"), "path")
+        self.EC_pathway         = self.value_assignment(config, "Databases", "EC_pathway", os.path.join(database_path, "EC_pathway.txt"), "path")
+        self.path_to_superpath  = self.value_assignment(config, "Databases", "path_to_superpath", os.path.join(custom_database_path, "pathway_to_superpathway.csv"), "path")
+        self.enzyme_db          = self.value_assignment(config, "Databases", "enzyme_db", os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt"), "path")
+        self.taxid_tree         = self.value_assignment(config, "Databases", "taxid_tree", os.path.join(custom_database_path, "taxid_trees", "family_tree.tsv"), "path")
+        self.kraken2_db         = self.value_assignment(config, "Databases", "kraken2_db", os.path.join(custom_database_path, "kraken2_db"), "path")
+        self.taxa_lib_list      = self.value_assignment(config, "Databases", "taxa_lib_list", os.path.join(database_path, "taxa_lib_list.txt"), "path")
+
+        
+        #-------------------------------------------------------
+        # test DBs
+        self.GA_DB_mode = "multi" #by default for the new DB changes.
+        self.check_dmd_valid()
+        if(self.DNA_DB_mode == "custom"):
+            self.check_bwa_valid(self.DNA_DB)
+            self.check_blat_valid(self.DNA_DB)
+        
 
         
         #--------------------------------------------------
@@ -596,9 +639,6 @@ class tool_path_obj:
         
         
         
-        #----------------------------------------------------------
-        # Reference Databases
-        # Note: default host is Mouse CDS
         
         #if config:
         self.Vector_DB_file     = self.value_assignment(config, "Databases", "Vector_DB", os.path.join(database_path, "univec_core/UniVec_Core.fasta"), "path") 

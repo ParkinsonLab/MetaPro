@@ -44,8 +44,8 @@ ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.1/Scripts/output_
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.1/Scripts/read_BLAT_filter_v3.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.1/Scripts/read_orphan.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.1/Scripts/read_remove_tag.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.1/Scripts/read_rRNA_barrnap.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.1/Scripts/read_rRNA_infernal.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.1/Scripts/read_rRNA_barrnap_v2.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.1/Scripts/read_rRNA_infernal_v2.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.1/Scripts/read_repopulation.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.1/Scripts/read_sam.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/3.0.1/Scripts/bwa_read_sorter.py /pipeline/Scripts
