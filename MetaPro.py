@@ -51,6 +51,7 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     metapro_stage_obj.mp_quality_filter()
     
     # The host read filter stage
+    
     metapro_stage_obj.mp_host_filter()
         
     # The vector contaminant filter stage

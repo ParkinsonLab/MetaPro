@@ -224,8 +224,8 @@ class mp_stage:
         if not self.no_host:
             self.host_start = time.time()
             
-            if not (os.path.exists(self.paths.top_host_index_marker)):
-                command_list = self.commands.create_host_index_command(self.paths.top_host_index_marker)
+            if not (self.paths.check_if_indexed(self.paths.Host_DB)):
+                command_list = self.commands.create_host_index_command(self.paths.index_complete_marker)
                 self.mp_util.launch_only_with_mp_store(command_list, self.commands)
 
             else:
@@ -245,7 +245,8 @@ class mp_stage:
     def mp_vector_filter(self):
         self.vector_start = time.time()
         
-        
+            if not (self.paths.check_if_indexed(self.paths.Vector_DB)):
+                command_list = self.commands.create_vector_filter_index_command(self.paths.)
             #get dep args from quality filter
             #if not check_where_resume(vector_path, None, self.quality_path):
         marker_path = os.path.join(self.paths.vector_jobs_path, "vector_filter")

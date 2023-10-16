@@ -121,8 +121,9 @@ class tool_path_obj:
         return value
         
         
-    def check_if_indexed(self, db_path):
-        if(os.path.exists(os.path.join(db_path, "index_complete"))):
+    def check_if_indexed(self, db_file):
+        db_path = os.path.dirname(db_file)
+        if(os.path.exists(os.path.join(db_path, self.index_complete_marker))):
             return True
         else:
             print("not indexed")
@@ -292,11 +293,12 @@ class tool_path_obj:
         # Note: default host is Mouse CDS
         
         #if config:
-        self.Vector_DB          = self.value_assignment(config, "Databases", "Vector_DB", os.path.join(database_path, "univec_core/UniVec_Core.fasta"), "path") 
-        self.Adapter            = self.value_assignment(config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"), "path")
-        self.Host_DB            = self.value_assignment(config, "Databases", "Host_DB",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"), "path")
+        self.Vector_DB          = self.value_assignment(config, "Databases", "Vector", os.path.join(database_path, "univec_core/UniVec_Core.fasta"), "path") 
+        self.Adapter_DB         = self.value_assignment(config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"), "path")
+        self.Host_DB            = self.value_assignment(config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"), "path")
         
-        sys.exit("kill here")
+        
+
         self.Rfam               = self.value_assignment(config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"), "path")
         self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", "None", "string")
         self.source_taxa_DB     = self.value_assignment(config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"), "dir")
@@ -413,6 +415,19 @@ class tool_path_obj:
         #identity_cutoff= 85
         #length_cutoff= 0.65
         #score_cutoff= 60
+
+        
+#---------------------------------------------------------
+        #top-level marker names
+        self.top_qc_marker              = "qc_marker"
+        self.index_complete_marker      = "index_complete"
+        self.top_host_rem_marker        = "host_rem"
+        self.top_vec_marker             = "vec_rem"
+        self.top_rRNA_marker            = "rRNA_rem"
+        self.top_repop_marker           = "repop"
+        self.contig_marker              = "assemble_contigs"
+
+#-----------------------------------------------------------------
         
         self.target_rank                = self.value_assignment(config, "Settings", "target_rank", "genus", "string")
         self.adapterremoval_minlength   = self.value_assignment(config, "Settings", "AdapterRemoval_minlength", 30)
@@ -905,15 +920,6 @@ class tool_path_obj:
         self.reports_final_path     = os.path.join(self.reports_top_path, "final_results")
 
 
-#---------------------------------------------------------
-        #top-level marker names
-        self.top_qc_marker              = "qc_marker"
-        self.top_host_index_marker      = "host_index"
-        self.top_host_rem_marker        = "host_rem"
-        self.top_vec_marker             = "vec_rem"
-        self.top_rRNA_marker            = "rRNA_rem"
-        self.top_repop_marker           = "repop"
-        self.contig_marker              = "assemble_contigs"
 
 
 #---------------------------------------------------------

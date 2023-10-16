@@ -9,3 +9,5 @@ if __name__ == "__main__":
     output_dir = sys.argv[2]
 
     path_obj = mpp.tool_path_obj(config_path, output_dir)
+
+    print(path_obj.check_if_indexed(path_obj.Vector_DB))

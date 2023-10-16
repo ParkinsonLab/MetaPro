@@ -682,6 +682,22 @@ class mt_pipe_commands:
                 
         return COMMANDS_host
 
+    def create_vector_filter_index_command(self, marker_path):
+        
+        #univec core is tiny. we can spend time indexing. 
+        bwa_vr_prep = ">&2 echo BWA vector prep | "
+        bwa_vr_prep += self.path_obj.BWA + " index -a bwtsw " + self.path_obj.Vector_DB
+        samtools_vr_prep = ">&2 echo samtools vector prep | "
+        samtools_vr_prep += self.path_obj.SAMTOOLS + " faidx " + self.path_obj.Vector_DB
+
+        make_marker = "touch" + " "
+        make_marker += marker_path
+        command = [bwa_vr_prep, samtools_vr_prep +  " && " + make_marker]
+        return command
+
+
+
+
     def create_vector_filter_command(self, marker_path, no_host_flag = False):
 
         self.make_folder(self.path_obj.vector_top_path)
@@ -695,12 +711,9 @@ class mt_pipe_commands:
         #copy_vector = ">&2 echo copy vector prep | "
         #copy_vector += "cp " + self.path_obj.UniVec_Core + " " + Vector_Contaminants
 
-        #univec core is tiny. we can spend time indexing. 
-        bwa_vr_prep = ">&2 echo BWA vector prep | "
-        bwa_vr_prep += self.path_obj.BWA + " index -a bwtsw " + Vector_Contaminants
+        
 
-        samtools_vr_prep = ">&2 echo samtools vector prep | "
-        samtools_vr_prep += self.path_obj.SAMTOOLS + " faidx " + Vector_Contaminants
+        
 
         bwa_vr_singletons = ">&2 echo BWA vector oprhans | "
         bwa_vr_singletons += self.path_obj.BWA + " mem -t " + self.threads_str + " "
