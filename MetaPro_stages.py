@@ -261,7 +261,10 @@ class mp_stage:
 
     def mp_rRNA_filter(self):
         self.rRNA_filter_start = time.time()
-        
+        self.rRNA_filter_end = time.time()
+        self.cleanup_rRNA_filter_start = time.time()
+        self.cleanup_rRNA_filter_end = time.time()
+
         #if not check_where_resume(self.rRNA_filter_path, None, self.vector_path):
         if self.mp_util.check_bypass_log(self.output_folder_path, self.paths.rRNA_filter_label): 
             
@@ -379,20 +382,19 @@ class mp_stage:
 
             #--------------------------------------------------------------------
             # rRNA cleanup
-            marker_path = os.path.join(self.paths.rRNA_jobs_path, "paired_inf_pp")
-            command_list = self.commands.create_rRNA_cleanup_command("paired", marker_path)
+            command_list = self.commands.create_rRNA_cleanup_command("paired", self.paths.rRNA_p_final_marker)
             print("command list:", command_list)
-            if not os.path.exists(marker_path):
+            if not os.path.exists(self.paths.rRNA_p_final_marker):
                 print("running rRNA-final: paired")
                 self.mp_util.launch_only_with_mp_store(self.commands, command_list)
             else:
                 print("skipping rRNA-final: paired" )
 
         
-            marker_path = os.path.join(self.paths.rRNA_jobs_path, "single_inf_pp")
-            command_list = self.commands.create_rRNA_cleanup_command("single", marker_path)
+            
+            command_list = self.commands.create_rRNA_cleanup_command("single", self.paths.rRNA_s_final_marker)
             print("command list:", command_list)
-            if not os.path.exists(marker_path):
+            if not os.path.exists(self.paths.rRNA_s_final_marker):
                 print("running rRNA-final: single")
                 self.mp_util.launch_only_with_mp_store(self.commands, command_list)
             else:
@@ -400,30 +402,43 @@ class mp_stage:
 
             self.mp_util.wait_for_mp_store()
 
-        if(os.path.exists(marker_path)):    
-            print("rRNA filter:", '%1.1f' % (self.rRNA_filter_end - self.rRNA_filter_start - (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start)), "s")
-            print("rRNA filter cleanup:", '%1.1f' % (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start), "s")
-            self.debug_stop_check(self.paths.rRNA_filter_label)
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.paths.rRNA_filter_label)
-        
+            rRNA_complete_flag = False
+            if(len(os.listdir(self.paths.rRNA_p1_inf_mRNA_path)) > 0) and (len(os.listdir(self.paths.rRNA_s_inf_mRNA_path))> 0):
+                if(os.path.exists(self.paths.rRNA_p_final_marker) and (os.path.exists(self.paths.rRNA_s_final_marker))):
+                    rRNA_complete_flag = True
+            else:
+                if(os.path.exists(self.paths.rRNA_s_final_marker)):
+                    rRNA_complete_flag = True    
+
+            if(rRNA_complete_flag):            
+                self.debug_stop_check(self.paths.rRNA_filter_label)
+                self.mp_util.write_to_bypass_log(self.output_folder_path, self.paths.rRNA_filter_label)
+                self.cleanup_rRNA_filter_start = time.time()
+                self.mp_util.clean_or_compress(self.paths.rRNA_data_path, self.paths.keep_all, self.paths.keep_rRNA)
+                self.cleanup_rRNA_filter_end = time.time()
+
+
+        print("rRNA filter:", '%1.1f' % (self.rRNA_filter_end - self.rRNA_filter_start - (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start)), "s")
+        print("rRNA filter cleanup:", '%1.1f' % (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start), "s")
+            
 
     def mp_repop(self):
         
         self.repop_start = time.time()
         #if not check_where_resume(repop_job_path, None, rRNA_filter_path):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.repop_job_label):
-            job_name = self.repop_job_label
-            command_list = self.commands.create_repop_command_v2_step_1(self.repop_job_label, self.paths.qc_label, self.rRNA_filter_label)
-            self.mp_util.subdivide_and_launch(self.repop_job_delay, self.repop_mem_threshold, self.repop_job_limit, self.repop_job_label, job_name, self.commands, command_list)
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.paths.repop_label):
+            job_name = self.paths.repop_label
+            command_list = self.commands.create_repop_command_v2_step_1(self.paths.repop_label, self.paths.qc_label, self.paths.rRNA_filter_label)
+            self.mp_util.subdivide_and_launch(self.paths.repop_job_delay, self.paths.repop_mem_threshold, self.paths.repop_job_limit, self.paths.repop_label, job_name, self.commands, command_list)
             self.mp_util.wait_for_mp_store()
             
             if(self.read_mode == "paired"):
-                job_name = self.repop_job_label
-                command_list = self.commands.create_repop_command_v2_step_2(self.repop_job_label, self.paths.qc_label, self.rRNA_filter_label)
-                self.mp_util.subdivide_and_launch(self.repop_job_delay, self.repop_mem_threshold, self.repop_job_limit, self.repop_job_label, job_name, self.commands, command_list)
+                job_name = self.paths.repop_label
+                command_list = self.commands.create_repop_command_v2_step_2(self.paths.repop_label, self.paths.qc_label, self.rRNA_filter_label)
+                self.mp_util.subdivide_and_launch(self.paths.repop_job_delay, self.paths.repop_mem_threshold, self.paths.repop_job_limit, self.paths.repop_label, job_name, self.commands, command_list)
                 self.mp_util.wait_for_mp_store()
             
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.repop_job_label)
+            self.mp_util.write_to_bypass_log(self.output_folder_path, self.paths.repop_label)
             
             self.cleanup_repop_start = time.time()
             self.mp_util.clean_or_compress(self.repop_path, self.keep_all, self.keep_repop)
@@ -432,7 +447,7 @@ class mp_stage:
         self.repop_end = time.time()
         print("repop:", '%1.1f' % (self.repop_end - self.repop_start - (self.cleanup_repop_end - self.cleanup_repop_start)), "s")
         print("repop cleanup:", '%1.1f' % (self.cleanup_repop_end - self.cleanup_repop_start), "s")
-        self.debug_stop_check(self.repop_job_label)
+        self.debug_stop_check(self.paths.repop_label)
 
     def mp_assemble(self):
         self.assemble_contigs_start = time.time()
@@ -448,7 +463,7 @@ class mp_stage:
 
         if self.mp_util.check_bypass_log(self.output_folder_path, self.assemble_contigs_label):
             job_name = self.assemble_contigs_label
-            command_list = self.commands.create_assemble_contigs_command(self.assemble_contigs_label, self.repop_job_label)
+            command_list = self.commands.create_assemble_contigs_command(self.assemble_contigs_label, self.paths.repop_label)
             self.mp_util.launch_and_create_simple(self.assemble_contigs_label, job_name, self.commands, command_list)
             
             if(os.path.exists(spades_done_file)):
@@ -1534,7 +1549,7 @@ class mp_stage:
             #Phase 3
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_read_count_label):
                 job_name = self.output_read_count_label
-                command_list = self.commands.create_output_read_count_command(self.output_label, self.paths.qc_label, self.repop_job_label, self.GA_final_merge_label, self.ec_label)
+                command_list = self.commands.create_output_read_count_command(self.output_label, self.paths.qc_label, self.paths.repop_label, self.GA_final_merge_label, self.ec_label)
                 self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
                                 
 

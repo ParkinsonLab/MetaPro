@@ -230,7 +230,7 @@ class mp_util:
             return False
 
     def launch_and_create_simple(self, job_location, job_label, command_obj, commands):
-        #just launches a job.  no multi-process.
+        #just launches a job.  no multi-process. But wait for the job to finish before continuing
         process = mp.Process(
             target=command_obj.create_and_launch,
             args=(job_location, job_label, commands)
@@ -463,7 +463,9 @@ class mp_util:
                 print(dt.today(), "NEW CHECK running:", job_label)
                 self.launch_and_create_simple(job_label, job_label, commands, command_list)
                 print(dt.today(), "job launched")
-            #structured to catch instance where bypass isn't written, but marker is present.    
+            #structured to catch instance where bypass isn't written, but marker is present.
+            #it's not a if/else case.  Marker will be created once the job finishes.
+
             if os.path.exists(marker_path):
                 self.write_to_bypass_log(self.output_folder_path, job_label)
                 cleanup_job_start = time.time()

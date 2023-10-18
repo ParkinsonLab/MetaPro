@@ -424,16 +424,6 @@ class tool_path_obj:
         #length_cutoff= 0.65
         #score_cutoff= 60
 
-        
-#---------------------------------------------------------
-        #top-level marker names
-        self.top_qc_marker              = "qc_marker"
-        self.index_complete_marker      = "index_complete"
-        self.top_host_rem_marker        = "host_rem"
-        self.top_vec_marker             = "vec_rem"
-        self.top_rRNA_marker            = "rRNA_rem"
-        self.top_repop_marker           = "repop"
-        self.contig_marker              = "assemble_contigs"
 
 #-----------------------------------------------------------------
         if not ("Settings" in config):
@@ -897,6 +887,16 @@ class tool_path_obj:
         self.reports_final_path     = os.path.join(self.reports_top_path, "final_results")
 
 
+        
+#---------------------------------------------------------
+        #top-level marker names
+        self.top_qc_marker              = "qc_marker"
+        self.index_complete_marker      = "index_complete"
+        self.top_host_rem_marker        = "host_rem"
+        self.top_vec_marker             = "vec_rem"
+        self.top_rRNA_marker            = "rRNA_rem"
+        self.top_repop_marker           = "repop"
+        self.contig_marker              = "assemble_contigs"
 
 
 #---------------------------------------------------------
@@ -907,6 +907,8 @@ class tool_path_obj:
         self.rRNA_split_marker      = "split_fasta"
         self.host_final_marker = os.path.join(self.host_jobs_path, self.top_host_rem_marker)
         self.vector_final_marker = os.path.join(self.vector_jobs_path, self.top_vec_marker)
+        self.rRNA_s_final_marker = os.path.join(self.rRNA_jobs_path, "rRNA_s_inf_pp")
+        self.rRNA_p_final_marker = os.path.join(self.rRNA_jobs_path, "rRNA_p_inf_pp")
 
 
 #----------------------------------------------------------

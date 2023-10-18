@@ -1135,8 +1135,8 @@ class mt_pipe_commands:
             repop_singletons += os.path.join(singleton_path, "singletons_hq.fastq") + " "
         elif self.read_mode == "paired":
             repop_singletons += os.path.join(hq_path, "singletons_with_duplicates.fastq") + " "
-        
-        repop_singletons += os.path.join(dep_loc, "mRNA", "singletons.fastq") + " "  # in -> rRNA filtration output
+        print("TIP_TOP")
+        repop_singletons += os.path.join(dep_loc, "mRNA", "singletons_mRNA.fastq") + " "  # in -> rRNA filtration output
         repop_singletons += os.path.join(cluster_path, "singletons_unique.fastq.clstr") + " "  # in -> duplicates filter output
 
         
@@ -1258,6 +1258,7 @@ class mt_pipe_commands:
         # -> detect if we've run the preprocess stage.
         # -> if it's run, grab data
         # -> if not, run our own custom preprocess up to what we need
+        
         dep_loc                 = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
         subfolder               = os.path.join(self.Output_Path, stage_name)
         data_folder             = os.path.join(subfolder, "data")
@@ -1286,7 +1287,7 @@ class mt_pipe_commands:
         elif self.read_mode == "paired":
             repop_singletons += os.path.join(hq_path, "singletons_with_duplicates.fastq") + " "
         
-        repop_singletons += os.path.join(dep_loc, "mRNA", "singletons.fastq") + " "  # in -> rRNA filtration output
+        repop_singletons += os.path.join(dep_loc, "mRNA", "singletons_mRNA.fastq") + " "  # in -> rRNA filtration output
         repop_singletons += os.path.join(cluster_path, "singletons_unique.fastq.clstr") + " "  # in -> duplicates filter output
 
         
