@@ -266,7 +266,7 @@ class mp_util:
 
     def launch_only_with_mp_store(self, command_obj, commands):
         process = mp.Process(
-            target = command_obj.launch_only, 
+            target=command_obj.launch_only, 
             args=(commands, len(commands))
         )
 
@@ -455,12 +455,15 @@ class mp_util:
     
     def launch_stage_with_cleanup(self, commands, command_list, marker_path, data_path, job_label, keep_all, keep_job):
         #wrapper for simple job launches (quality, host)
-        cleanup_job_start = 0
-        cleanup_job_end = 0
+        cleanup_job_start = time.time()
+        cleanup_job_end = time.time()
         
         if self.check_bypass_log(self.output_folder_path, job_label):
-            print(dt.today(), "NEW CHECK running:", job_label)
-            self.launch_and_create_simple(job_label, job_label, commands, command_list)
+            if not os.path.exists(marker_path):
+                print(dt.today(), "NEW CHECK running:", job_label)
+                self.launch_and_create_simple(job_label, job_label, commands, command_list)
+                print(dt.today(), "job launched")
+            #structured to catch instance where bypass isn't written, but marker is present.    
             if os.path.exists(marker_path):
                 self.write_to_bypass_log(self.output_folder_path, job_label)
                 cleanup_job_start = time.time()

@@ -225,18 +225,17 @@ class mp_stage:
             self.host_start = time.time()
             
             if not (self.paths.check_if_indexed(self.paths.Host_DB)):
-                command_list = self.commands.create_host_index_command(self.paths.index_complete_marker)
-                self.mp_util.launch_only_with_mp_store(command_list, self.commands)
+                command_list = self.commands.create_host_index_command(self.paths.Host_DB_index_marker)
+                
 
             else:
                 print("skipping Host index")
-
-            command_list = self.commands.create_host_filter_command(self.paths.top_host_rem_marker)
+            command_list = self.commands.create_host_filter_command(self.paths.host_final_marker)
             if(self.test_mode == "yes"):
                 for item in command_list:
                     print(item)
             else:        
-                self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_with_cleanup(self.commands, command_list, self.paths.host_data_path, self.paths.host_filter_label, self.paths.keep_all, self.paths.keep_host)
+                self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_with_cleanup(self.commands, command_list, self.paths.host_final_marker, self.paths.host_data_path, self.paths.host_filter_label, self.paths.keep_all, self.paths.keep_host)
                 self.host_end = time.time()
                 print("host filter:", '%1.1f' % (self.host_end - self.host_start - (self.cleanup_host_end - self.cleanup_host_start)), "s")
                 print("host filter cleanup:", '%1.1f' %(self.cleanup_host_end - self.cleanup_host_start),"s")
@@ -245,13 +244,14 @@ class mp_stage:
     def mp_vector_filter(self):
         self.vector_start = time.time()
         
-            if not (self.paths.check_if_indexed(self.paths.Vector_DB)):
-                command_list = self.commands.create_vector_filter_index_command(self.paths.)
+        if not (self.paths.check_if_indexed(self.paths.Vector_DB)):
+            command_list = self.commands.create_vector_filter_index_command(self.paths.Vector_DB_index_marker)
+            self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+            
             #get dep args from quality filter
             #if not check_where_resume(vector_path, None, self.quality_path):
-        marker_path = os.path.join(self.paths.vector_jobs_path, "vector_filter")
-        command_list = self.commands.create_vector_filter_command(marker_path, self.no_host)
-        self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_with_cleanup(self.commands, command_list, self.paths.vector_data_path, self.paths.keep_all, self.paths.keep_vector)
+        command_list = self.commands.create_vector_filter_command(self.paths.vector_final_marker, self.no_host)
+        self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_with_cleanup(self.commands, command_list, self.paths.vector_final_marker, self.paths.vector_data_path, self.paths.vector_filter_label, self.paths.keep_all, self.paths.keep_vector)
 
         
         self.vector_end = time.time()

@@ -182,7 +182,6 @@ class mt_pipe_commands:
         self.make_folder(self.path_obj.qc_data_path)
         self.make_folder(self.path_obj.qc_sort_path)
         self.make_folder(self.path_obj.qc_adapter_path)
-        self.make_folder(self.path_obj.qc_tag_path)
         self.make_folder(self.path_obj.qc_merge_path)
         self.make_folder(self.path_obj.qc_filter_path)
         self.make_folder(self.path_obj.qc_orphan_path)
@@ -248,8 +247,8 @@ class mt_pipe_commands:
         # rejects get sent out
         vsearch_merge = ">&2 echo " + "Vsearch Merge pairs | "
         vsearch_merge += self.path_obj.vsearch
-        vsearch_merge += " --fastq_mergepairs " + os.path.join(self.path_obj.qc_tag_path, "pair_1_adptr_rem.fastq")
-        vsearch_merge += " --reverse " + os.path.join(self.path_obj.qc_tag_path, "pair_2_adptr_rem.fastq")
+        vsearch_merge += " --fastq_mergepairs " + os.path.join(self.path_obj.qc_adapter_path, "pair_1_adptr_rem.fastq")
+        vsearch_merge += " --reverse " + os.path.join(self.path_obj.qc_adapter_path, "pair_2_adptr_rem.fastq")
         vsearch_merge += " --fastq_ascii " + str(self.Qual_str)
         vsearch_merge += " --fastqout " + os.path.join(self.path_obj.qc_merge_path, "merge_success.fastq")
         vsearch_merge += " --fastqout_notmerged_fwd " + os.path.join(self.path_obj.qc_merge_path, "pair_1_merge_reject.fastq")
@@ -259,7 +258,7 @@ class mt_pipe_commands:
         cat_glue = ">&2 echo concatenating singletons | "
         cat_glue += "cat "
         cat_glue += os.path.join(self.path_obj.qc_merge_path, "merge_success.fastq") + " "
-        cat_glue += os.path.join(self.path_obj.qc_tag_path, "singletons_adptr_rem.fastq")
+        cat_glue += os.path.join(self.path_obj.qc_adapter_path, "singletons_adptr_rem.fastq")
         cat_glue += " > " + os.path.join(self.path_obj.qc_merge_path, "singletons.fastq")
 
         # Filter out low-quality reads
@@ -410,6 +409,7 @@ class mt_pipe_commands:
     def create_host_filter_command(self, marker_path):
         self.make_folder(self.path_obj.host_top_path)
         self.make_folder(self.path_obj.host_data_path)
+        self.make_folder(self.path_obj.host_jobs_path)
         self.make_folder(self.path_obj.host_bwa_path)
         self.make_folder(self.path_obj.host_blat_path)
         self.make_folder(self.path_obj.host_final_path)
@@ -523,21 +523,21 @@ class mt_pipe_commands:
 
         blat_hr_singletons = ">&2 echo BLAT host singletons | "
         blat_hr_singletons += self.path_obj.BLAT + " -noHead -minIdentity=90 -minScore=65 "
-        blat_hr_singletons += self.path_obj.Host_DB + " "
+        blat_hr_singletons += self.path_obj.Host_BLAT_DB + " "
         blat_hr_singletons += os.path.join(self.path_obj.host_bwa_path, "singletons_no_host.fasta")
         blat_hr_singletons += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str
         blat_hr_singletons += " " + os.path.join(self.path_obj.host_bwa_path, "singletons_no_host.blatout")
 
         blat_hr_pair_1 = ">&2 echo BLAT host pair 1 | "
         blat_hr_pair_1 += self.path_obj.BLAT
-        blat_hr_pair_1 += " -noHead -minIdentity=90 -minScore=65 " + self.path_obj.Host_DB + " "
+        blat_hr_pair_1 += " -noHead -minIdentity=90 -minScore=65 " + self.path_obj.Host_BLAT_DB + " "
         blat_hr_pair_1 += os.path.join(self.path_obj.host_bwa_path, "pair_1_no_host.fasta")
         blat_hr_pair_1 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str
         blat_hr_pair_1 += " " + os.path.join(self.path_obj.host_bwa_path, "pair_1_no_host.blatout")
 
         blat_hr_pair_2 = ">&2 echo BLAT host pair 2 | "
         blat_hr_pair_2 += self.path_obj.BLAT
-        blat_hr_pair_2 += " -noHead -minIdentity=90 -minScore=65 " + self.path_obj.Host_DB + " "
+        blat_hr_pair_2 += " -noHead -minIdentity=90 -minScore=65 " + self.path_obj.Host_BLAT_DB + " "
         blat_hr_pair_2 += os.path.join(self.path_obj.host_bwa_path, "pair_2_no_host.fasta")
         blat_hr_pair_2 += " -fine -q=rna -t=dna -out=blast8 -threads=" + self.threads_str
         blat_hr_pair_2 += " " + os.path.join(self.path_obj.host_bwa_path, "pair_2_no_host.blatout")
@@ -591,7 +591,6 @@ class mt_pipe_commands:
         if(self.tutorial_keyword is None):
             if self.read_mode == "single":
                 COMMANDS_host = [
-                    
                     bwa_hr_singletons,
                     samtools_hr_singletons_sam_to_bam,
                     samtools_no_host_singletons_bam_to_fastq,
@@ -692,7 +691,10 @@ class mt_pipe_commands:
 
         make_marker = "touch" + " "
         make_marker += marker_path
-        command = [bwa_vr_prep, samtools_vr_prep +  " && " + make_marker]
+        command = [
+                    bwa_vr_prep, 
+                    samtools_vr_prep +  " && " + make_marker
+        ]
         return command
 
 
@@ -701,6 +703,7 @@ class mt_pipe_commands:
     def create_vector_filter_command(self, marker_path, no_host_flag = False):
 
         self.make_folder(self.path_obj.vector_top_path)
+        self.make_folder(self.path_obj.vector_jobs_path)
         self.make_folder(self.path_obj.vector_data_path)
         self.make_folder(self.path_obj.vector_bwa_path)
         self.make_folder(self.path_obj.vector_blat_path)
@@ -864,8 +867,8 @@ class mt_pipe_commands:
             if self.read_mode == "single":
                 COMMANDS_vector = [
                     
-                    bwa_vr_prep,
-                    samtools_vr_prep,
+                    #bwa_vr_prep,
+                    #samtools_vr_prep,
                     bwa_vr_tut_singletons,
                     samtools_no_vector_singletons_convert,
                     samtools_no_vector_singletons_export,
@@ -878,8 +881,8 @@ class mt_pipe_commands:
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_vector = [
-                    bwa_vr_prep,
-                    samtools_vr_prep,
+                    #bwa_vr_prep,
+                    #samtools_vr_prep,
                     bwa_vr_tut_singletons,
                     samtools_no_vector_singletons_convert,
                     samtools_no_vector_singletons_export,
@@ -902,8 +905,8 @@ class mt_pipe_commands:
         else:    
             if self.read_mode == "single":
                 COMMANDS_vector = [
-                    bwa_vr_prep,
-                    samtools_vr_prep,
+                    #bwa_vr_prep,
+                    #samtools_vr_prep,
                     bwa_vr_singletons,
                     samtools_no_vector_singletons_convert,
                     samtools_no_vector_singletons_export,
@@ -916,8 +919,8 @@ class mt_pipe_commands:
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_vector = [
-                    bwa_vr_prep,
-                    samtools_vr_prep,
+                    #bwa_vr_prep,
+                    #samtools_vr_prep,
                     bwa_vr_singletons,
                     samtools_no_vector_singletons_convert,
                     samtools_no_vector_singletons_export,

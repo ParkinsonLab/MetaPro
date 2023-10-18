@@ -38,9 +38,9 @@ def debug_stop_check(self, stop_flag, signal):
         
 
 
-def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode):
+def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack):
 
-    
+    tutorial_mode = None
     metapro_stage_obj = mps.mp_stage(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
 
     # This is the format we use to launch each stage of the pipeline.
@@ -248,4 +248,6 @@ if __name__ == "__main__":
         tutorial_main(config_file, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode)
     
     else:
-        main(config_file, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode)
+        print("MetaPro in AUTO MODE")
+        
+        main(config_file, pair_1, pair_2, single, contig, output_folder, args_pack)

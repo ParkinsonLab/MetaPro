@@ -108,10 +108,10 @@ class tool_path_obj:
                     if(value == "0"):
                         print(var_name, "zero-setting detected: using default")
                 else:
-                    print(var_name, "no inner section found. using default:", default)
+                    print(var_name, "inner-section missing. using default:", default)
                     value = default
             else:
-                print(config_section, "no config section found, using default:", default)
+                #print(config_section, "missing segment. using default:", default)
                 value = default
         else:
             print("no config, using default:", default)
@@ -126,7 +126,7 @@ class tool_path_obj:
         if(os.path.exists(os.path.join(db_path, self.index_complete_marker))):
             return True
         else:
-            print("not indexed")
+            #print("not indexed")
             return False
             
     def check_file_valid(self, file_0):
@@ -293,10 +293,13 @@ class tool_path_obj:
         # Note: default host is Mouse CDS
         
         #if config:
-        self.Vector_DB          = self.value_assignment(config, "Databases", "Vector", os.path.join(database_path, "univec_core/UniVec_Core.fasta"), "path") 
-        self.Adapter_DB         = self.value_assignment(config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"), "path")
-        self.Host_DB            = self.value_assignment(config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"), "path")
+        if not ("Databases" in config):
+            print(dt.today(), "Databases section missing in config. using system defaults")
+        self.Vector_DB          = self.value_assignment(config, "Databases", "Vector_DB", os.path.join(database_path, "univec_core/UniVec_Core.fasta"), "path") 
         
+        self.Adapter_DB         = self.value_assignment(config, "Databases", "Adapter_DB", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"), "path")
+        self.Host_DB            = self.value_assignment(config, "Databases", "Host_DB",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"), "path")
+        self.Host_BLAT_DB       = self.value_assignment(config, "Databases", "Host_BLAT_DB", os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"), "path")
         
 
         self.Rfam               = self.value_assignment(config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"), "path")
@@ -321,12 +324,17 @@ class tool_path_obj:
         self.kraken2_db         = self.value_assignment(config, "Databases", "kraken2_db", os.path.join(custom_database_path, "kraken2_db"), "path")
         self.taxa_lib_list      = self.value_assignment(config, "Databases", "taxa_lib_list", os.path.join(database_path, "taxa_lib_list.txt"), "path")
 
+        self.Vector_DB_index_marker = os.path.join(os.path.dirname(self.Vector_DB), "index_complete")
+        self.Host_DB_index_marker = os.path.join(os.path.dirname(self.Host_DB), "index_complete")
         
+        #print("host marker", self.Host_DB_index_marker)
+        #print("vector marker:", self.Vector_DB_index_marker)
+
         #-------------------------------------------------------
         # test DBs
         self.GA_DB_mode = "multi" #by default for the new DB changes.
         self.check_dmd_valid()
-        if(self.DNA_DB_mode == "custom"):
+        if(self.GA_DB_mode == "custom"):
             self.check_bwa_valid(self.DNA_DB)
             self.check_blat_valid(self.DNA_DB)
         
@@ -428,7 +436,9 @@ class tool_path_obj:
         self.contig_marker              = "assemble_contigs"
 
 #-----------------------------------------------------------------
-        
+        if not ("Settings" in config):
+            print(dt.today(), "Settings section missing in config. using system defaults")
+            
         self.target_rank                = self.value_assignment(config, "Settings", "target_rank", "genus", "string")
         self.adapterremoval_minlength   = self.value_assignment(config, "Settings", "AdapterRemoval_minlength", 30)
         self.show_unclassified          = self.value_assignment(config, "Settings", "Show_unclassified", "No", "string")
@@ -539,7 +549,8 @@ class tool_path_obj:
         #--------------------------------------------------------------------------------------------
         # Labels.  
         # why? to change them during integration + new feature testing
-
+        if not("Labels" in config):
+            print(dt.today(), "Labels section missing in config. using system defaults")
         qc_label_default                                = "quality_filter"
         host_filter_label_default                       = "host_filter"
         vector_filter_label_default                     = "vector_filter"
@@ -655,51 +666,15 @@ class tool_path_obj:
         
         
         
-        #if config:
-        self.Vector_DB_file     = self.value_assignment(config, "Databases", "Vector_DB", os.path.join(database_path, "univec_core/UniVec_Core.fasta"), "path") 
-        if(self.check_if_indexed(os.path.dirname(self.Vector_DB_file))):
-            print("Vector DB indexed!")
-        else:
-            print("Vector DB not indexed")
-
-        sys.exit("paused")
-
-        self.Host_DB            = self.value_assignment(config, "Databases", "Host_DB",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"), "path")
-        self.Rfam               = self.value_assignment(config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"), "path")
-        self.DNA_DB             = self.value_assignment(config, "Databases", "DNA_DB", "None", "string")
-        self.source_taxa_DB     = self.value_assignment(config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"), "dir")
-        self.Prot_DB            = self.value_assignment(config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr"), "path")
-        self.Prot_DB_reads      = self.value_assignment(config, "Databases", "Prot_DB_reads", os.path.join(database_path, "nr/nr"), "path")
-        self.accession2taxid    = self.value_assignment(config, "Databases", "accession2taxid", os.path.join(database_path, "accession2taxid/accession2taxid"), "path")
-        self.nodes              = self.value_assignment(config, "Databases", "nodes", os.path.join(database_path, "WEVOTE_db", "nodes.dmp"), "path")
-        self.names              = self.value_assignment(config, "Databases", "names", os.path.join(database_path, "WEVOTE_db", "names.dmp"), "path")
-        self.Kaiju_db           = self.value_assignment(config, "Databases", "Kaiju_db", os.path.join(database_path, "kaiju_db/kaiju_db_nr.fmi"), "path")
-        self.Centrifuge_db      = self.value_assignment(config, "Databases", "Centrifuge_db", os.path.join(database_path, "centrifuge_db/nt"), "path")
-        self.SWISS_PROT         = self.value_assignment(config, "Databases", "SWISS_PROT", os.path.join(database_path, "swiss_prot_db/swiss_prot_db"), "path")
-        self.SWISS_PROT_map     = self.value_assignment(config, "Databases", "SWISS_PROT_map", os.path.join(database_path, "swiss_prot_db/SwissProt_EC_Mapping.tsv"), "path")
-        self.PriamDB            = self.value_assignment(config, "Databases", "PriamDB", os.path.join(database_path, "PRIAM_db/"), "path")
-        self.DetectDB           = self.value_assignment(config, "Databases", "DetectDB", os.path.join(database_path, "DETECTv2"), "path")
-        self.WEVOTEDB           = self.value_assignment(config, "Databases", "WEVOTEDB", os.path.join(database_path, "WEVOTE_db/"), "path")
-        self.EC_pathway         = self.value_assignment(config, "Databases", "EC_pathway", os.path.join(database_path, "EC_pathway.txt"), "path")
-        self.path_to_superpath  = self.value_assignment(config, "Databases", "path_to_superpath", os.path.join(custom_database_path, "pathway_to_superpathway.csv"), "path")
-        self.enzyme_db          = self.value_assignment(config, "Databases", "enzyme_db", os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt"), "path")
-        self.taxid_tree         = self.value_assignment(config, "Databases", "taxid_tree", os.path.join(custom_database_path, "taxid_trees", "family_tree.tsv"), "path")
-        self.kraken2_db         = self.value_assignment(config, "Databases", "kraken2_db", os.path.join(custom_database_path, "kraken2_db"), "path")
-        self.taxa_lib_list      = self.value_assignment(config, "Databases", "taxa_lib_list", os.path.join(database_path, "taxa_lib_list.txt"), "path")
-
+       
         
-        #-------------------------------------------------------
-        # test DBs
-        self.GA_DB_mode = "multi" #by default for the new DB changes.
-        self.check_dmd_valid()
-        if(self.DNA_DB_mode == "custom"):
-            self.check_bwa_valid(self.DNA_DB)
-            self.check_blat_valid(self.DNA_DB)
+        
         
 
         #----------------------------------------------------------
         # external tools
-        
+        if not ("Tools" in config):
+            print(dt.today(), "Tools section missing in config. using system defaults")
         #if config:
         self.Python         = self.value_assignment(config, "Tools", "Python", "python3", "string")
         self.Java           = self.value_assignment(config, "Tools", "Java", "java -jar", "string")
@@ -728,6 +703,8 @@ class tool_path_obj:
         #--------------------------------------------
         # Python scripts
         #if config:
+        if not("code" in config):
+            print(dt.today(), "Code section missing in config. using system defaults")
         self.sam_trimmer                = self.value_assignment(config, "code", "sam_trimmer", os.path.join(script_path, "read_sam.py"), "path")
         self.sort_reads                 = self.value_assignment(config, "code", "sort_reads", os.path.join(script_path, "read_sort.py"), "path")
         self.duplicate_repopulate       = self.value_assignment(config, "code", "duplicate_repopulation", os.path.join(script_path, "read_repopulation.py"), "path")
@@ -928,6 +905,8 @@ class tool_path_obj:
         self.rRNA_barrnap_marker    = "barrnap_"
         self.rRNA_inf_marker        = "_inf"
         self.rRNA_split_marker      = "split_fasta"
+        self.host_final_marker = os.path.join(self.host_jobs_path, self.top_host_rem_marker)
+        self.vector_final_marker = os.path.join(self.vector_jobs_path, self.top_vec_marker)
 
 
 #----------------------------------------------------------

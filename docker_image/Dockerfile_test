@@ -50,7 +50,7 @@ ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/read_rep
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/read_sam.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/bwa_read_sorter.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/read_sort.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/read_split.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/read_split_and_convert.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ta_combine_v3.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ta_constrain.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ta_constrain_taxonomy_v2.py /pipeline/Scripts
