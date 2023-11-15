@@ -70,7 +70,6 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     if(metapro_stage_obj.paths.DNA_DB_mode == "chocophlan"):
         metapro_stage_obj.mp_GA_pre_scan()
         
-    #sys.exit("paused")
     
     # GA split
     metapro_stage_obj.mp_GA_split()

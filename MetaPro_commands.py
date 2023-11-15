@@ -1166,7 +1166,7 @@ class mt_pipe_commands:
         if(self.tutorial_keyword == tut_keyword):
             repop_pair_1 += self.sequence_path_1 + " "
         else:
-            repop_pair_1 += os.path.join(dep_loc, "mRNA", "pair_1.fastq") + " "
+            repop_pair_1 += os.path.join(dep_loc, "mRNA", "pair_1_mRNA.fastq") + " "
         repop_pair_1 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
         repop_pair_1 += os.path.join(repop_folder, "pair_1.fastq")
 
@@ -1183,7 +1183,7 @@ class mt_pipe_commands:
         if(self.tutorial_keyword == tut_keyword):
             repop_pair_2 += self.sequence_path_2 + " "
         else:
-            repop_pair_2 += os.path.join(dep_loc, "mRNA", "pair_2.fastq") + " "
+            repop_pair_2 += os.path.join(dep_loc, "mRNA", "pair_2_mRNA.fastq") + " "
         repop_pair_2 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
         repop_pair_2 += os.path.join(repop_folder, "pair_2.fastq")
 
@@ -1317,7 +1317,7 @@ class mt_pipe_commands:
         if(self.tutorial_keyword == tut_keyword):
             repop_pair_1 += self.sequence_path_1 + " "
         else:
-            repop_pair_1 += os.path.join(dep_loc, "mRNA", "pair_1.fastq") + " "
+            repop_pair_1 += os.path.join(dep_loc, "mRNA", "pair_1_mRNA.fastq") + " "
         repop_pair_1 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
         repop_pair_1 += os.path.join(repop_folder, "pair_1.fastq")
 
@@ -1334,7 +1334,7 @@ class mt_pipe_commands:
         if(self.tutorial_keyword == tut_keyword):
             repop_pair_2 += self.sequence_path_2 + " "
         else:
-            repop_pair_2 += os.path.join(dep_loc, "mRNA", "pair_2.fastq") + " "
+            repop_pair_2 += os.path.join(dep_loc, "mRNA", "pair_2_mRNA.fastq") + " "
         repop_pair_2 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
         repop_pair_2 += os.path.join(repop_folder, "pair_2.fastq")
 
@@ -1590,47 +1590,30 @@ class mt_pipe_commands:
 
         return COMMANDS_Assemble
 
-    def create_GA_pre_scan_command(self, stage_name, marker_file):
-        subfolder       = os.path.join(self.Output_Path, stage_name)
-        final_folder    = os.path.join(subfolder, "final_results")
-        data_folder     = os.path.join(subfolder, "data")
-        dest_folder     = os.path.join(data_folder, "4_libs")
-        jobs_folder     = os.path.join(subfolder, "jobs")
+    def create_GA_pre_scan_command(self, marker_path):
         
-        self.make_folder(data_folder)
-        self.make_folder(dest_folder)
-        self.make_folder(jobs_folder)
-        self.make_folder(final_folder)
+        self.make_folder(self.path_obj.GA_pre_scan_libs_path)
         
         ga_get_lib = ">&2 echo GA pre-scan get libs | "
         ga_get_lib += self.path_obj.Python + " "
         ga_get_lib += self.path_obj.GA_pre_scan_get_lib + " "
-        ga_get_lib += os.path.join(data_folder, "3_wevote", "taxonomic_classifications.tsv") + " "
+        ga_get_lib += os.path.join(self.path_obj.GA_pre_scan_wevote_path, "taxonomic_classifications.tsv") + " "
         ga_get_lib += self.path_obj.taxid_tree + " "
         ga_get_lib += self.path_obj.nodes + " "
-        ga_get_lib += os.path.join(dest_folder, "lib_list.txt") + " "
-        ga_get_lib += os.path.join(dest_folder, "lib_reject.txt") + " "
+        ga_get_lib += os.path.join(self.path_obj.GA_pre_scan_libs_path, "lib_list.txt") + " "
+        ga_get_lib += os.path.join(self.path_obj.GA_pre_scan_libs_path, "lib_reject.txt") + " "
         ga_get_lib += self.path_obj.source_taxa_DB + " "
         ga_get_lib += str(self.path_obj.taxa_exist_cutoff)
         
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
+        make_marker = "touch" + " " + marker_path
         
         
         return [ga_get_lib + " && " + make_marker]
         
         
-    def create_GA_pre_scan_assemble_lib_command(self, stage_name, marker_file):
-        subfolder       = os.path.join(self.Output_Path, stage_name)
-        final_folder    = os.path.join(subfolder, "final_results")
-        data_folder     = os.path.join(subfolder, "data")
-        dest_folder     = os.path.join(data_folder, "4_libs")
-        jobs_folder     = os.path.join(subfolder, "jobs")
+    def create_GA_pre_scan_assemble_lib_command(self, marker_path):
         
-        self.make_folder(data_folder)
-        self.make_folder(dest_folder)
-        self.make_folder(jobs_folder)
-        self.make_folder(final_folder)
+        self.make_folder(self.path_obj.GA_pre_scan_final_path)
     
         assemble_lib = ">&2 echo GA assemble libs | " 
         assemble_lib += self.path_obj.Python + " " 
@@ -1638,20 +1621,19 @@ class mt_pipe_commands:
         if(os.path.exists(self.path_obj.taxa_lib_list)):
             assemble_lib += self.path_obj.taxa_lib_list + " "
         else:
-            assemble_lib += os.path.join(dest_folder, "lib_list.txt") + " " 
+            assemble_lib += os.path.join(self.path_obj.GA_pre_scan_libs_path, "lib_list.txt") + " " 
             
         assemble_lib += self.path_obj.source_taxa_DB +  " "
-        assemble_lib += final_folder +  " " 
+        assemble_lib += self.path_obj.GA_pre_scan_final_path +  " " 
         assemble_lib += "all"
         
         #index_lib = "for i in $(ls " + final_folder + ");" + " "
         #index_lib += "do " + self.path_obj.BWA + " index" + " "
         #index_lib += final_folder + "/$i; done" 
         
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
+        make_marker = "touch" + " " + marker_path
         
-        self.path_obj.DNA_DB = final_folder
+        self.path_obj.DNA_DB = self.path_obj.GA_pre_scan_final_path
         
         #return [assemble_lib + " && " + index_lib + " && " + make_marker]
         return [assemble_lib + " && " + make_marker]
@@ -2336,27 +2318,24 @@ class mt_pipe_commands:
         ]
         
         return COMMANDS_ga_final_merge
-    def create_TA_kraken2_command(self, current_stage_name, assemble_contigs_stage, operating_mode, marker_file):
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        assemble_contigs_folder = os.path.join(self.Output_Path, assemble_contigs_stage, "final_results")
-        kraken2_folder            = os.path.join(data_folder, "1_kraken2")
-        jobs_folder             = os.path.join(data_folder, "jobs")
+    
+    def create_GA_pre_scan_kraken2_command(self, operating_mode, marker_path):
         
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(kraken2_folder)
-        self.make_folder(jobs_folder)
+        self.make_folder(self.path_obj.GA_pre_scan_top_path)
+        self.make_folder(self.path_obj.GA_pre_scan_data_path)
+        self.make_folder(self.path_obj.GA_pre_scan_jobs_path)
+        self.make_folder(self.path_obj.GA_pre_scan_kraken_path)
+        
 
         if(operating_mode == "contigs"):
             kraken2_c = ">&2 echo Kraken2 on contigs | "
             kraken2_c += self.path_obj.kraken2 + " "
             kraken2_c += "--db " + self.path_obj.kraken2_db + " "
             kraken2_c += "--threads " + str(self.path_obj.num_threads) + " "
-            kraken2_c += os.path.join(assemble_contigs_folder, "contigs.fasta") + " "
-            kraken2_c += "--output " + os.path.join(kraken2_folder, "kraken2_c_report.txt")
+            kraken2_c += os.path.join(self.path_obj.contigs_final_path, "contigs.fasta") + " "
+            kraken2_c += "--output " + os.path.join(self.path_obj.GA_pre_scan_kraken_path, "kraken2_c_report.txt")
             
-            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
+            make_marker = "touch " + marker_path
             
             return [kraken2_c + " && " + make_marker]
             
@@ -2365,10 +2344,10 @@ class mt_pipe_commands:
             kraken2_s += self.path_obj.kraken2 + " "
             kraken2_s += "--db " + self.path_obj.kraken2_db + " "
             kraken2_s += "--threads " + str(self.path_obj.num_threads) + " "
-            kraken2_s += os.path.join(assemble_contigs_folder, "singletons.fastq") + " " 
-            kraken2_s += "--output " + os.path.join(kraken2_folder, "kraken2_s_report.txt")
+            kraken2_s += os.path.join(self.path_obj.contigs_final_path, "singletons.fastq") + " " 
+            kraken2_s += "--output " + os.path.join(self.path_obj.GA_pre_scan_kraken_path, "kraken2_s_report.txt")
             
-            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
+            make_marker = "touch " + marker_path
             
             return [kraken2_s + " && " + make_marker]
             
@@ -2377,13 +2356,73 @@ class mt_pipe_commands:
             kraken2_p += self.path_obj.kraken2 + " "
             kraken2_p += "--db " + self.path_obj.kraken2_db +  " "
             kraken2_p += "--threads " + str(self.path_obj.num_threads) + " "
-            kraken2_p += "--paired " + os.path.join(assemble_contigs_folder, "pair_1.fastq") + " " + os.path.join(assemble_contigs_folder, "pair_2.fastq") + " "
-            kraken2_p += "--output " + os.path.join(kraken2_folder, "kraken2_p_report.txt")
+            kraken2_p += "--paired " + os.path.join(self.path_obj.contigs_final_path, "pair_1.fastq") + " " + os.path.join(self.path_obj.contigs_final_path, "pair_2.fastq") + " "
+            kraken2_p += "--output " + os.path.join(self.path_obj.GA_pre_scan_kraken_path, "kraken2_p_report.txt")
             
-            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
+            make_marker = "touch " + marker_path
             
             return [kraken2_p + " && " + make_marker]
+
+    def create_TA_kraken2_command(self, operating_mode, marker_path):
+        
+        self.make_folder(self.path_obj.TA_top_path)
+        self.make_folder(self.path_obj.TA_data_path)
+        self.make_folder(self.path_obj.TA_jobs_path)
+        self.make_folder(self.path_obj.TA_kraken_path)
+        
+
+        if(operating_mode == "contigs"):
+            kraken2_c = ">&2 echo Kraken2 on contigs | "
+            kraken2_c += self.path_obj.kraken2 + " "
+            kraken2_c += "--db " + self.path_obj.kraken2_db + " "
+            kraken2_c += "--threads " + str(self.path_obj.num_threads) + " "
+            kraken2_c += os.path.join(self.path_obj.contigs_final_path, "contigs.fasta") + " "
+            kraken2_c += "--output " + os.path.join(self.path_obj.TA_kraken_path, "kraken2_c_report.txt")
             
+            make_marker = "touch " + marker_path
+            
+            return [kraken2_c + " && " + make_marker]
+            
+        elif(operating_mode == "singletons"):
+            kraken2_s = ">&2 echo Kraken2 on singletons | "
+            kraken2_s += self.path_obj.kraken2 + " "
+            kraken2_s += "--db " + self.path_obj.kraken2_db + " "
+            kraken2_s += "--threads " + str(self.path_obj.num_threads) + " "
+            kraken2_s += os.path.join(self.path_obj.contigs_final_path, "singletons.fastq") + " " 
+            kraken2_s += "--output " + os.path.join(self.path_obj.TA_kraken_path, "kraken2_s_report.txt")
+            
+            make_marker = "touch " + marker_path
+            
+            return [kraken2_s + " && " + make_marker]
+            
+        elif(operating_mode == "paired"):
+            kraken2_p = ">&2 echo Kraken2 on paired | " 
+            kraken2_p += self.path_obj.kraken2 + " "
+            kraken2_p += "--db " + self.path_obj.kraken2_db +  " "
+            kraken2_p += "--threads " + str(self.path_obj.num_threads) + " "
+            kraken2_p += "--paired " + os.path.join(self.path_obj.contigs_final_path, "pair_1.fastq") + " " + os.path.join(self.path_obj.contigs_final_path, "pair_2.fastq") + " "
+            kraken2_p += "--output " + os.path.join(self.path_obj.TA_kraken_path, "kraken2_p_report.txt")
+            
+            make_marker = "touch " + marker_path
+            
+            return [kraken2_p + " && " + make_marker]
+        
+    def create_GA_pre_scan_kraken2_pp_command(self, marker_path):
+
+        cat_kraken2 = ">&2 echo merging kraken2 reports | "
+        cat_kraken2 += "cat "
+        cat_kraken2 += os.path.join(self.path_obj.GA_pre_scan_kraken_path, "kraken2_s_report.txt") + " "
+        if(self.sequence_contigs != "None"):
+            cat_kraken2 += os.path.join(self.path_obj.GA_pre_scan_kraken_path, "kraken2_c_report.txt") + " "
+        if(self.read_mode == "paired"):
+            cat_kraken2 += os.path.join(self.path_obj.GA_pre_scan_kraken_path, "kraken2_p_report.txt") + " "
+        cat_kraken2 += "> " + os.path.join(self.path_obj.GA_pre_scan_kraken_path, "merged_kraken2.txt")
+        
+        make_marker = "touch" + " " + marker_path
+        
+        return [cat_kraken2 + " && " + make_marker]
+                    
+
     def create_TA_kraken2_pp_command(self, current_stage_name, marker_file):
         subfolder               = os.path.join(self.Output_Path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
@@ -2404,10 +2443,70 @@ class mt_pipe_commands:
         
         return [cat_kraken2 + " && " + make_marker]
         
+    def create_GA_pre_scan_centrifuge_command(self, operating_mode, marker_path):
+        
+        self.make_folder(self.path_obj.GA_pre_scan_centr_path)
+        
+        singletons_extension = os.path.splitext(self.sequence_single)[1]
+        
+        if(operating_mode == "contigs"):
+            patch_contig_name = self.path_obj.Python + " "
+            patch_contig_name += self.path_obj.ta_contig_name_convert + " "
+            if(self.tutorial_keyword == "TA"):
+                patch_contig_name += self.sequence_contigs + " "
+            else:
+                patch_contig_name += os.path.join(self.path_obj.contigs_final_path, "contigs.fasta") + " "
+            patch_contig_name += os.path.join(self.path_obj.GA_pre_scan_centr_path, "contigs_renamed.fasta")
+        
+            centrifuge_on_contigs = ">&2 echo centrifuge on contigs | "
+            centrifuge_on_contigs += self.path_obj.Centrifuge
+            centrifuge_on_contigs += " -f -x " + self.path_obj.Centrifuge_db
+            centrifuge_on_contigs += " -U " + os.path.join(self.path_obj.GA_pre_scan_centr_path, "contigs_renamed.fasta")
+            centrifuge_on_contigs += " --exclude-taxids 2759 -k 1 --tab-fmt-cols " + "score,readID,taxID"
+            centrifuge_on_contigs += " --phred" + self.Qual_str
+            centrifuge_on_contigs += " -p 6"
+            centrifuge_on_contigs += " -S " + os.path.join(self.path_obj.GA_pre_scan_centr_path, "raw_contigs.tsv")
+            centrifuge_on_contigs += " --report-file " + os.path.join(self.path_obj.GA_pre_scan_centr_path, "raw_contigs.txt")
+            
+            back_convert_report = self.path_obj.Python + " "
+            back_convert_report += self.path_obj.ta_contig_name_convert + " "
+            back_convert_report += os.path.join(self.path_obj.GA_pre_scan_centr_path, "raw_contigs.tsv") + " "
+            back_convert_report += os.path.join(self.path_obj.GA_pre_scan_centr_path, "contigs.tsv")
+            
+            make_marker = "touch" + " " + marker_path
+            return [patch_contig_name + " && " + centrifuge_on_contigs + " && " + back_convert_report + " && " +  make_marker]
 
+            
+        elif(operating_mode == "reads"):
+            centrifuge_on_reads = ">&2 echo centrifuge on reads | "
+            centrifuge_on_reads += self.path_obj.Centrifuge
+            centrifuge_on_reads += " -x " + self.path_obj.Centrifuge_db
+            
+            if(self.tutorial_keyword == "TA"):
+                if(singletons_extension == ".fa" or singletons_extension == ".fasta"):
+                    centrifuge_on_reads += " -f -U " + self.sequence_single
+                else:
+                    centrifuge_on_reads += " -U " + self.sequence_single
+                if self.read_mode == "paired":
+                    centrifuge_on_reads += " -1 " + self.sequence_path_1
+                    centrifuge_on_reads += " -2 " + self.sequence_path_2
+            else:
+                centrifuge_on_reads += " -U " + os.path.join(self.path_obj.contigs_final_path, "singletons.fastq")
+                if self.read_mode == "paired":
+                    centrifuge_on_reads += " -1 " + os.path.join(self.path_obj.contigs_final_path, "pair_1.fastq")
+                    centrifuge_on_reads += " -2 " + os.path.join(self.path_obj.contigs_final_path, "pair_2.fastq")
+            centrifuge_on_reads += " --exclude-taxids 2759 -k 1 --tab-fmt-cols " + "score,readID,taxID"
+            centrifuge_on_reads += " --phred" + self.Qual_str
+            centrifuge_on_reads += " -p 6"
+            centrifuge_on_reads += " -S " + os.path.join(self.path_obj.GA_pre_scan_centr_path, "reads.tsv")
+            centrifuge_on_reads += " --report-file " + os.path.join(self.path_obj.GA_pre_scan_centr_path, "reads.txt")
+
+            make_marker = "touch" + " " + marker_path
+            return [centrifuge_on_reads + " && " + make_marker]
+            
     
         
-    def create_TA_centrifuge_command(self, current_stage_name, rRNA_stage, assemble_contigs_stage, operating_mode, marker_file):
+    def create_TA_centrifuge_command(marker_path):
         subfolder               = os.path.join(self.Output_Path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
         rRNA_folder             = os.path.join(self.Output_Path, rRNA_stage, "final_results", "other")
@@ -2502,7 +2601,20 @@ class mt_pipe_commands:
             make_marker += os.path.join(jobs_folder, marker_file)
             
             return [centrifuge_on_rRNA + " &&  " + make_marker]
+    
+    def create_GA_pre_scan_centrifuge_pp_command(self, marker_path):
+        cat_centrifuge = ">&2 echo combining all centrifuge results | "
+        cat_centrifuge += "cat "
+        cat_centrifuge += os.path.join(self.path_obj.GA_pre_scan_centr_path, "reads.tsv") + " "
+        if(self.sequence_contigs != "None"):
+            cat_centrifuge += os.path.join(self.path_obj.GA_pre_scan_centr_path, "contigs.tsv")
+        cat_centrifuge += " > " + os.path.join(self.path_obj.GA_pre_scan_centr_path, "merged_centrifuge.tsv")
+
+        make_marker = "touch" + " " + marker_path
         
+        return [cat_centrifuge + " && " + make_marker]
+
+
     def create_TA_centrifuge_pp_command(self, current_stage_name, marker_file):
         subfolder               = os.path.join(self.Output_Path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
@@ -2551,6 +2663,42 @@ class mt_pipe_commands:
         
         return [get_taxa_from_gene + " && " + make_marker]
         
+    def create_GA_pre_scan_wevote_combine_command(self, marker_path):
+
+        self.make_folder(self.path_obj.GA_pre_scan_wevote_path)
+
+        wevote_combine = ">&2 echo combining classification outputs for wevote | "
+        wevote_combine += self.path_obj.Python + " "
+        wevote_combine += self.path_obj.Classification_combine + " "
+        wevote_combine += os.path.join(self.path_obj.contigs_final_path, "contig_map.tsv")
+        wevote_combine += " " + os.path.join(self.path_obj.GA_pre_scan_wevote_path, "wevote_input.csv") + " "
+        wevote_combine += "none" + " "
+        wevote_combine += "none" + " "
+        wevote_combine += "none" + " "
+        wevote_combine += os.path.join(self.path_obj.GA_pre_scan_kraken_path, "merged_kraken2.txt") + " "
+        wevote_combine += os.path.join(self.path_obj.GA_pre_scan_centr_path, "merged_centrifuge.tsv")  
+
+        wevote_call = ">&2 echo Running WEVOTE | "
+        wevote_call += self.path_obj.WEVOTE
+        wevote_call += " -i " + os.path.join(self.path_obj.GA_pre_scan_wevote_path, "wevote_input.csv")
+        wevote_call += " -d " + self.path_obj.WEVOTEDB
+        wevote_call += " -p " + os.path.join(self.path_obj.GA_pre_scan_wevote_path, "wevote")
+        wevote_call += " -n " + self.threads_str
+        wevote_call += " -k " + "2"
+        wevote_call += " -a " + "0"
+        wevote_call += " -s " + "0"
+        
+        wevote_collect = ">&2 echo gathering WEVOTE results | "
+        wevote_collect += self.path_obj.Python + " "
+        wevote_collect += self.path_obj.Wevote_parser + " "
+        wevote_collect += os.path.join(self.path_obj.GA_pre_scan_wevote_path, "wevote_WEVOTE_Details.txt") + " "
+        wevote_collect += os.path.join(self.path_obj.GA_pre_scan_wevote_path, "taxonomic_classifications.tsv")
+        
+        make_marker = "touch" + " " + marker_path
+        
+        return [wevote_combine + " && " + wevote_call + " && " + wevote_collect +  " && " + make_marker]
+        
+
     def create_TA_wevote_combine_command(self, current_stage_name, assemble_contigs_stage, marker_file):
         subfolder               = os.path.join(self.Output_Path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")

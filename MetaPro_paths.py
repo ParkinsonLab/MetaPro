@@ -323,6 +323,7 @@ class tool_path_obj:
         self.taxid_tree         = self.value_assignment(config, "Databases", "taxid_tree", os.path.join(custom_database_path, "taxid_trees", "family_tree.tsv"), "path")
         self.kraken2_db         = self.value_assignment(config, "Databases", "kraken2_db", os.path.join(custom_database_path, "kraken2_db"), "path")
         self.taxa_lib_list      = self.value_assignment(config, "Databases", "taxa_lib_list", os.path.join(database_path, "taxa_lib_list.txt"), "path")
+        self.mgm_model          = self.value_assignment(config, "Databases", "MetaGeneMark_model", os.path.join(tool_path, "mgm", "MetaGeneMark_v1.mod"), "path")
 
         self.Vector_DB_index_marker = os.path.join(os.path.dirname(self.Vector_DB), "index_complete")
         self.Host_DB_index_marker = os.path.join(os.path.dirname(self.Host_DB), "index_complete")
@@ -375,7 +376,7 @@ class tool_path_obj:
         BLAT_pp_job_limit_default           = cpu_default
         DIAMOND_pp_job_limit_default        = cpu_default
         GA_merge_job_limit_default          = cpu_default
-        repop_job_limit_default             = 1
+        repop_job_limit_default             = 10
         TA_job_limit_default                = cpu_default
         EC_job_limit_default                = cpu_default
         Centrifuge_job_limit_default        = 1
