@@ -827,13 +827,13 @@ class tool_path_obj:
 
         self.GA_split_top_path      = os.path.join(self.output_path, self.GA_split_label)
         self.GA_split_data_path     = os.path.join(self.GA_split_top_path, "data")
+        self.GA_split_final_path    = os.path.join(self.GA_split_top_path, "final_results")
         self.GA_split_jobs_path     = os.path.join(self.GA_split_top_path, "jobs")
-        self.GA_split_p1_path       = os.path.join(self.GA_split_data_path, "pair_1")
-        self.GA_split_p2_path       = os.path.join(self.GA_split_data_path, "pair_2")
-        self.GA_split_c_path        = os.path.join(self.GA_split_data_path, "contigs")
-        self.GA_split_s_path        = os.path.join(self.GA_split_data_path, "contigs")
-        self.GA_split_final_path    = os.path.join(self.GA_split_top_path, "final_result")
-
+        self.GA_split_p1_path       = os.path.join(self.GA_split_final_path, "pair_1")
+        self.GA_split_p2_path       = os.path.join(self.GA_split_final_path, "pair_2")
+        self.GA_split_c_path        = os.path.join(self.GA_split_final_path, "contigs")
+        self.GA_split_s_path        = os.path.join(self.GA_split_final_path, "singletons")
+        
         self.GA_BWA_top_path        = os.path.join(self.output_path, self.GA_BWA_label)
         self.GA_BWA_data_path       = os.path.join(self.GA_BWA_top_path, "data")
         self.GA_BWA_jobs_path       = os.path.join(self.GA_BWA_top_path, "jobs")

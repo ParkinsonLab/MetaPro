@@ -653,8 +653,6 @@ class mp_stage:
             self.mp_util.wait_for_mp_store()
             
             
-            
-            
             #---------------------------------------------------------
             
             
@@ -671,13 +669,13 @@ class mp_stage:
             if(self.contigs_present):
                 print(dt.today(), "splitting contigs")
                 marker_file = "GA_split_fasta_contigs"
-                marker_path = os.path.join(self.GA_split_jobs_folder, marker_file)
+                marker_path = os.path.join(self.paths.GA_split_jobs_path, marker_file)
                 if(os.path.exists(marker_path)):
                     print(dt.today(), "skipping", marker_file)
                 else:
                     job_name = "GA_prep_split_contigs"
                     marker_path_list.append(marker_path)
-                    command_list = self.commands.create_split_ga_fasta_data_command(self.paths.GA_split_label, self.paths.assemble_contigs_label, "contigs", marker_file)
+                    command_list = self.commands.create_split_ga_fasta_data_command("contigs", marker_path)
                     self.mp_util.launch_and_create_with_mp_store(self.paths.GA_split_label, job_name, self.commands, command_list)
             else:
                 print(dt.today(), "no contigs present. skipping split")
@@ -687,19 +685,18 @@ class mp_stage:
                 sections.extend(["pair_1", "pair_2"])
             for section in sections: 
                 marker_file = "GA_split_fastq_" + section
-                marker_path = os.path.join(self.GA_split_jobs_folder, marker_file)
+                marker_path = os.path.join(self.paths.GA_split_jobs_path, marker_file)
                 if(os.path.exists(marker_path)):
                     print(dt.today(), "skipping", marker_file)
                 else:
                     marker_path_list.append(marker_path)
                     job_name = "GA_prep_split_" + section
-                    command_list = self.commands.create_split_ga_fastq_data_command(self.paths.GA_split_label, self.paths.assemble_contigs_label, section, marker_file)
+                    command_list = self.commands.create_split_ga_fastq_data_command(section, marker_path)
                     self.mp_util.launch_and_create_with_mp_store(self.paths.GA_split_label, job_name, self.commands, command_list)
             self.mp_util.wait_for_mp_store()
 
-            final_checklist = os.path.join(self.GA_split_path, "GA_split.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.paths.GA_split_label)
+            
+            #self.mp_util.write_to_bypass_log(self.output_folder_path, self.paths.GA_split_label)
             
         self.debug_stop_check(self.paths.GA_split_label)
         

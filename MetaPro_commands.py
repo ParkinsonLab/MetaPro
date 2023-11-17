@@ -1639,19 +1639,17 @@ class mt_pipe_commands:
         return [assemble_lib + " && " + make_marker]
         
  
-    def create_split_ga_fastq_data_command(self, stage_name, dependency_stage_name, category, marker_file):
-        subfolder       = os.path.join(self.Output_Path, stage_name)
-        final_folder    = os.path.join(subfolder, "final_results")
-        data_folder     = os.path.join(subfolder, "data")
-        split_folder    = os.path.join(final_folder, category)#, os.path.join(data_folder, "0_read_split", category)
-        dep_loc         = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
+    def create_split_ga_fastq_data_command(self, category, marker_path):
         
-        jobs_folder     = os.path.join(data_folder, "jobs")
-        self.make_folder(subfolder)
-        self.make_folder(final_folder)
-        self.make_folder(data_folder)
-        self.make_folder(split_folder)
-        self.make_folder(jobs_folder)
+        self.make_folder(self.path_obj.GA_split_top_path)
+        self.make_folder(self.path_obj.GA_split_data_path)
+        self.make_folder(self.path_obj.GA_split_jobs_path)
+        self.make_folder(self.path_obj.GA_split_p1_path)
+        self.make_folder(self.path_obj.GA_split_p2_path)
+        self.make_folder(self.path_obj.GA_split_p1_path)
+        self.make_folder(self.path_obj.GA_split_final_path)
+
+        
         
         
         if(self.tutorial_keyword == "GA"):
@@ -1662,10 +1660,9 @@ class mt_pipe_commands:
                 split_fastq += self.sequence_path_1 + " "
                 split_fastq += "--additional-suffix .fastq" + " "
                 split_fastq += "-d" + " "
-                split_fastq += os.path.join(split_folder, category + "_")
+                split_fastq += os.path.join(self.path_obj.GA_split_p1_path, category + "_")
                 
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
+                make_marker = "touch" + " " + marker_path
                 
                 COMMANDS_GA_prep_fastq = [
                     split_fastq + " && " + make_marker
@@ -1677,10 +1674,9 @@ class mt_pipe_commands:
                 split_fastq += self.sequence_path_2 + " "
                 split_fastq += "--additional-suffix .fastq" + " "
                 split_fastq += "-d" + " "
-                split_fastq += os.path.join(split_folder, category + "_")
+                split_fastq += os.path.join(self.path_obj.GA_split_p2_path, category + "_")
                 
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
+                make_marker = "touch" + " " + marker_path
                 
                 COMMANDS_GA_prep_fastq = [
                     split_fastq + " && " + make_marker
@@ -1691,11 +1687,10 @@ class mt_pipe_commands:
                 split_fastq += self.sequence_single + " "
                 split_fastq += "--additional-suffix .fastq" + " "
                 split_fastq += "-d" + " "
-                split_fastq += os.path.join(split_folder, category + "_")
+                split_fastq += os.path.join(self.path_obj.GA_split_s_path, category + "_")
                 
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
-                
+                make_marker = "touch" + " " + marker_path
+
                 COMMANDS_GA_prep_fastq = [
                     split_fastq + " && " + make_marker
                 ]
@@ -1703,13 +1698,19 @@ class mt_pipe_commands:
         else:
             split_fastq = ">&2 echo splitting fastq for " + category + " GA | "
             split_fastq += "split -l " + str(int(self.path_obj.GA_chunksize) * 4) + " "        
-            split_fastq += os.path.join(dep_loc, category + ".fastq") + " "
+            split_fastq += os.path.join(self.path_obj.contigs_final_path, category + ".fastq") + " "
             split_fastq += "--additional-suffix .fastq" + " "
             split_fastq += "-d" + " "
-            split_fastq += os.path.join(split_folder, category + "_")
-            
-            make_marker = "touch" + " "
-            make_marker += os.path.join(jobs_folder, marker_file)
+            if(category == "contigs"):
+                split_fastq += os.path.join(self.path_obj.GA_split_c_path, category + "_")
+            elif(category == "pair_1"):
+                split_fastq += os.path.join(self.path_obj.GA_split_p1_path, category + "_")
+            elif(category == "pair_2"):
+                split_fastq += os.path.join(self.path_obj.GA_split_p2_path, category + "_")
+            elif(category == "singletons"):
+                split_fastq += os.path.join(self.path_obj.GA_split_s_path, category + "_")
+
+            make_marker = "touch" + " " + marker_path
             
             COMMANDS_GA_prep_fastq = [
                 split_fastq + " && " + make_marker
@@ -1717,19 +1718,16 @@ class mt_pipe_commands:
             
         return COMMANDS_GA_prep_fastq
 
-    def create_split_ga_fasta_data_command(self, stage_name, dependency_stage_name, category, marker_file):
-        subfolder       = os.path.join(self.Output_Path, stage_name)
-        data_folder     = os.path.join(subfolder, "data")
-        final_folder    = os.path.join(subfolder, "final_results")
-        split_folder    = os.path.join(final_folder, category)#os.path.join(data_folder, "0_read_split", category)
-        dep_folder      = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
-        jobs_folder     = os.path.join(data_folder, "jobs")
+    def create_split_ga_fasta_data_command(self, category, marker_path):
         
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(final_folder)
-        self.make_folder(split_folder)
-        self.make_folder(jobs_folder)
+        self.make_folder(self.path_obj.GA_split_top_path)
+        self.make_folder(self.path_obj.GA_split_data_path)
+        self.make_folder(self.path_obj.GA_split_final_path)
+        self.make_folder(self.path_obj.GA_split_p1_path)
+        self.make_folder(self.path_obj.GA_split_p2_path)
+        self.make_folder(self.path_obj.GA_split_c_path)
+        self.make_folder(self.path_obj.GA_split_s_path)
+        self.make_folder(self.path_obj.GA_split_jobs_path)
         
         
         if(self.tutorial_keyword == "GA"):
@@ -1738,11 +1736,10 @@ class mt_pipe_commands:
                 split_fasta += self.path_obj.Python + " "    
                 split_fasta += self.path_obj.File_splitter + " "
                 split_fasta += self.sequence_single + " "
-                split_fasta += os.path.join(split_folder, category) + " "
+                split_fasta += os.path.join(self.path_obj.GA_split_s_path, category) + " "
                 split_fasta += str(self.path_obj.GA_chunksize)
                 
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
+                make_marker = "touch" + " " + marker_path
                 
                 COMMANDS_GA_prep_fasta = [
                     split_fasta + " && " + make_marker
@@ -1753,11 +1750,13 @@ class mt_pipe_commands:
                 split_fasta += self.path_obj.Python + " "    
                 split_fasta += self.path_obj.File_splitter + " "
                 split_fasta += self.sequence_contigs + " "
-                split_fasta += os.path.join(split_folder, category) + " "
+                split_fasta += os.path.join(self.path_obj.GA_split_c_path, category) + " "
+                print("split_fasta", split_fasta)
+
+                time.sleep(10)
                 split_fasta += str(self.path_obj.GA_chunksize)
                 
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
+                make_marker = "touch" + " " + marker_path
                 
                 COMMANDS_GA_prep_fasta = [
                     split_fasta + " && " + make_marker
@@ -1767,11 +1766,10 @@ class mt_pipe_commands:
                 split_fasta += self.path_obj.Python + " "    
                 split_fasta += self.path_obj.File_splitter + " "
                 split_fasta += self.sequence_path_1 + " "
-                split_fasta += os.path.join(split_folder, category) + " "
+                split_fasta += os.path.join(self.path_obj.GA_split_p1_path, category) + " "
                 split_fasta += str(self.path_obj.GA_chunksize)
                 
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
+                make_marker = "touch" + " " + marker_path   
                 
                 COMMANDS_GA_prep_fasta = [
                     split_fasta + " && " + make_marker
@@ -1781,11 +1779,10 @@ class mt_pipe_commands:
                 split_fasta += self.path_obj.Python + " "    
                 split_fasta += self.path_obj.File_splitter + " "
                 split_fasta += self.sequence_path_2 + " "
-                split_fasta += os.path.join(split_folder, category) + " "
+                split_fasta += os.path.join(self.path_obj.GA_split_p2_path, category) + " "
                 split_fasta += str(self.path_obj.GA_chunksize)
                 
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
+                make_marker = "touch" + " " + marker_path
                 
                 COMMANDS_GA_prep_fasta = [
                     split_fasta + " && " + make_marker
@@ -1795,12 +1792,18 @@ class mt_pipe_commands:
             split_fasta = ">&2 echo splitting fasta for " + category + " | "
             split_fasta += self.path_obj.Python + " "    
             split_fasta += self.path_obj.File_splitter + " "
-            split_fasta += os.path.join(dep_folder, category +".fasta") + " "
-            split_fasta += os.path.join(split_folder, category) + " "
+            split_fasta += os.path.join(self.path_obj.contigs_final_path, category +".fasta") + " "
+            if(category == "contigs"):
+                split_fasta += os.path.join(self.path_obj.GA_split_c_path, "contigs") + " "
+            elif(category == "pair_1"):
+                split_fasta += os.path.join(self.path_obj.GA_split_p1_path, category) + " "
+            elif(category == "pair_2"):
+                split_fasta += os.path.join(self.path_obj.GA_split_p2_path, category) + " "
+            elif(category == "singletons"):
+                split_fasta += os.path.join(self.path_obj.GA_split_s_path, category) + " "
             split_fasta += str(self.path_obj.GA_chunksize)
             
-            make_marker = "touch" + " "
-            make_marker += os.path.join(jobs_folder, marker_file)
+            make_marker = "touch" + " " + marker_path
             
             COMMANDS_GA_prep_fasta = [
                 split_fasta + " && " + make_marker
