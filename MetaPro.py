@@ -70,23 +70,30 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     if(metapro_stage_obj.paths.DNA_DB_mode == "chocophlan"):
         metapro_stage_obj.mp_GA_pre_scan()
         
+ 
     
     # GA split
     metapro_stage_obj.mp_GA_split()
 
+
     # GA lib check
     metapro_stage_obj.mp_GA_lib_check()
+
+      
+     
     
     # BWA gene annotation
     metapro_stage_obj.mp_GA_BWA()
-    
+  
     
     
     metapro_stage_obj.mp_GA_BWA_pp()
-    if(metapro_stage_obj.GA_DB_mode == "multi"):
-        metapro_stage_obj.mp_GA_BWA_merge()
     
     
+    #if(metapro_stage_obj.GA_DB_mode == "multi"):
+    metapro_stage_obj.mp_GA_BWA_merge()
+    
+    sys.exit("check oil light")  
     
     # BLAT gene annotation
     metapro_stage_obj.mp_GA_BLAT()
@@ -101,6 +108,8 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     
     # final GA merge()
     metapro_stage_obj.mp_GA_final_merge()
+
+    
 
     # Taxonomic annotation
     metapro_stage_obj.mp_TA()

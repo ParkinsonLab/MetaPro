@@ -99,6 +99,14 @@ class tool_path_obj:
                             exit_msg = var_name + ", wrong data. expected a file directory"
                             sys.exit(exit_msg)
 
+                    elif(expected_type == "flag"):
+                        if((value == "True") or (value == "true") or (value == "t") or (value == "T")):
+                            value = True
+                            return value
+                        else:
+                            value = False
+                            return value
+
 
                     
                         #print("quotes cleaned")
@@ -325,8 +333,13 @@ class tool_path_obj:
         self.taxa_lib_list      = self.value_assignment(config, "Databases", "taxa_lib_list", os.path.join(database_path, "taxa_lib_list.txt"), "path")
         self.mgm_model          = self.value_assignment(config, "Databases", "MetaGeneMark_model", os.path.join(tool_path, "mgm", "MetaGeneMark_v1.mod"), "path")
 
+        self.DNA_lib_path       = "" #internal var used
+
+        self.DNA_DB_override    = self.value_assignment(config, "Databases", "DNA_DB_override", "False", "flag")
         self.Vector_DB_index_marker = os.path.join(os.path.dirname(self.Vector_DB), "index_complete")
         self.Host_DB_index_marker = os.path.join(os.path.dirname(self.Host_DB), "index_complete")
+
+
         
         #print("host marker", self.Host_DB_index_marker)
         #print("vector marker:", self.Vector_DB_index_marker)
@@ -461,36 +474,36 @@ class tool_path_obj:
         
 
         #-------------------------------------------------------------------------------------------------
-        self.BWA_mem_threshold              = self.value_assignment(config, "Settings", "BWA_mem_threshold", BWA_mem_default)
-        self.BLAT_mem_threshold             = self.value_assignment(config, "Settings", "BLAT_mem_threshold", BLAT_mem_default)
-        self.DIAMOND_mem_threshold          = self.value_assignment(config, "Settings", "DIAMOND_mem_threshold", DIAMOND_mem_default)
-        self.DETECT_mem_threshold           = self.value_assignment(config, "Settings", "DETECT_mem_threshold", DETECT_mem_default)
-        self.Infernal_mem_threshold         = self.value_assignment(config, "Settings", "Infernal_mem_threshold", Infernal_mem_default)
-        self.Barrnap_mem_threshold          = self.value_assignment(config, "Settings", "Barrnap_mem_threshold", Barrnap_mem_default)
-        self.BWA_pp_mem_threshold           = self.value_assignment(config, "Settings", "BWA_pp_mem_threshold", BWA_pp_mem_default)
-        self.BLAT_pp_mem_threshold          = self.value_assignment(config, "Settings", "BLAT_pp_mem_threshold", BLAT_pp_mem_default)
-        self.DIAMOND_pp_mem_threshold       = self.value_assignment(config, "Settings", "DIAMOND_pp_mem_threshold", DIAMOND_pp_mem_default)
-        self.GA_merge_mem_threshold   = self.value_assignment(config, "Settings", "GA_merge_mem_threshold", GA_merge_mem_default)
-        self.TA_mem_threshold               = self.value_assignment(config, "Settings", "TA_mem_threshold", TA_mem_threshold_default)
-        self.repop_mem_threshold            = self.value_assignment(config, "Settings", "repop_mem_threshold", repop_mem_default)
-        self.EC_mem_threshold               = self.value_assignment(config, "Settings", "EC_mem_threshold", EC_mem_threshold_default)
+        self.BWA_mem_threshold              = self.value_assignment(config, "Settings", "BWA_mem_threshold", BWA_mem_default, "int")
+        self.BLAT_mem_threshold             = self.value_assignment(config, "Settings", "BLAT_mem_threshold", BLAT_mem_default, "int")
+        self.DIAMOND_mem_threshold          = self.value_assignment(config, "Settings", "DIAMOND_mem_threshold", DIAMOND_mem_default, "int")
+        self.DETECT_mem_threshold           = self.value_assignment(config, "Settings", "DETECT_mem_threshold", DETECT_mem_default, "int")
+        self.Infernal_mem_threshold         = self.value_assignment(config, "Settings", "Infernal_mem_threshold", Infernal_mem_default, "int")
+        self.Barrnap_mem_threshold          = self.value_assignment(config, "Settings", "Barrnap_mem_threshold", Barrnap_mem_default, "int")
+        self.BWA_pp_mem_threshold           = self.value_assignment(config, "Settings", "BWA_pp_mem_threshold", BWA_pp_mem_default, "int")
+        self.BLAT_pp_mem_threshold          = self.value_assignment(config, "Settings", "BLAT_pp_mem_threshold", BLAT_pp_mem_default, "int")
+        self.DIAMOND_pp_mem_threshold       = self.value_assignment(config, "Settings", "DIAMOND_pp_mem_threshold", DIAMOND_pp_mem_default, "int")
+        self.GA_merge_mem_threshold   = self.value_assignment(config, "Settings", "GA_merge_mem_threshold", GA_merge_mem_default, "int")
+        self.TA_mem_threshold               = self.value_assignment(config, "Settings", "TA_mem_threshold", TA_mem_threshold_default, "int")
+        self.repop_mem_threshold            = self.value_assignment(config, "Settings", "repop_mem_threshold", repop_mem_default, "int")
+        self.EC_mem_threshold               = self.value_assignment(config, "Settings", "EC_mem_threshold", EC_mem_threshold_default, "int")
             
         #-----------------------------------------------------------------------------------------------    
         
-        self.BWA_job_limit              = self.value_assignment(config, "Settings", "BWA_job_limit", BWA_job_limit_default)
-        self.BLAT_job_limit             = self.value_assignment(config, "Settings", "BLAT_job_limit", BLAT_job_limit_default)
-        self.DIAMOND_job_limit          = self.value_assignment(config, "Settings", "DIAMOND_job_limit", DIAMOND_job_limit_default)
-        self.DETECT_job_limit           = self.value_assignment(config, "Settings", "DETECT_job_limit", DETECT_job_limit_default)
-        self.Infernal_job_limit         = self.value_assignment(config, "Settings", "Infernal_job_limit", Infernal_job_limit_default)
-        self.Barrnap_job_limit          = self.value_assignment(config, "Settings", "Barrnap_job_limit", Barrnap_job_limit_default)
-        self.BWA_pp_job_limit           = self.value_assignment(config, "Settings", "BWA_pp_job_limit", BWA_pp_job_limit_default)
-        self.BLAT_pp_job_limit          = self.value_assignment(config, "Settings", "BLAT_pp_job_limit", BLAT_pp_job_limit_default)
-        self.DIAMOND_pp_job_limit       = self.value_assignment(config, "Settings", "DIAMOND_pp_job_limit", DIAMOND_pp_job_limit_default)
-        self.GA_merge_job_limit   = self.value_assignment(config, "Settings", "GA_merge_job_limit", GA_merge_job_limit_default)
-        self.TA_job_limit               = self.value_assignment(config, "Settings", "TA_job_limit", TA_job_limit_default)
-        self.repop_job_limit            = self.value_assignment(config, "Settings", "repop_job_limit", repop_job_limit_default)
-        self.EC_job_limit               = self.value_assignment(config, "Settings", "EC_job_limit", EC_job_limit_default)
-        self.Centrifuge_job_limit       = self.value_assignment(config, "Settings", "Centrifuge_job_limit", Centrifuge_job_limit_default)
+        self.BWA_job_limit              = self.value_assignment(config, "Settings", "BWA_job_limit", BWA_job_limit_default, "int")
+        self.BLAT_job_limit             = self.value_assignment(config, "Settings", "BLAT_job_limit", BLAT_job_limit_default, "int")
+        self.DIAMOND_job_limit          = self.value_assignment(config, "Settings", "DIAMOND_job_limit", DIAMOND_job_limit_default, "int")
+        self.DETECT_job_limit           = self.value_assignment(config, "Settings", "DETECT_job_limit", DETECT_job_limit_default, "int")
+        self.Infernal_job_limit         = self.value_assignment(config, "Settings", "Infernal_job_limit", Infernal_job_limit_default, "int")
+        self.Barrnap_job_limit          = self.value_assignment(config, "Settings", "Barrnap_job_limit", Barrnap_job_limit_default, "int")
+        self.BWA_pp_job_limit           = self.value_assignment(config, "Settings", "BWA_pp_job_limit", BWA_pp_job_limit_default, "int")
+        self.BLAT_pp_job_limit          = self.value_assignment(config, "Settings", "BLAT_pp_job_limit", BLAT_pp_job_limit_default, "int")
+        self.DIAMOND_pp_job_limit       = self.value_assignment(config, "Settings", "DIAMOND_pp_job_limit", DIAMOND_pp_job_limit_default, "int")
+        self.GA_merge_job_limit   = self.value_assignment(config, "Settings", "GA_merge_job_limit", GA_merge_job_limit_default, "int")
+        self.TA_job_limit               = self.value_assignment(config, "Settings", "TA_job_limit", TA_job_limit_default, "int")
+        self.repop_job_limit            = self.value_assignment(config, "Settings", "repop_job_limit", repop_job_limit_default, "int")
+        self.EC_job_limit               = self.value_assignment(config, "Settings", "EC_job_limit", EC_job_limit_default, "int")
+        self.Centrifuge_job_limit       = self.value_assignment(config, "Settings", "Centrifuge_job_limit", Centrifuge_job_limit_default, "int")
         
         #------------------------------------------------------------------------
         
@@ -714,7 +727,7 @@ class tool_path_obj:
         self.Map_reads_prot_DMND        = self.value_assignment(config, "code", "ga_dmd_pp", os.path.join(script_path, "GA_DMD_generic_v2.py"), "path")
         self.GA_merge                   = self.value_assignment(config, "code", "GA_merge", os.path.join(script_path, "GA_merge_v4.py"), "path")
         self.GA_merge_fasta             = self.value_assignment(config, "code", "ga_merge_fasta", os.path.join(script_path, "ga_merge_fasta.py"), "path")
-        self.GA_merge_fasta             = self.value_assignment(config, "code", "GA_merge_fasta", os.path.join(script_path, "GA_merge_fastq.py"), "path")
+        #self.GA_merge_fastq             = self.value_assignment(config, "code", "GA_merge_fasta", os.path.join(script_path, "GA_merge_fastq.py"), "path")
         self.GA_merge_proteins          = self.value_assignment(config, "code", "GA_merge_proteins", os.path.join(script_path, "GA_merge_proteins.py"), "path")
         self.GA_merge_maps              = self.value_assignment(config, "code", "GA_merge_maps", os.path.join(script_path, "GA_merge_map.py"), "path")
         self.EC_Annotation_Post         = self.value_assignment(config, "code", "ec_combine", os.path.join(script_path, "ea_combine_v5.py"), "path")
@@ -837,9 +850,10 @@ class tool_path_obj:
         self.GA_BWA_top_path        = os.path.join(self.output_path, self.GA_BWA_label)
         self.GA_BWA_data_path       = os.path.join(self.GA_BWA_top_path, "data")
         self.GA_BWA_jobs_path       = os.path.join(self.GA_BWA_top_path, "jobs")
-        self.GA_BWA_split_path      = os.path.join(self.GA_BWA_data_path, "0_read_split")
-        self.GA_BWA_run_path        = os.path.join(self.GA_BWA_data_path, "1_bwa")
-        self.GA_BWA_pp_path         = os.path.join(self.GA_BWA_data_path, "2_bwa_pp")
+        #self.GA_BWA_split_path      = os.path.join(self.GA_BWA_data_path, "0_read_split")
+        self.GA_BWA_run_path        = os.path.join(self.GA_BWA_data_path, "0_bwa")
+        self.GA_BWA_pp_path         = os.path.join(self.GA_BWA_data_path, "1_bwa_pp")
+        self.GA_BWA_u_path        = os.path.join(self.GA_BWA_data_path, "2_unscanned")
         self.GA_BWA_final_path      = os.path.join(self.GA_BWA_top_path, "final_results")
 
         self.GA_BLAT_top_path           = os.path.join(self.output_path, self.GA_BLAT_label)

@@ -4,6 +4,7 @@
 
 import os
 import os.path
+from re import split
 
 from numpy.core.arrayprint import _make_options_dict
 import MetaPro_paths as mpp
@@ -1644,9 +1645,10 @@ class mt_pipe_commands:
         self.make_folder(self.path_obj.GA_split_top_path)
         self.make_folder(self.path_obj.GA_split_data_path)
         self.make_folder(self.path_obj.GA_split_jobs_path)
-        self.make_folder(self.path_obj.GA_split_p1_path)
-        self.make_folder(self.path_obj.GA_split_p2_path)
-        self.make_folder(self.path_obj.GA_split_p1_path)
+        #self.make_folder(self.path_obj.GA_split_p1_path)
+        #self.make_folder(self.path_obj.GA_split_p2_path)
+        #self.make_folder(self.path_obj.GA_split_s_path)
+        #self.make_folder(self.path_obj.GA_split_c_path)
         self.make_folder(self.path_obj.GA_split_final_path)
 
         
@@ -1701,14 +1703,15 @@ class mt_pipe_commands:
             split_fastq += os.path.join(self.path_obj.contigs_final_path, category + ".fastq") + " "
             split_fastq += "--additional-suffix .fastq" + " "
             split_fastq += "-d" + " "
-            if(category == "contigs"):
-                split_fastq += os.path.join(self.path_obj.GA_split_c_path, category + "_")
-            elif(category == "pair_1"):
-                split_fastq += os.path.join(self.path_obj.GA_split_p1_path, category + "_")
-            elif(category == "pair_2"):
-                split_fastq += os.path.join(self.path_obj.GA_split_p2_path, category + "_")
-            elif(category == "singletons"):
-                split_fastq += os.path.join(self.path_obj.GA_split_s_path, category + "_")
+            split_fastq += os.path.join(self.path_obj.GA_split_final_path, category + "_")
+            #if(category == "contigs"):
+            #    split_fastq += os.path.join(self.path_obj.GA_split_c_path, category + "_")
+            #elif(category == "pair_1"):
+            #    split_fastq += os.path.join(self.path_obj.GA_split_p1_path, category + "_")
+            #elif(category == "pair_2"):
+            #    split_fastq += os.path.join(self.path_obj.GA_split_p2_path, category + "_")
+            #elif(category == "singletons"):
+            #    split_fastq += os.path.join(self.path_obj.GA_split_s_path, category + "_")
 
             make_marker = "touch" + " " + marker_path
             
@@ -1723,10 +1726,10 @@ class mt_pipe_commands:
         self.make_folder(self.path_obj.GA_split_top_path)
         self.make_folder(self.path_obj.GA_split_data_path)
         self.make_folder(self.path_obj.GA_split_final_path)
-        self.make_folder(self.path_obj.GA_split_p1_path)
-        self.make_folder(self.path_obj.GA_split_p2_path)
-        self.make_folder(self.path_obj.GA_split_c_path)
-        self.make_folder(self.path_obj.GA_split_s_path)
+        #self.make_folder(self.path_obj.GA_split_p1_path)
+        #self.make_folder(self.path_obj.GA_split_p2_path)
+        #self.make_folder(self.path_obj.GA_split_c_path)
+        #self.make_folder(self.path_obj.GA_split_s_path)
         self.make_folder(self.path_obj.GA_split_jobs_path)
         
         
@@ -1793,14 +1796,15 @@ class mt_pipe_commands:
             split_fasta += self.path_obj.Python + " "    
             split_fasta += self.path_obj.File_splitter + " "
             split_fasta += os.path.join(self.path_obj.contigs_final_path, category +".fasta") + " "
-            if(category == "contigs"):
-                split_fasta += os.path.join(self.path_obj.GA_split_c_path, "contigs") + " "
-            elif(category == "pair_1"):
-                split_fasta += os.path.join(self.path_obj.GA_split_p1_path, category) + " "
-            elif(category == "pair_2"):
-                split_fasta += os.path.join(self.path_obj.GA_split_p2_path, category) + " "
-            elif(category == "singletons"):
-                split_fasta += os.path.join(self.path_obj.GA_split_s_path, category) + " "
+            split_fasta += os.path.join(self.path_obj.GA_split_final_path, category) + " "
+            #if(category == "contigs"):
+            #    split_fasta += os.path.join(self.path_obj.GA_split_c_path, "contigs") + " "
+            #elif(category == "pair_1"):
+            #    split_fasta += os.path.join(self.path_obj.GA_split_p1_path, category) + " "
+            #elif(category == "pair_2"):
+            #    split_fasta += os.path.join(self.path_obj.GA_split_p2_path, category) + " "
+            #elif(category == "singletons"):
+            #    split_fasta += os.path.join(self.path_obj.GA_split_s_path, category) + " "
             split_fasta += str(self.path_obj.GA_chunksize)
             
             make_marker = "touch" + " " + marker_path
@@ -1812,33 +1816,31 @@ class mt_pipe_commands:
         return COMMANDS_GA_prep_fasta
 
 
-    def create_BWA_annotate_command_v2(self, stage_name, ref_path, ref_tag, query_file, marker_file):
+    def create_BWA_annotate_command_v2(self, ref_path, query_path, marker_path):
         # meant to be called multiple times: query file is a split file
         # aug 10, 2021: changed ref path to accomodate new split-chocophlan
-        subfolder       = os.path.join(self.Output_Path, stage_name)
-        data_folder     = os.path.join(subfolder, "data")
-        bwa_folder      = os.path.join(data_folder, "1_bwa")
-        jobs_folder     = os.path.join(data_folder, "jobs")
 
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(bwa_folder)
-        self.make_folder(jobs_folder)
+        self.make_folder(self.path_obj.GA_BWA_top_path)
+        self.make_folder(self.path_obj.GA_BWA_data_path)
+        self.make_folder(self.path_obj.GA_BWA_jobs_path)
+        self.make_folder(self.path_obj.GA_BWA_run_path)
 
-        file_tag = os.path.basename(query_file)
+        file_tag = os.path.basename(query_path)
         file_tag = os.path.splitext(file_tag)[0]
+
+        ref_tag = os.path.basename(ref_path)
+        ref_tag = os.path.splitext(ref_tag)[0]
         
         bwa_job = ">&2 echo " + str(dt.today()) + " BWA on " + file_tag + " | "
         bwa_job += self.path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_job += ref_path + " "
         #bwa_job += os.path.join(dep_loc, section_file) + " | "
-        bwa_job += query_file + " | "
+        bwa_job += query_path + " | "
         bwa_job += self.path_obj.SAMTOOLS + " view "
-        bwa_job += "> " + os.path.join(bwa_folder, file_tag +"_" + ref_tag + ".sam")
+        bwa_job += "> " + os.path.join(self.path_obj.GA_BWA_run_path, file_tag +"_" + ref_tag + ".sam")
         
         #make_marker = ">&2 echo marking BWA job complete: " + file_tag + " | "
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
+        make_marker = "touch" + " " + marker_path
 
         COMMANDS_BWA = [
             bwa_job + " && " + make_marker
@@ -1847,37 +1849,35 @@ class mt_pipe_commands:
         return COMMANDS_BWA
         
         
-    def create_BWA_pp_command_v2(self, stage_name, dependency_stage_name, ref_tag, ref_path, query_file, marker_file):
+    def create_BWA_pp_command_v2(self, ref_path, query_file, marker_path):
+        self.make_folder(self.path_obj.GA_BWA_final_path)
+        self.make_folder(self.path_obj.GA_BWA_pp_path)
+        self.make_folder(self.path_obj.GA_BWA_u_path)
+
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
-            
-        
+
+        ref_tag = os.path.basename(ref_path)
+        ref_tag = os.path.splitext(ref_tag)[0]    
         #meant to be called on the split-file version.  PP script will not merge gene maps.
-        subfolder       = os.path.join(self.Output_Path, stage_name)
-        data_folder     = os.path.join(subfolder, "data")
-        bwa_folder      = os.path.join(data_folder, "1_bwa")
-        split_folder    = os.path.join(data_folder, "0_read_split")
-        pp_folder       = os.path.join(data_folder, "2_bwa_pp")
-        final_folder    = os.path.join(subfolder, "final_results")
-        dep_loc         = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
-        jobs_folder     = os.path.join(data_folder, "jobs")
         
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(bwa_folder)
-        self.make_folder(final_folder)
-        self.make_folder(jobs_folder)
-        self.make_folder(pp_folder)
+        sample_tag = sample_root_name + "_" + ref_tag
+        sam_name =  sample_tag + ".sam"
+        unscanned_name = sample_tag + ".fasta"
+        gene_map_name = sample_tag + "_gene_map.tsv"
+        genes_name = sample_tag + "_mapped_genes.fna"
+        self.make_folder(self.path_obj.GA_BWA_pp_path)
+        self.make_folder(self.path_obj.GA_BWA_u_path)
         
         reads_in    = query_file
-        bwa_in      = os.path.join(bwa_folder, sample_root_name + "_" + ref_tag + ".sam")
+        bwa_in      = os.path.join(self.path_obj.GA_BWA_run_path, sam_name)
         reads_out = ""
         if(self.path_obj.GA_DB_mode == "multi"):
             print(dt.today(), "BWA_pp running in split-mode")
-            reads_out   = os.path.join(pp_folder, sample_root_name + "_" + ref_tag + ".fasta")
+            reads_out   = os.path.join(self.path_obj.GA_BWA_u_path, unscanned_name)
         else:
             print(dt.today(), "BWA_pp running in single-mode")
-            reads_out = os.path.join(final_folder, sample_root_name + "_" + ref_tag + ".fasta")
+            reads_out = os.path.join(self.path_obj.GA_BWA_final_path, unscanned_name)
         
 
         map_read_bwa = ">&2 echo " + str(dt.today()) + " GA BWA PP generic: " + sample_root_name + " | "
@@ -1888,9 +1888,9 @@ class mt_pipe_commands:
         if(self.sequence_contigs == "None"):
             map_read_bwa += "None" + " "
         else:        
-            map_read_bwa += os.path.join(dep_loc, "contig_map.tsv") + " "  # IN
-        map_read_bwa += os.path.join(final_folder, sample_root_name + "_" + ref_tag + "_gene_map.tsv") + " "  # OUT
-        map_read_bwa += os.path.join(final_folder, sample_root_name + "_" + ref_tag + "_mapped_genes.fna") + " " #OUT
+            map_read_bwa += os.path.join(self.path_obj.contigs_final_path, "contig_map.tsv") + " "  # IN
+        map_read_bwa += os.path.join(self.path_obj.GA_BWA_final_path, gene_map_name) + " "  # OUT
+        map_read_bwa += os.path.join(self.path_obj.GA_BWA_final_path, genes_name ) + " " #OUT
         map_read_bwa += reads_in + " "
         map_read_bwa += bwa_in + " "
         map_read_bwa += reads_out
@@ -1899,10 +1899,8 @@ class mt_pipe_commands:
 
         
 
-        make_marker = ">&2 echo bwa pp complete: " + marker_file + " | " 
-        make_marker += "touch" + " " 
-        make_marker += os.path.join(jobs_folder, marker_file)
-
+        make_marker = ">&2 echo bwa pp complete: " + sample_tag + " | " 
+        make_marker += "touch" + " " + marker_path
 
         COMMANDS_Annotate_BWA = [
             map_read_bwa + " && " + make_marker
@@ -1913,62 +1911,29 @@ class mt_pipe_commands:
 
  
 
-    def create_BWA_copy_contig_map_command(self, stage_name, dependency_stage_name, marker_file):
-        subfolder       = os.path.join(self.Output_Path, stage_name)
-        data_folder     = os.path.join(subfolder, "data")
-        bwa_folder      = os.path.join(data_folder, "1_bwa")
-        pp_folder       = os.path.join(data_folder, "2_bwa_pp")
-        split_folder    = os.path.join(data_folder, "0_read_split")
-        final_folder    = os.path.join(subfolder, "final_results")
-        dep_loc         = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
-        jobs_folder     = os.path.join(data_folder, "jobs")
+    def create_BWA_copy_contig_map_command(self, marker_path):
         
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(bwa_folder)
-        self.make_folder(final_folder)
-        self.make_folder(jobs_folder)
     
         copy_contig_map = ">&2 echo " + str(dt.today()) + " copy contig map | "
-        copy_contig_map += "cp " + os.path.join(dep_loc, "contig_map.tsv") + " " + os.path.join(final_folder, "contig_map.tsv")
+        copy_contig_map += "cp " + os.path.join(self.path_obj.contigs_final_path, "contig_map.tsv") + " " + os.path.join(self.path_obj.GA_BWA_final_path, "contig_map.tsv")
         
-        make_marker = ">&2 echo bwa copy contig map complete: " + marker_file + " | " 
-        make_marker += "touch" + " " 
-        make_marker += os.path.join(jobs_folder, marker_file)
+        make_marker = "touch" + " " + marker_path
         
         return [copy_contig_map + " && " + make_marker]
 
-    def create_merge_BWA_fasta_command(self, stage_name, query_file, marker_file):
+    def create_merge_BWA_fasta_command(self, query_file, marker_path):
+        #merges all FASTAs exported by BWA from the split-DB runs.
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
-
-        subfolder       = os.path.join(self.Output_Path, stage_name)
-        data_folder     = os.path.join(subfolder, "data")
-        bwa_folder      = os.path.join(data_folder, "1_bwa")
-        split_folder    = os.path.join(data_folder, "0_read_split")
-        pp_folder       = os.path.join(data_folder, "2_bwa_pp")
-        final_folder    = os.path.join(subfolder, "final_results")
-        
-        jobs_folder     = os.path.join(data_folder, "jobs")
-        
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(bwa_folder)
-        self.make_folder(final_folder)
-        self.make_folder(jobs_folder)
-        self.make_folder(pp_folder)
 
         merge_bwa_fastas = ">&2 echo " + str(dt.today()) + " GA BWA merge leftover reads " + sample_root_name + " | "
         merge_bwa_fastas += self.path_obj.Python + " "
         merge_bwa_fastas += self.path_obj.GA_merge_fasta + " "
-        merge_bwa_fastas += pp_folder + " " 
+        merge_bwa_fastas += self.path_obj.GA_BWA_u_path + " " 
         merge_bwa_fastas += sample_root_name + " " 
-        merge_bwa_fastas += final_folder
+        merge_bwa_fastas += self.path_obj.GA_BWA_final_path
 
-        make_marker = ">&2 echo merge BWA leftover fastas: " + marker_file + " | " 
-        make_marker += "touch" + " " 
-        make_marker += os.path.join(jobs_folder, marker_file)
-
+        make_marker = "touch" + " " + marker_path
         return [merge_bwa_fastas + " && " + make_marker]
 
     def create_BLAT_annotate_command_v2(self, stage_name, query_file, db_path, fasta_db, marker_file):

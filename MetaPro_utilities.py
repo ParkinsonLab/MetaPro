@@ -374,6 +374,8 @@ class mp_util:
                 self.wait_for_mp_store()    
                 
 
+   
+
     #check if all jobs ran
     def check_all_job_markers(self, job_marker_list, final_folder_checklist):
         time.sleep(2)
@@ -480,3 +482,37 @@ class mp_util:
             cleanup_job_end = time.time() 
 
         return cleanup_job_start, cleanup_job_end
+
+    def launch_with_mem_footprint(self, mem_footprint, job_limit, job_location, job_name, command_obj, command):
+        #launch a job in launch-with-create mode
+        #this controller won't be optimized for the system. It's made to keep the node from exploding.
+        job_submitted = False
+        
+        while(not job_submitted):
+
+            if(len(self.mp_store) < job_limit):    
+                if(self.mem_footprint_checker(len(self.mp_store), mem_footprint)):
+                    process = mp.Process(
+                        target = command_obj.launch_only,
+                        args = (command, len(command))
+                    )
+                    process.start()
+                    self.mp_store.append(process)
+                    job_submitted = True
+                    
+                    print(dt.today(), job_name, "job submitted.  mem:", len(self.mp_store) * mem_footprint, "GB", end='\r')
+                else:
+                    print(dt.today(), "job limit reached.  waiting for queue to flush")
+                    self.wait_for_mp_store()
+            else:
+                print(dt.today(), "job limit reached.  waiting for queue to flush")
+                self.wait_for_mp_store() 
+
+    def launch_simple(self, command_obj, command):
+        process = mp.Process(
+            target = command_obj.launch_only,
+            args = (command, len(command))
+        )
+        process.start()
+        process.join()
+        
