@@ -773,7 +773,7 @@ class mp_stage:
                 read_tag = read_split.split(".")[0]
                 for DB_sample in os.listdir(self.paths.DNA_lib_path):
                     if(DB_sample.endswith("fasta")):
-                        full_DB_path = os.path.join(self.paths.GA_pre_scan_final_path, DB_sample)
+                        full_DB_path = os.path.join(self.paths.DNA_lib_path, DB_sample)
                         marker_file = read_tag + "_" + DB_sample+ "_pp"
                         marker_path = os.path.join(self.paths.GA_BWA_jobs_path, marker_file)
                         job_name = marker_file
