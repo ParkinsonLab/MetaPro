@@ -294,10 +294,10 @@ class mp_util:
                         print(dt.today(), job_name, "job submitted.  mem:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
                         job_submitted = True
                     else:
-                        time.sleep(job_delay)
+                        time.sleep(float(job_delay))
                 else:
                     self.wait_for_mp_store()
-            time.sleep(job_delay)
+            time.sleep(float(job_delay))
         #final wait for everything to be done
         self.wait_for_mp_store()
                 
@@ -318,11 +318,11 @@ class mp_util:
                     job_submitted = True
                 else:
                     #print(dt.today(), job_name, "Pausing. mem limit reached:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
-                    time.sleep(job_delay)
+                    time.sleep(float(job_delay))
             else:
                 print(dt.today(), "job limit reached.  waiting for queue to flush")
                 self.wait_for_mp_store()
-        time.sleep(job_delay)
+        time.sleep(float(job_delay))
         
 
     def launch_and_create_with_hold(self, mem_threshold, job_limit, job_delay, job_location, job_name, command_obj, command):
@@ -342,7 +342,7 @@ class mp_util:
                     job_submitted = True
                 else:
                     #print(dt.today(), job_name, "Pausing. mem limit reached:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
-                    time.sleep(job_delay)
+                    time.sleep(float(job_delay))
             else:
                 print(dt.today(), "job limit reached.  waiting for queue to flush")
                 self.wait_for_mp_store()

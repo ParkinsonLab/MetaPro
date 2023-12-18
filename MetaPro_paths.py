@@ -358,7 +358,7 @@ class tool_path_obj:
         # Memory percentage limits for applications. in INT
         BWA_mem_default = 50
         BLAT_mem_default = 10 #100MB
-        DIAMOND_mem_default = 50 #60GB
+        DMD_mem_default = 50 #60GB
         DETECT_mem_default = 50
         Infernal_mem_default = 50
         Barrnap_mem_default = 50
@@ -366,7 +366,7 @@ class tool_path_obj:
         TA_mem_threshold_default = 50
         BWA_pp_mem_default = 50
         BLAT_pp_mem_default = 50
-        DIAMOND_pp_mem_default = 50
+        DMD_pp_mem_default = 50
         GA_merge_mem_default = 5 
         EC_mem_threshold_default = 5
         
@@ -381,13 +381,13 @@ class tool_path_obj:
         
         BWA_job_limit_default               = cpu_default
         BLAT_job_limit_default              = cpu_default
-        DIAMOND_job_limit_default           = cpu_default
+        DMD_job_limit_default           = cpu_default
         DETECT_job_limit_default            = cpu_default
         Infernal_job_limit_default          = 1000
         Barrnap_job_limit_default           = 1000
         BWA_pp_job_limit_default            = cpu_default
         BLAT_pp_job_limit_default           = cpu_default
-        DIAMOND_pp_job_limit_default        = cpu_default
+        DMD_pp_job_limit_default        = cpu_default
         GA_merge_job_limit_default          = cpu_default
         repop_job_limit_default             = 10
         TA_job_limit_default                = cpu_default
@@ -398,11 +398,11 @@ class tool_path_obj:
         Infernal_job_delay_default          = 5
         BWA_job_delay_default               = 5
         BLAT_job_delay_default              = 5
-        DIAMOND_job_delay_default           = 5
+        DMD_job_delay_default           = 5
         DETECT_job_delay_default            = 5
         BWA_pp_job_delay_default            = 5
         BLAT_pp_job_delay_default           = 5
-        DIAMOND_pp_job_delay_default        = 5
+        DMD_pp_job_delay_default        = 5
         GA_merge_job_delay_default    = 5
         repop_job_delay_default             = 10
         TA_job_delay_default                = 5
@@ -430,9 +430,9 @@ class tool_path_obj:
         BLAT_identity_default = 85
         BLAT_length_default = 0.65
         BLAT_score_default = 60
-        DIAMOND_identity_default = 85
-        DIAMOND_length_default = 0.65
-        DIAMOND_score_default = 60
+        DMD_identity_default = 85
+        DMD_length_default = 0.65
+        DMD_score_default = 60
         
         #identity_cutoff= 85
         #length_cutoff= 0.65
@@ -457,14 +457,14 @@ class tool_path_obj:
         
         
         
-        self.RPKM_cutoff                = self.value_assignment(config, "Settings", "RPKM_cutoff", 0.01, "float")
-        self.BWA_cigar_cutoff           = self.value_assignment(config, "Settings", "BWA_cigar_cutoff", BWA_cigar_default)
-        self.BLAT_identity_cutoff       = self.value_assignment(config, "Settings", "BLAT_identity_cutoff", BLAT_identity_default)
-        self.BLAT_length_cutoff         = self.value_assignment(config, "Settings", "BLAT_length_cutoff", BLAT_length_default, "float")
-        self.BLAT_score_cutoff          = self.value_assignment(config, "Settings", "BLAT_score_cutoff", BLAT_score_default)            
-        self.DIAMOND_identity_cutoff    = self.value_assignment(config, "Settings", "DIAMOND_identity_cutoff", DIAMOND_identity_default)
-        self.DIAMOND_length_cutoff      = self.value_assignment(config, "Settings", "DIAMOND_length_cutoff", DIAMOND_length_default, "float")
-        self.DIAMOND_score_cutoff       = self.value_assignment(config, "Settings", "DIAMOND_score_cutoff", DIAMOND_score_default)
+        self.RPKM_cutoff            = self.value_assignment(config, "Settings", "RPKM_cutoff", 0.01, "float")
+        self.BWA_cigar_cutoff       = self.value_assignment(config, "Settings", "BWA_cigar_cutoff", BWA_cigar_default)
+        self.BLAT_identity_cutoff   = self.value_assignment(config, "Settings", "BLAT_identity_cutoff", BLAT_identity_default)
+        self.BLAT_length_cutoff     = self.value_assignment(config, "Settings", "BLAT_length_cutoff", BLAT_length_default, "float")
+        self.BLAT_score_cutoff      = self.value_assignment(config, "Settings", "BLAT_score_cutoff", BLAT_score_default)            
+        self.DMD_identity_cutoff    = self.value_assignment(config, "Settings", "DMD_identity_cutoff", DMD_identity_default)
+        self.DMD_length_cutoff      = self.value_assignment(config, "Settings", "DMD_length_cutoff", DMD_length_default, "float")
+        self.DMD_score_cutoff       = self.value_assignment(config, "Settings", "DMD_score_cutoff", DMD_score_default)
         #-----------------------------------------------------------------------------------------------   
 
         
@@ -476,14 +476,14 @@ class tool_path_obj:
         #-------------------------------------------------------------------------------------------------
         self.BWA_mem_threshold              = self.value_assignment(config, "Settings", "BWA_mem_threshold", BWA_mem_default, "int")
         self.BLAT_mem_threshold             = self.value_assignment(config, "Settings", "BLAT_mem_threshold", BLAT_mem_default, "int")
-        self.DIAMOND_mem_threshold          = self.value_assignment(config, "Settings", "DIAMOND_mem_threshold", DIAMOND_mem_default, "int")
+        self.DMD_mem_threshold              = self.value_assignment(config, "Settings", "DMD_mem_threshold", DMD_mem_default, "int")
         self.DETECT_mem_threshold           = self.value_assignment(config, "Settings", "DETECT_mem_threshold", DETECT_mem_default, "int")
         self.Infernal_mem_threshold         = self.value_assignment(config, "Settings", "Infernal_mem_threshold", Infernal_mem_default, "int")
         self.Barrnap_mem_threshold          = self.value_assignment(config, "Settings", "Barrnap_mem_threshold", Barrnap_mem_default, "int")
         self.BWA_pp_mem_threshold           = self.value_assignment(config, "Settings", "BWA_pp_mem_threshold", BWA_pp_mem_default, "int")
         self.BLAT_pp_mem_threshold          = self.value_assignment(config, "Settings", "BLAT_pp_mem_threshold", BLAT_pp_mem_default, "int")
-        self.DIAMOND_pp_mem_threshold       = self.value_assignment(config, "Settings", "DIAMOND_pp_mem_threshold", DIAMOND_pp_mem_default, "int")
-        self.GA_merge_mem_threshold   = self.value_assignment(config, "Settings", "GA_merge_mem_threshold", GA_merge_mem_default, "int")
+        self.DMD_pp_mem_threshold           = self.value_assignment(config, "Settings", "DMD_pp_mem_threshold", DMD_pp_mem_default, "int")
+        self.GA_merge_mem_threshold         = self.value_assignment(config, "Settings", "GA_merge_mem_threshold", GA_merge_mem_default, "int")
         self.TA_mem_threshold               = self.value_assignment(config, "Settings", "TA_mem_threshold", TA_mem_threshold_default, "int")
         self.repop_mem_threshold            = self.value_assignment(config, "Settings", "repop_mem_threshold", repop_mem_default, "int")
         self.EC_mem_threshold               = self.value_assignment(config, "Settings", "EC_mem_threshold", EC_mem_threshold_default, "int")
@@ -492,14 +492,14 @@ class tool_path_obj:
         
         self.BWA_job_limit              = self.value_assignment(config, "Settings", "BWA_job_limit", BWA_job_limit_default, "int")
         self.BLAT_job_limit             = self.value_assignment(config, "Settings", "BLAT_job_limit", BLAT_job_limit_default, "int")
-        self.DIAMOND_job_limit          = self.value_assignment(config, "Settings", "DIAMOND_job_limit", DIAMOND_job_limit_default, "int")
+        self.DMD_job_limit              = self.value_assignment(config, "Settings", "DMD_job_limit", DMD_job_limit_default, "int")
         self.DETECT_job_limit           = self.value_assignment(config, "Settings", "DETECT_job_limit", DETECT_job_limit_default, "int")
         self.Infernal_job_limit         = self.value_assignment(config, "Settings", "Infernal_job_limit", Infernal_job_limit_default, "int")
         self.Barrnap_job_limit          = self.value_assignment(config, "Settings", "Barrnap_job_limit", Barrnap_job_limit_default, "int")
         self.BWA_pp_job_limit           = self.value_assignment(config, "Settings", "BWA_pp_job_limit", BWA_pp_job_limit_default, "int")
         self.BLAT_pp_job_limit          = self.value_assignment(config, "Settings", "BLAT_pp_job_limit", BLAT_pp_job_limit_default, "int")
-        self.DIAMOND_pp_job_limit       = self.value_assignment(config, "Settings", "DIAMOND_pp_job_limit", DIAMOND_pp_job_limit_default, "int")
-        self.GA_merge_job_limit   = self.value_assignment(config, "Settings", "GA_merge_job_limit", GA_merge_job_limit_default, "int")
+        self.DMD_pp_job_limit           = self.value_assignment(config, "Settings", "DMD_pp_job_limit", DMD_pp_job_limit_default, "int")
+        self.GA_merge_job_limit         = self.value_assignment(config, "Settings", "GA_merge_job_limit", GA_merge_job_limit_default, "int")
         self.TA_job_limit               = self.value_assignment(config, "Settings", "TA_job_limit", TA_job_limit_default, "int")
         self.repop_job_limit            = self.value_assignment(config, "Settings", "repop_job_limit", repop_job_limit_default, "int")
         self.EC_job_limit               = self.value_assignment(config, "Settings", "EC_job_limit", EC_job_limit_default, "int")
@@ -511,12 +511,12 @@ class tool_path_obj:
         self.Barrnap_job_delay          = self.value_assignment(config, "Settings", "Barrnap_job_delay", Barrnap_job_delay_default)
         self.BWA_job_delay              = self.value_assignment(config, "Settings", "BWA_job_delay", BWA_job_delay_default)
         self.BLAT_job_delay             = self.value_assignment(config, "Settings", "BLAT_job_delay", BLAT_job_delay_default)
-        self.DIAMOND_job_delay          = self.value_assignment(config, "Settings", "DIAMOND_job_delay", DIAMOND_job_delay_default)
+        self.DMD_job_delay              = self.value_assignment(config, "Settings", "DMD_job_delay", DMD_job_delay_default)
         self.DETECT_job_delay           = self.value_assignment(config, "Settings", "DETECT_job_delay", DETECT_job_delay_default)
         self.BWA_pp_job_delay           = self.value_assignment(config, "Settings", "BWA_pp_job_delay", BWA_pp_job_delay_default)
         self.BLAT_pp_job_delay          = self.value_assignment(config, "Settings", "BLAT_pp_job_delay", BLAT_pp_job_delay_default)
-        self.DIAMOND_pp_job_delay       = self.value_assignment(config, "Settings", "DIAMOND_pp_job_delay", DIAMOND_pp_job_delay_default)
-        self.GA_merge_job_delay   = self.value_assignment(config, "Settings", "GA_merge_job_delay", GA_merge_job_delay_default)
+        self.DMD_pp_job_delay           = self.value_assignment(config, "Settings", "DMD_pp_job_delay", DMD_pp_job_delay_default)
+        self.GA_merge_job_delay         = self.value_assignment(config, "Settings", "GA_merge_job_delay", GA_merge_job_delay_default)
         self.TA_job_delay               = self.value_assignment(config, "Settings", "TA_job_delay", TA_job_delay_default)
         self.repop_job_delay            = self.value_assignment(config, "Settings", "repop_job_delay", repop_job_delay_default)
         self.EC_job_delay               = self.value_assignment(config, "Settings", "EC_job_delay", EC_job_delay_default)
@@ -531,7 +531,7 @@ class tool_path_obj:
         self.keep_assemble_contigs      = self.value_assignment(config, "Settings", "keep_assemble_contigs", keep_assemble_contigs_default, "string")
         self.keep_GA_BWA                = self.value_assignment(config, "Settings", "keep_GA_BWA", keep_GA_BWA_default, "string")
         self.keep_GA_BLAT               = self.value_assignment(config, "Settings", "keep_GA_BLAT", keep_GA_BLAT_default, "string")
-        self.keep_GA_DMD            = self.value_assignment(config, "Settings", "keep_GA_DMD", keep_GA_DMD_default, "string")
+        self.keep_GA_DMD                = self.value_assignment(config, "Settings", "keep_GA_DMD", keep_GA_DMD_default, "string")
         self.keep_GA_final              = self.value_assignment(config, "Settings", "keep_GA_final", keep_GA_final_default, "string")
         self.keep_TA                    = self.value_assignment(config, "Settings", "keep_TA", keep_TA_default, "string")
         self.keep_EC                    = self.value_assignment(config, "Settings", "keep_EC", keep_EC_default, "string")
@@ -590,7 +590,7 @@ class tool_path_obj:
         ec_annotation_priam_label_default               = "enzyme_annotation_priam"
         ec_annotation_priam_split_label_default         = "enzyme_annotation_priam_split"
         ec_annotation_priam_cat_label_default           = "enzyme_annotation_priam_cat"
-        ec_annotation_DIAMOND_label_default             = "enzyme_annotation_DMD"
+        ec_annotation_DMD_label_default             = "enzyme_annotation_DMD"
         ec_annotation_pp_label_default                  = "enzyme_annotation_pp"
         output_label_default                            = "outputs"
         output_copy_gene_map_label_default              = "output_copy_gene_map"
@@ -634,8 +634,8 @@ class tool_path_obj:
         self.GA_BWA_pp_label                        = self.value_assignment(config, "Labels", "GA_BWA_pp",                          GA_BWA_pp_label_default, "string")
         self.GA_BWA_merge_label                     = self.value_assignment(config, "Labels", "GA_BWA_merge",                       GA_BWA_merge_label_default, "string")
         self.GA_BLAT_label                          = self.value_assignment(config, "Labels", "GA_BLAT",                            GA_BLAT_label_default, "string")
-        self.GA_BLAT_cleanup_label                  = self.value_assignment(config, "Labels", "GA_BLAT_cleanup",                    GA_BLAT_cleanup_label_default, "string")
-        self.GA_BLAT_cat_label                      = self.value_assignment(config, "Labels", "GA_BLAT_cat",                        GA_BLAT_cat_label_default, "string")
+        #self.GA_BLAT_cleanup_label                  = self.value_assignment(config, "Labels", "GA_BLAT_cleanup",                    GA_BLAT_cleanup_label_default, "string")
+        #self.GA_BLAT_cat_label                      = self.value_assignment(config, "Labels", "GA_BLAT_cat",                        GA_BLAT_cat_label_default, "string")
         self.GA_BLAT_pp_label                       = self.value_assignment(config, "Labels", "GA_BLAT_pp",                         GA_BLAT_pp_label_default, "string")
         self.GA_BLAT_merge_label                    = self.value_assignment(config, "Labels", "GA_BLAT_merge",                      GA_BLAT_merge_label_default, "string")
         self.GA_DMD_label                           = self.value_assignment(config, "Labels", "GA_DMD",                             GA_DMD_label_default, "string")
@@ -647,7 +647,7 @@ class tool_path_obj:
         self.ec_priam_label                         = self.value_assignment(config, "Labels", "ec_priam",                           ec_annotation_priam_label_default, "string")
         self.ec_priam_split_label                   = self.value_assignment(config, "Labels", "ec_priam_split",                     ec_annotation_priam_split_label_default, "string")
         self.ec_priam_cat_label                     = self.value_assignment(config, "Labels", "ec_priam_cat",                       ec_annotation_priam_cat_label_default, "string")
-        self.ec_DIAMOND_label                       = self.value_assignment(config, "Labels", "ec_DIAMOND",                         ec_annotation_DIAMOND_label_default, "string")
+        self.ec_DMD_label                       = self.value_assignment(config, "Labels", "ec_DMD",                         ec_annotation_DMD_label_default, "string")
         self.ec_pp_label                            = self.value_assignment(config, "Labels", "ec_pp",                              ec_annotation_pp_label_default, "string")
         self.output_label                           = self.value_assignment(config, "Labels", "outputs",                            output_label_default, "string")
         self.output_copy_gene_map_label             = self.value_assignment(config, "Labels", "output_copy_gene_map",               output_copy_gene_map_label_default, "string")
@@ -688,7 +688,7 @@ class tool_path_obj:
         self.BWA            = self.value_assignment(config, "Tools", "BWA", os.path.join(tool_path, "BWA/bwa"), "path")
         self.SAMTOOLS       = self.value_assignment(config, "Tools", "SAMTOOLS", os.path.join(tool_path, "samtools/samtools"), "path")
         self.BLAT           = self.value_assignment(config, "Tools", "BLAT", os.path.join(tool_path, "PBLAT/pblat"), "path")
-        self.DIAMOND        = self.value_assignment(config, "Tools", "DIAMOND", os.path.join(tool_path, "DIAMOND/diamond"), "path")
+        self.DMD            = self.value_assignment(config, "Tools", "DMD", os.path.join(tool_path, "DIAMOND/diamond"), "path")
         self.Blastp         = self.value_assignment(config, "Tools", "Blastp", os.path.join(tool_path, "BLAST_p/blastp"), "path")
         self.Needle         = self.value_assignment(config, "Tools", "Needle", os.path.join(tool_path, "EMBOSS-6.6.0/emboss/stretcher"), "path")
         self.Makeblastdb    = self.value_assignment(config, "Tools", "Makeblastdb", os.path.join(tool_path, "BLAST_p/makeblastdb"), "path")
@@ -722,9 +722,9 @@ class tool_path_obj:
         self.Map_contig                 = self.value_assignment(config, "code", "map_contig", os.path.join(script_path, "assembly_make_contig_map.py"), "path")
         self.flush_bad_contigs          = self.value_assignment(config, "code", "flush_bad_contigs", os.path.join(script_path, "assembly_flush_bad_contigs.py"), "path")
         self.contig_duplicate_remover   = self.value_assignment(config, "code", "contig_duplicate_remover", os.path.join(script_path, "assembly_deduplicate.py"), "path")
-        self.Map_reads_gene_BWA         = self.value_assignment(config, "code", "ga_bwa_pp", os.path.join(script_path, "ga_BWA_generic_v2.py"), "path")
-        self.Map_reads_gene_BLAT        = self.value_assignment(config, "code", "ga_blat_pp", os.path.join(script_path, "ga_BLAT_generic_v3.py"), "path")
-        self.Map_reads_prot_DMND        = self.value_assignment(config, "code", "ga_dmd_pp", os.path.join(script_path, "GA_DMD_generic_v2.py"), "path")
+        self.GA_BWA_pp                  = self.value_assignment(config, "code", "ga_bwa_pp", os.path.join(script_path, "ga_BWA_generic_v2.py"), "path")
+        self.GA_BLAT_pp                 = self.value_assignment(config, "code", "ga_blat_pp", os.path.join(script_path, "ga_BLAT_generic_v3.py"), "path")
+        self.GA_DMD_pp                  = self.value_assignment(config, "code", "ga_dmd_pp", os.path.join(script_path, "GA_DMD_generic_v2.py"), "path")
         self.GA_merge                   = self.value_assignment(config, "code", "GA_merge", os.path.join(script_path, "GA_merge_v4.py"), "path")
         self.GA_merge_fasta             = self.value_assignment(config, "code", "ga_merge_fasta", os.path.join(script_path, "ga_merge_fasta.py"), "path")
         #self.GA_merge_fastq             = self.value_assignment(config, "code", "GA_merge_fasta", os.path.join(script_path, "GA_merge_fastq.py"), "path")
@@ -776,15 +776,15 @@ class tool_path_obj:
         self.host_top_path          = os.path.join(self.output_path, self.host_filter_label)
         self.host_data_path         = os.path.join(self.host_top_path, "data")
         self.host_jobs_path         = os.path.join(self.host_top_path, "jobs")
-        self.host_bwa_path          = os.path.join(self.host_data_path, "0_remove_host")
+        self.host_bwa_path          = os.path.join(self.host_data_path, "0_bwa_host")
         self.host_blat_path         = os.path.join(self.host_data_path, "1_blat_host")
         self.host_final_path        = os.path.join(self.host_top_path, "final_results")
 
         self.vector_top_path        = os.path.join(self.output_path, self.vector_filter_label)
         self.vector_data_path       = os.path.join(self.vector_top_path, "data")
         self.vector_jobs_path       = os.path.join(self.vector_top_path, "jobs")
-        self.vector_bwa_path        = os.path.join(self.vector_data_path, "0_vector_removal")
-        self.vector_blat_path       = os.path.join(self.vector_data_path, "1_blat_containment_vr")
+        self.vector_bwa_path        = os.path.join(self.vector_data_path, "0_bwa_vr")
+        self.vector_blat_path       = os.path.join(self.vector_data_path, "1_blat_vr")
         self.vector_final_path      = os.path.join(self.vector_top_path, "final_results")
 
         self.rRNA_top_path          = os.path.join(self.output_path, self.rRNA_filter_label)
@@ -861,13 +861,14 @@ class tool_path_obj:
         self.GA_BLAT_jobs_path      = os.path.join(self.GA_BLAT_top_path, "jobs")
         self.GA_BLAT_run_path       = os.path.join(self.GA_BLAT_data_path, "0_blat")
         self.GA_BLAT_pp_path        = os.path.join(self.GA_BLAT_data_path, "1_pp")
+        self.GA_BLAT_u_path         = os.path.join(self.GA_BLAT_data_path, "2_unscanned")
         self.GA_BLAT_final_path     = os.path.join(self.GA_BLAT_top_path, "final_results")
 
         self.GA_DMD_top_path        = os.path.join(self.output_path, self.GA_DMD_label)
         self.GA_DMD_data_path       = os.path.join(self.GA_DMD_top_path, "data")
         self.GA_DMD_jobs_path       = os.path.join(self.GA_DMD_top_path, "jobs")
-        self.GA_DMD_tool_path       = os.path.join(self.GA_DMD_data_path, "0_dmd")
-        self.GA_DMD_temp_path       = os.path.join(self.GA_DMD_tool_path, "temp")
+        self.GA_DMD_run_path       = os.path.join(self.GA_DMD_data_path, "0_dmd")
+        self.GA_DMD_temp_path       = os.path.join(self.GA_DMD_run_path, "temp")
         self.GA_DMD_final_path      = os.path.join(self.GA_DMD_top_path, "final_results")
 
         self.GA_merge_top_path      = os.path.join(self.output_path, self.GA_merge_label)
@@ -889,7 +890,7 @@ class tool_path_obj:
         self.EC_jobs_path           = os.path.join(self.EC_top_path, "jobs")
         self.EC_detect_path         = os.path.join(self.EC_data_path, "0_detect")
         self.EC_priam_path          = os.path.join(self.EC_data_path, "1_priam")
-        self.EC_dmd_path            = os.path.join(self.EC_data_path, "2_diamond")
+        self.EC_dmd_path            = os.path.join(self.EC_data_path, "2_DMD")
         self.EC_final_path          = os.path.join(self.EC_top_path, "final_results")
 
         self.reports_top_path       = os.path.join(self.output_path, self.output_label)

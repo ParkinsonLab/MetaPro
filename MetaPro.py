@@ -93,7 +93,7 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     #if(metapro_stage_obj.GA_DB_mode == "multi"):
     metapro_stage_obj.mp_GA_BWA_merge()
     
-    sys.exit("check oil light")  
+    
     
     # BLAT gene annotation
     metapro_stage_obj.mp_GA_BLAT()
@@ -109,7 +109,7 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
     # final GA merge()
     metapro_stage_obj.mp_GA_final_merge()
 
-    
+    sys.exit("check oil light")  
 
     # Taxonomic annotation
     metapro_stage_obj.mp_TA()
