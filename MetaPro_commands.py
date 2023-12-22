@@ -1986,7 +1986,7 @@ class mt_pipe_commands:
         merge_blat_fastas = ">&2 echo " + str(dt.today()) + " GA BLAT merge leftover reads " + sample_root_name + " | "
         merge_blat_fastas += self.path_obj.Python + " "
         merge_blat_fastas += self.path_obj.GA_merge_fasta + " "
-        merge_blat_fastas += self.path_obj.GA_BLAT_run_path + " " 
+        merge_blat_fastas += self.path_obj.GA_BLAT_u_path + " " 
         merge_blat_fastas += sample_root_name + " " 
         merge_blat_fastas += self.path_obj.GA_BLAT_final_path
 

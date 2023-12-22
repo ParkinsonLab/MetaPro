@@ -901,7 +901,7 @@ class mp_stage:
                                 else:
                                     marker_path_list.append(marker_path)
                                     command_list = self.commands.create_BLAT_pp_command(full_sample_path, ref_path, marker_path)
-                                    print("Command list:", command_list)
+                                    #print("Command list:", command_list)
                                     #time.sleep(10)
                                     #self.mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, self.GA_BLAT_label, job_name, self.commands, command_list)
                                     self.mp_util.launch_only_with_hold(self.paths.BLAT_pp_mem_threshold, self.paths.BLAT_pp_job_limit, self.paths.BLAT_pp_job_delay, job_name, self.commands, command_list)
@@ -910,7 +910,7 @@ class mp_stage:
                     
             print(dt.today(), "submitted all BLAT pp jobs.  waiting for sync")
             self.mp_util.wait_for_mp_store()
-            
+            self.mp_util.write_to_bypass_log(self.output_folder_path, self.paths.GA_BLAT_pp_label)
             
         
         self.debug_stop_check(self.paths.GA_BLAT_pp_label)
@@ -919,12 +919,25 @@ class mp_stage:
     def mp_GA_BLAT_merge(self):
         # GA BLAT merge    
         if self.mp_util.check_bypass_log(self.output_folder_path, self.paths.GA_BLAT_merge_label):
-            for split_sample in os.listdir(self.paths.GA_BWA_u_path):
+            used_segment_names = set()
+            for split_sample in os.listdir(self.paths.GA_BLAT_u_path):
                 if(split_sample.endswith(".fasta")):
                     file_tag = os.path.basename(split_sample)
                     file_tag = os.path.splitext(file_tag)[0]
+                    tag_split = file_tag.split("_")
+                    segment_name = ""
+                    if(file_tag.startswith("pair")):
+                        segment_name = tag_split[0] + "_" + tag_split[1] + "_" + tag_split[2]
+                    else:
+                        segment_name = tag_split[0] + "_" + tag_split[1]
 
-                    marker_file = "BLAT_merge_" + file_tag
+                    marker_file = "BLAT_merge_" + segment_name
+                    prev_size = len(used_segment_names)
+                    used_segment_names.add(segment_name)
+                    cur_size = len(used_segment_names)
+                    if(cur_size == prev_size):
+                        continue
+
 
 
                     marker_path = os.path.join(self.paths.GA_BLAT_jobs_path, marker_file)
@@ -933,9 +946,9 @@ class mp_stage:
                         print(dt.today(), "skipping: ", marker_file)
                         continue
                     else:
-                        command_list = self.commands.create_BLAT_merge_fasta_command(file_tag, marker_path)
-                        print(command_list)
-                        time.sleep(10)
+                        command_list = self.commands.create_BLAT_merge_fasta_command(segment_name, marker_path)
+                        #print(command_list)
+                        #time.sleep(10)
                         self.mp_util.launch_only_with_hold(self.paths.BLAT_pp_mem_threshold, self.paths.BLAT_pp_job_limit, self.paths.BLAT_pp_job_delay, job_name, self.commands, command_list)
             print(dt.today(), "submitted all BLAT merge jobs. waiting for sync")
             self.mp_util.wait_for_mp_store()
@@ -980,14 +993,14 @@ class mp_stage:
                     else:
                         marker_path_list.append(marker_path)
                         command_list = self.commands.create_GA_DMD_command(full_sample_path, marker_path)
-                        print("COMMAND:", command_list)
+                        #print("COMMAND:", command_list)
                         self.mp_util.launch_and_create_with_mem_footprint(self.paths.DMD_mem_footprint, self.paths.DMD_job_limit, self.paths.GA_DMD_label, job_name, self.commands, command_list)
-                        time.sleep(10)
+                        #time.sleep(10)
 
             print(dt.today(), "All DIAMOND jobs launched.  waiting for join")
             self.mp_util.wait_for_mp_store()
             #final_checklist = os.path.join(self.GA_D_path, "GA_DIAMOND.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
+            #self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
             self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_DIAMOND_label)
         
         self.debug_stop_check(self.GA_DIAMOND_label)
