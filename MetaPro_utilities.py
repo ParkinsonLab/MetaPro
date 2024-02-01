@@ -228,52 +228,132 @@ class mp_util:
         else:
             print("doesn't exist: running")
             return False
+        
+    #--------------------------------------------------------------------------------------------------------
+    #JOB LAUNCH Functions
+    def create_and_launch(self, job_folder, inner_name, command_list):
+        # create the pbs job, and launch items
+        # job name: string tag for export file name
+        # command list:  list of command statements for writing
+        # mode: selection of which pbs template to use: default -> low memory
+        # dependency_list: if not empty, will append wait args to sbatch subprocess call. it's polymorphic
+        # returns back the job ID given from sbatch
 
-    def launch_and_create_simple(self, job_location, job_label, command_obj, commands):
+        # docker mode: single cpu
+        # no ID, no sbatch.  just run the command
+        
+        shell_script_full_path = os.path.join(self.Output_Path, job_folder, inner_name + ".sh")
+
+        with open(shell_script_full_path, "w") as PBS_script_out:
+            for item in command_list:
+                PBS_script_out.write(item + "\n")
+            PBS_script_out.close()
+        #if not work_in_background:
+        output = ""
+        try:
+            sp.check_output(["sh", shell_script_full_path])#, stderr = sp.STDOUT)
+        except sp.CalledProcessError as e:
+            return_code = e.returncode
+            if return_code != 1:
+                raise
+                
+    def create_and_launch_v2(self, job_path, command_list):
+        # create the pbs job, and launch items
+        # job name: string tag for export file name
+        # command list:  list of command statements for writing
+        # mode: selection of which pbs template to use: default -> low memory
+        # dependency_list: if not empty, will append wait args to sbatch subprocess call. it's polymorphic
+        # returns back the job ID given from sbatch
+
+        # docker mode: single cpu
+        # no ID, no sbatch.  just run the command
+        
+        #shell_script_full_path = os.path.join(self.Output_Path, job_folder, inner_name + ".sh")
+
+        with open(job_path, "w") as PBS_script_out:
+            for item in command_list:
+                PBS_script_out.write(item + "\n")
+            PBS_script_out.close()
+        #if not work_in_background:
+        output = ""
+        try:
+            sp.check_output(["sh", job_path])#, stderr = sp.STDOUT)
+        except sp.CalledProcessError as e:
+            return_code = e.returncode
+            if return_code != 1:
+                raise                
+                
+    def launch_only(self, command_list, command_list_length):
+        #just launch the job.  Don't make a script file.
+        #print(dt.today(), "inside launch_only:", len(command_list))
+        
+        if(command_list_length == 1):
+            #print("0th item:", command_list[0])
+            try:
+                os.system(command_list[0])
+            except sp.CalledProcessError as e:
+                return_code = e.returncode
+                if return_code != 1:
+                    raise
+            #else:
+            #    sys.exit("something bad happened")
+        else:
+        
+            for command_item in command_list:
+                try:
+                    os.system(command_item)
+                except sp.CalledProcessError as e:
+                    return_code = e.returncode
+                    if return_code != 1:
+                        raise
+
+
+
+    def launch_and_create_simple(self, job_location, job_label, commands):
         #just launches a job.  no multi-process. But wait for the job to finish before continuing
         process = mp.Process(
-            target=command_obj.create_and_launch,
+            target=self.create_and_launch,
             args=(job_location, job_label, commands)
         )
         process.start()
         process.join()
         
-    def launch_and_create_v2(self, job_path, command_obj, commands):
+    def launch_and_create_v2(self, job_path, commands):
         #just launches a job.  no multi-process.
         process = mp.Process(
-            target=command_obj.create_and_launch_v2,
+            target=self.create_and_launch_v2,
             args=(job_path, commands)
         )
         process.start()
         process.join()
 
-    def launch_and_create_with_mp_store(self, job_location, job_label, command_obj, commands):
+    def launch_and_create_with_mp_store(self, job_location, job_label, commands):
         #launches a job. doesn't wait. but stores it in the mp_store queue
         process = mp.Process(
-            target=command_obj.create_and_launch,
+            target=self.create_and_launch,
             args=(job_location, job_label, commands)
         )
         process.start()
         self.mp_store.append(process)
 
-    def launch_only_simple(self, command_obj, commands):
+    def launch_only_simple(self, commands):
         process = mp.Process(
-            target=command_obj.launch_only,
+            target=self.launch_only,
             args=(commands, len(commands))
         )
         process.start()
         process.join()
 
-    def launch_only_with_mp_store(self, command_obj, commands):
+    def launch_only_with_mp_store(self, commands):
         process = mp.Process(
-            target=command_obj.launch_only, 
+            target=self.launch_only, 
             args=(commands, len(commands))
         )
 
         process.start()
         self.mp_store.append(process)
         
-    def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_location, job_label, command_obj, commands):
+    def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_location, job_label, commands):
         #just launches a job.  no multi-process.
         #Jan 25, 2022: now adding job controls.
         job_counter = 0
@@ -286,7 +366,7 @@ class mp_util:
                     if(self.mem_checker(mem_threshold)):
 
                         process = mp.Process(
-                            target=command_obj.create_and_launch,
+                            target=self.create_and_launch,
                             args=(job_location, job_name, [item])
                         )
                         process.start()
@@ -302,14 +382,14 @@ class mp_util:
         self.wait_for_mp_store()
                 
         
-    def launch_only_with_hold(self, mem_threshold, job_limit, job_delay, job_name, command_obj, command):
+    def launch_only_with_hold(self, mem_threshold, job_limit, job_delay, job_name, command):
         #launch a job in launch-only mode
         job_submitted = False
         while(not job_submitted):
             if(len(self.mp_store) < job_limit):
                 if(self.mem_checker(mem_threshold)):
                     process = mp.Process(
-                        target = command_obj.launch_only,
+                        target = self.launch_only,
                         args = (command, len(command))
                     )
                     process.start()
@@ -325,7 +405,7 @@ class mp_util:
         time.sleep(float(job_delay))
         
 
-    def launch_and_create_with_hold(self, mem_threshold, job_limit, job_delay, job_location, job_name, command_obj, command):
+    def launch_and_create_with_hold(self, mem_threshold, job_limit, job_delay, job_location, job_name, command):
         #launch a job in launch-with-create mode
         job_submitted = False
         while(not job_submitted):
@@ -333,7 +413,7 @@ class mp_util:
             if(len(self.mp_store) < job_limit):
                 if(self.mem_checker(mem_threshold)):
                     process = mp.Process(
-                        target = command_obj.create_and_launch,
+                        target = self.create_and_launch,
                         args = (job_location, job_name, command)
                     )
                     process.start()
@@ -348,7 +428,7 @@ class mp_util:
                 self.wait_for_mp_store()
         #final wait
         #self.wait_for_mp_store()
-    def launch_and_create_with_mem_footprint(self, mem_footprint, job_limit, job_location, job_name, command_obj, command):
+    def launch_and_create_with_mem_footprint(self, mem_footprint, job_limit, job_location, job_name, command):
         #launch a job in launch-with-create mode
         #this controller won't be optimized for the system. It's made to keep the node from exploding.
         job_submitted = False
@@ -358,7 +438,7 @@ class mp_util:
             if(len(self.mp_store) < job_limit):    
                 if(self.mem_footprint_checker(len(self.mp_store), mem_footprint)):
                     process = mp.Process(
-                        target = command_obj.create_and_launch,
+                        target = self.create_and_launch,
                         args = (job_location, job_name, command)
                     )
                     process.start()
@@ -483,7 +563,7 @@ class mp_util:
 
         return cleanup_job_start, cleanup_job_end
 
-    def launch_with_mem_footprint(self, mem_footprint, job_limit, job_location, job_name, command_obj, command):
+    def launch_with_mem_footprint(self, mem_footprint, job_limit, job_location, job_name, command):
         #launch a job in launch-with-create mode
         #this controller won't be optimized for the system. It's made to keep the node from exploding.
         job_submitted = False
@@ -493,7 +573,7 @@ class mp_util:
             if(len(self.mp_store) < job_limit):    
                 if(self.mem_footprint_checker(len(self.mp_store), mem_footprint)):
                     process = mp.Process(
-                        target = command_obj.launch_only,
+                        target = self.launch_only,
                         args = (command, len(command))
                     )
                     process.start()
@@ -508,9 +588,9 @@ class mp_util:
                 print(dt.today(), "job limit reached.  waiting for queue to flush")
                 self.wait_for_mp_store() 
 
-    def launch_simple(self, command_obj, command):
+    def launch_simple(self, command):
         process = mp.Process(
-            target = command_obj.launch_only,
+            target = self.launch_only,
             args = (command, len(command))
         )
         process.start()

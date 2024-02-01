@@ -218,7 +218,7 @@ class mp_stage:
     def mp_quality_filter(self):
         self.quality_start = time.time()
         command_list = self.commands.create_quality_control_command()
-        self.cleanup_quality_start, self.cleanup_quality_end = self.mp_util.launch_stage_simple(self.paths.qc_label, self.paths.qc_top_path, self.commands, command_list, self.paths.keep_all, self.paths.keep_quality)
+        self.cleanup_quality_start, self.cleanup_quality_end = self.mp_util.launch_stage_simple(self.paths.qc_label, self.paths.qc_top_path,  command_list, self.paths.keep_all, self.paths.keep_quality)
         self.quality_end = time.time()
         print("quality filter:", '%1.1f' % (self.quality_end - self.quality_start - (self.cleanup_quality_end - self.cleanup_quality_start)), "s")
         print("quality filter cleanup:", '%1.1f' %(self.cleanup_quality_end - self.cleanup_quality_start), "s")
@@ -239,7 +239,7 @@ class mp_stage:
                 for item in command_list:
                     print(item)
             else:        
-                self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_with_cleanup(self.commands, command_list, self.paths.host_final_marker, self.paths.host_data_path, self.paths.host_filter_label, self.paths.keep_all, self.paths.keep_host)
+                self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_with_cleanup( command_list, self.paths.host_final_marker, self.paths.host_data_path, self.paths.host_filter_label, self.paths.keep_all, self.paths.keep_host)
                 self.host_end = time.time()
                 print("host filter:", '%1.1f' % (self.host_end - self.host_start - (self.cleanup_host_end - self.cleanup_host_start)), "s")
                 print("host filter cleanup:", '%1.1f' %(self.cleanup_host_end - self.cleanup_host_start),"s")
@@ -250,12 +250,12 @@ class mp_stage:
         
         if not (self.paths.check_if_indexed(self.paths.Vector_DB)):
             command_list = self.commands.create_vector_filter_index_command(self.paths.Vector_DB_index_marker)
-            self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+            self.mp_util.launch_only_with_mp_store( command_list)
             
             #get dep args from quality filter
             #if not check_where_resume(vector_path, None, self.quality_path):
         command_list = self.commands.create_vector_filter_command(self.paths.vector_final_marker, self.no_host)
-        self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_with_cleanup(self.commands, command_list, self.paths.vector_final_marker, self.paths.vector_data_path, self.paths.vector_filter_label, self.paths.keep_all, self.paths.keep_vector)
+        self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_with_cleanup( command_list, self.paths.vector_final_marker, self.paths.vector_data_path, self.paths.vector_filter_label, self.paths.keep_all, self.paths.keep_vector)
 
         
         self.vector_end = time.time()
@@ -277,7 +277,7 @@ class mp_stage:
             marker_path_list.append(marker_path)
             command_list = self.commands.create_rRNA_filter_split_command(marker_path)
             if(not os.path.exists(marker_path)):
-                self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                self.mp_util.launch_only_with_mp_store( command_list)
             else:
                 print("skipping rRNA initial split")
             self.mp_util.wait_for_mp_store()
@@ -298,9 +298,9 @@ class mp_stage:
                 
                 if not os.path.exists(marker_path):
                     print("running barrnap:", file_name)
-                    self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                    self.mp_util.launch_only_with_mp_store( command_list)
                     #job_path = os.path.join(self.paths.rRNA_exe_path, file_name + "_barrnap.sh")
-                    #self.mp_util.launch_and_create_v2(job_path, self.commands, command_list)
+                    #self.mp_util.launch_and_create_v2(job_path,  command_list)
                 else:
                     print("skipping barrnap:", file_name)
                     
@@ -314,9 +314,9 @@ class mp_stage:
                 command_list = self.commands.create_rRNA_filter_barrnap_command(fasta_segment, barrnap_out, mRNA_out, marker_path)
                 if not os.path.exists(marker_path):
                     print("running barrnap:", file_name)
-                    self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                    self.mp_util.launch_only_with_mp_store( command_list)
                     #job_path = os.path.join(self.paths.rRNA_exe_path, file_name + "_barrnap.sh")
-                    #self.mp_util.launch_and_create_v2(job_path, self.commands, command_list)
+                    #self.mp_util.launch_and_create_v2(job_path,  command_list)
                 else:
                     print("skipping barrnap:", file_name)
 
@@ -330,7 +330,7 @@ class mp_stage:
                 command_list = self.commands.create_rRNA_filter_barrnap_command(fasta_segment, barrnap_out, mRNA_out, marker_path)
                 if not os.path.exists(marker_path):
                     print("running barrnap:", file_name)
-                    self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                    self.mp_util.launch_only_with_mp_store( command_list)
                 else:
                     print("skipping barrnap:", file_name)
                 
@@ -360,7 +360,7 @@ class mp_stage:
                     if not os.path.exists(marker_path):
                         print("running inf:", file_name)
                         #print("marker path:", marker_path)
-                        self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                        self.mp_util.launch_only_with_mp_store( command_list)
                     else:
                         print("skipping inf:", file_name) 
 
@@ -375,7 +375,7 @@ class mp_stage:
                     if not os.path.exists(marker_path):
                         print("running inf:", file_name)
                         #print("marker path:", marker_path)
-                        self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                        self.mp_util.launch_only_with_mp_store( command_list)
                     else:
                         print("skipping inf:", file_name)
                     
@@ -391,7 +391,7 @@ class mp_stage:
                         print("running inf:", file_name)
                         print("marker path:", marker_path)
                         time.sleep(1)
-                        self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                        self.mp_util.launch_only_with_mp_store( command_list)
                     else:
                         print("skipping inf:", file_name)
             self.mp_util.wait_for_mp_store()
@@ -414,7 +414,7 @@ class mp_stage:
             print("command list:", command_list)
             if not os.path.exists(self.paths.rRNA_p_final_marker):
                 print("running rRNA-final: paired")
-                self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                self.mp_util.launch_only_with_mp_store( command_list)
             else:
                 print("skipping rRNA-final: paired" )
 
@@ -424,7 +424,7 @@ class mp_stage:
             print("command list:", command_list)
             if not os.path.exists(self.paths.rRNA_s_final_marker):
                 print("running rRNA-final: single")
-                self.mp_util.launch_only_with_mp_store(self.commands, command_list)
+                self.mp_util.launch_only_with_mp_store( command_list)
             else:
                 print("skipping rRNA-final: single")
 
@@ -457,13 +457,13 @@ class mp_stage:
         if self.mp_util.check_bypass_log(self.output_folder_path, self.paths.repop_label):
             job_name = self.paths.repop_label
             command_list = self.commands.create_repop_command_v2_step_1(self.paths.repop_label, self.paths.qc_label, self.paths.rRNA_filter_label)
-            self.mp_util.subdivide_and_launch(self.paths.repop_job_delay, self.paths.repop_mem_threshold, self.paths.repop_job_limit, self.paths.repop_label, job_name, self.commands, command_list)
+            self.mp_util.subdivide_and_launch(self.paths.repop_job_delay, self.paths.repop_mem_threshold, self.paths.repop_job_limit, self.paths.repop_label, job_name,  command_list)
             self.mp_util.wait_for_mp_store()
             
             if(self.read_mode == "paired"):
                 job_name = self.paths.repop_label
                 command_list = self.commands.create_repop_command_v2_step_2(self.paths.repop_label, self.paths.qc_label, self.paths.rRNA_filter_label)
-                self.mp_util.subdivide_and_launch(self.paths.repop_job_delay, self.paths.repop_mem_threshold, self.paths.repop_job_limit, self.paths.repop_label, job_name, self.commands, command_list)
+                self.mp_util.subdivide_and_launch(self.paths.repop_job_delay, self.paths.repop_mem_threshold, self.paths.repop_job_limit, self.paths.repop_label, job_name,  command_list)
                 self.mp_util.wait_for_mp_store()
             
             self.mp_util.write_to_bypass_log(self.output_folder_path, self.paths.repop_label)
@@ -492,7 +492,7 @@ class mp_stage:
         if self.mp_util.check_bypass_log(self.output_folder_path, self.paths.assemble_contigs_label):
             job_name = self.paths.assemble_contigs_label
             command_list = self.commands.create_assemble_contigs_command(self.paths.assemble_contigs_label, self.paths.repop_label)
-            self.mp_util.launch_and_create_simple(self.paths.assemble_contigs_label, job_name, self.commands, command_list)
+            self.mp_util.launch_and_create_simple(self.paths.assemble_contigs_label, job_name,  command_list)
             
             if(os.path.exists(spades_done_file)):
                 if(os.path.exists(spades_transcript_file)):
@@ -586,7 +586,7 @@ class mp_stage:
                 else:
                     marker_path_list.append(marker_path)
                     command_list = self.commands.create_GA_pre_scan_kraken2_command(section, marker_path)
-                    self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file, self.commands, command_list)        
+                    self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file,  command_list)        
             
             
 
@@ -606,7 +606,7 @@ class mp_stage:
                 else:
                     marker_path_list.append(marker_path)
                     command_list = self.commands.create_GA_pre_scan_centrifuge_command(read_cat, marker_path)
-                    self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.Centrifuge_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.Centrifuge_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file,  command_list)
             
             self.mp_util.wait_for_mp_store()
             
@@ -620,7 +620,7 @@ class mp_stage:
             else:
                 marker_path_list.append(marker_path)
                 command_list = self.commands.create_GA_pre_scan_kraken2_pp_command(marker_path)
-                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file, self.commands, command_list)
+                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file,  command_list)
             self.mp_util.wait_for_mp_store()
             
             
@@ -632,7 +632,7 @@ class mp_stage:
             else:
                 marker_path_list.append(marker_path)
                 command_list = self.commands.create_GA_pre_scan_centrifuge_pp_command(marker_path)
-                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file, self.commands, command_list)
+                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file,  command_list)
             self.mp_util.wait_for_mp_store()
 
             
@@ -647,7 +647,7 @@ class mp_stage:
             else:
                 marker_path_list.append(marker_path)
                 command_list = self.commands.create_GA_pre_scan_wevote_combine_command(marker_file)
-                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file, self.commands, command_list)
+                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file,  command_list)
                 print(dt.today(), "running:", marker_file)
             self.mp_util.wait_for_mp_store()
             
@@ -662,7 +662,7 @@ class mp_stage:
             else:
                 marker_path_list.append(marker_path)
                 command_list = self.commands.create_GA_pre_scan_command(marker_path)
-                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file, self.commands, command_list)
+                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file,  command_list)
                 print(dt.today(), "running:", marker_file)
             self.mp_util.wait_for_mp_store()
             
@@ -674,7 +674,7 @@ class mp_stage:
             else:
                 marker_path_list.append(marker_path)
                 command_list = self.commands.create_GA_pre_scan_assemble_lib_command(marker_path)
-                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file, self.commands, command_list)
+                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.paths.GA_pre_scan_label, marker_file,  command_list)
                 print(dt.today(), "running:", marker_file)
             self.mp_util.wait_for_mp_store()
             
@@ -702,7 +702,7 @@ class mp_stage:
                     job_name = "GA_prep_split_contigs"
                     marker_path_list.append(marker_path)
                     command_list = self.commands.create_split_ga_fasta_data_command("contigs", marker_path)
-                    self.mp_util.launch_and_create_with_mp_store(self.paths.GA_split_label, job_name, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_mp_store(self.paths.GA_split_label, job_name,  command_list)
             else:
                 print(dt.today(), "no contigs present. skipping split")
             
@@ -718,7 +718,7 @@ class mp_stage:
                     marker_path_list.append(marker_path)
                     job_name = "GA_prep_split_" + section
                     command_list = self.commands.create_split_ga_fastq_data_command(section, marker_path)
-                    self.mp_util.launch_and_create_with_mp_store(self.paths.GA_split_label, job_name, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_mp_store(self.paths.GA_split_label, job_name,  command_list)
             self.mp_util.wait_for_mp_store()
 
             
@@ -761,7 +761,7 @@ class mp_stage:
                         if(os.path.exists(marker_path)):
                             print(dt.today(), "skipping:", marker_name)
                         else:
-                            self.mp_util.launch_with_mem_footprint(self.paths.BWA_mem_footprint, self.paths.BWA_job_limit, self.paths.GA_BWA_label, job_name, self.commands, command_list)
+                            self.mp_util.launch_with_mem_footprint(self.paths.BWA_mem_footprint, self.paths.BWA_job_limit, self.paths.GA_BWA_label, job_name,  command_list)
                        #print(DB_sample, read_split)
                        #time.sleep(1)
 
@@ -794,7 +794,7 @@ class mp_stage:
                         if(os.path.exists(marker_path)):
                             print(dt.today(), "skipping:", marker_file)
                         else:
-                            self.mp_util.launch_with_mem_footprint(self.paths.BWA_pp_mem_threshold, self.paths.BWA_pp_job_limit, self.paths.GA_BWA_label, job_name, self.commands, command_list)
+                            self.mp_util.launch_with_mem_footprint(self.paths.BWA_pp_mem_threshold, self.paths.BWA_pp_job_limit, self.paths.GA_BWA_label, job_name,  command_list)
 
             
             print(dt.today(), "all BWA PP jobs submitted.  waiting for sync")            
@@ -819,7 +819,7 @@ class mp_stage:
                 if(os.path.exists(marker_path)):
                     print(dt.today(), "skipping:", marker_file)
                 else:
-                    self.mp_util.launch_simple(self.commands, command_list)
+                    self.mp_util.launch_simple( command_list)
             
 
             print(dt.today(), "All BWA merge jobs have launched. waiting for sync")
@@ -882,9 +882,9 @@ class mp_stage:
                                     print(dt.today(), "RUNNING:", marker_file)
                                     #time.sleep(2)
                                     command_list = self.commands.create_BLAT_annotate_command(full_sample_path, full_ref_path, blatout_path, marker_path)
-                                    #self.mp_util.launch_only_with_hold(self.BLAT_mem_threshold, self.BLAT_job_limit, self.BLAT_job_delay, job_name, self.commands, command_list)
+                                    #self.mp_util.launch_only_with_hold(self.BLAT_mem_threshold, self.BLAT_job_limit, self.BLAT_job_delay, job_name,  command_list)
                                     
-                                    self.mp_util.launch_and_create_with_mem_footprint(self.paths.BLAT_mem_footprint, self.paths.BLAT_job_limit, self.paths.GA_BLAT_label, job_name, self.commands, command_list)
+                                    self.mp_util.launch_and_create_with_mem_footprint(self.paths.BLAT_mem_footprint, self.paths.BLAT_job_limit, self.paths.GA_BLAT_label, job_name,  command_list)
             #---------------------------------------------------------------------------
 
             
@@ -933,8 +933,8 @@ class mp_stage:
                                     command_list = self.commands.create_BLAT_pp_command(full_sample_path, ref_path, marker_path)
                                     #print("Command list:", command_list)
                                     #time.sleep(10)
-                                    #self.mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, self.GA_BLAT_label, job_name, self.commands, command_list)
-                                    self.mp_util.launch_only_with_hold(self.paths.BLAT_pp_mem_threshold, self.paths.BLAT_pp_job_limit, self.paths.BLAT_pp_job_delay, job_name, self.commands, command_list)
+                                    #self.mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, self.GA_BLAT_label, job_name,  command_list)
+                                    self.mp_util.launch_only_with_hold(self.paths.BLAT_pp_mem_threshold, self.paths.BLAT_pp_job_limit, self.paths.BLAT_pp_job_delay, job_name,  command_list)
                                     #time.sleep(10)
 
                     
@@ -983,7 +983,7 @@ class mp_stage:
                         command_list = self.commands.create_BLAT_merge_fasta_command(segment_name, marker_path)
                         #print(command_list)
                         #time.sleep(10)
-                        self.mp_util.launch_only_with_hold(self.paths.BLAT_pp_mem_threshold, self.paths.BLAT_pp_job_limit, self.paths.BLAT_pp_job_delay, job_name, self.commands, command_list)
+                        self.mp_util.launch_only_with_hold(self.paths.BLAT_pp_mem_threshold, self.paths.BLAT_pp_job_limit, self.paths.BLAT_pp_job_delay, job_name,  command_list)
             print(dt.today(), "submitted all BLAT merge jobs. waiting for sync")
             self.mp_util.wait_for_mp_store()
             if(self.check_job_markers(marker_path_list)):
@@ -1028,7 +1028,7 @@ class mp_stage:
                         marker_path_list.append(marker_path)
                         command_list = self.commands.create_GA_DMD_command(full_sample_path, marker_path)
                         #print("COMMAND:", command_list)
-                        self.mp_util.launch_and_create_with_mem_footprint(self.paths.DMD_mem_footprint, self.paths.DMD_job_limit, self.paths.GA_DMD_label, job_name, self.commands, command_list)
+                        self.mp_util.launch_and_create_with_mem_footprint(self.paths.DMD_mem_footprint, self.paths.DMD_job_limit, self.paths.GA_DMD_label, job_name,  command_list)
                         #time.sleep(10)
 
             print(dt.today(), "All DIAMOND jobs launched.  waiting for join")
@@ -1059,7 +1059,7 @@ class mp_stage:
                     else:
                         marker_path_list.append(marker_path)
                         command_list = self.commands.create_DIAMOND_pp_command(self.GA_DIAMOND_label, self.GA_BLAT_label, full_sample_path, marker_file)
-                        self.mp_util.launch_and_create_with_hold(self.DIAMOND_pp_mem_threshold, self.DIAMOND_pp_job_limit, self.DIAMOND_pp_job_delay, self.GA_DIAMOND_label, job_name, self.commands, command_list)
+                        self.mp_util.launch_and_create_with_hold(self.DIAMOND_pp_mem_threshold, self.DIAMOND_pp_job_limit, self.DIAMOND_pp_job_delay, self.GA_DIAMOND_label, job_name,  command_list)
                                         
             print(dt.today(), "DIAMOND pp jobs submitted.  waiting for sync")
             self.mp_util.wait_for_mp_store()
@@ -1092,7 +1092,7 @@ class mp_stage:
             else:
                 command_list = self.commands.create_GA_final_merge_command(self.GA_final_merge_label, self.paths.assemble_contigs_label, self.GA_BWA_label, self.GA_BLAT_label, self.GA_DIAMOND_label,  marker_file)
                 job_name = "GA_final_merge"
-                self.mp_util.subdivide_and_launch(self.GA_final_merge_job_delay, self.GA_final_merge_mem_threshold, self.GA_final_merge_job_limit, self.GA_final_merge_label, job_name, self.commands, command_list)
+                self.mp_util.subdivide_and_launch(self.GA_final_merge_job_delay, self.GA_final_merge_mem_threshold, self.GA_final_merge_job_limit, self.GA_final_merge_label, job_name,  command_list)
             
             #check if all_proteins.faa was generated
             all_proteins_path = os.path.join(self.output_folder_path, self.GA_final_merge_label, "final_results", "all_proteins.faa")
@@ -1128,7 +1128,7 @@ class mp_stage:
                 else:
                     marker_path_list.append(marker_path)
                     command_list = self.commands.create_TA_centrifuge_command(self.ta_label, self.paths.rRNA_filter_label, self.paths.assemble_contigs_label, section, marker_file)
-                    self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.ta_label, marker_file,  command_list)
                     
             sections = ["singletons"]
             if self.read_mode == "paired":
@@ -1144,7 +1144,7 @@ class mp_stage:
                 else:
                     marker_path_list.append(marker_path)
                     command_list = self.commands.create_TA_kraken2_command(self.ta_label, self.paths.assemble_contigs_label, section, marker_file)
-                    self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)        
+                    self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.ta_label, marker_file,  command_list)        
             marker_file = "TA_taxon_pull"
             marker_path = os.path.join(self.paths.TA_jobs_folder, marker_file)
             if(os.path.exists(marker_path)):
@@ -1152,7 +1152,7 @@ class mp_stage:
             else:
                 marker_path_list.append(marker_path)
                 command_list = self.commands.create_TA_taxon_pull_command(self.ta_label, self.GA_final_merge_label, marker_file)
-                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
+                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.ta_label, marker_file,  command_list)
             print(dt.today(), "waiting for TA stage 1")
             self.mp_util.wait_for_mp_store()
             final_checklist = os.path.join(self.TA_path, "TA_stage_1.txt")
@@ -1171,7 +1171,7 @@ class mp_stage:
                 else:
                     marker_path_list.append(marker_path)
                     command_list = self.commands.create_TA_centrifuge_command(self.ta_label, self.paths.rRNA_filter_label, self.paths.assemble_contigs_label, section, marker_file)
-                    self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.Centrifuge_job_limit, self.paths.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.Centrifuge_job_limit, self.paths.TA_job_delay, self.ta_label, marker_file,  command_list)
             
             marker_file = "TA_kraken2_pp"
             marker_path = os.path.join(self.paths.TA_jobs_folder, marker_file)
@@ -1180,7 +1180,7 @@ class mp_stage:
             else:
                 marker_path_list.append(marker_path)
                 command_list = self.commands.create_TA_kraken2_pp_command(self.ta_label, marker_file)
-                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
+                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.ta_label, marker_file,  command_list)
             self.mp_util.wait_for_mp_store()
             final_checklist = os.path.join(self.TA_path, "TA_stage_2.txt")
             self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
@@ -1196,7 +1196,7 @@ class mp_stage:
             else:
                 marker_path_list.append(marker_path)
                 command_list = self.commands.create_TA_centrifuge_pp_command(self.ta_label, marker_file)
-                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
+                self.mp_util.launch_and_create_with_hold(self.paths.TA_mem_threshold, self.paths.TA_job_limit, self.paths.TA_job_delay, self.ta_label, marker_file,  command_list)
             self.mp_util.wait_for_mp_store()
             final_checklist = os.path.join(self.TA_path, "TA_stage_3.txt")
             self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
@@ -1211,7 +1211,7 @@ class mp_stage:
             else:
                 marker_path_list.append(marker_path)
                 command_list = self.commands.create_TA_final_command(self.ta_label, self.paths.assemble_contigs_label, marker_file)
-                self.mp_util.launch_and_create_simple(self.ta_label, marker_file, self.commands, command_list)
+                self.mp_util.launch_and_create_simple(self.ta_label, marker_file,  command_list)
             final_checklist = os.path.join(self.TA_path, "TA_final.txt")
             self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
             
@@ -1248,7 +1248,7 @@ class mp_stage:
             else:
                 command_list = self.commands.create_EC_PRIAM_split_command(self.ec_label, self.GA_final_merge_label, self.ec_split_path, marker_file)
                 print(command_list)
-                self.mp_util.launch_only_simple(self.commands, command_list)
+                self.mp_util.launch_only_simple( command_list)
                 
                 
         #if not check_where_resume(job_label = None, full_path = ec_priam_path, dep_job_path = GA_DIAMOND_path):
@@ -1274,7 +1274,7 @@ class mp_stage:
                     if(os.path.exists(priam_file_path)):
                         print(dt.today(), "attempting PRIAM auto-resume")
                         
-                    self.mp_util.launch_only_with_hold(self.EC_mem_threshold, self.EC_job_limit, self.EC_job_delay, marker_file, self.commands, command_list)
+                    self.mp_util.launch_only_with_hold(self.EC_mem_threshold, self.EC_job_limit, self.EC_job_delay, marker_file,  command_list)
                 split_count += 1
         
         
@@ -1292,7 +1292,7 @@ class mp_stage:
             else:
                 command_list = self.commands.create_EC_PRIAM_cat_command(self.ec_label, marker_file)
                 print("CAT:", command_list)
-                self.mp_util.launch_only_simple(self.commands, command_list)
+                self.mp_util.launch_only_simple( command_list)
             
             
         self.EC_PRIAM_end = time.time()
@@ -1309,7 +1309,7 @@ class mp_stage:
                 print(dt.today(), "skipping:", marker_file)
             else:
                 command_list = self.commands.create_EC_DETECT_command(self.ec_label, self.GA_final_merge_label, marker_file)
-                self.mp_util.launch_and_create_with_mp_store(self.ec_label, marker_file, self.commands, command_list)
+                self.mp_util.launch_and_create_with_mp_store(self.ec_label, marker_file,  command_list)
             
             
         self.EC_DETECT_end = time.time()
@@ -1329,7 +1329,7 @@ class mp_stage:
             else:
                 job_name = "ec_diamond"
                 command_list = self.commands.create_EC_DIAMOND_command(self.ec_label, self.GA_final_merge_label, marker_file)
-                self.mp_util.launch_and_create_with_mp_store(self.ec_label, job_name, self.commands, command_list)
+                self.mp_util.launch_and_create_with_mp_store(self.ec_label, job_name,  command_list)
             
         self.EC_DIAMOND_end = time.time()
         self.mp_util.wait_for_mp_store()
@@ -1358,7 +1358,7 @@ class mp_stage:
                 print(dt.today(), "skipping:", marker_file)
             else:
                 command_list = self.commands.create_EC_postprocess_command(self.ec_label, self.GA_final_merge_label, marker_file)
-                self.mp_util.launch_and_create_simple(self.ec_label, marker_file, self.commands, command_list)
+                self.mp_util.launch_and_create_simple(self.ec_label, marker_file,  command_list)
             
             if(os.path.exists(marker_path)):
                 self.mp_util.write_to_bypass_log(self.output_folder_path, self.ec_pp_label)
@@ -1385,17 +1385,17 @@ class mp_stage:
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_copy_gene_map_label):
                 job_name = self.output_copy_gene_map_label
                 command_list = self.commands.create_output_copy_gene_map_command(self.output_label, self.GA_final_merge_label)
-                self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
+                self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name,  command_list)
                 
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_copy_taxa_label):
                 job_name = self.output_copy_taxa_label
                 command_list = self.commands.create_output_copy_taxa_command(self.output_label, self.ta_label)
-                self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
+                self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name,  command_list)
             if(self.contigs_present): 
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.output_contig_stats_label):
                     job_name = self.output_contig_stats_label
                     command_list = self.commands.create_output_contig_stats_command(self.output_label, self.paths.assemble_contigs_label)
-                    self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name,  command_list)
                 
             
                 
@@ -1404,36 +1404,36 @@ class mp_stage:
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_singletons_label):
                     job_name = self.output_unique_hosts_singletons_label
                     command_list = self.commands.create_output_unique_hosts_singletons_command(self.output_label, self.paths.qc_label, self.host_filter_label)
-                    self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name,  command_list)
                 
                 if(self.read_mode == "paired"):
                     if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_pair_1_label):
                         job_name = self.output_unique_hosts_pair_1_label
                         command_list = self.commands.create_output_unique_hosts_pair_1_command(self.output_label, self.paths.qc_label, self.host_filter_label)
-                        self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
+                        self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name,  command_list)
                         
                     if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_pair_2_label):
                         job_name = self.output_unique_hosts_pair_2_label
                         command_list = self.commands.create_output_unique_hosts_pair_2_command(self.output_label, self.paths.qc_label, self.host_filter_label)
-                        self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
+                        self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name,  command_list)
                         
                         
             #repop vectors
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_vectors_singletons_label):
                 job_name = self.output_unique_vectors_singletons_label
                 command_list = self.commands.create_output_unique_vectors_singletons_command(self.output_label, self.paths.qc_label, self.host_filter_label, self.vector_filter_label)
-                self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
+                self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name,  command_list)
             
             if(self.read_mode == "paired"):
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_vectors_pair_1_label):
                     job_name = self.output_unique_vectors_pair_1_label
                     command_list = self.commands.create_output_unique_vectors_pair_1_command(self.output_label, self.paths.qc_label, self.host_filter_label, self.vector_filter_label)
-                    self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name,  command_list)
                     
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_vectors_pair_2_label):
                     job_name = self.output_unique_vectors_pair_2_label
                     command_list = self.commands.create_output_unique_vectors_pair_2_command(self.output_label, self.paths.qc_label, self.host_filter_label, self.vector_filter_label)
-                    self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name,  command_list)
                     
             print(dt.today(), "output report phase 1 launched.  waiting for sync")
             self.mp_util.wait_for_mp_store()
@@ -1456,11 +1456,11 @@ class mp_stage:
             #Phase 2
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_network_gen_label):
                 command_list = self.commands.create_output_network_generation_command(self.output_label, self.GA_final_merge_label, self.ta_label, self.ec_label)
-                self.mp_util.launch_and_create_with_mp_store(self.output_label, self.output_network_gen_label, self.commands, command_list)
+                self.mp_util.launch_and_create_with_mp_store(self.output_label, self.output_network_gen_label,  command_list)
                 
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_taxa_groupby_label):
                 command_list = self.commands.create_output_taxa_groupby_command(self.output_label)
-                self.mp_util.launch_and_create_with_mp_store(self.output_label, self.output_taxa_groupby_label, self.commands, command_list)
+                self.mp_util.launch_and_create_with_mp_store(self.output_label, self.output_taxa_groupby_label,  command_list)
         
             print(dt.today(), "output report phase 2 launched.  waiting for sync")
             self.mp_util.wait_for_mp_store()
@@ -1472,18 +1472,18 @@ class mp_stage:
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_read_count_label):
                 job_name = self.output_read_count_label
                 command_list = self.commands.create_output_read_count_command(self.output_label, self.paths.qc_label, self.paths.repop_label, self.GA_final_merge_label, self.ec_label)
-                self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
+                self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name,  command_list)
                                 
 
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_per_read_scores_label):
                 job_name = self.output_per_read_scores_label
                 command_list = self.commands.create_output_per_read_scores_command(self.output_label, self.paths.qc_label)
-                self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)
+                self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name,  command_list)
                 
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_ec_heatmap_label):
                 job_name = self.output_ec_heatmap_label
                 command_list = self.commands.create_output_EC_heatmap_command(self.output_label)
-                self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name, self.commands, command_list)    
+                self.mp_util.launch_and_create_with_mp_store(self.output_label, job_name,  command_list)    
             
             print(dt.today(), "output report phase 3 launched.  waiting for sync")
             self.mp_util.wait_for_mp_store()
