@@ -25,6 +25,18 @@ import math
 import time
 from configparser import ConfigParser, ExtendedInterpolation
 
+
+class dir_path_obj:
+    def __init__ (self, config_path):
+        print("CHECKING CONFIG")
+        if config_path:
+            self.config = ConfigParser() #change this to ex
+            self.config.read(config_path)
+            print("USING CONFIG", config_path)
+        else:
+            print("no config found, defaulting")
+            self.config = None
+
 class tool_path_obj:
     
     
@@ -391,7 +403,16 @@ class tool_path_obj:
         self.keep_EC                    = self.value_assignment(config, "Settings", "keep_EC", keep_EC_default)
         self.keep_outputs               = self.value_assignment(config, "Settings", "keep_outputs", keep_outputs_default)
         
+        #--------------------------------------------------
+        #skip flags - for skipping sections
+        #July 31, 2024: this will just be for GA.
+        #otherwise, this opens a pandora's box.
 
+        skip_BLAT_default = False
+        skip_BWA_default = False
+
+        self.skip_BLAT = self.value_assignment(config, "Settings", "skip_BLAT", skip_BLAT_default)
+        self.skip_BWA = self.value_assignment(config, "Settings", "skip_BWA", skip_BWA_default)
         
         
         #--------------------------------------------------------------------------------------
@@ -635,4 +656,5 @@ class tool_path_obj:
         self.ta_contig_name_convert     = self.value_assignment(config, "code", "ta_name_convert", os.path.join(script_path, "ta_contig_name_convert.py"))
         self.GA_pre_scan_get_lib        = self.value_assignment(config, "code", "ga_pre_scan_get_lib", os.path.join(script_path, "ga_pre_scan_get_libs.py"))
         self.GA_pre_scan_assemble_lib   = self.value_assignment(config, "code", "ga_pre_scan_assemble_lib", os.path.join(script_path, "ga_pre_scan_assemble_libs.py"))
+        
         
