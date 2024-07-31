@@ -237,6 +237,11 @@ if __name__ == "__main__":
     args_pack = dict()
     args_pack["no_host"] = no_host
     args_pack["verbose_mode"] = verbose_mode
+    args_pack["config"] = config_file
+    args_pack["forward"] = pair_1
+    args_pack["reverse"] = pair_2
+    args_pack["out_dir"] = output_folder
+    
     
     print("=====================================")
     print("no-host:", no_host)

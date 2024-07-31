@@ -25,20 +25,7 @@ import math
 import time
 from configparser import ConfigParser, ExtendedInterpolation
 
-
-class dir_path_obj:
-    def __init__ (self, config_path):
-        print("CHECKING CONFIG")
-        if config_path:
-            self.config = ConfigParser() #change this to ex
-            self.config.read(config_path)
-            print("USING CONFIG", config_path)
-        else:
-            print("no config found, defaulting")
-            self.config = None
-
 class tool_path_obj:
-    
     
     def value_assignment(self, config, config_section, var_name, default):
         value = ""
@@ -657,4 +644,20 @@ class tool_path_obj:
         self.GA_pre_scan_get_lib        = self.value_assignment(config, "code", "ga_pre_scan_get_lib", os.path.join(script_path, "ga_pre_scan_get_libs.py"))
         self.GA_pre_scan_assemble_lib   = self.value_assignment(config, "code", "ga_pre_scan_assemble_lib", os.path.join(script_path, "ga_pre_scan_assemble_libs.py"))
         
+class dir_path_obj:
+#-------------------------------------------
+# object for all paths
+    
+
+    def __init__ (self, config_path, args_pack):
+        print("CHECKING CONFIG")
+        if config_path:
+            self.config = ConfigParser() #change this to ex
+            self.config.read(config_path)
+            print("USING CONFIG", config_path)
+        else:
+            print("no config found, defaulting")
+            self.config = None
+
         
+        self.qc_top_dir = os.path.join()
