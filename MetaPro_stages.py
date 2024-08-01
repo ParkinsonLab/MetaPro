@@ -38,6 +38,7 @@ class mp_stage:
         self.segmented_chocophlan_flag = True
         if(self.paths.DNA_DB.endswith(".fasta")):
             self.segmented_chocophlan_flag = False
+        self.args_pack = args_pack
         self.no_host = args_pack["no_host"]
         self.verbose_mode = args_pack["verbose_mode"]
         self.rRNA_chunks = int(self.paths.rRNA_chunksize)
@@ -289,9 +290,9 @@ class mp_stage:
         # Creates our command object, for creating shellscripts.
 
         if self.read_mode == "single":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=single_path, sequence_contigs = None)
+            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, args_pack=self.args_pack, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=single_path, sequence_contigs = None)
         elif self.read_mode == "paired":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=pair_1_path, sequence_path_2=pair_2_path, sequence_single=None, sequence_contigs = None)
+            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, args_pack=self.args_pack, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=pair_1_path, sequence_path_2=pair_2_path, sequence_single=None, sequence_contigs = None)
     
 
         #--------------------------------------------------------
