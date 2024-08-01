@@ -694,3 +694,10 @@ class dir_path_obj:
         self.rRNA_data_dir = os.path.join(self.rRNA_top_dir, "data")
         self.rRNA_export_dir = os.path.join(self.rRNA_top_dir, "final_results")
 
+        self.GA_BWA_top_dir = os.path.join(self.out_dir, self.GA_BWA_label)
+        self.GA_BWA_data_dir = os.path.join(self.GA_BWA_top_dir, "data")
+        self.GA_BWA_export_dir = os.path.join(self.GA_BWA_top_dir, "final_results")
+
+        self.GA_BLAT_top_dir = os.path.join(self.out_dir, self.GA_BLAT_label)
+        self.GA_BLAT_data_dir = os.path.join(self.GA_BLAT_top_dir, "data")
+        self.GA_BLAT
