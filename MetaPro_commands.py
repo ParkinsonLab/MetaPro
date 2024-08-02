@@ -16,10 +16,11 @@ class mt_pipe_commands:
     # --------------------------------------------------------------------
     # constructor:
     # there should only be one of these objects used for an entire pipeline.
-    def __init__(self, no_host, Config_path, Quality_score=33, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=None, sequence_contigs = None):
+    def __init__(self, args_pack, Config_path, Quality_score=33, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=None, sequence_contigs = None):
 
         self.tool_path_obj = mpp.tool_path_obj(Config_path)
-        self.no_host_flag = no_host
+        self.no_host_flag = args_pack["no_host"]
+        self.skip_blat = args_pack["skip_blat"]
         # path to the genome sequence file
 
         
@@ -2617,6 +2618,9 @@ class mt_pipe_commands:
         dep_3_path      = os.path.join(self.Output_Path, dep_3_name, "final_results")   #dmd
         jobs_folder     = os.path.join(data_folder, "jobs")
         
+        if(self.skip_blat):
+            dep_2_path = "none"
+            
         self.make_folder(subfolder)
         self.make_folder(data_folder)
         self.make_folder(final_folder)
@@ -2665,6 +2669,8 @@ class mt_pipe_commands:
         ]
         
         return COMMANDS_ga_final_merge
+    
+
     def create_TA_kraken2_command(self, current_stage_name, assemble_contigs_stage, operating_mode, marker_file):
         subfolder               = os.path.join(self.Output_Path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")

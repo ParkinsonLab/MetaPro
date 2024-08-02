@@ -2,6 +2,7 @@
 #note: the contig gene->read map does not need converting
 #oct 24, 2020: The paired gene map needs reconciliation
 #dec 13, 2020:  it's too slow to run on Kimchi 66  Need a few tricks.  1) we're doing marker system
+#Aug 02, 2024: modded to optionally skip BLAT
 import os
 import sys
 import multiprocessing as mp
@@ -586,6 +587,8 @@ if __name__ == "__main__":
     export_path             = sys.argv[6]
     operating_mode          = sys.argv[7]
     job_location            = sys.argv[8]
+
+    skip_blat = True if (blat_path == "none") else False
     
     if(operating_mode == "single"):
         manager = mp.Manager()
@@ -599,10 +602,12 @@ if __name__ == "__main__":
         mgr_dia_contig_gene_map     = manager.dict()
         
         process_store = []
-
+        
+            
         #merge the annotated genes (for protein translation), and leftover contig + singletons
         make_merge_leftover_fasta_process(process_store, diamond_path, export_path, "GA_leftover", ".fasta", job_location)  #leftover reads
-        make_merge_fasta_process(process_store, blat_path, final_path, "BLAT_annotated", ".fna", job_location)    #BLAT genes
+        if(not skip_blat):
+            make_merge_fasta_process(process_store, blat_path, final_path, "BLAT_annotated", ".fna", job_location)    #BLAT genes
         make_merge_fasta_process(process_store, bwa_path, final_path, "BWA_annotated", ".fna", job_location)      #BWA genes
         make_merge_fasta_process(process_store, diamond_path, final_path, "dmd", ".faa", job_location)            #DIAMOND proteins
         
@@ -616,13 +621,14 @@ if __name__ == "__main__":
         process_store.append(process)
         
         #----------------------------------------------------------------------
-        process = mp.Process(target = concatenate_gene_maps_v2, args = (blat_path, mgr_blat_singletons_gene_map, "singletons"))
-        process.start()
-        process_store.append(process)
-        
-        process = mp.Process(target = concatenate_gene_maps_v2, args = (blat_path, mgr_blat_contig_gene_map, "contig"))
-        process.start()
-        process_store.append(process)
+        if(not skip_blat):
+            process = mp.Process(target = concatenate_gene_maps_v2, args = (blat_path, mgr_blat_singletons_gene_map, "singletons"))
+            process.start()
+            process_store.append(process)
+            
+            process = mp.Process(target = concatenate_gene_maps_v2, args = (blat_path, mgr_blat_contig_gene_map, "contig"))
+            process.start()
+            process_store.append(process)
         
         #----------------------------------------------------------------------
         process = mp.Process(target = concatenate_gene_maps_v2, args = (diamond_path, mgr_dia_singletons_gene_map, "singletons"))
@@ -645,15 +651,21 @@ if __name__ == "__main__":
         bwa_singleton_gene_map  = dict(mgr_bwa_singletons_gene_map)
         bwa_contig_gene_map     = dict(mgr_bwa_contig_gene_map)
         
-        blat_singleton_gene_map = dict(mgr_blat_singletons_gene_map)
-        blat_contig_gene_map    = dict(mgr_blat_contig_gene_map)
+        blat_singleton_gene_map = dict(mgr_blat_singletons_gene_map) if (not skip_blat) else dict()
+        blat_contig_gene_map    = dict(mgr_blat_contig_gene_map) if (not skip_blat) else dict()
         
         dia_singleton_gene_map  = dict(mgr_dia_singletons_gene_map)
         dia_contig_gene_map     = dict(mgr_dia_contig_gene_map)
         
-        singleton_gene_map_list = [bwa_singleton_gene_map, blat_singleton_gene_map, dia_singleton_gene_map]
-        contig_gene_map_list    = [bwa_contig_gene_map, blat_contig_gene_map, dia_contig_gene_map]
-        
+        singleton_gene_map_list = [bwa_singleton_gene_map, dia_singleton_gene_map]
+        if(not skip_blat):
+            singleton_gene_map_list.append(blat_singleton_gene_map)
+
+        contig_gene_map_list    = [bwa_contig_gene_map, dia_contig_gene_map]
+        if(not skip_blat):
+            singleton_gene_map_list.append(blat_contig_gene_map)
+
+
         #merge the gene maps by category
         singletons_gene_map = merge_dicts(singleton_gene_map_list)
         contig_gene_map     = merge_dicts(contig_gene_map_list)
@@ -706,7 +718,8 @@ if __name__ == "__main__":
         
         #merge the annotated genes (for protein translation), and leftover contig + singletons
         make_merge_leftover_fasta_process(process_store, diamond_path, export_path, "GA_leftover", ".fasta", job_location)  #leftover reads
-        make_merge_fasta_process(process_store, blat_path, final_path, "BLAT_annotated", ".fna", job_location)    #BLAT genes
+        if(not skip_blat):
+            make_merge_fasta_process(process_store, blat_path, final_path, "BLAT_annotated", ".fna", job_location)    #BLAT genes
         make_merge_fasta_process(process_store, bwa_path, final_path, "BWA_annotated", ".fna", job_location)      #BWA genes
         make_merge_fasta_process(process_store, diamond_path, final_path, "dmd", ".faa", job_location)            #DIAMOND proteins
         
@@ -730,22 +743,23 @@ if __name__ == "__main__":
         process_store.append(process)
         
         #----------------------------------------------------------------------
-        process = mp.Process(target = concatenate_gene_maps_v2, args = (blat_path, mgr_blat_pair_1_gene_map, "pair_1"))
-        process.start()
-        process_store.append(process)
-        
-        process = mp.Process(target = concatenate_gene_maps_v2, args = (blat_path, mgr_blat_pair_2_gene_map, "pair_2"))
-        process.start()
-        process_store.append(process)
-        
-        process = mp.Process(target = concatenate_gene_maps_v2, args = (blat_path, mgr_blat_singletons_gene_map, "singletons"))
-        process.start()
-        process_store.append(process)
-        
-        process = mp.Process(target = concatenate_gene_maps_v2, args = (blat_path, mgr_blat_contig_gene_map, "contig"))
-        process.start()
-        process_store.append(process)
-        
+        if(not skip_blat):
+            process = mp.Process(target = concatenate_gene_maps_v2, args = (blat_path, mgr_blat_pair_1_gene_map, "pair_1"))
+            process.start()
+            process_store.append(process)
+            
+            process = mp.Process(target = concatenate_gene_maps_v2, args = (blat_path, mgr_blat_pair_2_gene_map, "pair_2"))
+            process.start()
+            process_store.append(process)
+            
+            process = mp.Process(target = concatenate_gene_maps_v2, args = (blat_path, mgr_blat_singletons_gene_map, "singletons"))
+            process.start()
+            process_store.append(process)
+            
+            process = mp.Process(target = concatenate_gene_maps_v2, args = (blat_path, mgr_blat_contig_gene_map, "contig"))
+            process.start()
+            process_store.append(process)
+            
         #----------------------------------------------------------------------
         process = mp.Process(target = concatenate_gene_maps_v2, args = (diamond_path, mgr_dia_pair_1_gene_map, "pair_1"))
         process.start()
@@ -777,10 +791,10 @@ if __name__ == "__main__":
         bwa_singleton_gene_map  = dict(mgr_bwa_singletons_gene_map)
         bwa_contig_gene_map     = dict(mgr_bwa_contig_gene_map)
         
-        blat_pair_1_gene_map    = dict(mgr_blat_pair_1_gene_map)
-        blat_pair_2_gene_map    = dict(mgr_blat_pair_2_gene_map)
-        blat_singleton_gene_map = dict(mgr_blat_singletons_gene_map)
-        blat_contig_gene_map    = dict(mgr_blat_contig_gene_map)
+        blat_pair_1_gene_map    = dict(mgr_blat_pair_1_gene_map) if (not skip_blat) else dict()
+        blat_pair_2_gene_map    = dict(mgr_blat_pair_2_gene_map) if (not skip_blat) else dict()
+        blat_singleton_gene_map = dict(mgr_blat_singletons_gene_map) if (not skip_blat) else dict()
+        blat_contig_gene_map    = dict(mgr_blat_contig_gene_map) if (not skip_blat) else dict()
         
         dia_pair_1_gene_map     = dict(mgr_dia_pair_1_gene_map)
         dia_pair_2_gene_map     = dict(mgr_dia_pair_2_gene_map)
@@ -788,11 +802,17 @@ if __name__ == "__main__":
         dia_contig_gene_map     = dict(mgr_dia_contig_gene_map)
         
         
-        pair_1_gene_map_list    = [bwa_pair_1_gene_map, blat_pair_1_gene_map, dia_pair_1_gene_map]
-        pair_2_gene_map_list    = [bwa_pair_2_gene_map, blat_pair_2_gene_map, dia_pair_2_gene_map]
-        singleton_gene_map_list = [bwa_singleton_gene_map, blat_singleton_gene_map, dia_singleton_gene_map]
-        contig_gene_map_list    = [bwa_contig_gene_map, blat_contig_gene_map, dia_contig_gene_map]
-        
+        pair_1_gene_map_list    = [bwa_pair_1_gene_map, dia_pair_1_gene_map]
+        pair_2_gene_map_list    = [bwa_pair_2_gene_map, dia_pair_2_gene_map]
+        singleton_gene_map_list = [bwa_singleton_gene_map, dia_singleton_gene_map]
+        contig_gene_map_list    = [bwa_contig_gene_map, dia_contig_gene_map]
+
+        if(not skip_blat):
+            pair_1_gene_map_list.append(blat_pair_1_gene_map)
+            pair_2_gene_map_list.append(blat_pair_2_gene_map)
+            singleton_gene_map_list.append(blat_singleton_gene_map)
+            contig_gene_map_list.append(blat_contig_gene_map)
+                                        
         #merge the gene maps by category
             
         

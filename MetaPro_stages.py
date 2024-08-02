@@ -40,6 +40,7 @@ class mp_stage:
             self.segmented_chocophlan_flag = False
         self.no_host = args_pack["no_host"]
         self.verbose_mode = args_pack["verbose_mode"]
+        self.skip_blat = args_pack["skip_blat"]
         self.rRNA_chunks = int(self.paths.rRNA_chunksize)
         self.EC_chunksize = int(self.paths.EC_chunksize)
         self.GA_chunksize = int(self.paths.GA_chunksize)
@@ -289,9 +290,9 @@ class mp_stage:
         # Creates our command object, for creating shellscripts.
 
         if self.read_mode == "single":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=single_path, sequence_contigs = None)
+            self.commands = mpcom.mt_pipe_commands(args_pack, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=single_path, sequence_contigs = None)
         elif self.read_mode == "paired":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=pair_1_path, sequence_path_2=pair_2_path, sequence_single=None, sequence_contigs = None)
+            self.commands = mpcom.mt_pipe_commands(args_pack, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=pair_1_path, sequence_path_2=pair_2_path, sequence_single=None, sequence_contigs = None)
     
 
         #--------------------------------------------------------
@@ -1395,12 +1396,21 @@ class mp_stage:
         #if not check_where_resume(None, self.GA_DIAMOND_tool_output_path, self.GA_BLAT_path, file_check_bypass = True):
         if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_DIAMOND_label):
             marker_path_list = []
-            for split_sample in os.listdir(os.path.join(self.GA_BLAT_path, "final_results")):
+            look_path = os.listdir(os.path.join(self.GA_BLAT_path, "final_results"))
+            if(self.skip_blat):
+                look_path = os.listdir(os.path.join(self.GA_BWA_path, "final_results"))
+            
+            
+            for split_sample in look_path:
                 if(split_sample.endswith(".fasta")):
                     file_tag = os.path.basename(split_sample)
                     file_tag = os.path.splitext(file_tag)[0]
                     job_name = "DIAMOND_" + file_tag
-                    full_sample_path = os.path.join(os.path.join(self.GA_BLAT_path, "final_results", split_sample))
+                    if(self.skip_blat):
+                        full_sample_path = os.path.join(os.path.join(self.GA_BLAT_path, "final_results", split_sample))
+                        
+                    else:
+                        full_sample_path = os.path.join(os.path.join(self.GA_BLAT_path, "final_results", split_sample))
                     marker_file = file_tag + "_diamond"
                     marker_path = os.path.join(self.GA_DIAMOND_jobs_folder, marker_file)
                     if(os.path.exists(marker_path)):
@@ -1471,6 +1481,9 @@ class mp_stage:
                 print(dt.today(), "skipping: GA final merge")
             else:
                 command_list = self.commands.create_GA_final_merge_command(self.GA_final_merge_label, self.assemble_contigs_label, self.GA_BWA_label, self.GA_BLAT_label, self.GA_DIAMOND_label,  marker_file)
+                if(self.skip_blat):
+                    command_list = self.commands.create_GA_final_merge_command(self.GA_final_merge_label, self.assemble_contigs_label, self.GA_BWA_label, "none", self.GA_DIAMOND_label,  marker_file)
+                    
                 job_name = "GA_final_merge"
                 self.mp_util.subdivide_and_launch(self.GA_final_merge_job_delay, self.GA_final_merge_mem_threshold, self.GA_final_merge_job_limit, self.GA_final_merge_label, job_name, self.commands, command_list)
             

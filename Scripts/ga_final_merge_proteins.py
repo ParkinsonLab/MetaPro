@@ -102,9 +102,16 @@ if __name__ == "__main__":
     dir_dict["bwa"] = bwa_dir
     dir_dict["blat"] = blat_dir
     dir_dict["dmd"] = dmd_dir
+
+    skip_blat = True if (blat_dir == "none") else False
+    
     
     context_list = ["pair", "singleton", "contigs"]
-    gene_list = ["bwa", "blat"]
+    gene_list = ["bwa"]
+    if(skip_blat):
+        gene_list.append("blat")
+    else:
+        print("GA final merge proteins: skipping BLAT")
     
     master_gene_dict = dict()
     print(dt.today(), "starting")

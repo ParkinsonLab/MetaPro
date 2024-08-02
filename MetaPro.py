@@ -89,11 +89,11 @@ def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output
         metapro_stage_obj.mp_GA_BWA_merge()
     
     
-    
-    # BLAT gene annotation
-    metapro_stage_obj.mp_GA_BLAT()
-    metapro_stage_obj.mp_GA_BLAT_pp()
-    metapro_stage_obj.mp_GA_BLAT_merge()
+    if(not args_pack["skip_blat"]):
+        # BLAT gene annotation
+        metapro_stage_obj.mp_GA_BLAT()
+        metapro_stage_obj.mp_GA_BLAT_pp()
+        metapro_stage_obj.mp_GA_BLAT_merge()
     
     
     
@@ -196,6 +196,7 @@ if __name__ == "__main__":
     parser.add_argument("--nhost", "--no-host", action='store_true', help="Skip the host read removal step of the pipeline")
     parser.add_argument("--verbose_mode", type=str, help = "Decide how to handle the interim files, Compress them, or leave them alone.  Values are: keep, compress, quiet")
     parser.add_argument("--tutorial", type = str, help = "tutorial operating mode for MetaPro")
+    parser.add_argument("--skip_blat", type = str, help = "Skip Blat: False on default")
     
     args = parser.parse_args()
     
@@ -208,6 +209,7 @@ if __name__ == "__main__":
     no_host         = args.nhost if args.nhost else False
     verbose_mode    = args.verbose_mode if args.verbose_mode else "quiet"
     tutorial_mode   = args.tutorial if args.tutorial else "none"
+    skip_blat       = True if args.skip_blat else False
 
     if(tutorial_mode == "none"):
         if (args.pair1 and not args.pair2) or (args.pair2 and not args.pair1):
@@ -237,6 +239,7 @@ if __name__ == "__main__":
     args_pack = dict()
     args_pack["no_host"] = no_host
     args_pack["verbose_mode"] = verbose_mode
+    args_pack["skip_blat"] = skip_blat
     
     print("=====================================")
     print("no-host:", no_host)

@@ -606,7 +606,7 @@ class tool_path_obj:
         self.Map_reads_gene_BWA         = self.value_assignment(config, "code", "ga_bwa_pp", os.path.join(script_path, "ga_BWA_generic_v2.py"))
         self.Map_reads_gene_BLAT        = self.value_assignment(config, "code", "ga_blat_pp", os.path.join(script_path, "ga_BLAT_generic_v3.py"))
         self.Map_reads_prot_DMND        = self.value_assignment(config, "code", "ga_dmd_pp", os.path.join(script_path, "ga_Diamond_generic_v2.py"))
-        self.GA_final_merge             = self.value_assignment(config, "code", "ga_final_merge", os.path.join(script_path, "ga_Final_merge_v4.py"))
+        self.GA_final_merge             = self.value_assignment(config, "code", "ga_final_merge", os.path.join(script_path, "ga_Final_merge_v5.py"))
         self.GA_merge_fasta             = self.value_assignment(config, "code", "ga_merge_fasta", os.path.join(script_path, "ga_merge_fasta.py"))
         self.GA_final_merge_fasta       = self.value_assignment(config, "code", "ga_final_merge_fasta", os.path.join(script_path, "ga_final_merge_fastq.py"))
         self.GA_final_merge_proteins    = self.value_assignment(config, "code", "ga_final_merge_proteins", os.path.join(script_path, "ga_final_merge_proteins.py"))
