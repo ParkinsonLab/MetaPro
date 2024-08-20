@@ -22,7 +22,7 @@ ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_pre_s
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_BLAT_generic_v3.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_BWA_generic_v2.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_Diamond_generic_v2.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_Final_merge_v4.py /pipeline/Scripts
+#ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_Final_merge_v5.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_merge_fasta.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_final_merge_proteins.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_final_merge_map.py /pipeline/Scripts

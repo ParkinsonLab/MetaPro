@@ -193,10 +193,10 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--single",   type=str,   help="Path to the file containing the single-end reads in fastq format")
     parser.add_argument("-con", "--contig",   type=str,   help="Tutorial use only: Path to the file containing the contig reads in fastq format")
     parser.add_argument("-o", "--output_folder", type=str, required=True, help="Path of the folder for the output of the pipeline")
-    parser.add_argument("--nhost", "--no-host", action='store_true', help="Skip the host read removal step of the pipeline")
+    parser.add_argument("--nhost", "--no-host", action = 'store_true', help="Skip the host read removal step of the pipeline")
     parser.add_argument("--verbose_mode", type=str, help = "Decide how to handle the interim files, Compress them, or leave them alone.  Values are: keep, compress, quiet")
     parser.add_argument("--tutorial", type = str, help = "tutorial operating mode for MetaPro")
-    parser.add_argument("--skip_blat", type = str, help = "Skip Blat: False on default")
+    parser.add_argument("--skip_blat", action = 'store_true', help = "Skip Blat: False on default")
     
     args = parser.parse_args()
     
@@ -209,7 +209,7 @@ if __name__ == "__main__":
     no_host         = args.nhost if args.nhost else False
     verbose_mode    = args.verbose_mode if args.verbose_mode else "quiet"
     tutorial_mode   = args.tutorial if args.tutorial else "none"
-    skip_blat       = True if args.skip_blat else False
+    skip_blat       = args.skip_blat if args.skip_blat else False
 
     if(tutorial_mode == "none"):
         if (args.pair1 and not args.pair2) or (args.pair2 and not args.pair1):

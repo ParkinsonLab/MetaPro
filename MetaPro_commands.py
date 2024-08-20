@@ -2561,14 +2561,13 @@ class mt_pipe_commands:
 
 
    
-    def create_DIAMOND_pp_command_v2(self, stage_name, dependency_stage_name, query_file, marker_file):
+    def create_DIAMOND_pp_command_v2(self, stage_name, contig_dir, query_file, marker_file):
     
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
         # the command just calls the merger program
         subfolder       = os.path.join(self.Output_Path, stage_name)
         data_folder     = os.path.join(subfolder, "data")
-        dep_loc         = os.path.join(self.Output_Path, dependency_stage_name, "final_results")  # implied to be blat pp
         diamond_folder  = os.path.join(data_folder, "0_diamond/")
         final_folder    = os.path.join(subfolder, "final_results")
         jobs_folder     = os.path.join(data_folder, "jobs")
@@ -2588,7 +2587,7 @@ class mt_pipe_commands:
         if(self.sequence_contigs == "None"):
             diamond_pp += "None" + " "
         else:
-            diamond_pp += os.path.join(dep_loc, "contig_map.tsv") + " "         # IN
+            diamond_pp += os.path.join(contig_dir, "final_results", "contig_map.tsv") + " "         # IN
         diamond_pp += os.path.join(final_folder, sample_root_name + "_diamond_gene_map.tsv") + " "      # OUT
         diamond_pp += os.path.join(final_folder, sample_root_name + "_diamond_proteins.faa") + " "      # OUT
         

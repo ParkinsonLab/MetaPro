@@ -36,18 +36,21 @@
 #mar 09, 2021:
 #including a bypasser for contigs 
 
+#aug 20, 2024:
+#now contains a gimmick for excluding BLAT-related data.  
+
 import os
 import os.path
 import sys
-from collections import Counter
-from collections import defaultdict
+#from collections import Counter
+#from collections import defaultdict
 from Bio import SeqIO
-from Bio.SeqRecord import SeqRecord
+#from Bio.SeqRecord import SeqRecord
 from datetime import datetime as dt
 from shutil import copyfile
-import pandas as pd
-import itertools
-import multiprocessing as mp
+#import pandas as pd
+#import itertools
+#import multiprocessing as mp
 
 
 #####################################

@@ -16,27 +16,38 @@
 #MetaPro_utilities.py
 #This code houses the various helper functions MetaPro uses to coordinate the multi-threaded traffic.
 
+
+#Feb 13, 2024
+#--------------------------------------------------------------
+#Now used in Quackers Metagenomic pipe
+
 import sys
 import os
 import os.path
-from argparse import ArgumentParser
-from configparser import ConfigParser, ExtendedInterpolation
 import multiprocessing as mp
-import MetaPro_commands as mpcom
-import MetaPro_paths as mpp
 import time
 import zipfile
-import pandas as pd
 import shutil
 from datetime import datetime as dt
 import psutil as psu
+import subprocess as sp
+import pandas as pd
+#modified MetaPro utilities to better package the 
+
 
 class mp_util:
-    def __init__(self, output_folder_path, config_path):
+    def __init__(self, output_folder_path, bypass_log_name):
         self.mp_store = []
         self.output_folder_path = output_folder_path
-        self.paths = mpp.tool_path_obj(config_path)
-        self.bypass_log_name = self.paths.bypass_log_name
+        self.bypass_log_name = bypass_log_name
+        #self.bypass_log_name = bypass_log_name
+
+    def check_file_integrity(self, file_path):
+        if(os.path.exists(file_path)):
+            if(os.path.getsize(file_path)> 0):
+                return True
+            
+        return False
 
     def mem_checker(self, threshold):
         #threshold is a percentage for available memory.  
@@ -97,8 +108,8 @@ class mp_util:
                 z.write(os.path.join(root, file))
         z.close()
             
-    def write_to_bypass_log(self, folder_path, message):
-        bypass_log_path = os.path.join(folder_path, self.bypass_log_name)
+    def write_to_bypass_log(self, bypass_log_path, message):
+        #bypass_log_path = os.path.join(folder_path, self.bypass_log_name)
         with open(bypass_log_path, "a") as bypass_log:
             bypass_log.write("\n")
             new_message = message + "\n"
@@ -106,10 +117,12 @@ class mp_util:
             
 
 
-    def check_bypass_log(self, folder_path, message):
+    def check_bypass_log(self, out_dir, message):
+        print("message used:", message)
+        print("path:", out_dir)
         stop_message = "stop_" + str(message)
         bypass_keys_list = list()
-        bypass_log_path = os.path.join(folder_path, self.bypass_log_name)
+        bypass_log_path = os.path.join(out_dir, self.bypass_log_name)
         if(os.path.exists(bypass_log_path)):
             with open(bypass_log_path, "r") as bypass_log:
                 for line in bypass_log:
@@ -154,7 +167,7 @@ class mp_util:
     def determine_encoding(self, fastq):
         #import the first 10k lines, then check the quality scores.
         #if the quality score symbols are below 76, it's phred33.  
-        fastq_df = pd.read_csv(fastq, header=None, names=[None], sep="\n", skip_blank_lines = False, quoting=3, nrows=40000)
+        fastq_df = pd.read_csv(fastq, header=None, names=[None], sep="/n", skip_blank_lines = False, quoting=3, nrows=40000)
         fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
         fastq_df.columns = ["ID", "seq", "junk", "quality"]
         quality_encoding = fastq_df["quality"].apply(lambda x: self.check_code(x)).mean() #condense into a single number.
@@ -229,34 +242,144 @@ class mp_util:
         else:
             print("doesn't exist: running")
             return False
+        
+    #----------------------------------------------------------------------------------------------------------------
+    #JOB LAUNCH Functions
+        
+    def create_and_launch(self, job_folder, inner_name, command_list):
+        # create the pbs job, and launch items
+        # job name: string tag for export file name
+        # command list:  list of command statements for writing
+        # mode: selection of which pbs template to use: default -> low memory
+        # dependency_list: if not empty, will append wait args to sbatch subprocess call. it's polymorphic
+        # returns back the job ID given from sbatch
 
-    def launch_and_create_simple(self, job_location, job_label, command_obj, commands):
-        #just launches a job.  no multi-process.
+        # docker mode: single cpu
+        # no ID, no sbatch.  just run the command
+        
+        shell_script_full_path = os.path.join(self.output_folder_path, job_folder, inner_name + ".sh")
+
+        with open(shell_script_full_path, "w") as PBS_script_out:
+            for item in command_list:
+                PBS_script_out.write(item + "\n")
+            PBS_script_out.close()
+        #if not work_in_background:
+        output = ""
+        try:
+            sp.check_output(["sh", shell_script_full_path])#, stderr = sp.STDOUT)
+        except sp.CalledProcessError as e:
+            return_code = e.returncode
+            if return_code != 1:
+                raise
+                
+    def create_and_launch_v2(self, job_path, command_list):
+        # create the pbs job, and launch items
+        # job name: string tag for export file name
+        # command list:  list of command statements for writing
+        # mode: selection of which pbs template to use: default -> low memory
+        # dependency_list: if not empty, will append wait args to sbatch subprocess call. it's polymorphic
+        # returns back the job ID given from sbatch
+
+        # docker mode: single cpu
+        # no ID, no sbatch.  just run the command
+        
+        #shell_script_full_path = os.path.join(self.Output_Path, job_folder, inner_name + ".sh")
+
+        with open(job_path, "w") as PBS_script_out:
+            for item in command_list:
+                PBS_script_out.write(item + "\n")
+            PBS_script_out.close()
+        #if not work_in_background:
+        output = ""
+        try:
+            sp.check_output(["sh", job_path])#, stderr = sp.STDOUT)
+        except sp.CalledProcessError as e:
+            return_code = e.returncode
+            if return_code != 1:
+                raise                
+                
+    def launch_only(self, command_list, command_list_length):
+        #just launch the job.  Don't make a script file.
+        #print(dt.today(), "inside launch_only:", len(command_list))
+        
+        if(command_list_length == 1):
+            #print("0th item:", command_list[0])
+            try:
+                os.system(command_list[0])
+            except sp.CalledProcessError as e:
+                return_code = e.returncode
+                if return_code != 1:
+                    raise
+            #else:
+            #    sys.exit("something bad happened")
+        else:
+        
+            for command_item in command_list:
+                try:
+                    os.system(command_item)
+                except sp.CalledProcessError as e:
+                    return_code = e.returncode
+                    if return_code != 1:
+                        raise    
+
+
+
+
+    def launch_and_create_simple(self, job_location, job_label, commands):
+        #just launches a job.  no multi-process. But wait for the job to finish before continuing
         process = mp.Process(
-            target=command_obj.create_and_launch,
+            target=self.create_and_launch,
             args=(job_location, job_label, commands)
         )
         process.start()
         process.join()
+        
+    def launch_and_create_v2(self, job_path, commands):
+        #just launches a job.  no multi-process.
+        process = mp.Process(
+            target=self.create_and_launch_v2,
+            args=(job_path, commands)
+        )
+        process.start()
+        process.join()
 
-    def launch_and_create_with_mp_store(self, job_location, job_label, command_obj, commands):
+    def launch_and_create_v2_with_mp_store(self, job_path, commands):
         #launches a job. doesn't wait. but stores it in the mp_store queue
         process = mp.Process(
-            target=command_obj.create_and_launch,
+            target=self.create_and_launch_v2,
+            args=(job_path, commands)
+        )
+        process.start()
+        self.mp_store.append(process)
+
+
+    def launch_and_create_with_mp_store(self, job_location, job_label, commands):
+        #launches a job. doesn't wait. but stores it in the mp_store queue
+        process = mp.Process(
+            target=self.create_and_launch,
             args=(job_location, job_label, commands)
         )
         process.start()
         self.mp_store.append(process)
 
-    def launch_only_simple(self, command_obj, commands):
+    def launch_only_simple(self, commands):
         process = mp.Process(
-            target=command_obj.launch_only,
+            target=self.launch_only,
             args=(commands, len(commands))
         )
         process.start()
         process.join()
+
+    def launch_only_with_mp_store(self, commands):
+        process = mp.Process(
+            target=self.launch_only, 
+            args=(commands, len(commands))
+        )
+
+        process.start()
+        self.mp_store.append(process)
         
-    def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_location, job_label, command_obj, commands):
+    def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_location, job_label, commands):
         #just launches a job.  no multi-process.
         #Jan 25, 2022: now adding job controls.
         job_counter = 0
@@ -269,7 +392,7 @@ class mp_util:
                     if(self.mem_checker(mem_threshold)):
 
                         process = mp.Process(
-                            target=command_obj.create_and_launch,
+                            target=self.create_and_launch,
                             args=(job_location, job_name, [item])
                         )
                         process.start()
@@ -277,22 +400,22 @@ class mp_util:
                         print(dt.today(), job_name, "job submitted.  mem:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
                         job_submitted = True
                     else:
-                        time.sleep(job_delay)
+                        time.sleep(float(job_delay))
                 else:
                     self.wait_for_mp_store()
-            time.sleep(job_delay)
+            time.sleep(float(job_delay))
         #final wait for everything to be done
         self.wait_for_mp_store()
                 
         
-    def launch_only_with_hold(self, mem_threshold, job_limit, job_delay, job_name, command_obj, command):
+    def launch_only_with_hold(self, mem_threshold, job_limit, job_delay, job_name, command):
         #launch a job in launch-only mode
         job_submitted = False
         while(not job_submitted):
             if(len(self.mp_store) < job_limit):
                 if(self.mem_checker(mem_threshold)):
                     process = mp.Process(
-                        target = command_obj.launch_only,
+                        target = self.launch_only,
                         args = (command, len(command))
                     )
                     process.start()
@@ -301,14 +424,14 @@ class mp_util:
                     job_submitted = True
                 else:
                     #print(dt.today(), job_name, "Pausing. mem limit reached:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
-                    time.sleep(job_delay)
+                    time.sleep(float(job_delay))
             else:
                 print(dt.today(), "job limit reached.  waiting for queue to flush")
                 self.wait_for_mp_store()
-        time.sleep(job_delay)
+        time.sleep(float(job_delay))
         
 
-    def launch_and_create_with_hold(self, mem_threshold, job_limit, job_delay, job_location, job_name, command_obj, command):
+    def launch_and_create_with_hold(self, mem_threshold, job_limit, job_delay, job_location, job_name, command_list):
         #launch a job in launch-with-create mode
         job_submitted = False
         while(not job_submitted):
@@ -316,8 +439,8 @@ class mp_util:
             if(len(self.mp_store) < job_limit):
                 if(self.mem_checker(mem_threshold)):
                     process = mp.Process(
-                        target = command_obj.create_and_launch,
-                        args = (job_location, job_name, command)
+                        target = self.create_and_launch,
+                        args = (job_location, job_name, command_list)
                     )
                     process.start()
                     self.mp_store.append(process)
@@ -325,13 +448,13 @@ class mp_util:
                     job_submitted = True
                 else:
                     #print(dt.today(), job_name, "Pausing. mem limit reached:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
-                    time.sleep(job_delay)
+                    time.sleep(float(job_delay))
             else:
                 print(dt.today(), "job limit reached.  waiting for queue to flush")
                 self.wait_for_mp_store()
         #final wait
         #self.wait_for_mp_store()
-    def launch_and_create_with_mem_footprint(self, mem_footprint, job_limit, job_location, job_name, command_obj, command):
+    def launch_and_create_with_mem_footprint(self, mem_footprint, job_limit, job_location, job_name, command):
         #launch a job in launch-with-create mode
         #this controller won't be optimized for the system. It's made to keep the node from exploding.
         job_submitted = False
@@ -341,7 +464,7 @@ class mp_util:
             if(len(self.mp_store) < job_limit):    
                 if(self.mem_footprint_checker(len(self.mp_store), mem_footprint)):
                     process = mp.Process(
-                        target = command_obj.create_and_launch,
+                        target = self.create_and_launch,
                         args = (job_location, job_name, command)
                     )
                     process.start()
@@ -356,6 +479,8 @@ class mp_util:
                 print(dt.today(), "job limit reached.  waiting for queue to flush")
                 self.wait_for_mp_store()    
                 
+
+   
 
     #check if all jobs ran
     def check_all_job_markers(self, job_marker_list, final_folder_checklist):
@@ -417,7 +542,7 @@ class mp_util:
             self.delete_folder(analysis_path)
 
 
-    def launch_stage_simple(self, job_label, job_path, commands, command_list, keep_all, keep_job):
+    def launch_stage_simple(self, job_label, job_path, command_list, keep_all, keep_job):
         #wrapper for simple job launches (quality, host)
         cleanup_job_start = 0
         cleanup_job_end = 0
@@ -425,7 +550,7 @@ class mp_util:
         
         if self.check_bypass_log(self.output_folder_path, job_label):
             print(dt.today(), "NEW CHECK running:", job_label)
-            self.launch_and_create_simple(job_label, job_label, commands, command_list)
+            self.launch_and_create_simple(job_label, job_label, command_list)
             
             self.write_to_bypass_log(self.output_folder_path, job_label)
             cleanup_job_start = time.time()
@@ -435,3 +560,66 @@ class mp_util:
             print(dt.today(), "skipping job:", job_label)
 
         return cleanup_job_start, cleanup_job_end
+    
+    def launch_stage_with_cleanup(self, command_list, marker_path, data_path, job_label, keep_all, keep_job):
+        #wrapper for simple job launches (quality, host)
+        cleanup_job_start = time.time()
+        cleanup_job_end = time.time()
+        
+        if self.check_bypass_log(self.output_folder_path, job_label):
+            if not os.path.exists(marker_path):
+                print(dt.today(), "NEW CHECK running:", job_label)
+                self.launch_and_create_simple(job_label, job_label, command_list)
+                print(dt.today(), "job launched")
+            #structured to catch instance where bypass isn't written, but marker is present.
+            #it's not a if/else case.  Marker will be created once the job finishes.
+
+            if os.path.exists(marker_path):
+                self.write_to_bypass_log(self.output_folder_path, job_label)
+                cleanup_job_start = time.time()
+                self.clean_or_compress(data_path, keep_all, keep_job)
+                cleanup_job_end = time.time()  
+            else:
+                print("error on job:", job_label)
+                sys.exit("unclean exit")
+              
+        else:
+            print(dt.today(), "skipping job:", job_label)
+            cleanup_job_end = time.time() 
+
+        return cleanup_job_start, cleanup_job_end
+
+    def launch_with_mem_footprint(self, mem_footprint, job_limit, job_location, job_name, command):
+        #launch a job in launch-with-create mode
+        #this controller won't be optimized for the system. It's made to keep the node from exploding.
+        job_submitted = False
+        
+        while(not job_submitted):
+
+            if(len(self.mp_store) < job_limit):    
+                if(self.mem_footprint_checker(len(self.mp_store), mem_footprint)):
+                    process = mp.Process(
+                        target = self.launch_only,
+                        args = (command, len(command))
+                    )
+                    process.start()
+                    self.mp_store.append(process)
+                    job_submitted = True
+                    
+                    print(dt.today(), job_name, "job submitted.  mem:", len(self.mp_store) * mem_footprint, "GB", end='\r')
+                else:
+                    print(dt.today(), "job limit reached.  waiting for queue to flush")
+                    self.wait_for_mp_store()
+            else:
+                print(dt.today(), "job limit reached.  waiting for queue to flush")
+                self.wait_for_mp_store() 
+
+    def launch_simple(self, command):
+        process = mp.Process(
+            target = self.launch_only,
+            args = (command, len(command))
+        )
+        process.start()
+        process.join()
+        
+

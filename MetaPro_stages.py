@@ -2,20 +2,20 @@
 import sys
 import os
 import os.path
-from argparse import ArgumentParser
-from configparser import ConfigParser, ExtendedInterpolation
-import multiprocessing as mp
+#from argparse import ArgumentParser
+#from configparser import ConfigParser, ExtendedInterpolation
+#import multiprocessing as mp
 import MetaPro_commands as mpcom
 import MetaPro_paths as mpp
 import MetaPro_utilities as mpu
 import time
-import zipfile
-import pandas as pd
+#import zipfile
+#import pandas as pd
 import shutil
 from datetime import datetime as dt
-import psutil as psu
-import threading as th
-import queue as q
+#import psutil as psu
+#import threading as th
+#import queue as q
 
 #stores code for stage-launch.
 #makes for a neat package/capsule
@@ -32,8 +32,10 @@ class mp_stage:
         
         self.tutorial_string = tutorial_mode_string
         self.output_folder_path = output_folder_path
-        self.mp_util = mpu.mp_util(self.output_folder_path, config_path)
         self.paths = mpp.tool_path_obj(config_path)
+        self.mp_util = mpu.mp_util(self.output_folder_path, self.paths.bypass_log_name)
+        
+        
         self.GA_DB_mode = self.paths.GA_DB_mode
         self.segmented_chocophlan_flag = True
         if(self.paths.DNA_DB.endswith(".fasta")):
@@ -393,7 +395,7 @@ class mp_stage:
     def mp_quality_filter(self):
         self.quality_start = time.time()
         command_list = self.commands.create_quality_control_command(self.quality_filter_label)
-        self.cleanup_quality_start, self.cleanup_quality_end = self.mp_util.launch_stage_simple(self.quality_filter_label, self.quality_path, self.commands, command_list, self.keep_all, self.keep_quality)
+        self.cleanup_quality_start, self.cleanup_quality_end = self.mp_util.launch_stage_simple(self.quality_filter_label, self.quality_path, command_list, self.keep_all, self.keep_quality)
         self.quality_end = time.time()
         print("quality filter:", '%1.1f' % (self.quality_end - self.quality_start - (self.cleanup_quality_end - self.cleanup_quality_start)), "s")
         print("quality filter cleanup:", '%1.1f' %(self.cleanup_quality_end - self.cleanup_quality_start), "s")
@@ -405,7 +407,7 @@ class mp_stage:
             self.host_start = time.time()
             #if not check_where_resume(host_path, None, self.quality_path):
             command_list = self.commands.create_host_filter_command(self.host_filter_label, self.quality_filter_label)
-            self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
+            self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, command_list, self.keep_all, self.keep_host)
             self.host_end = time.time()
             print("host filter:", '%1.1f' % (self.host_end - self.host_start - (self.cleanup_host_end - self.cleanup_host_start)), "s")
             print("host filter cleanup:", '%1.1f' %(self.cleanup_host_end - self.cleanup_host_start),"s")
@@ -418,13 +420,13 @@ class mp_stage:
             #get dep args from quality filter
             #if not check_where_resume(vector_path, None, self.quality_path):
             command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.quality_filter_label)
-            self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.keep_all, self.keep_vector)
+            self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, command_list, self.keep_all, self.keep_vector)
 
         else:
             #get the dep args from host filter
             #if not check_where_resume(vector_path, None, self.host_path):
             command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.host_filter_label)
-            self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.keep_all, self.keep_vector)
+            self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, command_list, self.keep_all, self.keep_vector)
             
         self.vector_end = time.time()
         print("vector filter:", '%1.1f' % (self.vector_end - self.vector_start - (self.cleanup_vector_end - self.cleanup_vector_start)), "s")
@@ -1396,9 +1398,13 @@ class mp_stage:
         #if not check_where_resume(None, self.GA_DIAMOND_tool_output_path, self.GA_BLAT_path, file_check_bypass = True):
         if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_DIAMOND_label):
             marker_path_list = []
-            look_path = os.listdir(os.path.join(self.GA_BLAT_path, "final_results"))
+            look_path = ""
             if(self.skip_blat):
+                print(dt.today(), "SKIPPING BLAT. DMD rerouted to look for post-BWA")
                 look_path = os.listdir(os.path.join(self.GA_BWA_path, "final_results"))
+            else:
+                look_path = os.listdir(os.path.join(self.GA_BLAT_path, "final_results"))
+                print(dt.today(), dt.today(), "DMD: this run contains BLAT runs.")
             
             
             for split_sample in look_path:
@@ -1407,7 +1413,7 @@ class mp_stage:
                     file_tag = os.path.splitext(file_tag)[0]
                     job_name = "DIAMOND_" + file_tag
                     if(self.skip_blat):
-                        full_sample_path = os.path.join(os.path.join(self.GA_BLAT_path, "final_results", split_sample))
+                        full_sample_path = os.path.join(os.path.join(self.GA_BWA_path, "final_results", split_sample))
                         
                     else:
                         full_sample_path = os.path.join(os.path.join(self.GA_BLAT_path, "final_results", split_sample))
@@ -1435,12 +1441,18 @@ class mp_stage:
         if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_DIAMOND_pp_label):
             #print(dt.today(), "DIAMOND PP threads used:", self.paths.num_threads/2)
             marker_path_list = []
-            for split_sample in os.listdir(os.path.join(self.GA_BLAT_path, "final_results")):
+            look_path = ""
+            if(self.skip_blat):
+                look_path = os.path.join(self.GA_BWA_path, "final_results")
+            else:
+                look_path = os.path.join(self.GA_BLAT_path, "final_results")
+
+            for split_sample in os.listdir(look_path):
                 if(split_sample.endswith(".fasta")):
                     file_tag = os.path.basename(split_sample)
                     file_tag = os.path.splitext(file_tag)[0]
                     job_name = "DIAMOND_pp_" + file_tag
-                    full_sample_path = os.path.join(os.path.join(self.GA_BLAT_path, "final_results", split_sample))
+                    full_sample_path = os.path.join(os.path.join(look_path, split_sample))
                     marker_file = file_tag + "_diamond_pp"
                     marker_path = os.path.join(self.GA_DIAMOND_jobs_folder, marker_file)
                     if(os.path.exists(marker_path)):
@@ -1448,9 +1460,9 @@ class mp_stage:
                         continue
                     else:
                         marker_path_list.append(marker_path)
-                        command_list = self.commands.create_DIAMOND_pp_command_v2(self.GA_DIAMOND_label, self.GA_BLAT_label, full_sample_path, marker_file)
-                        self.mp_util.launch_and_create_with_hold(self.DIAMOND_pp_mem_threshold, self.DIAMOND_pp_job_limit, self.DIAMOND_pp_job_delay, self.GA_DIAMOND_label, job_name, self.commands, command_list)
-                                        
+                        command_list = self.commands.create_DIAMOND_pp_command_v2(self.GA_DIAMOND_label, self.assemble_contigs_path, full_sample_path, marker_file)
+                        self.mp_util.launch_and_create_with_hold(self.DIAMOND_pp_mem_threshold, self.DIAMOND_pp_job_limit, self.DIAMOND_pp_job_delay, self.GA_DIAMOND_label, job_name, command_list)
+
             print(dt.today(), "DIAMOND pp jobs submitted.  waiting for sync")
             self.mp_util.wait_for_mp_store()
             final_checklist = os.path.join(self.GA_DIAMOND_path, "GA_DIAMOND_pp.txt")
