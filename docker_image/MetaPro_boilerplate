@@ -34,18 +34,21 @@ RUN ln -s /bin/sed /usr/bin/sed \
 WORKDIR /pipeline_tools
 #----------------------------------------------------
 # Install AdapaterRemoval
-RUN wget https://github.com/MikkelSchubert/adapterremoval/archive/v2.1.7.tar.gz -O adapterremoval.tar.gz \
+#RUN wget https://github.com/MikkelSchubert/adapterremoval/archive/v2.1.7.tar.gz -O adapterremoval.tar.gz \
+RUN wget https://github.com/MikkelSchubert/adapterremoval/archive/refs/tags/v2.3.4.tar.gz -O adapterremoval.tar.gz \
+
 && mkdir /pipeline_tools/adapterremoval \ 
 && tar -xzvf adapterremoval.tar.gz \ 
 && rm adapterremoval.tar.gz \
-&& cd adapterremoval-2.1.7 \
+&& cd adapterremoval-2.3.4 \
 && make && mv build/AdapterRemoval /pipeline_tools/adapterremoval/ \
 && cd /pipeline_tools \
-&& rm -r adapterremoval-2.1.7 
+&& rm -r adapterremoval-2.3.4 
 
 #---------------------------------------
 # Install Barrnap
 RUN wget https://github.com/tseemann/barrnap/archive/0.8.zip -O barrnap.zip \ 
+RUN wget https://github.com/tseemann/barrnap/archive/refs/tags/0.9.zip -O barrnap.zip \ 
 && unzip barrnap.zip \ 
 && rm barrnap.zip | mkdir Barrnap \ 
 && mv barrnap-0.8/* /pipeline_tools/Barrnap \ 
@@ -58,7 +61,8 @@ ENV PATH="${PATH}:/pipeline_tools/Barrnap/bin"
 #---------------------------------------------------
 # Install BLAT (pblat)
 RUN apt-get -y install libssl-dev \ 
-&& wget https://github.com/icebert/pblat/archive/2.0.tar.gz -O PBLAT.tar.gz | mkdir PBLAT \ 
+#&& wget https://github.com/icebert/pblat/archive/2.0.tar.gz -O PBLAT.tar.gz | mkdir PBLAT \ 
+&& wget https://github.com/icebert/pblat/archive/refs/tags/2.5.1.tar.gz -O PBLAT.tar.gz | mkdir PBLAT \ 
 && tar --remove-files -xzvf PBLAT.tar.gz && rm PBLAT.tar.gz \
 && cd /pipeline_tools/pblat-2.0 \
 && make && mv pblat /pipeline_tools/PBLAT/ \
@@ -67,28 +71,35 @@ RUN apt-get -y install libssl-dev \
 
 #------------------------------------------------------
 # Install BWA
-RUN wget https://sourceforge.net/projects/bio-bwa/files/bwa-0.7.17.tar.bz2 -O bwa.tar.bz2 \
-&& mkdir BWA \
-&& tar --remove-files -xjvf bwa.tar.bz2 \
-&& rm bwa.tar.bz2 \
+#RUN wget https://sourceforge.net/projects/bio-bwa/files/bwa-0.7.17.tar.bz2 -O bwa.tar.bz2 \
+#&& mkdir BWA \
+#&& tar --remove-files -xjvf bwa.tar.bz2 \
+#&& rm bwa.tar.bz2 \
+#&& cd /pipeline_tools/bwa-0.7.17 \
+#&& make \
+#&& cd /pipeline_tools \
+#&& mv bwa-0.7.17/bwa BWA/ \
+#&& rm -r bwa-0.7.17
+RUN wget https://github.com/lh3/bwa/archive/refs/tags/v0.7.18.tar.gz -O bwa.tar.gz \
+&& tar -xzvf bwa.tar.gz \
+&& rm bwa.tar.gz \
 && cd /pipeline_tools/bwa-0.7.17 \
 && make \
 && cd /pipeline_tools \
-&& mv bwa-0.7.17/bwa BWA/ \
-&& rm -r bwa-0.7.17
-
+&& mv bwa-0.7.18/bwa BWA/ \
+&& rm -r bwa-0.7.18
 
 #----------------------------------------------------
 # Install CD-HIT-DUP (from auxtools)
-RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.6.8/cd-hit-v4.6.8-2017-1208-source.tar.gz -O cdhit.tar.gz \
+RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz -O cdhit.tar.gz \
 && tar --remove-files -xzvf cdhit.tar.gz \
 && rm cdhit.tar.gz \
 && mkdir cdhit_dup \ 
-&& cd cd-hit-v4.6.8-2017-1208/ \ 
+&& cd cd-hit-v4.8.1-2019-0228/cd-hit-auxtools \ 
 && make \
 && mv cd-hit-auxtools/cd-hit-dup /pipeline_tools/cdhit_dup/ \
 && cd /pipeline_tools \
-&& rm -r cd-hit-v4.6.8-2017-1208
+&& rm -r cd-hit-v4.8.1-2019-0228
 
 
 
