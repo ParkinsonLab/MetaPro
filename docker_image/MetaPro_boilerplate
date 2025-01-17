@@ -2,8 +2,9 @@
 #version 1.0.1: added kraken2
 #version 1.0.2: added valgrind
 #version 1.0.3: added heaptrack
+#version 1.0.4: updated for 2025
 
-FROM ubuntu:18.04
+FROM ubuntu:24.04
 MAINTAINER Billy Taj
 RUN apt-get update \
 && apt-get -y install wget \
@@ -26,8 +27,7 @@ RUN apt-get update \
 
 
 #needed for Needle
-RUN ln -s /bin/sed /usr/bin/sed \
-&& apt-get update \
+RUN apt-get update \
 && apt-get install libgd-dev -y \
 && apt-get clean
 
@@ -47,13 +47,13 @@ RUN wget https://github.com/MikkelSchubert/adapterremoval/archive/refs/tags/v2.3
 
 #---------------------------------------
 # Install Barrnap
-RUN wget https://github.com/tseemann/barrnap/archive/0.8.zip -O barrnap.zip \ 
+#RUN wget https://github.com/tseemann/barrnap/archive/0.8.zip -O barrnap.zip \ 
 RUN wget https://github.com/tseemann/barrnap/archive/refs/tags/0.9.zip -O barrnap.zip \ 
 && unzip barrnap.zip \ 
 && rm barrnap.zip | mkdir Barrnap \ 
-&& mv barrnap-0.8/* /pipeline_tools/Barrnap \ 
+&& mv barrnap-0.9/* /pipeline_tools/Barrnap \ 
 && cd /pipeline_tools \ 
-&& rm -r barrnap-0.8
+&& rm -r barrnap-0.9
 ENV PATH="${PATH}:/pipeline_tools/Barrnap/bin"
 
 
@@ -64,10 +64,10 @@ RUN apt-get -y install libssl-dev \
 #&& wget https://github.com/icebert/pblat/archive/2.0.tar.gz -O PBLAT.tar.gz | mkdir PBLAT \ 
 && wget https://github.com/icebert/pblat/archive/refs/tags/2.5.1.tar.gz -O PBLAT.tar.gz | mkdir PBLAT \ 
 && tar --remove-files -xzvf PBLAT.tar.gz && rm PBLAT.tar.gz \
-&& cd /pipeline_tools/pblat-2.0 \
+&& cd /pipeline_tools/pblat-2.5.1 \
 && make && mv pblat /pipeline_tools/PBLAT/ \
 && cd /pipeline_tools \
-&& rm -r pblat-2.0
+&& rm -r pblat-2.5.1
 
 #------------------------------------------------------
 # Install BWA
@@ -83,21 +83,21 @@ RUN apt-get -y install libssl-dev \
 RUN wget https://github.com/lh3/bwa/archive/refs/tags/v0.7.18.tar.gz -O bwa.tar.gz \
 && tar -xzvf bwa.tar.gz \
 && rm bwa.tar.gz \
-&& cd /pipeline_tools/bwa-0.7.17 \
+&& cd /pipeline_tools/bwa-0.7.18 \
 && make \
 && cd /pipeline_tools \
-&& mv bwa-0.7.18/bwa BWA/ \
-&& rm -r bwa-0.7.18
+&& mv bwa-0.7.18 BWA
 
 #----------------------------------------------------
 # Install CD-HIT-DUP (from auxtools)
 RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz -O cdhit.tar.gz \
 && tar --remove-files -xzvf cdhit.tar.gz \
 && rm cdhit.tar.gz \
-&& mkdir cdhit_dup \ 
-&& cd cd-hit-v4.8.1-2019-0228/cd-hit-auxtools \ 
+&& cd cd-hit-v4.8.1-2019-0228 \ 
 && make \
-&& mv cd-hit-auxtools/cd-hit-dup /pipeline_tools/cdhit_dup/ \
+&& cd /pipeline_tools \
+&& mkdir cdhit_dup \
+&& mv /pipeline_tools/cd-hit-v4.8.1-2019-0228/cd-hit-auxtools /pipeline_tools/cdhit_dup \
 && cd /pipeline_tools \
 && rm -r cd-hit-v4.8.1-2019-0228
 
@@ -105,18 +105,19 @@ RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.
 
 #----------------------------------------------------
 # Install Centrifuge
-RUN wget https://github.com/infphilo/centrifuge/archive/master.tar.gz -O centrifuge.tar.gz \
+RUN wget https://github.com/DaehwanKimLab/centrifuge/archive/refs/tags/v1.0.4.2.tar.gz -O centrifuge.tar.gz \
 && tar --remove-files -xzvf centrifuge.tar.gz \
 && rm centrifuge.tar.gz \ 
-&& cd centrifuge-master \
+&& cd centrifuge-1.0.4.2 \
 && make \
 && cd /pipeline_tools \
-&& mv centrifuge-master centrifuge
+&& mv centrifuge-1.0.4.2 centrifuge
 
 
 #-----------------------------------------------------
 # Install DIAMOND
-RUN wget http://github.com/bbuchfink/diamond/releases/download/v0.9.19/diamond-linux64.tar.gz -O DIAMOND.tar.gz \
+#RUN wget http://github.com/bbuchfink/diamond/releases/download/v0.9.19/diamond-linux64.tar.gz -O DIAMOND.tar.gz \
+RUN wget https://github.com/bbuchfink/diamond/releases/download/v2.1.10/diamond-linux64.tar.gz -O DIAMOND.tar.gz \
 && mkdir DIAMOND \
 && tar --remove-files -xzvf DIAMOND.tar.gz -C DIAMOND \
 && rm DIAMOND.tar.gz
@@ -216,9 +217,14 @@ RUN wget https://sourceforge.net/projects/samtools/files/samtools/1.8/samtools-1
 #&& mv SPAdes-3.15.2-Linux/* SPAdes \
 #&& rm -r SPAdes-3.15.2-Linux
 
-RUN wget https://compsysbio.org/metapro_hosting/SPAdes.tar.gz -O SPAdes.tar.gz \
+#RUN wget https://compsysbio.org/metapro_hosting/SPAdes.tar.gz -O SPAdes.tar.gz \
+#&& tar --remove-files -xzvf SPAdes.tar.gz \
+#&& rm SPAdes.tar.gz
+
+RUN wget https://github.com/ablab/spades/releases/download/v4.0.0/SPAdes-4.0.0-Linux.tar.gz -O SPAdes.tar.gz \
 && tar --remove-files -xzvf SPAdes.tar.gz \
 && rm SPAdes.tar.gz
+
 
 
 
@@ -234,17 +240,12 @@ RUN wget http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmoma
 
 #----------------------------------------------------
 # Install vsearch
-RUN wget https://github.com/torognes/vsearch/archive/v2.7.1.tar.gz -O vsearch.tar.gz \
+RUN wget https://github.com/torognes/vsearch/releases/download/v2.29.2/vsearch-2.29.2-linux-x86_64.tar.gz -O vsearch.tar.gz \
 && mkdir vsearch \
 && tar --remove-files -xzvf vsearch.tar.gz \
 && rm vsearch.tar.gz \ 
-&& cd vsearch-2.7.1 \
-&& sh autogen.sh \
-&& sh configure \
-&& make \
-&& mv bin/vsearch /pipeline_tools/vsearch \
-&& cd /pipeline_tools \
-&& rm -r vsearch-2.7.1
+&& mv vsearch-2.29.2-linux-x86-64 vsearch \
+&& cd /pipeline_tools 
 
 #------------------------------------
 # Install WEVOTE
@@ -283,12 +284,12 @@ RUN mkdir PRIAM_search \
 #------------------------------------
 # Install BLAST+
 RUN apt-get install -y libidn11-dev \
-&& wget -c http://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.7.1/ncbi-blast-2.7.1+-x64-linux.tar.gz -O BLAST_p.tar.gz \
+&& wget -c https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.16.0/ncbi-blast-2.16.0+-x64-linux.tar.gz -O BLAST_p.tar.gz \
 && tar --remove-files -xzvf BLAST_p.tar.gz \
 && rm BLAST_p.tar.gz \
 && mkdir BLAST_p \
-&& mv ncbi-blast-2.7.1+/bin/* BLAST_p \
-&& rm -r ncbi-blast-2.7.1+
+&& mv ncbi-blast-2.16.0+/bin/* BLAST_p \
+&& rm -r ncbi-blast-2.16.0+
 
 
 
@@ -306,22 +307,25 @@ RUN mkdir mgm \
 && tar -xvf MetaGeneMark.tar && mv MetaGeneMark_linux_64/mgm/* /pipeline_tools/mgm \
 && chmod 755 /pipeline_tools/mgm/gmhmmp
 
+
+
+
 WORKDIR /pipeline_tools
-RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.9.zip \
-&& unzip fastqc_v0.11.9.zip \
-&& chmod 755 /pipeline_tools/FastQC/fastqc \ 
-&& rm fastqc_v0.11.9.zip
+RUN wget https://github.com/s-andrews/FastQC/archive/refs/tags/v0.12.1.zip -O fastqc.zip\
+&& unzip fastqc.zip \
+&& chmod 755 /pipeline_tools/FastQC-0.12.1/fastqc \ 
+&& rm fastqc_v0.12.1.zip
 
 #----------------------------------------
 #Add kraken2
 WORKDIR /pipeline_tools
-RUN wget https://github.com/DerrickWood/kraken2/archive/refs/tags/v2.1.2.zip -O kraken2.zip \
+RUN wget https://github.com/DerrickWood/kraken2/archive/refs/tags/v2.1.3.zip -O kraken2.zip \
 && unzip kraken2.zip \
-&& cd kraken2-2.1.2 \
+&& cd kraken2-2.1.3 \
 && ./install_kraken2.sh . \
 && cd .. \
 && rm kraken2.zip \
-&& mv kraken2-2.1.2 kraken2
+&& mv kraken2-2.1.3 kraken2
 
 
 #------------------------------------------------------------------------------------------
