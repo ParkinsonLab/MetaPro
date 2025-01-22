@@ -51,3 +51,302 @@ RUN wget https://github.com/MikkelSchubert/adapterremoval/archive/refs/tags/v2.3
 #RUN wget https://github.com/tseemann/barrnap/archive/0.8.zip -O barrnap.zip \
 RUN wget https://github.com/tseemann/barrnap/archive/refs/tags/0.9.zip -O barrnap.zip \
 && unzip barrnap.zip \
+
+
+
+#---------------------------------------------------
+# Install BLAT (pblat)
+RUN apt-get -y install libssl-dev \ 
+#&& wget https://github.com/icebert/pblat/archive/2.0.tar.gz -O PBLAT.tar.gz | mkdir PBLAT \ 
+&& wget https://github.com/icebert/pblat/archive/refs/tags/2.5.1.tar.gz -O PBLAT.tar.gz | mkdir PBLAT \ 
+&& tar --remove-files -xzvf PBLAT.tar.gz && rm PBLAT.tar.gz \
+&& cd /pipeline_tools/pblat-2.5.1 \
+&& make && mv pblat /pipeline_tools/PBLAT/ \
+&& cd /pipeline_tools \
+&& rm -r pblat-2.5.1
+
+#------------------------------------------------------
+# Install BWA
+#RUN wget https://sourceforge.net/projects/bio-bwa/files/bwa-0.7.17.tar.bz2 -O bwa.tar.bz2 \
+#&& mkdir BWA \
+#&& tar --remove-files -xjvf bwa.tar.bz2 \
+#&& rm bwa.tar.bz2 \
+#&& cd /pipeline_tools/bwa-0.7.17 \
+#&& make \
+#&& cd /pipeline_tools \
+#&& mv bwa-0.7.17/bwa BWA/ \
+#&& rm -r bwa-0.7.17
+RUN wget https://github.com/lh3/bwa/archive/refs/tags/v0.7.18.tar.gz -O bwa.tar.gz \
+&& tar -xzvf bwa.tar.gz \
+&& rm bwa.tar.gz \
+&& cd /pipeline_tools/bwa-0.7.18 \
+&& make \
+&& cd /pipeline_tools \
+&& mv bwa-0.7.18 BWA
+
+#----------------------------------------------------
+# Install CD-HIT-DUP (from auxtools)
+RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz -O cdhit.tar.gz \
+&& tar --remove-files -xzvf cdhit.tar.gz \
+&& rm cdhit.tar.gz \
+&& cd cd-hit-v4.8.1-2019-0228 \ 
+&& make \
+&& cd /pipeline_tools \
+&& mkdir cdhit_dup \
+&& mv /pipeline_tools/cd-hit-v4.8.1-2019-0228/cd-hit-auxtools /pipeline_tools/cdhit_dup \
+&& cd /pipeline_tools \
+&& rm -r cd-hit-v4.8.1-2019-0228
+
+
+
+#----------------------------------------------------
+# Install Centrifuge
+RUN wget https://github.com/DaehwanKimLab/centrifuge/archive/refs/tags/v1.0.4.2.tar.gz -O centrifuge.tar.gz \
+&& tar --remove-files -xzvf centrifuge.tar.gz \
+&& rm centrifuge.tar.gz \ 
+&& cd centrifuge-1.0.4.2 \
+&& make \
+&& cd /pipeline_tools \
+&& mv centrifuge-1.0.4.2 centrifuge
+
+
+#-----------------------------------------------------
+# Install DIAMOND
+#RUN wget http://github.com/bbuchfink/diamond/releases/download/v0.9.19/diamond-linux64.tar.gz -O DIAMOND.tar.gz \
+RUN wget https://github.com/bbuchfink/diamond/releases/download/v2.1.10/diamond-linux64.tar.gz -O DIAMOND.tar.gz \
+&& mkdir DIAMOND \
+&& tar --remove-files -xzvf DIAMOND.tar.gz -C DIAMOND \
+&& rm DIAMOND.tar.gz
+
+
+#----------------------------------------------------
+# Install EMBOSS
+RUN mkdir EMBOSS \
+&& wget ftp://emboss.open-bio.org/pub/EMBOSS/EMBOSS-6.6.0.tar.gz \
+&& tar -xzvf EMBOSS-6.6.0.tar.gz \
+&& cd EMBOSS-6.6.0 \
+&& sh configure \
+&& make \
+&& cd /pipeline_tools \
+&& rm EMBOSS-6.6.0.tar.gz
+
+#------------------------------------------------------
+# Install FLASH (Fast length adjustment of Short Reads)
+RUN wget http://ccb.jhu.edu/software/FLASH/FLASH-1.2.11.tar.gz -O FLASH.tar.gz \
+&& tar --remove-files -xzvf FLASH.tar.gz \
+&& rm FLASH.tar.gz && mkdir FLASH \
+&& cd FLASH-1.2.11 \
+&& make \
+&& mv flash /pipeline_tools/FLASH \
+&& cd /pipeline_tools \
+&& rm -r FLASH-1.2.11
+
+
+#-------------------------------------------
+# Install Infernal
+RUN wget http://eddylab.org/infernal/infernal-1.1.2-linux-intel-gcc.tar.gz -O infernal.tar.gz \
+&& tar --remove-files -xzvf infernal.tar.gz \
+&& rm infernal.tar.gz \
+&& mkdir infernal \
+&& mv infernal-1.1.2-linux-intel-gcc/binaries/* infernal \
+&& rm -r infernal-1.1.2-linux-intel-gcc \
+&& cd /pipeline_tools
+
+#-------------------------------------------
+# Install Kaiju
+RUN wget https://github.com/bioinformatics-centre/kaiju/releases/download/v1.6.2/kaiju-1.6.2-linux-x86_64.tar.gz -O kaiju.tar.gz \
+&& tar --remove-files -xzvf kaiju.tar.gz \
+&& rm kaiju.tar.gz \
+&& mkdir kaiju \
+&& mv kaiju-v1.6.2-linux-x86_64-static/bin/* kaiju/ \
+&& rm -r kaiju-v1.6.2-linux-x86_64-static \
+&& cd /pipeline_tools
+
+
+#---------------------------------------
+# Install KronaTools (for ktImportText)
+# note, ktImportText is now a perl script, not a binary.  We probably need most of this, if not all of this.  No cleaning
+RUN wget https://github.com/marbl/Krona/releases/download/v2.7/KronaTools-2.7.tar -O KronaTools.tar \
+&& tar --remove-files -xvf KronaTools.tar \
+&& rm KronaTools.tar \
+&& mkdir KronaTools \
+&& mv KronaTools-2.7/* KronaTools/ \
+&& rm -r KronaTools-2.7 \
+&& cd KronaTools \
+&& perl install.pl \
+&& cd /pipeline_tools
+
+#----------------------------------------
+# Install k-SLAM
+#RUN wget https://github.com/aindj/k-SLAM/archive/refs/tags/1.0.zip -O k_slam.zip \
+#&& unzip k_slam.zip \
+#&& rm k_slam.zip \
+#&& mkdir k-SLAM \
+#&& cd k-SLAM-1.0 \
+#&& make -C build \
+#&& mv build/SLAM /pipeline_tools/k-SLAM/ \
+#&& cd /pipeline_tools \
+#&& rm -r k-SLAM-1.0
+
+
+
+
+#------------------------------------------------------
+# Install SAMTools
+RUN wget https://github.com/samtools/samtools/releases/download/1.21/samtools-1.21.tar.bz2 -O samtools.tar.bz2 \
+&& tar --remove-files -xjvf samtools.tar.bz2 \
+&& rm samtools.tar.bz2 \
+&& mkdir samtools \
+&& cd samtools-1.21 \
+&& make \
+&& mv samtools /pipeline_tools/samtools \
+&& cd /pipeline_tools \
+&& rm -r samtools-1.21
+
+#-------------------------------------------------------
+# Install SPAdes
+#RUN wget http://cab.spbu.ru/files/release3.11.1/SPAdes-3.11.1-Linux.tar.gz -O SPAdes.tar.gz \
+#RUN wget https://cab.spbu.ru/files/release3.15.2/SPAdes-3.15.2-Linux.tar.gz -O SPAdes.tar.gz \
+#&& tar --remove-files -xzvf SPAdes.tar.gz \
+#&& rm SPAdes.tar.gz \
+#&& mkdir SPAdes \
+#&& mv SPAdes-3.15.2-Linux/* SPAdes \
+#&& rm -r SPAdes-3.15.2-Linux
+
+#RUN wget https://compsysbio.org/metapro_hosting/SPAdes.tar.gz -O SPAdes.tar.gz \
+#&& tar --remove-files -xzvf SPAdes.tar.gz \
+#&& rm SPAdes.tar.gz
+
+RUN wget https://github.com/ablab/spades/releases/download/v4.0.0/SPAdes-4.0.0-Linux.tar.gz -O SPAdes.tar.gz \
+&& tar --remove-files -xzvf SPAdes.tar.gz \
+&& rm SPAdes.tar.gz
+
+
+
+
+#---------------------------------------------------
+# Install Trimmomatic and get the adapters files
+RUN wget http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.36.zip -O Trimmomatic.zip \
+&& unzip Trimmomatic.zip \
+&& rm Trimmomatic.zip \
+&& mkdir Trimmomatic \
+&& mv Trimmomatic-0.36/* Trimmomatic \
+&& rm -r Trimmomatic-0.36
+
+
+#----------------------------------------------------
+# Install vsearch
+RUN wget https://github.com/torognes/vsearch/releases/download/v2.29.2/vsearch-2.29.2-linux-x86_64.tar.gz -O vsearch.tar.gz \
+&& mkdir vsearch \
+&& tar --remove-files -xzvf vsearch.tar.gz \
+&& rm vsearch.tar.gz \ 
+&& mv vsearch-2.29.2-linux-x86_64 vsearch \
+&& cd /pipeline_tools 
+
+#------------------------------------
+# Install WEVOTE
+RUN wget https://github.com/aametwally/WEVOTE/archive/master.zip -O wevote.zip \
+&& unzip wevote.zip \
+&& rm wevote.zip \
+&& cd WEVOTE-master \
+&& mkdir ../WEVOTE \
+&& ./install.sh \
+&& mkdir WEVOTE_db \
+&& mv bin/WEVOTE ../WEVOTE \
+&& mv downloadTaxonomyDB.sh ../WEVOTE \
+&& mkdir ../WEVOTE/WEVOTE_db \
+&& cd /pipeline_tools \
+&& rm -r WEVOTE-master
+
+
+#------------------------------------------------------------------------
+#post-build annoyances with java
+## JAVA INSTALLATION
+RUN apt-get update && apt-get install -y openjdk-8-jre \
+&& apt-get install -y openjdk-8-jdk \
+&& cd /pipeline_tools
+
+
+#--------------------------------------------
+# Install PRIAM
+RUN mkdir PRIAM_search \
+&& wget https://compsysbio.org/metapro_hosting/PRIAM_search.jar \
+&& mv PRIAM_search.jar PRIAM_search
+
+#&& wget http://priam.prabi.fr/utilities/PRIAM_search.jar \
+#&& mv PRIAM_search.jar PRIAM_search
+
+
+#------------------------------------
+# Install BLAST+
+RUN apt-get install -y libidn11-dev \
+&& wget -c https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.16.0/ncbi-blast-2.16.0+-x64-linux.tar.gz -O BLAST_p.tar.gz \
+&& tar --remove-files -xzvf BLAST_p.tar.gz \
+&& rm BLAST_p.tar.gz \
+&& mkdir BLAST_p \
+&& mv ncbi-blast-2.16.0+/bin/* BLAST_p \
+&& rm -r ncbi-blast-2.16.0+
+
+
+
+#RUN mkdir BLAST_p && mv ncbi-blast-2.7.1+-src/c++/* BLAST_p && rm -r ncbi-blast-2.7.1+-src
+#WORKDIR BLAST_p
+#RUN ./configure --without-boost && make 
+
+
+#-----------------------------------
+# Add MetaGeneMark
+WORKDIR /pipeline_tools
+ADD https://github.com/billytaj/parkinson_int_meta_pipe/blob/develop/mgm/MetaGeneMark_linux_64.tar.gz?raw=true /pipeline_tools
+RUN mkdir mgm \
+&& mv MetaGeneMark_linux_64.tar.gz MetaGeneMark.tar \
+&& tar -xvf MetaGeneMark.tar && mv MetaGeneMark_linux_64/mgm/* /pipeline_tools/mgm \
+&& chmod 755 /pipeline_tools/mgm/gmhmmp
+
+
+
+
+WORKDIR /pipeline_tools
+RUN wget https://github.com/s-andrews/FastQC/archive/refs/tags/v0.12.1.zip -O fastqc.zip\
+&& unzip fastqc.zip \
+&& chmod 755 /pipeline_tools/FastQC-0.12.1/fastqc \ 
+&& rm fastqc.zip
+
+#----------------------------------------
+#Add kraken2
+WORKDIR /pipeline_tools
+RUN wget https://github.com/DerrickWood/kraken2/archive/refs/tags/v2.1.3.zip -O kraken2.zip \
+&& unzip kraken2.zip \
+&& cd kraken2-2.1.3 \
+&& ./install_kraken2.sh . \
+&& cd .. \
+&& rm kraken2.zip \
+&& mv kraken2-2.1.3 kraken2
+
+
+#------------------------------------------------------------------------------------------
+# Install Python3
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+RUN apt-get autoclean \
+&& apt-get autoremove \
+&& apt-get update \
+&& apt-get clean && apt-get install -y python3 \
+&& apt-get install -y python3-pip \
+&& pip3 install biopython \
+&& pip3 install pandas  \
+&& pip3 install matplotlib \
+&& pip3 install seaborn \
+&& pip3 install pillow \
+&& pip3 install psutil \
+&& pip3 install hanging_threads \
+&& pip3 install requests
+
+
+RUN apt-get autoclean \
+&& apt-get autoremove \
+&& apt-get update \
+&& apt-get clean && apt-get install -y valgrind && apt-get install -y heaptrack
+#------------------------------------------
+
+
+
