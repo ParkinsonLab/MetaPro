@@ -50,7 +50,7 @@ RUN wget https://github.com/MikkelSchubert/adapterremoval/archive/refs/tags/v2.3
 # Install Barrnap
 #RUN wget https://github.com/tseemann/barrnap/archive/0.8.zip -O barrnap.zip \
 RUN wget https://github.com/tseemann/barrnap/archive/refs/tags/0.9.zip -O barrnap.zip \
-&& unzip barrnap.zip \
+&& unzip barrnap.zip 
 
 
 

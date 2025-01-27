@@ -21,7 +21,7 @@ import os.path
 from argparse import ArgumentParser
 from configparser import ConfigParser, ExtendedInterpolation
 import multiprocessing as mp
-
+import MetaPro_paths as mpp
 import MetaPro_stages as mps
 import time
 import zipfile
@@ -38,10 +38,10 @@ def debug_stop_check(self, stop_flag, signal):
         
 
 
-def main(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode):
+def main(config_obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode):
 
     
-    metapro_stage_obj = mps.mp_stage(config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
+    metapro_stage_obj = mps.mp_stage(config_obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
 
     # This is the format we use to launch each stage of the pipeline.
     # We start a multiprocess that starts a subprocess.
@@ -184,8 +184,7 @@ if __name__ == "__main__":
     # This is where the code starts
     # There's a few operating modes, mainly "docker", and "singularity".  These modes edit the pipeline filepaths
 
-    parser = ArgumentParser(description="MetaPro - Meta-omic sequence processing and analysis pipeline"
-                                        "Version 2.2.0 © 2023")
+    parser = ArgumentParser(description="MetaPro - Meta-omic sequence processing and analysis pipeline.  Version 3.0.2 © 2025")
 
     parser.add_argument("-c", "--config",   type=str,   help="Path to the configureation file")
     parser.add_argument("-1", "--pair1",    type=str,   help="Path to the file containing the forward paired-end reads in fastq format")
@@ -201,13 +200,16 @@ if __name__ == "__main__":
     
     config_file     = args.config if args.config else ""
     contig          = args.contig if args.contig else "None"
-    pair_1          = args.pair1 if args.pair1 else ""
-    pair_2          = args.pair2 if args.pair2 else ""
-    single          = args.single if args.single else ""
+    pair_1          = args.pair1 if args.pair1 else None
+    pair_2          = args.pair2 if args.pair2 else None
+    single          = args.single if args.single else None
     output_folder   = args.output_folder
     no_host         = args.nhost if args.nhost else False
     verbose_mode    = args.verbose_mode if args.verbose_mode else "quiet"
     tutorial_mode   = args.tutorial if args.tutorial else "none"
+
+    #print("config file:", config_file)
+    #time.sleep(10)
 
     if(tutorial_mode == "none"):
         if (args.pair1 and not args.pair2) or (args.pair2 and not args.pair1):
@@ -220,20 +222,48 @@ if __name__ == "__main__":
     if not (os.path.exists(output_folder)):
         print("output folder does not exist.  Now building directory.")
         os.makedirs(output_folder)
-    os.chdir(output_folder)
+    
+    if not(os.path.isabs(output_folder)):
+        output_folder = os.path.abspath(output_folder)
+        print(dt.today(), "output destination:", output_folder)
+
+    print(dt.today(), "delayed for reasons")
+    print("new output folder:", output_folder)
+    #time.sleep(10)
+    #os.chdir(output_folder)
 
     config = ConfigParser(interpolation = ExtendedInterpolation())
     if args.config:
         config.read(config_file)
-        if not args.pair1 and not args.pair2 and not args.single:
-            pair_1 = config["Sequences"]["pair1"] if config["Sequences"]["pair1"] else ""
-            pair_2 = config["Sequences"]["pair2"] if config["Sequences"]["pair2"] else ""
-            single = config["Sequences"]["single"] if config["Sequences"]["single"] else ""
+        if args.pair1 == "none" and args.pair2 == "none" and args.single == "none":
+            pair_1 = config["Sequences"]["pair1"] if config["Sequences"]["pair1"] else None
+            pair_2 = config["Sequences"]["pair2"] if config["Sequences"]["pair2"] else None
+            single = config["Sequences"]["single"] if config["Sequences"]["single"] else None
 
-    if pair_1 == "" and pair_2 == "" and single == "":
+
+    #detect and handle file paths
+    if(not pair_1 is None):
+        if(not os.path.isabs(pair_1)):
+            print("before:", pair_1)
+            pair_1 = os.path.abspath(pair_1)
+            print("after pair 1:", pair_1)
+    
+    if(not pair_2 is None):
+        if(not os.path.isabs(pair_2)):
+            pair_2 = os.path.abspath(pair_2)
+            print("after pair 2:", pair_2)
+
+    if(not single is None):
+        if(not os.path.isabs(single)):
+            single = os.path.abspath(single)
+            print("single:", single)
+
+    
+    if pair_1 == "none" and pair_2 == "none" and single == "none":
         print("You must specify paired-end or single-end reads as input for the pipeline.")
         sys.exit()
 
+    
     args_pack = dict()
     args_pack["no_host"] = no_host
     args_pack["verbose_mode"] = verbose_mode
@@ -241,10 +271,18 @@ if __name__ == "__main__":
     print("=====================================")
     print("no-host:", no_host)
     print("verbose_mode:", verbose_mode)
+    if(not os.path.isabs(config_file)):
+        config_file = os.path.abspath(config_file)
+        print("full path:", config_file)
+
+    
+    
+    config_obj = mpp.tool_path_obj(config_file)
+    
 
     if (tutorial_mode != "none"):
         print("working in tutorial mode:", tutorial_mode)
-        tutorial_main(config_file, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode)
+        tutorial_main(config_obj, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode)
     
     else:
-        main(config_file, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode)
+        main(config_obj, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode)

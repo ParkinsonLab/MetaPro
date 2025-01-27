@@ -16,8 +16,7 @@
 #MetaPro_paths.py
 #This code manages all of the locations of files needed to run MetaPro. 
 #It also controls the import of the configuration file.  
-
-
+#Jan 27, 2025: moved around a bunch of things to make the paths more consistent/coherent.  New dir structure class!
 import os
 import sys
 from datetime import datetime as dt
@@ -25,9 +24,15 @@ import math
 import time
 from configparser import ConfigParser, ExtendedInterpolation
 
-class tool_path_obj:
-    
-    
+class dir_obj:
+    def __init__ (self, output_folder):
+
+        self.out_dir = output_folder
+
+        
+
+
+class tool_path_obj:    
     def value_assignment(self, config, config_section, var_name, default):
         value = ""
         #print("CONFIG:", config)
@@ -43,12 +48,11 @@ class tool_path_obj:
                     print(var_name, "found! using:", value)
                     if(value == "0"):
                     	print(var_name, "zero-setting detected: using default")
-                    	
                 else:
                     print(var_name, "no inner section found. using default", default)
                     value = default
             else:
-                print(config_section, "no section found, using default:", default)
+                print("section:", config_section, "not found. using default for[", var_name, "]:", default)
                 value = default
         else:
             print("no config, using default:", default)
@@ -198,19 +202,29 @@ class tool_path_obj:
 
     def __init__ (self, config_path):
         print("CHECKING CONFIG")
-        if config_path:
+        self.config_path = config_path
+        if(not os.path.isabs(self.config_path)):
+            self.config_path = os.path.join(os.path.dirname(__file__), self.config_path)
+        #print("full path:", self.config_path)
+
+        if os.path.exists(self.config_path):
             config = ConfigParser() #change this to ex
-            config.read(config_path)
-            print("USING CONFIG", config_path)
+            config.read(self.config_path)
+            print("USING CONFIG", self.config_path)
         else:
             print("no config found, defaulting")
             config = None
 
         script_path             = "/pipeline/Scripts"
         tool_path               = "/pipeline_tools/"
-        database_path           = "/project/j/jparkin/Lab_Databases/"
-        custom_database_path    = "/pipeline/custom_databases/"
+        database_path           = self.value_assignment(config, "Databases", "database_path", "/project/j/jparkin/Lab_Databases")
         
+        custom_database_path    = "/pipeline/custom_databases/"
+
+        output_folder_default = "metapro_" + dt.today().strftime("%m%d%Y_%H%M%S")
+        output_path_default = os.path.join(os.getcwd(), output_folder_default)
+        self.output_path        = self.value_assignment(config, "Settings", "output_dir", output_path_default)
+
 
         
         #--------------------------------------------------
@@ -251,7 +265,6 @@ class tool_path_obj:
         repop_job_limit_default             = 1
         TA_job_limit_default                = cpu_default
         EC_job_limit_default                = cpu_default
-        Centrifuge_job_limit_default        = 1
 
         Barrnap_job_delay_default           = 5
         Infernal_job_delay_default          = 5
@@ -357,7 +370,6 @@ class tool_path_obj:
         self.TA_job_limit               = self.value_assignment(config, "Settings", "TA_job_limit", TA_job_limit_default)
         self.repop_job_limit            = self.value_assignment(config, "Settings", "repop_job_limit", repop_job_limit_default)
         self.EC_job_limit               = self.value_assignment(config, "Settings", "EC_job_limit", EC_job_limit_default)
-        self.Centrifuge_job_limit       = self.value_assignment(config, "Settings", "Centrifuge_job_limit", Centrifuge_job_limit_default)
         
         #------------------------------------------------------------------------
         

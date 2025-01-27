@@ -21,19 +21,22 @@ import queue as q
 #makes for a neat package/capsule
 
 class mp_stage:
-    def __init__ (self, config_path, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
+    def __init__ (self, config_obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
         #make our util obj
         #refresher: self -> instance var.  not self: class var (shared among class obj instances)
         
         #---------------------------------------------------------
         #Operational flags and state-recorders
         
-        
-        
+        print(dt.today(), "MP STAGE using:", output_folder_path)
+        time.sleep(5)
         self.tutorial_string = tutorial_mode_string
         self.output_folder_path = output_folder_path
-        self.mp_util = mpu.mp_util(self.output_folder_path, config_path)
-        self.paths = mpp.tool_path_obj(config_path)
+        self.mp_util = mpu.mp_util(self.output_folder_path, config_obj)
+        #self.config_dict = config_dict
+        self.paths = config_obj
+
+        #time.sleep(10)
         self.GA_DB_mode = self.paths.GA_DB_mode
         self.segmented_chocophlan_flag = True
         if(self.paths.DNA_DB.endswith(".fasta")):
@@ -43,14 +46,14 @@ class mp_stage:
         self.rRNA_chunks = int(self.paths.rRNA_chunksize)
         self.EC_chunksize = int(self.paths.EC_chunksize)
         self.GA_chunksize = int(self.paths.GA_chunksize)
-        self.config_path = config_path
+        #self.config_path = config_path
         self.pair_1_path = pair_1_path
         self.pair_2_path = pair_2_path
         self.single_path = single_path
         self.contig_path = contig_path  #tutorial/single-shot use
         self.quality_encoding = ""
         self.read_mode = "none"
-        if not single_path == "":
+        if not single_path is None:
             self.read_mode = "single"
             self.quality_encoding = self.mp_util.determine_encoding(single_path)
             print("ENCODING USED:", self.quality_encoding)
@@ -94,7 +97,6 @@ class mp_stage:
         self.repop_job_limit            = int(self.paths.repop_job_limit)
         self.GA_final_merge_job_limit   = int(self.paths.GA_final_merge_job_limit)
         self.EC_job_limit               = int(self.paths.EC_job_limit)
-        self.Centrifuge_job_limit       = int(self.paths.Centrifuge_job_limit)
         
         self.Infernal_job_delay         = float(self.paths.Infernal_job_delay)
         self.Barrnap_job_delay          = float(self.paths.Barrnap_job_delay)
@@ -289,9 +291,9 @@ class mp_stage:
         # Creates our command object, for creating shellscripts.
 
         if self.read_mode == "single":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=single_path, sequence_contigs = None)
+            self.commands = mpcom.mt_pipe_commands(self.no_host, config_obj=config_obj, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=single_path, sequence_contigs = None)
         elif self.read_mode == "paired":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, Config_path=config_path, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=pair_1_path, sequence_path_2=pair_2_path, sequence_single=None, sequence_contigs = None)
+            self.commands = mpcom.mt_pipe_commands(self.no_host, config_obj=config_obj, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=pair_1_path, sequence_path_2=pair_2_path, sequence_single=None, sequence_contigs = None)
     
 
         #--------------------------------------------------------
@@ -879,7 +881,7 @@ class mp_stage:
                 else:
                     marker_path_list.append(marker_path)
                     command_list = self.commands.create_TA_centrifuge_command(self.GA_pre_scan_label, self.rRNA_filter_label, self.assemble_contigs_label, read_cat, marker_file)
-                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.Centrifuge_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
             
             self.mp_util.wait_for_mp_store()
             
@@ -1551,7 +1553,7 @@ class mp_stage:
                 else:
                     marker_path_list.append(marker_path)
                     command_list = self.commands.create_TA_centrifuge_command(self.ta_label, self.rRNA_filter_label, self.assemble_contigs_label, section, marker_file)
-                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.Centrifuge_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
+                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
             
             marker_file = "TA_kraken2_pp"
             marker_path = os.path.join(self.TA_jobs_folder, marker_file)

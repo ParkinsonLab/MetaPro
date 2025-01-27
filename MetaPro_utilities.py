@@ -32,10 +32,10 @@ from datetime import datetime as dt
 import psutil as psu
 
 class mp_util:
-    def __init__(self, output_folder_path, config_path):
+    def __init__(self, output_folder_path, config_obj):
         self.mp_store = []
         self.output_folder_path = output_folder_path
-        self.paths = mpp.tool_path_obj(config_path)
+        self.paths = config_obj
         self.bypass_log_name = self.paths.bypass_log_name
 
     def mem_checker(self, threshold):
@@ -240,7 +240,7 @@ class mp_util:
         process.join()
 
     def launch_and_create_with_mp_store(self, job_location, job_label, command_obj, commands):
-        #launches a job. doesn't wait. but stores it in the mp_store queue
+        #just launches a job.  no multi-process.
         process = mp.Process(
             target=command_obj.create_and_launch,
             args=(job_location, job_label, commands)
