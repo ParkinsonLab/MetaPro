@@ -24,10 +24,16 @@ import math
 import time
 from configparser import ConfigParser, ExtendedInterpolation
 
+
+class time_obj:
+    def __init__(self):
+        self.time_now = dt.today()
+
 class dir_obj:
 
-    def make_dirs(self):
-
+    def make_dirs(self, path):
+        if(not os.path.exists(path)):
+            os.makedirs(path)
 
     def value_assignment(self, config, config_section, var_name, default):
         value = ""
@@ -142,19 +148,19 @@ class dir_obj:
         output_read_count_label_default                 = "output_read_count"
         
 
-        self.label_dict["quality_filter"]                   = self.value_assignment(config, "Labels", "quality_filter",                     quality_filter_label_default)
-        self.label_dict["host_filter"]                      = self.value_assignment(config, "Labels", "host_filter",                        host_filter_label_default)
-        self.label_dict["vector_filter"]                    = self.value_assignment(config, "Labels", "vector_filter",                      vector_filter_label_default)
-        self.label_dict["rRNA_filter"]                      = self.value_assignment(config, "Labels", "rRNA_filter",                        rRNA_filter_label_default)
-        self.label_dict["rRNA_filter_split"]                = self.value_assignment(config, "Labels", "rRNA_filter_split",                  rRNA_filter_split_label_default)   
-        self.label_dict["rRNA_filter_convert"]              = self.value_assignment(config, "Labels", "rRNA_filter_convert",                rRNA_filter_convert_label_default)
-        self.label_dict["rRNA_filter_barrnap"]              = self.value_assignment(config, "Labels", "rRNA_filter_barrnap",                rRNA_filter_barrnap_label_default)
-        self.label_dict["rRNA_filter_barrnap_merge"]        = self.value_assignment(config, "Labels", "rRNA_filter_barrnap_merge",          rRNA_filter_barrnap_merge_label_default)
-        self.label_dict["rRNA_filter_barrnap_pp"]           = self.value_assignment(config, "Labels", "rRNA_filter_barrnap_pp",             rRNA_filter_barrnap_pp_label_default)
-        self.label_dict["rRNA_filter_infernal"]             = self.value_assignment(config, "Labels", "rRNA_filter_infernal",               rRNA_filter_infernal_label_default)
-        self.label_dict["rRNA_filter_infernal_prep"]        = self.value_assignment(config, "Labels", "rRNA_filter_infernal_prep",          rRNA_filter_infernal_prep_label_default)
-        self.label_dict["rRNA_filter_splitter"]             = self.value_assignment(config, "Labels", "rRNA_filter_splitter",               rRNA_filter_splitter_label_default)
-        self.label_dict["rRNA_filter_post"]                 = self.value_assignment(config, "Labels", "rRNA_filter_post",                   rRNA_filter_post_label_default)
+        self.label_dict["qf"]                   = self.value_assignment(config, "Labels", "quality_filter",                     quality_filter_label_default)
+        self.label_dict["host"]                      = self.value_assignment(config, "Labels", "host_filter",                        host_filter_label_default)
+        self.label_dict["vec"]                    = self.value_assignment(config, "Labels", "vector_filter",                      vector_filter_label_default)
+        self.label_dict["rRNA"]                      = self.value_assignment(config, "Labels", "rRNA_filter",                        rRNA_filter_label_default)
+        self.label_dict["rRNA_split"]                = self.value_assignment(config, "Labels", "rRNA_filter_split",                  rRNA_filter_split_label_default)   
+        self.label_dict["rRNA_convert"]              = self.value_assignment(config, "Labels", "rRNA_filter_convert",                rRNA_filter_convert_label_default)
+        self.label_dict["rRNA_barrnap"]              = self.value_assignment(config, "Labels", "rRNA_filter_barrnap",                rRNA_filter_barrnap_label_default)
+        self.label_dict["rRNA_barrnap_merge"]        = self.value_assignment(config, "Labels", "rRNA_filter_barrnap_merge",          rRNA_filter_barrnap_merge_label_default)
+        self.label_dict["rRNA_barrnap_pp"]           = self.value_assignment(config, "Labels", "rRNA_filter_barrnap_pp",             rRNA_filter_barrnap_pp_label_default)
+        self.label_dict["rRNA_infernal"]             = self.value_assignment(config, "Labels", "rRNA_filter_infernal",               rRNA_filter_infernal_label_default)
+        self.label_dict["rRNA_infernal_prep"]        = self.value_assignment(config, "Labels", "rRNA_filter_infernal_prep",          rRNA_filter_infernal_prep_label_default)
+        self.label_dict["rRNA_splitter"]             = self.value_assignment(config, "Labels", "rRNA_filter_splitter",               rRNA_filter_splitter_label_default)
+        self.label_dict["rRNA_post"]                 = self.value_assignment(config, "Labels", "rRNA_filter_post",                   rRNA_filter_post_label_default)
         self.label_dict["repop"]                            = self.value_assignment(config, "Labels", "repop",                              repop_label_default)
         self.label_dict["assemble_contigs"]                 = self.value_assignment(config, "Labels", "assemble_contigs",                   assemble_contigs_label_default)
         self.label_dict["destroy_contigs"]                  = self.value_assignment(config, "Labels", "destroy_contigs",                    destroy_contigs_label_default)
@@ -204,10 +210,32 @@ class dir_obj:
         self.dir_dict["qf_adapt"] = os.path.join(self.dir_dict["qf_data"], "1_adapters")
         self.dir_dict["qf_tags"] = os.path.join(self.dir_dict["qf_data"], "2_tags")
         self.dir_dict["qf_merge"] = os.path.join(self.dir_dict["qf_data"], "3_merge")
+        self.dir_dict["qf_filter"] = os.path.join(self.dir_dict["qf_data"], "4_filter")
+        self.dir_dict["qf_orphan"] = os.path.join(self.dir_dict["qf_data"], "5_orphan")
+        self.dir_dict["qf_dup"] = os.path.join(self.dir_dict["qf_data"], "6_dup")
+        self.dir_dict["qf_export"] = os.path.join(self.dir_dict["qf"], "export")
+
+        self.dir_dict["host"] = os.path.join(self.out_dir, self.label_dict["host_filter"])
+        self.dir_dict["host_data"] = os.path.join(self.dir_dict["host"], "data")
+        self.dir_dict["host_scan"] = os.path.join(self.dir_dict["host_data"], "0_bt2_scan")
+        self.dir_dict["host_export"] = os.path.join(self.dir_dict["host"], "export")
+
+        self.dir_dict["vec"] = os.path.join(self.out_dir, self.label_dict["vec"])
+        self.dir_dict["vec_data"] = os.path.join(self.dir_dict["vec"], "data")
+        self.dir_dict["vec_scan"] = os.path.join(self.dir_dict["vec_data"], "0_bt2")
+        self.dir_dict["vec_export"] = os.path.join(self.dir_dict["vec"], "export")
+
+        self.dir_dict["rRNA"] = os.path.join(self.out_dir, self.label_dict["rRNA"])
+        self.dir_dict["rRNA_data"] = os.path.join(self.dir_dict["rRNA"], "data")
+        self.dir_dict["rRNA_split"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_split")
+        self.dir_dict["rRNA_barrnap"] = os.path.join(self.dir_dict["rRNA_data"], "barrnap")
+        self.dir_dict["rRNA_inf"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_inf")
+
+        
 
 
 class tool_path_obj:    
-    def value_assignment(self, config, config_section, var_name, default):
+    def value_assignment(self, filetype, config, config_section, var_name, default):
         value = ""
         #print("CONFIG:", config)
         if config:
@@ -231,6 +259,18 @@ class tool_path_obj:
         else:
             print("no config, using default:", default)
             value = default
+
+
+        if((filetype == "str") or (filetype == "path")):
+            value = str(value)
+        
+        elif(filetype == "int"):
+            value = int(value)
+
+        elif((filetype == "float") or (filetype == "flt")):
+            value = float(filetype)
+
+    
 
         return value
         
@@ -489,23 +529,23 @@ class tool_path_obj:
         #length_cutoff= 0.65
         #score_cutoff= 60
         
-        self.config_dict["target_rank"] = self.value_assignment(config, "Settings", "target_rank", "genus")
-        self.config_dict["adapterremoval_minlength"]   = self.value_assignment(config, "Settings", "AdapterRemoval_minlength", 30)
-        self.config_dict["show_unclassified"]          = self.value_assignment(config, "Settings", "Show_unclassified", "No")
-        self.config_dict["bypass_log_name"]            = self.value_assignment(config, "Settings", "bypass_log_name", "bypass_log.txt")
-        self.config_dict["debug_stop_flag"]           = self.value_assignment(config, "Settings", "debug_stop_flag", "none")
-        self.config_dict["num_threads"]                = self.value_assignment(config, "Settings", "num_threads", os.cpu_count())
+        self.config_dict["target_rank"] = self.value_assignment("str", config, "Settings", "target_rank", "genus")
+        self.config_dict["adapterremoval_minlength"]   = self.value_assignment("int", config, "Settings", "AdapterRemoval_minlength", 30)
+        self.config_dict["show_unclassified"]          = self.value_assignment("str", config, "Settings", "Show_unclassified", "No")
+        self.config_dict["bypass_log_name"]            = self.value_assignment("str", config, "Settings", "bypass_log_name", "bypass_log.txt")
+        self.config_dict["debug_stop_flag"]           = self.value_assignment("str", config, "Settings", "debug_stop_flag", "none")
+        self.config_dict["num_threads"]                = self.value_assignment("int", config, "Settings", "num_threads", os.cpu_count())
         if(self.config_dict["num_threads"] == 0):
             self.config_dict["num_threads"] = 1
-        self.config_dict["taxa_exist_cutoff"]          = self.value_assignment(config, "Settings", "taxa_existence_cutoff", 0.1)
-        self.config_dict["DNA_DB_mode"]                = self.value_assignment(config, "Settings", "DNA_DB_mode", "chocophlan") #used to indicate custom DB, or our grouped library
+        self.config_dict["taxa_exist_cutoff"]          = self.value_assignment("float", config, "Settings", "taxa_existence_cutoff", 0.1)
+        self.config_dict["DNA_DB_mode"]                = self.value_assignment("str", config, "Settings", "DNA_DB_mode", "chocophlan") #used to indicate custom DB, or our grouped library
         #other setting is "custom"
         
         
         
-        self.config_dict["RPKM_cutoff"]                = self.value_assignment(config, "Settings", "RPKM_cutoff", 0.01)
-        self.config_dict["BWA_cigar_cutoff"]           = self.value_assignment(config, "Settings", "BWA_cigar_cutoff", BWA_cigar_default)
-        self.config_dict["BLAT_identity_cutoff"]       = self.value_assignment(config, "Settings", "BLAT_identity_cutoff", BLAT_identity_default)
+        self.config_dict["RPKM_cutoff"]                = self.value_assignment("float", config, "Settings", "RPKM_cutoff", 0.01)
+        self.config_dict["BWA_cigar_cutoff"]           = self.value_assignment("int", config, "Settings", "BWA_cigar_cutoff", BWA_cigar_default)
+        self.config_dict["BLAT_identity_cutoff"]       = self.value_assignment("int", config, "Settings", "BLAT_identity_cutoff", BLAT_identity_default)
         self.config_dict["BLAT_length_cutoff"]         = self.value_assignment(config, "Settings", "BLAT_length_cutoff", BLAT_length_default)
         self.config_dict["BLAT_score_cutoff"]          = self.value_assignment(config, "Settings", "BLAT_score_cutoff", BLAT_score_default)            
         self.config_dict["DIAMOND_identity_cutoff"]    = self.value_assignment(config, "Settings", "DIAMOND_identity_cutoff", DIAMOND_identity_default)
