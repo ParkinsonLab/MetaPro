@@ -46,11 +46,7 @@ RUN wget https://github.com/MikkelSchubert/adapterremoval/archive/refs/tags/v2.3
 && cd /pipeline_tools \
 && rm -r adapterremoval-2.3.4
 
-#---------------------------------------
-# Install Barrnap
-#RUN wget https://github.com/tseemann/barrnap/archive/0.8.zip -O barrnap.zip \
-RUN wget https://github.com/tseemann/barrnap/archive/refs/tags/0.9.zip -O barrnap.zip \
-&& unzip barrnap.zip 
+
 
 
 
@@ -349,4 +345,13 @@ RUN apt-get autoclean \
 #------------------------------------------
 
 
+#---------------------------------------
+# Install Barrnap
+RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.29.1/bedtools-2.29.1.tar.gz \
+&& tar -zxvf bedtools-2.29.1.tar.gz \
+&& cd bedtools2 \
+&& make
 
+#RUN wget https://github.com/tseemann/barrnap/archive/0.8.zip -O barrnap.zip \
+RUN wget https://github.com/tseemann/barrnap/archive/refs/tags/0.9.zip -O barrnap.zip \
+&& unzip barrnap.zip 
