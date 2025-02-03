@@ -80,18 +80,7 @@ RUN wget https://github.com/lh3/bwa/archive/refs/tags/v0.7.18.tar.gz -O bwa.tar.
 && cd /pipeline_tools \
 && mv bwa-0.7.18 BWA
 
-#----------------------------------------------------
-# Install CD-HIT-DUP (from auxtools)
-RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz -O cdhit.tar.gz \
-&& tar --remove-files -xzvf cdhit.tar.gz \
-&& rm cdhit.tar.gz \
-&& cd cd-hit-v4.8.1-2019-0228 \ 
-&& make \
-&& cd /pipeline_tools \
-&& mkdir cdhit_dup \
-&& mv /pipeline_tools/cd-hit-v4.8.1-2019-0228/cd-hit-auxtools /pipeline_tools/cdhit_dup \
-&& cd /pipeline_tools \
-&& rm -r cd-hit-v4.8.1-2019-0228
+
 
 
 
@@ -344,14 +333,38 @@ RUN apt-get autoclean \
 && apt-get clean && apt-get install -y valgrind && apt-get install -y heaptrack
 #------------------------------------------
 
-
+WORKDIR /pipeline_tools
 #---------------------------------------
 # Install Barrnap
-RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.29.1/bedtools-2.29.1.tar.gz \
-&& tar -zxvf bedtools-2.29.1.tar.gz \
-&& cd bedtools2 \
-&& make
+RUN apt-get -y install bedtools
+
 
 #RUN wget https://github.com/tseemann/barrnap/archive/0.8.zip -O barrnap.zip \
 RUN wget https://github.com/tseemann/barrnap/archive/refs/tags/0.9.zip -O barrnap.zip \
 && unzip barrnap.zip 
+
+
+
+
+#----------------------------------------------------
+# Install CD-HIT-DUP (from auxtools)
+RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz -O cdhit.tar.gz \
+&& tar --remove-files -xzvf cdhit.tar.gz \
+&& rm cdhit.tar.gz \
+&& cd cd-hit-v4.8.1-2019-0228 \ 
+&& make \
+&& cd cd-hit-auxtools \
+&& make \
+&& cd /pipeline_tools \
+&& mkdir cdhit_dup \
+&& mv /pipeline_tools/cd-hit-v4.8.1-2019-0228/* /pipeline_tools/cdhit_dup \
+&& cd /pipeline_tools \
+&& rm -r cd-hit-v4.8.1-2019-0228
+
+
+ENV PATH="${PATH}:/pipeline_tools/SPAdes/bin:/pipeline_tools/BWA:/pipeline_tools/MetaGeneMark_linux_64:/pipeline_tools/barrnap-0.9/bin:/pipeline_tools/"
+ENV PATH="${PATH}:/pipeline_tools/cdhit_dup/cd-hit-auxtools:/pipeline_tools/DIAMOND:/pipeline_tools/kraken2:/pipeline_tools/samtools:/pipeline_tools/vsearch/vsearch-2.29.2-linux-x86_64/bin"
+ENV PATH="${PATH}:/pipeline_tools/adapterremoval:/pipeline_tools/WEVOTE:/pipeline_tools/PRIAM_search:/pipeline_tools/PBLAT:/pipeline_tools/BLAST_p"
+
+
+RUN apt-get update

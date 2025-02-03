@@ -230,6 +230,11 @@ class dir_obj:
         self.dir_dict["rRNA_split"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_split")
         self.dir_dict["rRNA_barrnap"] = os.path.join(self.dir_dict["rRNA_data"], "barrnap")
         self.dir_dict["rRNA_inf"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_inf")
+        self.dir_dict["rRNA_s_fasta"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_s_fasta")
+        self.dir_dict["rRNA_p1_fasta"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_p1_fasta")
+        self.dir_dict["rRNA_p2_fasta"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_p2_fasta")
+        
+
 
         
 
