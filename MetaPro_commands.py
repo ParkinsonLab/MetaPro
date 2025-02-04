@@ -22,6 +22,7 @@ class mt_pipe_commands:
         self.tool_path_obj = config_obj #mpp.tool_path_obj(Config_path)
         self.no_host_flag = no_host
         # path to the genome sequence file
+        
 
         
         if(tutorial_keyword is None):
@@ -2664,8 +2665,10 @@ class mt_pipe_commands:
             final_merge_fastq + " && " + make_marker_f,
             final_merge_proteins + " && " + make_marker_p
         ]
-        
+    
         return COMMANDS_ga_final_merge
+    
+
     def create_TA_kraken2_command(self, current_stage_name, assemble_contigs_stage, operating_mode, marker_file):
         subfolder               = os.path.join(self.Output_Path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
