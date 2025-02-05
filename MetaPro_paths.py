@@ -26,8 +26,126 @@ from configparser import ConfigParser, ExtendedInterpolation
 
 
 class time_obj:
+    def compare_time(self, label):
+        if(label == "qc"):
+            return self.qc_end - self.qc_start
+        elif(label == "host"):
+            return self.host_end - self.host_start
+        elif(label == "vec"):
+            return self.vec_end - self.vec_start
+        elif(label == "rRNA"):
+            return self.rRNA_end - self.rRNA_start
+        elif(label == "contigs"):
+
+
+    def measure_time(self, label, start_or_end):
+        if(start_or_end == "start"):
+            if(label == "qc"):
+                self.qc_start = time.time()
+            elif(label == "host"):
+                self.host_start = time.time()
+            elif(label == "vec"):
+                self.vec_start = time.time()
+            elif(label == "rRNA"):
+                self.rRNA_start = time.time()
+            elif(label == "contigs"):
+                self.contigs_start = time.time()
+            elif(label == "repop"):
+                self.repop_start = time.time()
+            elif(label == "GA_BWA"):
+                self.GA_BWA_start = time.time()
+            elif(label == "GA_BLAT"):
+                self.GA_BLAT_start = time.time()
+            elif(label == "GA_DMD"):
+                self.GA_DMD_start = time.time()
+            elif(label == "TA"):
+                self.TA_start = time.time()
+            elif(label == "EC"):
+                self.EC_start = time.time()
+            elif(label == "out"):
+                self.out_start = time.time()
+
+        elif(start_or_end == "end"):
+            if(label == "qc"):
+                self.qc_end = time.time()
+            elif(label == "host"):
+                self.host_end = time.time()
+            elif(label == "vec"):
+                self.vec_end = time.time()
+            elif(label == "rRNA"):
+                self.rRNA_end = time.time()
+            elif(label == "contigs"):
+                self.contigs_end = time.time()
+            elif(label == "repop"):
+                self.repop_end = time.time()
+            elif(label == "GA_BWA"):
+                self.GA_BWA_end = time.time()
+            elif(label == "GA_BLAT"):
+                self.GA_BLAT_end = time.time()
+            elif(label == "GA_DMD"):
+                self.GA_DMD_end = time.time()
+            elif(label == "TA"):
+                self.TA_end = time.time()
+            elif(label == "EC"):
+                self.EC_end = time.time()
+            elif(label == "out"):
+                self.out_end = time.time()
+            
+            
+
     def __init__(self):
         self.time_now = dt.today()
+        #timing vars
+        self.start_time                     = time.time()
+        self.end_time                       = 0
+        self.qc_start                  = 0
+        self.qc_end                    = 0
+        
+        self.host_start                     = 0
+        self.host_end                       = 0
+
+        
+        self.vec_start                   = 0
+        self.vec_end                     = 0
+
+        self.rRNA_start              = 0  
+        self.rRNA_end                = 0
+    
+        
+        self.repop_start                    = 0
+        self.repop_end                      = 0
+
+        
+        self.contigs_start         = 0
+        self.contigs_end           = 0
+
+        
+       
+        
+        self.GA_BWA_start                   = 0
+        self.GA_BWA_end                     = 0
+
+        
+        self.GA_BLAT_start                  = 0
+        self.GA_BLAT_end                    = 0
+
+        
+        self.GA_DMD_start               = 0
+        self.GA_DMD_end                 = 0
+
+        
+        self.TA_start                       = 0
+        self.TA_end                         = 0
+        
+        self.EC_start                       = 0
+        self.EC_end                         = 0
+
+        self.out_start                  = 0
+        self.out_end                    = 9
+
+        
+
+
 
 class dir_obj:
 
@@ -302,7 +420,14 @@ class dir_obj:
 
         self.dir_dict["out"] = os.path.join(self.out_dir, self.label_dict["out"])
         self.dir_dict["out_export"] = os.path.join(self.dir_dict["out"], "export")
+        self.dir_dict["out_data"] = os.path.join(self.dir_dict["out"], "data")
+        self.dir_dict["out_jobs"] = os.path.join(self.dir_dict["out"], "jobs")
+        self.dir_dict["out_ng"] = os.path.join(self.dir_dict["data"], "metabolic_network")
+        self.dir_dict["out_unique_hosts"] = os.path.join(self.dir_dict["data"], "unique_hosts")
+        self.dir_dict["out_unique_vec"] = os.path.join(self.dir_dict["data"], "unique_vectors")
+        self.dir_dict["out_heatmap"] = os.path.join(self.dir_dict["data"], "heatmap")
         
+        self.dir_dict["out_list"] = ["out", "out_export", "out_data", "out_jobs", "out_ng", "out_unique_hosts", "out_unique_vec", "out_heatmap"]
 
         
 
