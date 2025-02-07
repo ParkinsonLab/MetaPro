@@ -25,7 +25,7 @@ import time
 from configparser import ConfigParser, ExtendedInterpolation
 
 
-class time_obj:
+class mpro_timing:
     def compare_time(self, label):
         if(label == "qc"):
             return self.qc_end - self.qc_start
@@ -36,6 +36,17 @@ class time_obj:
         elif(label == "rRNA"):
             return self.rRNA_end - self.rRNA_start
         elif(label == "contigs"):
+            return self.contigs_end - self.contigs_start
+        elif(label == "GA_BWA"):
+            return self.GA_BWA_end - self.GA_BWA_start
+        elif(label == "GA_DMD"):
+            return self.GA_DMD_end - self.GA_DMD_start
+        elif(label == "TA"):
+            return self.TA_end - self.TA_start
+        elif(label == "EC"):
+            return self.EC_end - self.EC_start
+        elif(label == "out"):
+            return self.out_end - self.out_start
 
 
     def measure_time(self, label, start_or_end):
@@ -96,62 +107,41 @@ class time_obj:
     def __init__(self):
         self.time_now = dt.today()
         #timing vars
-        self.start_time                     = time.time()
-        self.end_time                       = 0
-        self.qc_start                  = 0
-        self.qc_end                    = 0
-        
-        self.host_start                     = 0
-        self.host_end                       = 0
+        self.start_time     = time.time()
+        self.end_time       = time.time()
+        self.qc_start       = time.time()
+        self.qc_end         = time.time()        
+        self.host_start     = time.time()
+        self.host_end       = time.time()        
+        self.vec_start      = time.time()
+        self.vec_end        = time.time()
+        self.rRNA_start     = time.time()
+        self.rRNA_end       = time.time()    
+        self.repop_start    = time.time()
+        self.repop_end      = time.time()
+        self.contigs_start  = time.time()
+        self.contigs_end    = time.time()
+        self.GA_BWA_start   = time.time()
+        self.GA_BWA_end     = time.time()
+        self.GA_BLAT_start  = time.time()
+        self.GA_BLAT_end    = time.time()        
+        self.GA_DMD_start   = time.time()
+        self.GA_DMD_end     = time.time()
+        self.TA_start       = time.time()
+        self.TA_end         = time.time()        
+        self.EC_start       = time.time()
+        self.EC_end         = time.time()
+        self.out_start      = time.time()
+        self.out_end        = time.time()
 
         
-        self.vec_start                   = 0
-        self.vec_end                     = 0
-
-        self.rRNA_start              = 0  
-        self.rRNA_end                = 0
-    
-        
-        self.repop_start                    = 0
-        self.repop_end                      = 0
-
-        
-        self.contigs_start         = 0
-        self.contigs_end           = 0
-
-        
-       
-        
-        self.GA_BWA_start                   = 0
-        self.GA_BWA_end                     = 0
-
-        
-        self.GA_BLAT_start                  = 0
-        self.GA_BLAT_end                    = 0
-
-        
-        self.GA_DMD_start               = 0
-        self.GA_DMD_end                 = 0
-
-        
-        self.TA_start                       = 0
-        self.TA_end                         = 0
-        
-        self.EC_start                       = 0
-        self.EC_end                         = 0
-
-        self.out_start                  = 0
-        self.out_end                    = 9
-
-        
-
-
-
-class dir_obj:
+class mpro_dir:
 
     def make_dirs(self, path):
         if(not os.path.exists(path)):
             os.makedirs(path)
+
+    
 
     def value_assignment(self, config, config_section, var_name, default):
         value = ""
@@ -186,7 +176,7 @@ class dir_obj:
     def get_dir_dict(self):
         return self.dir_dict
 
-    def __init__ (self, output_folder, config_path):
+    def __init__ (self, config_path, output_folder):
 
         self.out_dir = output_folder
 
@@ -206,6 +196,7 @@ class dir_obj:
 
         self.label_dict = dict()
         self.dir_dict = dict()
+        self.dir_dict["main"] = self.out_dir
         #--------------------------------------------------------------------------------------------
         # Labels.  
         # why? to change them during integration + new feature testing
@@ -374,6 +365,9 @@ class dir_obj:
         self.dir_dict["contigs_export"] = os.path.join(self.dir_dict["contigs"], "export")
         self.dir_dict["contigs_spades"] = os.path.join(self.dir_dict["data"], "0_spades")
         self.dir_dict["contigs_mgm"] = os.path.join(self.dir_dict["data"], "1_mgm")
+        self.dir_dict["spades_transcripts"] = os.path.join(self.dir_dict["contigs_spades"], "transcripts.fasta")
+        self.dir_dict["spades_done"] = os.path.join(self.dir_dict["contigs_spades"], "stage_7_terminate")
+        
         self.dir_dict["contigs_list"] = ["contigs", "contigs_data", "contigs_spades", "contigs_mgm", "contigs_export"]
 
         self.dir_dict["GA_BWA"] = os.path.join(self.out_dir, self.label_dict["GA_BWA"])
@@ -432,7 +426,7 @@ class dir_obj:
         
 
 
-class tool_path_obj:    
+class mpro_config:    
     def value_assignment(self, filetype, config, config_section, var_name, default):
         value = ""
         #print("CONFIG:", config)
@@ -613,7 +607,7 @@ class tool_path_obj:
     def get_config_dict(self):
         return self.config_dict
 
-    def __init__ (self, config_path):
+    def __init__ (self, config_path, main_dir):
         print("CHECKING CONFIG")
         self.config_path = config_path
         if(not os.path.isabs(self.config_path)):
@@ -636,9 +630,8 @@ class tool_path_obj:
         
         custom_database_path    = "/pipeline/custom_databases/"
 
-        output_folder_default = "metapro_" + dt.today().strftime("%m%d%Y_%H%M%S")
-        output_path_default = os.path.join(os.getcwd(), output_folder_default)
-        self.output_path        = self.value_assignment(config, "Settings", "output_dir", output_path_default)
+        output_path_default = main_dir
+        self.output_path        = self.value_assignment(config, "Settings", "workdir", output_path_default)
 
 
         
@@ -725,16 +718,26 @@ class tool_path_obj:
         #length_cutoff= 0.65
         #score_cutoff= 60
         
-        self.config_dict["target_rank"] = self.value_assignment("str", config, "Settings", "target_rank", "genus")
-        self.config_dict["adapterremoval_minlength"]   = self.value_assignment("int", config, "Settings", "AdapterRemoval_minlength", 30)
-        self.config_dict["show_unclassified"]          = self.value_assignment("str", config, "Settings", "Show_unclassified", "No")
-        self.config_dict["bypass_log_name"]            = self.value_assignment("str", config, "Settings", "bypass_log_name", "bypass_log.txt")
-        self.config_dict["debug_stop_flag"]           = self.value_assignment("str", config, "Settings", "debug_stop_flag", "none")
-        self.config_dict["num_threads"]                = self.value_assignment("int", config, "Settings", "num_threads", os.cpu_count())
+        self.config_dict["singleton"] = self.value_assignment("path", config, "Input", "singleton","None")
+        self.config_dict["pair_1"] = self.value_assignment("path", config, "Input", "pair_1", "None")
+        self.config_dict["pair_2"] = self.value_assignment("path", config, "Input", "pair_2", "None")
+
+        self.config_dict["pair_1"] = os.path.abspath(self.config_dict["pair_1"])
+        self.config_dict["pair_2"] = os.path.abspath(self.config_dict["pair_2"])
+        self.config_dict["single"] = os.path.abspath(self.config_dict["single"])
+
+        self.config_dict["bypass_log"] = self.value_assignment("path", config, "Settings", "bypass_log", os.path.join(self.output_path), "bypass_long.txt")
+
+        self.config_dict["target_rank"]                 = self.value_assignment("str", config, "Settings", "target_rank", "genus")
+        self.config_dict["adapterremoval_minlength"]    = self.value_assignment("int", config, "Settings", "AdapterRemoval_minlength", 30)
+        self.config_dict["show_unclassified"]           = self.value_assignment("str", config, "Settings", "Show_unclassified", "No")
+        self.config_dict["bypass_log_name"]             = self.value_assignment("str", config, "Settings", "bypass_log_name", "bypass_log.txt")
+        self.config_dict["debug_stop_flag"]             = self.value_assignment("str", config, "Settings", "debug_stop_flag", "none")
+        self.config_dict["num_threads"]                 = self.value_assignment("int", config, "Settings", "num_threads", os.cpu_count())
         if(self.config_dict["num_threads"] == 0):
             self.config_dict["num_threads"] = 1
-        self.config_dict["taxa_exist_cutoff"]          = self.value_assignment("float", config, "Settings", "taxa_existence_cutoff", 0.1)
-        self.config_dict["DNA_DB_mode"]                = self.value_assignment("str", config, "Settings", "DNA_DB_mode", "chocophlan") #used to indicate custom DB, or our grouped library
+        self.config_dict["taxa_exist_cutoff"]           = self.value_assignment("float", config, "Settings", "taxa_existence_cutoff", 0.1)
+        self.config_dict["DNA_DB_mode"]                 = self.value_assignment("str", config, "Settings", "DNA_DB_mode", "chocophlan") #used to indicate custom DB, or our grouped library
         #other setting is "custom"
         
         
@@ -865,11 +868,11 @@ class tool_path_obj:
 
         #-------------------------------------------------------
         # test DBs
-        self.GA_DB_mode = "multi" #by default for the new DB changes.
+        self.config_dict["GA_DB_mode"] = "multi" #by default for the new DB changes.
         self.check_dmd_valid()
-        if(self.DNA_DB_mode == "custom"):
+        if(self.config_dict["GA_DB_mode"] == "custom"):
             self.check_bwa_valid(self.DNA_DB)
-            self.check_blat_valid(self.DNA_DB)
+            #self.check_blat_valid(self.DNA_DB)
         
 
         #----------------------------------------------------------

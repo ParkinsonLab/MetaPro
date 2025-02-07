@@ -21,197 +21,67 @@ import queue as q
 #makes for a neat package/capsule
 
 class mp_stage:
-    def __init__ (self, config_obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
+    def __init__ (self, config_dict, dir_dict, label_dict, time_obj): #config_obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
         #make our util obj
         #refresher: self -> instance var.  not self: class var (shared among class obj instances)
         
         #---------------------------------------------------------
         #Operational flags and state-recorders
         
-        print(dt.today(), "MP STAGE using:", output_folder_path)
-        time.sleep(5)
-        self.tutorial_string = tutorial_mode_string
-        self.output_folder_path = output_folder_path
-        self.mp_util = mpu.mp_util(self.output_folder_path, config_obj)
+        print(dt.today(), "MP STAGE using:", dir_dict["main"])
+        #time.sleep(5)
+        #self.tutorial_string = tutorial_mode_string
+        self.output_folder_path = dir_dict["main"] #output_folder_path
+        self.mp_util = mpu.mp_util(config_dict, dir_dict)
         #self.config_dict = config_dict
-        self.paths = config_obj
+        
+        self.config_dict = config_dict
+        self.dir_dict = dir_dict
+        self.label_dict = label_dict
 
         #time.sleep(10)
         self.GA_DB_mode = self.paths.GA_DB_mode
         self.segmented_chocophlan_flag = True
-        if(self.paths.DNA_DB.endswith(".fasta")):
+        if(config_dict["DNA_DB"].endswith(".fasta")):
             self.segmented_chocophlan_flag = False
-        self.no_host = args_pack["no_host"]
-        self.verbose_mode = args_pack["verbose_mode"]
+        self.no_host = config_dict["no_host"]
+        self.verbose_mode = config_dict["verbose_mode"]
         self.rRNA_chunks = int(self.paths.rRNA_chunksize)
         self.EC_chunksize = int(self.paths.EC_chunksize)
         self.GA_chunksize = int(self.paths.GA_chunksize)
         #self.config_path = config_path
-        self.pair_1_path = pair_1_path
-        self.pair_2_path = pair_2_path
-        self.single_path = single_path
-        self.contig_path = contig_path  #tutorial/single-shot use
+        self.pair_1_path = config_dict["pair_1"]
+        self.pair_2_path = config_dict["pair_2"]
+        self.single_path = config_dict["single"]
+        self.contig_path = config_dict["contig"] #_path  #tutorial/single-shot use
         self.quality_encoding = ""
-        self.read_mode = "none"
-        if not single_path is None:
-            self.read_mode = "single"
-            self.quality_encoding = self.mp_util.determine_encoding(single_path)
-            print("ENCODING USED:", self.quality_encoding)
+        self.config_dict["read_mode"] = "none"
+        if not self.single_path is None:
+            self.config_dict["read_mode"] = "single"
+            self.config_dict["q_enc"] = self.mp_util.determine_encoding(self.single_path)
+            print("ENCODING USED:", self.config_dict["q_enc"])
             print("OPERATING IN SINGLE-ENDED MODE")
         else:
-            self.read_mode = "paired"
-            self.quality_encoding = self.mp_util.determine_encoding(pair_1_path)
-            print("ENCODING USED:", self.quality_encoding)
+            self.config_dict["read_mode"] = "paired"
+            self.config_dict["q_enc"] = self.mp_util.determine_encoding(self.pair_1_path)
+            print("ENCODING USED:", self.config_dict["q_enc"])
             print("OPERATING IN PAIRED-MODE")
         
         
-        self.debug_stop_flag = self.paths.debug_stop_flag
+        #self.debug_stop_flag = self.paths.debug_stop_flag
         
-
-
-
-        #timing vars
-        self.start_time                     = time.time()
-        self.end_time                       = 0
-        self.quality_start                  = 0
-        self.quality_end                    = 0
-        self.cleanup_quality_start          = 0
-        self.cleanup_quality_end            = 0
-        
-        self.host_start                     = 0
-        self.host_end                       = 0
-        self.cleanup_host_start             = 0
-        self.cleanup_host_end               = 0
-        
-        self.vector_start                   = 0
-        self.vector_end                     = 0
-        self.cleanup_vector_start           = 0
-        self.cleanup_vector_end             = 0
-        
-        self.rRNA_filter_start              = 0  
-        self.rRNA_filter_end                = 0
-        self.cleanup_rRNA_filter_start      = 0
-        self.cleanup_rRNA_filter_end        = 0   
-        
-        self.repop_start                    = 0
-        self.repop_end                      = 0
-        self.cleanup_repop_start            = 0
-        self.cleanup_repop_end              = 0
-        
-        self.assemble_contigs_start         = 0
-        self.assemble_contigs_end           = 0
-        self.cleanup_assemble_contigs_start = 0
-        self.cleanup_assemble_contigs_end   = 0
-        
-        self.destroy_contigs_start          = 0
-        self.destroy_contigs_end            = 0
-        self.cleanup_destroy_contigs_start  = 0 
-        self.cleanup_destroy_contigs_end    = 0
-        
-        self.GA_BWA_start                   = 0
-        self.GA_BWA_end                     = 0
-        self.cleanup_GA_BWA_start           = 0
-        self.cleanup_GA_BWA_end             = 0
-        
-        self.GA_BLAT_start                  = 0
-        self.GA_BLAT_end                    = 0
-        self.cleanup_GA_BLAT_start          = 0
-        self.cleanup_GA_BLAT_end            = 0
-        
-        self.GA_DIAMOND_start               = 0
-        self.GA_DIAMOND_end                 = 0
-        self.cleanup_GA_DIAMOND_start       = 0
-        self.cleanup_GA_DIAMOND_end         = 0
-        
-        self.TA_start                       = 0
-        self.TA_end                         = 0
-        self.cleanup_TA_start               = 0
-        self.cleanup_TA_end                 = 0
-        
-        self.EC_start                       = 0
-        self.EC_end                         = 0
-
-        self.EC_DETECT_start                = 0  
-        self.EC_DETECT_end                  = 0
-        
-        self.EC_PRIAM_start                 = 0
-        self.EC_PRIAM_end                   = 0
-        
-        self.EC_DIAMOND_start               = 0
-        self.EC_DIAMOND_end                 = 0
-        
-        self.cleanup_EC_start               = 0
-        self.cleanup_EC_end                 = 0
-        
-        self.Cytoscape_start                = 0
-        self.Cytoscape_end                  = 0
-        self.cleanup_cytoscape_start        = 0
-        self.cleanup_cytoscape_end          = 0
-        
-
-        
-            
-             
-                
         mp_store = []  # stores the multiprocessing processes
 
         # Creates our command object, for creating shellscripts.
 
-        if self.read_mode == "single":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, config_obj=config_obj, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=single_path, sequence_contigs = None)
-        elif self.read_mode == "paired":
-            self.commands = mpcom.mt_pipe_commands(self.no_host, config_obj=config_obj, Quality_score=self.quality_encoding, tutorial_keyword = None, sequence_path_1=pair_1_path, sequence_path_2=pair_2_path, sequence_single=None, sequence_contigs = None)
-    
+        self.commands = mpcom.mt_pipe_commands(self.config_dict, self.dir_dict)
 
-        #--------------------------------------------------------
-        #working paths
-        self.quality_path           = os.path.join(self.output_folder_path, self.quality_filter_label)
-        self.host_path              = os.path.join(self.output_folder_path, self.host_filter_label)
-        self.vector_path            = os.path.join(self.output_folder_path, self.vector_filter_label)
-        self.rRNA_filter_path       = os.path.join(self.output_folder_path, self.rRNA_filter_label)
-        self.repop_path             = os.path.join(self.output_folder_path, self.repop_job_label)
-        self.assemble_contigs_path  = os.path.join(self.output_folder_path, self.assemble_contigs_label)
-        self.GA_pre_scan_path       = os.path.join(self.output_folder_path, self.GA_pre_scan_label)
-        self.GA_split_path          = os.path.join(self.output_folder_path, self.GA_split_label)
-        self.GA_BWA_path            = os.path.join(self.output_folder_path, self.GA_BWA_label)
-        self.GA_BLAT_path           = os.path.join(self.output_folder_path, self.GA_BLAT_label)
-        self.GA_DIAMOND_path        = os.path.join(self.output_folder_path, self.GA_DIAMOND_label)
-        self.ga_final_merge_path    = os.path.join(self.output_folder_path, self.GA_final_merge_label)
-        self.TA_path                = os.path.join(self.output_folder_path, self.ta_label)
-        self.ec_path                = os.path.join(self.output_folder_path, self.ec_label)
-        self.network_path           = os.path.join(self.output_folder_path, self.output_label)
-        
 
-        #working folders
-        self.GA_pre_scan_data_folder= os.path.join(self.GA_pre_scan_label, "data")
-        self.GA_pre_scan_jobs_folder= os.path.join(self.GA_pre_scan_data_folder, "jobs")
-        self.GA_split_data_folder   = os.path.join(self.GA_split_label, "data")
-        self.GA_split_jobs_folder   = os.path.join(self.GA_split_data_folder, "jobs")
-        self.GA_BWA_data_folder     = os.path.join(self.GA_BWA_label, "data")
-        self.GA_BWA_jobs_folder     = os.path.join(self.GA_BWA_data_folder, "jobs")
-        self.GA_BLAT_data_folder    = os.path.join(self.GA_BLAT_path, "data")
-        self.GA_BLAT_jobs_folder    = os.path.join(self.GA_BLAT_data_folder, "jobs")
-        self.GA_DIAMOND_data_folder = os.path.join(self.GA_DIAMOND_path, "data")
-        self.GA_DIAMOND_jobs_folder = os.path.join(self.GA_DIAMOND_data_folder, "jobs")
-        self.EC_data_folder         = os.path.join(self.ec_path, "data")
-        self.EC_jobs_folder         = os.path.join(self.EC_data_folder, "jobs")
-        self.TA_data_folder         = os.path.join(self.TA_path, "data")
-        self.TA_jobs_folder         = os.path.join(self.TA_data_folder, "jobs")
-        
-        self.GA_pre_scan_final_path = os.path.join(self.GA_pre_scan_path, "final_results")
-        
-        self.ec_detect_path         = os.path.join(self.EC_data_folder, "0_detect")
-        self.ec_priam_path          = os.path.join(self.EC_data_folder, "1_priam")
-        self.ec_split_path          = os.path.join(self.EC_data_folder, "1A_priam_split")
-        self.ec_diamond_path        = os.path.join(self.EC_data_folder, "2_diamond")
-        self.ec_detect_out          = os.path.join(self.EC_jobs_folder, "ec_detect")
-        self.ec_priam_out           = os.path.join(self.EC_jobs_folder, "ec_priam_cat")
-        self.ec_diamond_out         = os.path.join(self.EC_jobs_folder, "ec_diamond")
         
         #special contig-bypasser logic vars
         self.contigs_present = True  #for the contig/assembly bypasser
-        self.spades_done_file = os.path.join(self.assemble_contigs_path, "data", "0_spades", "pipeline_state", "stage_7_terminate")
-        self.spades_transcripts_file = os.path.join(self.assemble_contigs_path, "data", "0_spades", "transcripts.fasta")
+        self.spades_done_file = self.dir_dict["spades_done"]
+        self.spades_transcripts_file = self.dir_dict["spades_transcripts"]
     
     #--------------------------------------------------------------------------------
     # helpers
@@ -259,20 +129,24 @@ class mp_stage:
     #--------------------------------------------------------------------------------------------------------------
     # main calls
     def mp_quality_filter(self):
-        self.quality_start = time.time()
-        command_list = self.commands.create_quality_control_command(self.quality_filter_label)
-        self.cleanup_quality_start, self.cleanup_quality_end = self.mp_util.launch_stage_simple(self.quality_filter_label, self.quality_path, self.commands, command_list, self.keep_all, self.keep_quality)
-        self.quality_end = time.time()
-        print("quality filter:", '%1.1f' % (self.quality_end - self.quality_start - (self.cleanup_quality_end - self.cleanup_quality_start)), "s")
-        print("quality filter cleanup:", '%1.1f' %(self.cleanup_quality_end - self.cleanup_quality_start), "s")
+        self.time_obj.measure_time("qc", "start")
+        for item in self.dir_dict["qc_list"]:
+            self.dir_dict.make_dirs(self.dir_dict[item])
+
+        command_list = self.commands.create_quality_control_command(self.label_dict["qc"])
+        self.mp_util.launch_stage_simple(self.label_dict["qc"], self.dir_dict["qc"], self.commands, command_list, self.keep_all, self.keep_quality)
+        self.time_obj.measure_time("qc", "end")
+        
         self.debug_stop_check(self.quality_filter_label)
         
 
     def mp_host_filter(self):
         if not self.no_host:
-            self.host_start = time.time()
+            self.time_obj.measure_time("host", "start")
+            for item in self.dir_dict["host_list"]:
+                self.dir_dict.make_dirs(self.dir_dict[item])
             #if not check_where_resume(host_path, None, self.quality_path):
-            command_list = self.commands.create_host_filter_command(self.host_filter_label, self.quality_filter_label)
+            command_list = self.commands.create_host_filter_command(self.label_dict["host"], self.label_dict["qc"])
             self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
             self.host_end = time.time()
             print("host filter:", '%1.1f' % (self.host_end - self.host_start - (self.cleanup_host_end - self.cleanup_host_start)), "s")

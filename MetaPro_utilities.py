@@ -32,10 +32,10 @@ from datetime import datetime as dt
 import psutil as psu
 
 class mp_util:
-    def __init__(self, output_folder_path, config_obj):
+    def __init__(self, config_dict, dir_dict): #, config_obj):
         self.mp_store = []
-        self.output_folder_path = output_folder_path
-        self.paths = config_obj
+        self.output_folder_path = dir_dict["main"]
+        #self.paths = config_obj
         self.bypass_log_name = self.paths.bypass_log_name
 
     def mem_checker(self, threshold):
@@ -419,8 +419,8 @@ class mp_util:
 
     def launch_stage_simple(self, job_label, job_path, commands, command_list, keep_all, keep_job):
         #wrapper for simple job launches (quality, host)
-        cleanup_job_start = 0
-        cleanup_job_end = 0
+        #cleanup_job_start = 0
+        #cleanup_job_end = 0
         print("job path:", job_path)
         
         if self.check_bypass_log(self.output_folder_path, job_label):
@@ -428,10 +428,10 @@ class mp_util:
             self.launch_and_create_simple(job_label, job_label, commands, command_list)
             
             self.write_to_bypass_log(self.output_folder_path, job_label)
-            cleanup_job_start = time.time()
+            #cleanup_job_start = time.time()
             self.clean_or_compress(job_path, keep_all, keep_job)
-            cleanup_job_end = time.time()    
+            #cleanup_job_end = time.time()    
         else:
             print(dt.today(), "skipping job:", job_label)
 
-        return cleanup_job_start, cleanup_job_end
+        #return cleanup_job_start, cleanup_job_end
