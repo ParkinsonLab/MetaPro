@@ -424,6 +424,15 @@ class mpro_dir:
         self.dir_dict["out_list"] = ["out", "out_export", "out_data", "out_jobs", "out_ng", "out_unique_hosts", "out_unique_vec", "out_heatmap"]
 
         
+class mpro_file:
+    #the file-interconnect, but only the important files needed
+    def __init__(self, config_dict, dir_dict):
+        self.dir_dict = dir_dict
+        self.config_dict = config_dict
+        self.file_dict = dict()
+        self.file_dict["raw_s"] = self.config_dict["single"]
+        self.file_dict["raw_p1"] = self.config_dict["pair_1"]
+        self.file_dict["raw_p2"] = self.config_dict["pair_2"]
 
 
 class mpro_config:    
@@ -726,7 +735,10 @@ class mpro_config:
         self.config_dict["pair_2"] = os.path.abspath(self.config_dict["pair_2"])
         self.config_dict["single"] = os.path.abspath(self.config_dict["single"])
 
+         
+
         self.config_dict["bypass_log"] = self.value_assignment("path", config, "Settings", "bypass_log", os.path.join(self.output_path), "bypass_long.txt")
+        self.config_dict["tutorial_keyword"] = self.value_assignment("str", config, "Settings", "tutorial_keyword", "None")
 
         self.config_dict["target_rank"]                 = self.value_assignment("str", config, "Settings", "target_rank", "genus")
         self.config_dict["adapterremoval_minlength"]    = self.value_assignment("int", config, "Settings", "AdapterRemoval_minlength", 30)

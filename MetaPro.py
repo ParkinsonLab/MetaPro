@@ -114,33 +114,33 @@ def main(config_dict, dir_dict, label_dict, time_obj):
     metapro_stage_obj.mp_output()
 
 
-def tutorial_main(config_file, dir_dict:
-    metapro_stage_obj = mps.mp_stage(config_file, pair_1, pair_2, single, contig, output_folder, args_pack, tutorial_mode)
-    if(tutorial_mode == "quality"):
+def tutorial_main(config_dict, dir_dict, label_dict, time_obj):
+    metapro_stage_obj = mps.mp_stage(config_dict, dir_dict, label_dict, time_obj)
+    if(config_dict["tutorial_mode"] == "quality"):
          # The quality filter stage
         metapro_stage_obj.mp_quality_filter()
 
-    elif(tutorial_mode == "host"):
+    elif(config_dict["tutorial_mode"] == "host"):
         # The host read filter stage
         metapro_stage_obj.mp_host_filter()
             
-    elif(tutorial_mode == "vector"):
+    elif(config_dict["tutorial_mode"] == "vector"):
         # The vector contaminant filter stage
         metapro_stage_obj.mp_vector_filter()
 
-    elif(tutorial_mode == "rRNA"):
+    elif(config_dict["tutorial_mode"] == "rRNA"):
         # rRNA removal stage
         metapro_stage_obj.mp_rRNA_filter()
 
-    elif(tutorial_mode == "repop"):
+    elif(config_dict["tutorial_mode"] == "repop"):
         # Duplicate repopulation
         metapro_stage_obj.mp_repop()
 
-    elif(tutorial_mode == "contigs"):
+    elif(config_dict["tutorial_mode"] == "contigs"):
         # Assemble contigs
         metapro_stage_obj.mp_assemble()    
 
-    elif(tutorial_mode == "GA"):
+    elif(config_dict["tutorial_mode"] == "GA"):
         #check the contig state
         metapro_stage_obj.mp_contig_statecheck()
         # GA split
@@ -164,14 +164,14 @@ def tutorial_main(config_file, dir_dict:
         # final GA merge()
         metapro_stage_obj.mp_GA_final_merge()
 
-    elif(tutorial_mode == "TA"):
+    elif(config_dict["tutorial_mode"] == "TA"):
         # Taxonomic annotation
         metapro_stage_obj.mp_TA()
 
-    elif(tutorial_mode == "EC"):
+    elif(config_dict["tutorial_mode"] == "EC"):
         # Detect EC annotation
         metapro_stage_obj.mp_EC()
-    elif(tutorial_mode == "output"):
+    elif(config_dict["tutorial_mode"] == "output"):
         #check the contig state
         metapro_stage_obj.mp_contig_statecheck()
         # RPKM Table and Cytoscape Network
@@ -203,13 +203,13 @@ if __name__ == "__main__":
     
     config_file     = args.config if args.config else "None"
     contig          = args.contig if args.contig else "None"
-    pair_1          = args.pair1 if args.pair1 else None
-    pair_2          = args.pair2 if args.pair2 else None
-    single          = args.single if args.single else None
+    pair_1          = args.pair1 if args.pair1 else "None"
+    pair_2          = args.pair2 if args.pair2 else "None"
+    single          = args.single if args.single else "None"
     output_folder   = args.output_folder if args.output_folder else output_folder_default
     no_host         = args.nhost if args.nhost else False
     verbose_mode    = args.verbose_mode if args.verbose_mode else "quiet"
-    tutorial_mode   = args.tutorial if args.tutorial else "none"
+    tutorial_mode   = args.tutorial if args.tutorial else "None"
 
 
     if(config_file is "None"):
@@ -233,15 +233,16 @@ if __name__ == "__main__":
     config_dict["no_host"] = no_host
     config_dict["verbose_mode"] = verbose_mode
 
-    if(pair_1 is None):
+    if(pair_1 != "None"):
         print(dt.today(), "input Pair_1 overrides config")
         pair_1 = os.path.abspath(pair_1)
         config_dict["pair_1"] = pair_1
-    if(pair_2 is None):
+        
+    if(pair_2 != "None"):
         print(dt.today(), "input Pair_2 overrides config")
         pair_2 = os.path.abspath(pair_2)
         config_dict["pair_2"] = pair_2
-    if(single is None):
+    if(single != "None"):
         print(dt.today(), "input single overrides config")
         single = os.path.abspath(single)
         config_dict["single"] = single
@@ -249,22 +250,23 @@ if __name__ == "__main__":
     
     
 
-    if(tutorial_mode == "none"):
-        if (args.pair1 and not args.pair2) or (args.pair2 and not args.pair1):
-            print("You must specify both forward and reverse reads for a paired-end run")
-            sys.exit()
-        if args.single and (args.pair1 or args.pair2):
-            print("You cannot specify both paired-end and single-end reads in a single run.")
-            sys.exit()
 
-        if(single is None):
-            if(pair_1 is None):
-                print(dt.today(), "ERROR: Either pair_1 and pair_2 are empty, or single is empty.  Not both")
+    if(config_dict["tutorial_mode"] == "None"):
+        if(config_dict["pair_1"] == "None"):
+            if(config_dict["single"] == "None"):
+                print(dt.today(), "MetaPro needs input data.  Pair 1 and singletons are blank")
                 sys.exit()
-        if(not single is None):
-            if(not pair_1 is None):
-                print(dt.today(), "ERROR: Either pair_1 and pair_2 are filled, or single is filled.  Not both")
-                sys.exit()    
+            else:
+                config_dict["read_mode"] = "single"
+        
+        else:
+            if(config_dict["single"] != "None"):
+                print(dt.today(), "MetaPro needs Paired or single-ended data. Not both")
+                sys.exit()
+            else:
+                config_dict["read_mode"] = "paired"
+
+
 
     if not (os.path.exists(output_folder)):
         print("output folder does not exist.  Now building directory.")
@@ -275,11 +277,6 @@ if __name__ == "__main__":
         print(dt.today(), "output destination:", output_folder)
 
  
-    if pair_1 == "none" and pair_2 == "none" and single == "none":
-        print("You must specify paired-end or single-end reads as input for the pipeline.")
-        sys.exit()
-
-
     
     if (tutorial_mode != "none"):
         print("working in tutorial mode:", tutorial_mode)

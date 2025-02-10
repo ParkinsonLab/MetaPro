@@ -16,73 +16,27 @@ class mt_pipe_commands:
     # --------------------------------------------------------------------
     # constructor:
     # there should only be one of these objects used for an entire pipeline.
-    def __init__(self, config_dict, dir_dict): #no_host, config_obj, Quality_score=33, tutorial_keyword = None, sequence_path_1=None, sequence_path_2=None, sequence_single=None, sequence_contigs = None):
-
+    def __init__(self, config_dict, dir_dict): #no_host, config_obj, Quality_score=33, tutorial_keyword = None, self.config_dict["pair_1"]=None, self.config_dict["pair_2"]=None, self.config_dict["single"]=None, sequence_contigs = None):
+        
+        self.config_dict = config_dict
+        self.dir_dict = dir_dict
         #self.config_dict = config_dict
         #self.tool_path_obj = config_obj #mpp.tool_path_obj(Config_path)
-        self.no_host_flag = config_dict["no_host"]
+        self.no_host_flag = self.config_dict["no_host"]
         # path to the genome sequence file
         
+        self.tutorial_keyword = self.config_dict["tutorial_keyword"]
+        self.read_mode = self.config_dict["read_mode"]        
 
-        
-        if(tutorial_keyword is None):
-            print("MetaPro operating in auto-mode")
-            self.tutorial_keyword = None
-            
-            if sequence_single is not None:
-                self.sequence_single = sequence_single
-                self.sequence_path_1 = ""
-                self.sequence_path_2 = ""
-                print("Reads:", self.sequence_single)
-                self.read_mode = "single"
-                self.sequence_contigs = ""
-            else:
-                self.sequence_single = ""
-                self.sequence_path_1 = sequence_path_1
-                self.sequence_path_2 = sequence_path_2
-                print("Forward Reads:", self.sequence_path_1)
-                print("Reverse Reads:", self.sequence_path_2)
-                self.read_mode = "paired"
-                self.sequence_contigs = ""
-            
-        else:
-            print("MetaPro is in TUTORIAL MODE:", tutorial_keyword)
-            self.tutorial_keyword = tutorial_keyword
-            if sequence_path_1 is None:
-                self.sequence_single = sequence_single
-                self.sequence_path_1 = ""
-                self.sequence_path_2 = ""
-                self.sequence_contigs = ""
-                if(sequence_contigs is not None):
-                    self.sequence_contigs = sequence_contigs
-                print("Reads:", self.sequence_single)
-                print("potential contigs:", self.sequence_contigs)
-                self.read_mode = "single"
-            else:
-                self.sequence_single = ""
-                if(sequence_single is not None):
-                    self.sequence_single = sequence_single
-                self.sequence_contigs = ""
-                if(sequence_contigs is not None):
-                    self.sequence_contigs = sequence_contigs
-                    
-                self.sequence_path_1 = sequence_path_1
-                self.sequence_path_2 = sequence_path_2
-                print("Forward Reads:", self.sequence_path_1)
-                print("Reverse Reads:", self.sequence_path_2)
-                print("potential singletons:", self.sequence_single)
-                print("potential contigs:", self.sequence_contigs)
-                self.read_mode = "paired"
-            
                 
-        self.Qual_str = str(Quality_score)
-        self.Output_Path = os.getcwd()
+        self.q_enc = config_dict["q_enc"]
+        self.output_path = dir_dict["out"]
         self.threads_str = str(self.tool_path_obj.num_threads)
         self.thread_count = self.tool_path_obj.num_threads
         self.DNA_DB = self.tool_path_obj.DNA_DB
         
         
-        print("Output filepath:", self.Output_Path)
+        print("Output filepath:", self.output_path)
 
     # -----------------------------------------------------------
     # support functions
@@ -101,151 +55,81 @@ class mt_pipe_commands:
             print(queue)
         return queue
 
-    def create_and_launch(self, job_folder, inner_name, command_list):
-        # create the pbs job, and launch items
-        # job name: string tag for export file name
-        # command list:  list of command statements for writing
-        # mode: selection of which pbs template to use: default -> low memory
-        # dependency_list: if not empty, will append wait args to sbatch subprocess call. it's polymorphic
-        # returns back the job ID given from sbatch
-
-        # docker mode: single cpu
-        # no ID, no sbatch.  just run the command
-        
-        shell_script_full_path = os.path.join(self.Output_Path, job_folder, inner_name + ".sh")
-
-        with open(shell_script_full_path, "w") as PBS_script_out:
-            for item in command_list:
-                PBS_script_out.write(item + "\n")
-            PBS_script_out.close()
-        #if not work_in_background:
-        output = ""
-        try:
-            sp.check_output(["sh", shell_script_full_path])#, stderr = sp.STDOUT)
-        except sp.CalledProcessError as e:
-            return_code = e.returncode
-            if return_code != 1:
-                raise
+    
                 
-    def launch_only(self, command_list, command_list_length):
-        #just launch the job.  Don't make a script file.
-        #print(dt.today(), "inside launch_only:", len(command_list))
-        
-        if(command_list_length == 1):
-            #print("0th item:", command_list[0])
-            try:
-                os.system(command_list[0])
-            except sp.CalledProcessError as e:
-                return_code = e.returncode
-                if return_code != 1:
-                    raise
-            #else:
-            #    sys.exit("something bad happened")
-        else:
-        
-            for command_item in command_list:
-                try:
-                    os.system(command_item)
-                except sp.CalledProcessError as e:
-                    return_code = e.returncode
-                    if return_code != 1:
-                        raise
-                
-                
-    def create_quality_control_command(self, stage_name):
-        subfolder                   = os.path.join(self.Output_Path, stage_name)
-        data_folder                 = os.path.join(subfolder, "data")
-        sorted_read_folder          = os.path.join(data_folder, "0_sorted_raw_input")
-        adapter_folder              = os.path.join(data_folder, "1_adapter_removal")
-        tag_remove_folder           = os.path.join(data_folder, "2_tag_remove")
-        vsearch_merge_folder        = os.path.join(data_folder, "3_vsearch_pair_merge")
-        vsearch_filter_folder       = os.path.join(data_folder, "4_quality_filter")
-        orphan_read_filter_folder   = os.path.join(data_folder, "5_orphan_read_filter")
-        cdhit_folder                = os.path.join(data_folder, "6_remove_duplicates")
-        final_folder                = os.path.join(subfolder, "final_results")
+    def create_quality_control_command(self):
 
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(sorted_read_folder)
-        self.make_folder(adapter_folder)
-        self.make_folder(tag_remove_folder)
-        self.make_folder(vsearch_merge_folder)
-        self.make_folder(vsearch_filter_folder)
-        self.make_folder(orphan_read_filter_folder)
-        self.make_folder(cdhit_folder)
-        self.make_folder(final_folder)
-        
         sort_pair_1 = ">&2 echo Sorting pair 1 | "
         sort_pair_1 += self.tool_path_obj.Python + " "
         sort_pair_1 += self.tool_path_obj.sort_reads + " "
-        sort_pair_1 += self.sequence_path_1 + " "
-        sort_pair_1 += os.path.join(sorted_read_folder, "pair_1_sorted.fastq") + " "
+        sort_pair_1 += self.self.config_dict["pair_1"] + " "
+        sort_pair_1 += os.path.join(self.dir_dict["qf_sort"], "pair_1_sorted.fastq") + " "
         sort_pair_1 += "forward"
 
         sort_pair_2 = ">&2 echo Sorting pair 2 | "
         sort_pair_2 += self.tool_path_obj.Python + " "
         sort_pair_2 += self.tool_path_obj.sort_reads + " "
-        sort_pair_2 += self.sequence_path_2 + " "
-        sort_pair_2 += os.path.join(sorted_read_folder, "pair_2_sorted.fastq") + " "
+        sort_pair_2 += self.self.config_dict["pair_2"] + " "
+        sort_pair_2 += os.path.join(self.dir_dict["qf_sort"], "pair_2_sorted.fastq") + " "
         sort_pair_2 += "reverse"
 
         adapter_removal_line = ">&2 echo Removing adapters | "
         adapter_removal_line += self.tool_path_obj.AdapterRemoval
         if self.read_mode == "single":
-            adapter_removal_line += " --file1 " + self.sequence_single
+            adapter_removal_line += " --file1 " + self.self.config_dict["single"]
         elif self.read_mode == "paired":
-            adapter_removal_line += " --file1 " + os.path.join(sorted_read_folder, "pair_1_sorted.fastq")
-            adapter_removal_line += " --file2 " + os.path.join(sorted_read_folder, "pair_2_sorted.fastq")
+            adapter_removal_line += " --file1 " + os.path.join(self.dir_dict["qf_sort"], "pair_1_sorted.fastq")
+            adapter_removal_line += " --file2 " + os.path.join(self.dir_dict["qf_sort"], "pair_2_sorted.fastq")
         adapter_removal_line += " --qualitybase " + str(self.Qual_str)
         if(self.Qual_str == "33"):
             adapter_removal_line += " --qualitymax 75"
         adapter_removal_line += " --threads " + self.threads_str
         adapter_removal_line += " --minlength " + str(self.tool_path_obj.adapterremoval_minlength)
-        adapter_removal_line += " --basename " + adapter_folder
+        adapter_removal_line += " --basename " + self.dir_dict["qf_adapt"]
         adapter_removal_line += "_AdapterRemoval"
         adapter_removal_line += " --trimqualities "
         if self.read_mode == "single":
-            adapter_removal_line += " --output1 " + os.path.join(adapter_folder, "singletons_adptr_rem.fastq")
+            adapter_removal_line += " --output1 " + os.path.join(self.dir_dict["qf_adapt"], "singletons_adptr_rem.fastq")
         elif self.read_mode == "paired":
-            adapter_removal_line += " --output1 " + os.path.join(adapter_folder, "pair_1_adptr_rem.fastq")
-            adapter_removal_line += " --output2 " + os.path.join(adapter_folder, "pair_2_adptr_rem.fastq")
-            adapter_removal_line += " --singleton " + os.path.join(adapter_folder, "singletons_adptr_rem.fastq")
+            adapter_removal_line += " --output1 " + os.path.join(self.dir_dict["qf_adapt"], "pair_1_adptr_rem.fastq")
+            adapter_removal_line += " --output2 " + os.path.join(self.dir_dict["qf_adapt"], "pair_2_adptr_rem.fastq")
+            adapter_removal_line += " --singleton " + os.path.join(self.dir_dict["qf_adapt"], "singletons_adptr_rem.fastq")
 
         #Sort-reads introduces tags at the read-level of the 
         tag_remove_pair_1 = ">&2 echo Remove tags pair 1 | "
         tag_remove_pair_1 += self.tool_path_obj.Python + " "
         tag_remove_pair_1 += self.tool_path_obj.remove_tag + " "
-        tag_remove_pair_1 += os.path.join(adapter_folder, "pair_1_adptr_rem.fastq") + " "
-        tag_remove_pair_1 += os.path.join(tag_remove_folder, "pair_1_no_tags.fastq")
+        tag_remove_pair_1 += os.path.join(self.dir_dict["qf_adapt"], "pair_1_adptr_rem.fastq") + " "
+        tag_remove_pair_1 += os.path.join(self.dir_dict["qf_tags"], "pair_1_no_tags.fastq")
         
         tag_remove_pair_2 = ">&2 echo Remove tags pair 2 | "
         tag_remove_pair_2 += self.tool_path_obj.Python + " "
         tag_remove_pair_2 += self.tool_path_obj.remove_tag + " "
-        tag_remove_pair_2 += os.path.join(adapter_folder, "pair_2_adptr_rem.fastq") + " "
-        tag_remove_pair_2 += os.path.join(tag_remove_folder, "pair_2_no_tags.fastq")
+        tag_remove_pair_2 += os.path.join(self.dir_dict["qf_adapt"], "pair_2_adptr_rem.fastq") + " "
+        tag_remove_pair_2 += os.path.join(self.dir_dict["qf_tags"], "pair_2_no_tags.fastq")
 
         tag_remove_singletons =  ">&2 echo Remove tags singletons | " 
         tag_remove_singletons += self.tool_path_obj.Python + " "
         tag_remove_singletons += self.tool_path_obj.remove_tag + " "
-        tag_remove_singletons += os.path.join(adapter_folder, "singletons_adptr_rem.fastq") + " "
-        tag_remove_singletons += os.path.join(tag_remove_folder, "singletons_no_tags.fastq")
+        tag_remove_singletons += os.path.join(self.dir_dict["qf_adapt"], "singletons_adptr_rem.fastq") + " "
+        tag_remove_singletons += os.path.join(self.dir_dict["qf_tags"], "singletons_no_tags.fastq")
         # tries to merge the cleaned pairs
         # rejects get sent out
         vsearch_merge = ">&2 echo " + "Vsearch Merge pairs | "
         vsearch_merge += self.tool_path_obj.vsearch
-        vsearch_merge += " --fastq_mergepairs " + os.path.join(tag_remove_folder, "pair_1_no_tags.fastq")
-        vsearch_merge += " --reverse " + os.path.join(tag_remove_folder, "pair_2_no_tags.fastq")
+        vsearch_merge += " --fastq_mergepairs " + os.path.join(self.dir_dict["qf_tags"], "pair_1_no_tags.fastq")
+        vsearch_merge += " --reverse " + os.path.join(self.dir_dict["qf_tags"], "pair_2_no_tags.fastq")
         vsearch_merge += " --fastq_ascii " + str(self.Qual_str)
-        vsearch_merge += " --fastqout " + os.path.join(vsearch_merge_folder, "merge_success.fastq")
-        vsearch_merge += " --fastqout_notmerged_fwd " + os.path.join(vsearch_merge_folder, "pair_1_merge_reject.fastq")
-        vsearch_merge += " --fastqout_notmerged_rev " + os.path.join(vsearch_merge_folder, "pair_2_merge_reject.fastq")
+        vsearch_merge += " --fastqout " + os.path.join(self.dir_dict["qf_merge"], "merge_success.fastq")
+        vsearch_merge += " --fastqout_notmerged_fwd " + os.path.join(self.dir_dict["qf_merge"], "pair_1_merge_reject.fastq")
+        vsearch_merge += " --fastqout_notmerged_rev " + os.path.join(self.dir_dict["qf_merge"], "pair_2_merge_reject.fastq")
 
         # concatenate the merge overlaps with the singletons
         cat_glue = ">&2 echo concatenating singletons | "
         cat_glue += "cat "
-        cat_glue += os.path.join(vsearch_merge_folder, "merge_success.fastq") + " "
-        cat_glue += os.path.join(tag_remove_folder, "singletons_no_tags.fastq")
-        cat_glue += " > " + os.path.join(vsearch_merge_folder, "singletons.fastq")
+        cat_glue += os.path.join(self.dir_dict["qf_merge"], "merge_success.fastq") + " "
+        cat_glue += os.path.join(self.dir_dict["qf_tags"], "singletons_no_tags.fastq")
+        cat_glue += " > " + os.path.join(self.dir_dict["qf_merge"], "singletons.fastq")
 
         # Filter out low-quality reads
         # start with the singles / merged sections
@@ -253,93 +137,72 @@ class mt_pipe_commands:
         vsearch_filter_0 = ">&2 echo low-quality filter on singletons | "
         vsearch_filter_0 += self.tool_path_obj.vsearch
         if self.read_mode == "single":
-            vsearch_filter_0 += " --fastq_filter " + os.path.join(adapter_folder, "singletons_adptr_rem.fastq")
+            vsearch_filter_0 += " --fastq_filter " + os.path.join(self.dir_dict["qf_adapt"], "singletons_adptr_rem.fastq")
         elif self.read_mode == "paired":
-            vsearch_filter_0 += " --fastq_filter " + os.path.join(vsearch_merge_folder, "singletons.fastq")
+            vsearch_filter_0 += " --fastq_filter " + os.path.join(self.dir_dict["qf_merge"], "singletons.fastq")
         vsearch_filter_0 += " --fastq_ascii " + self.Qual_str
         vsearch_filter_0 += " --fastq_maxee " + "2.0"
-        vsearch_filter_0 += " --fastqout " + os.path.join(vsearch_filter_folder, "singletons_hq.fastq")
+        vsearch_filter_0 += " --fastqout " + os.path.join(self.dir_dict["qf_filter"], "singletons_hq.fastq")
 
         # then move onto the standalones in pair 1
         vsearch_filter_1 = ">&2 echo low-quality filter on pair 1 | "
         vsearch_filter_1 += self.tool_path_obj.vsearch
-        vsearch_filter_1 += " --fastq_filter " + os.path.join(vsearch_merge_folder, "pair_1_merge_reject.fastq")
+        vsearch_filter_1 += " --fastq_filter " + os.path.join(self.dir_dict["qf_merge"], "pair_1_merge_reject.fastq")
         vsearch_filter_1 += " --fastq_ascii " + self.Qual_str
         vsearch_filter_1 += " --fastq_maxee " + "2.0"
-        vsearch_filter_1 += " --fastqout " + os.path.join(vsearch_filter_folder, "pair_1_hq.fastq")
+        vsearch_filter_1 += " --fastqout " + os.path.join(self.dir_dict["qf_filter"], "pair_1_hq.fastq")
 
         vsearch_filter_2 = ">&2 echo low-quality filter on pair 2 | "
         vsearch_filter_2 += self.tool_path_obj.vsearch
-        vsearch_filter_2 += " --fastq_filter " + os.path.join(vsearch_merge_folder, "pair_2_merge_reject.fastq")
+        vsearch_filter_2 += " --fastq_filter " + os.path.join(self.dir_dict["qf_merge"], "pair_2_merge_reject.fastq")
         vsearch_filter_2 += " --fastq_ascii " + self.Qual_str
         vsearch_filter_2 += " --fastq_maxee " + "2.0"
-        vsearch_filter_2 += " --fastqout " + os.path.join(vsearch_filter_folder, "pair_2_hq.fastq")
+        vsearch_filter_2 += " --fastqout " + os.path.join(self.dir_dict["qf_filter"], "pair_2_hq.fastq")
 
         # redistribute data into singletons, or paired-reads
         orphan_read_filter = ">&2 echo moving newly orphaned reads | "
         orphan_read_filter += self.tool_path_obj.Python + " "
         orphan_read_filter += self.tool_path_obj.orphaned_read_filter + " "
-        orphan_read_filter += os.path.join(vsearch_filter_folder, "pair_1_hq.fastq") + " "
-        orphan_read_filter += os.path.join(vsearch_filter_folder, "pair_2_hq.fastq") + " "
-        orphan_read_filter += os.path.join(vsearch_filter_folder, "singletons_hq.fastq") + " "
-        orphan_read_filter += os.path.join(orphan_read_filter_folder, "pair_1_match.fastq") + " "
-        orphan_read_filter += os.path.join(orphan_read_filter_folder, "pair_2_match.fastq") + " "
-        orphan_read_filter += os.path.join(orphan_read_filter_folder, "singletons_with_duplicates.fastq")
+        orphan_read_filter += os.path.join(self.dir_dict["qf_filter"], "pair_1_hq.fastq") + " "
+        orphan_read_filter += os.path.join(self.dir_dict["qf_filter"], "pair_2_hq.fastq") + " "
+        orphan_read_filter += os.path.join(self.dir_dict["qf_filter"], "singletons_hq.fastq") + " "
+        orphan_read_filter += os.path.join(self.dir_dict["qf_orphan"], "pair_1_match.fastq") + " "
+        orphan_read_filter += os.path.join(self.dir_dict["qf_orphan"], "pair_2_match.fastq") + " "
+        orphan_read_filter += os.path.join(self.dir_dict["qf_orphan"], "singletons_with_duplicates.fastq")
 
         # remove duplicates (to shrink the data size)
         cdhit_singletons = ">&2 echo removing singleton duplicates | "
         cdhit_singletons += self.tool_path_obj.cdhit_dup + " -i "
         if self.read_mode == "single":
-            cdhit_singletons += os.path.join(vsearch_filter_folder, "singletons_hq.fastq")
+            cdhit_singletons += os.path.join(self.dir_dict["qf_filter"], "singletons_hq.fastq")
         elif self.read_mode == "paired":
-            cdhit_singletons += os.path.join(orphan_read_filter_folder, "singletons_with_duplicates.fastq")
-        cdhit_singletons += " -o " + os.path.join(cdhit_folder, "singletons_unique.fastq")
+            cdhit_singletons += os.path.join(self.dir_dict["qf_orphan"], "singletons_with_duplicates.fastq")
+        cdhit_singletons += " -o " + os.path.join(self.dir_dict["qf_dup"], "singletons_unique.fastq")
 
         # remove duplicates in the pairs
         cdhit_paired = ">&2 echo remove duplicates from paired | "
         cdhit_paired += self.tool_path_obj.cdhit_dup + " "
-        cdhit_paired += "-i"    + " " + os.path.join(orphan_read_filter_folder, "pair_1_match.fastq") + " "
-        cdhit_paired += "-i2"   + " " + os.path.join(orphan_read_filter_folder, "pair_2_match.fastq") + " "
-        cdhit_paired += "-o"    + " " + os.path.join(cdhit_folder, "pair_1_unique.fastq") + " "
-        cdhit_paired += "-o2"   + " " + os.path.join(cdhit_folder, "pair_2_unique.fastq")
+        cdhit_paired += "-i"    + " " + os.path.join(self.dir_dict["qf_orphan"], "pair_1_match.fastq") + " "
+        cdhit_paired += "-i2"   + " " + os.path.join(self.dir_dict["qf_orphan"], "pair_2_match.fastq") + " "
+        cdhit_paired += "-o"    + " " + os.path.join(self.dir_dict["qf_dup"], "pair_1_unique.fastq") + " "
+        cdhit_paired += "-o2"   + " " + os.path.join(self.dir_dict["qf_dup"], "pair_2_unique.fastq")
 
-        #move data to appropriate places
-        copy_singletons = "cp " + os.path.join(cdhit_folder, "singletons_unique.fastq") + " "
-        copy_singletons += os.path.join(final_folder, "singletons.fastq")
+        mv_s_unique = ">&2 echo Moving unique S reads |" + " "
+        mv_s_unique += "mv" + " " + os.path.join(self.dir_dict["qf_dup"], "singletons_unique.fastq") + " "
+        mv_s_unique += os.path.join(self.dir_dict["qf_export"], "singletons_unique.fastq")
 
-        copy_pair_1 = "cp " + os.path.join(cdhit_folder, "pair_1_unique.fastq") + " "
-        copy_pair_1 += os.path.join(final_folder, "pair_1.fastq")
+        mv_s_dup = ">&2 echo Moving dup S reads |" + " "
+        mv_s_dup += "mv" + " " + os.path.join(self.dir_dict["qf_orphan"], "singletons_with_duplicates.fastq") + " "
+        mv_s_dup += os.path.join(self.dir_dict["qf_export"], "singletons_with_duplicates.fastq")
 
-        copy_pair_2 = "cp " + os.path.join(cdhit_folder, "pair_2_unique.fastq") + " "
-        copy_pair_2 += os.path.join(final_folder, "pair_2.fastq")
-        
-        # move these particular files to final_folder because they'll be needed by another stage.
-        copy_duplicate_singletons = "cp "
-        if(self.read_mode == "single"):
-            copy_duplicate_singletons += os.path.join(vsearch_filter_folder, "singletons_hq.fastq") + " "
-            copy_duplicate_singletons += os.path.join(final_folder, "singletons_hq.fastq")
-        else:
-            copy_duplicate_singletons += os.path.join(orphan_read_filter_folder, "singletons_with_duplicates.fastq") + " "
-            copy_duplicate_singletons += os.path.join(final_folder, "singletons_with_duplicates.fastq")
-
-        copy_pair_1_match = "cp " + os.path.join(orphan_read_filter_folder, "pair_1_match.fastq") + " "
-        copy_pair_1_match += os.path.join(final_folder, "pair_1_match.fastq")
-
-        copy_pair_2_match = "cp " + os.path.join(orphan_read_filter_folder, "pair_2_match.fastq") + " "
-        copy_pair_2_match += os.path.join(final_folder, "pair_2_match.fastq")
-
-        copy_singletons_cluster = "cp " + os.path.join(cdhit_folder, "singletons_unique.fastq.clstr") + " "
-        copy_singletons_cluster += os.path.join(final_folder, "singletons_unique.fastq.clstr")
-
-        copy_paired_cluster = "cp " + os.path.join(cdhit_folder, "pair_1_unique.fastq.clstr") + " "
-        copy_paired_cluster += os.path.join(final_folder, "pair_1_unique.fastq.clstr")
-
+        mv_s_clstr = ">&2 echo Moving S clstr |" + " "
+        mv_s_clstr += 
         if self.read_mode == "single":
             COMMANDS_qual = [
                 adapter_removal_line,
                 vsearch_filter_0,
                 cdhit_singletons,
-                copy_singletons,
+                mv_singletons,
                 copy_duplicate_singletons,
                 copy_singletons_cluster
             ]
@@ -372,9 +235,9 @@ class mt_pipe_commands:
         return COMMANDS_qual
 
     def create_host_filter_command(self, stage_name, dependency_name):
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        quality_folder      = os.path.join(self.Output_Path, dependency_name, "final_results")
+        quality_folder      = os.path.join(self.output_path, dependency_name, "final_results")
         host_removal_folder = os.path.join(data_folder, "0_remove_host")
         blat_hr_folder      = os.path.join(data_folder, "1_blat_host")
         final_folder        = os.path.join(subfolder, "final_results")
@@ -410,7 +273,7 @@ class mt_pipe_commands:
         bwa_hr_tut_singletons += self.tool_path_obj.BWA + " mem -t "
         bwa_hr_tut_singletons += self.threads_str + " "
         bwa_hr_tut_singletons += Host_Contaminants + " "
-        bwa_hr_tut_singletons += self.sequence_single 
+        bwa_hr_tut_singletons += self.self.config_dict["single"] 
         bwa_hr_tut_singletons += " > " + os.path.join(host_removal_folder, "singletons_no_host.sam")
 
         # annoying type conversion pt 1
@@ -444,8 +307,8 @@ class mt_pipe_commands:
         bwa_hr_tut_paired += self.tool_path_obj.BWA + " "
         bwa_hr_tut_paired += "mem" + " "  + "-t" + " " + self.threads_str + " "
         bwa_hr_tut_paired += Host_Contaminants + " "
-        bwa_hr_tut_paired += self.sequence_path_1 + " "
-        bwa_hr_tut_paired += self.sequence_path_2 + " "
+        bwa_hr_tut_paired += self.self.config_dict["pair_1"] + " "
+        bwa_hr_tut_paired += self.self.config_dict["pair_2"] + " "
         bwa_hr_tut_paired += ">" + " "
         bwa_hr_tut_paired += os.path.join(host_removal_folder, "paired_on_host.sam")
         
@@ -537,13 +400,13 @@ class mt_pipe_commands:
         
         
 
-        copy_singletons = "cp " + os.path.join(blat_hr_folder, "singletons_no_host.fastq") + " "
+        copy_singletons = "mv " + os.path.join(blat_hr_folder, "singletons_no_host.fastq") + " "
         copy_singletons += os.path.join(final_folder, "singletons.fastq")
 
-        copy_pair_1 = "cp " + os.path.join(blat_hr_folder, "pair_1_no_host.fastq") + " "
+        copy_pair_1 = "mv " + os.path.join(blat_hr_folder, "pair_1_no_host.fastq") + " "
         copy_pair_1 += os.path.join(final_folder, "pair_1.fastq")
 
-        copy_pair_2 = "cp " + os.path.join(blat_hr_folder, "pair_2_no_host.fastq") + " "
+        copy_pair_2 = "mv " + os.path.join(blat_hr_folder, "pair_2_no_host.fastq") + " "
         copy_pair_2 += os.path.join(final_folder, "pair_2.fastq")
         
         
@@ -636,9 +499,9 @@ class mt_pipe_commands:
     def create_vector_filter_command(self, stage_name, dependency_name):
         # why do we leave all the interim files intact?
         # because science needs repeatable data, and the process needs to be able to start at any point
-        subfolder                       = os.path.join(self.Output_Path, stage_name)
+        subfolder                       = os.path.join(self.output_path, stage_name)
         data_folder                     = os.path.join(subfolder, "data")
-        dependency_folder               = os.path.join(self.Output_Path, dependency_name, "final_results")
+        dependency_folder               = os.path.join(self.output_path, dependency_name, "final_results")
         vector_removal_folder           = os.path.join(data_folder, "0_vector_removal")
         blat_containment_vector_folder  = os.path.join(data_folder, "1_blat_containment_vr")
         final_folder                    = os.path.join(subfolder, "final_results")
@@ -670,7 +533,7 @@ class mt_pipe_commands:
         bwa_vr_tut_singletons = ">&2 echo BWA vector oprhans TUTORIAL MODE | "
         bwa_vr_tut_singletons += self.tool_path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_vr_tut_singletons += Vector_Contaminants + " "
-        bwa_vr_tut_singletons += self.sequence_single
+        bwa_vr_tut_singletons += self.self.config_dict["single"]
         bwa_vr_tut_singletons += " > " + os.path.join(vector_removal_folder, "singletons_no_vectors.sam")
 
         samtools_no_vector_singletons_convert = ">&2 echo samtools vector oprhans pt 1 | "
@@ -698,8 +561,8 @@ class mt_pipe_commands:
         bwa_vr_tut_paired = ">&2 echo bwa vector paired TUTORIAL MODE | "
         bwa_vr_tut_paired += self.tool_path_obj.BWA + " mem -t " + self.threads_str + " "
         bwa_vr_tut_paired += Vector_Contaminants + " "
-        bwa_vr_tut_paired += self.sequence_path_1 + " "
-        bwa_vr_tut_paired += self.sequence_path_2 + " "
+        bwa_vr_tut_paired += self.self.config_dict["pair_1"] + " "
+        bwa_vr_tut_paired += self.self.config_dict["pair_2"] + " "
         bwa_vr_tut_paired += " > " + os.path.join(vector_removal_folder, "paired_on_vectors.sam")
         
         bwa_vr_filter_paired = ">&2 echo BWA vector filter on paired | "
@@ -875,8 +738,8 @@ class mt_pipe_commands:
         
     def create_rRNA_filter_prep_command_v3(self, stage_name, category, dependency_name, marker_file):
         #split the data into tiny shards.  called once
-        dep_loc                 = os.path.join(self.Output_Path, dependency_name, "final_results")
-        subfolder               = os.path.join(self.Output_Path, stage_name)
+        dep_loc                 = os.path.join(self.output_path, dependency_name, "final_results")
+        subfolder               = os.path.join(self.output_path, stage_name)
         data_folder             = os.path.join(subfolder, "data")
         
         jobs_folder             = os.path.join(data_folder, "jobs")
@@ -893,7 +756,7 @@ class mt_pipe_commands:
             split_tut_single_fastq = ">&2 echo splitting fastq for " + category + " | " 
             split_tut_single_fastq += self.tool_path_obj.Python + " "
             split_tut_single_fastq += self.tool_path_obj.File_splitter + " "
-            split_tut_single_fastq += self.sequence_single + " " #os.path.join(dep_loc, category + ".fastq") + " "
+            split_tut_single_fastq += self.self.config_dict["single"] + " " #os.path.join(dep_loc, category + ".fastq") + " "
             split_tut_single_fastq += os.path.join(split_folder, category) + " "
             split_tut_single_fastq += str(self.tool_path_obj.rRNA_chunksize)
 
@@ -904,7 +767,7 @@ class mt_pipe_commands:
                 split_tut_pair_1_fastq = ">&2 echo splitting fastq for " + category + " | " 
                 split_tut_pair_1_fastq += self.tool_path_obj.Python + " "
                 split_tut_pair_1_fastq += self.tool_path_obj.File_splitter + " "
-                split_tut_pair_1_fastq += self.sequence_path_1 + " "#os.path.join(dep_loc, category + ".fastq") + " "
+                split_tut_pair_1_fastq += self.self.config_dict["pair_1"] + " "#os.path.join(dep_loc, category + ".fastq") + " "
                 split_tut_pair_1_fastq += os.path.join(split_folder, category) + " "
                 split_tut_pair_1_fastq += str(self.tool_path_obj.rRNA_chunksize)
                 
@@ -914,7 +777,7 @@ class mt_pipe_commands:
                 split_tut_pair_2_fastq = ">&2 echo splitting fastq for " + category + " | " 
                 split_tut_pair_2_fastq += self.tool_path_obj.Python + " "
                 split_tut_pair_2_fastq += self.tool_path_obj.File_splitter + " "
-                split_tut_pair_2_fastq += self.sequence_path_2 + " "#os.path.join(dep_loc, category + ".fastq") + " "
+                split_tut_pair_2_fastq += self.self.config_dict["pair_2"] + " "#os.path.join(dep_loc, category + ".fastq") + " "
                 split_tut_pair_2_fastq += os.path.join(split_folder, category) + " "
                 split_tut_pair_2_fastq += str(self.tool_path_obj.rRNA_chunksize)
             
@@ -942,7 +805,7 @@ class mt_pipe_commands:
         return [split_fastq + " && " + make_marker]
 
     def create_rRNA_filter_convert_fastq_command(self, stage_name, category, fastq_name, marker_file):
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         jobs_folder         = os.path.join(data_folder, "jobs")
         fasta_folder        = os.path.join(data_folder, category + "_fasta")
@@ -981,7 +844,7 @@ class mt_pipe_commands:
         # category -> singletons, pair 1, pair 2
         # file name -> the specific split section of the category (the fastq segments)
         # stage_name -> "rRNA_Filter"
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         jobs_folder         = os.path.join(data_folder, "jobs")
         fasta_folder        = os.path.join(data_folder, category + "_fasta")
@@ -1019,7 +882,7 @@ class mt_pipe_commands:
               
     def create_rRNA_filter_barrnap_bac_command(self, stage_name, category, fastq_name, marker_file):
 
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         fasta_folder        = os.path.join(data_folder, category + "_fasta")
         Barrnap_out_folder  = os.path.join(data_folder, category + "_barrnap")
@@ -1061,7 +924,7 @@ class mt_pipe_commands:
         
     def create_rRNA_filter_barrnap_euk_command(self, stage_name, category, fastq_name, marker_file):
 
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         fasta_folder        = os.path.join(data_folder, category + "_fasta")
         Barrnap_out_folder  = os.path.join(data_folder, category + "_barrnap")
@@ -1095,7 +958,7 @@ class mt_pipe_commands:
     def create_rRNA_filter_barrnap_mit_command(self, stage_name, category, fastq_name, marker_file):
         #designed to run on a single split sample.
         #expected to be merged later with all the other runs of the same fastq name
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         fasta_folder        = os.path.join(data_folder, category + "_fasta")
         Barrnap_out_folder  = os.path.join(data_folder, category + "_barrnap")
@@ -1129,7 +992,7 @@ class mt_pipe_commands:
                
     def create_rRNA_filter_barrnap_cat_command(self, stage_name, category, fastq_name, marker_file):
         #this is expected to run on each sample split
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         jobs_folder         = os.path.join(data_folder, "jobs")
         fasta_folder        = os.path.join(data_folder, category + "_fasta")
@@ -1183,7 +1046,7 @@ class mt_pipe_commands:
         return [cat_command + " && " + make_marker + " && " + rm_arc  + " && " + rm_bac  + " && " +  rm_euk  + " && " +  rm_mit]
              
     def create_rRNA_filter_barrnap_pp_command(self, stage_name, category, fastq_name, marker_file):
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         jobs_folder         = os.path.join(data_folder, "jobs")
         fasta_folder        = os.path.join(data_folder, category + "_fasta")
@@ -1225,7 +1088,7 @@ class mt_pipe_commands:
                
     def create_rRNA_filter_infernal_prep_command(self, stage_name, category, fastq_name, root_name, marker_file):
         #expecting full file name in fastq_name
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         fasta_folder        = os.path.join(data_folder, category + "_fasta")
         fastq_folder        = os.path.join(data_folder, category + "_fastq")
@@ -1265,7 +1128,7 @@ class mt_pipe_commands:
         return [convert_fastq_to_fasta_barrnap + " && " + make_marker]
 
     def create_rRNA_filter_infernal_command(self, stage_name, category, file_name, marker_file):
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         fasta_folder        = os.path.join(data_folder, category + "_fasta")
         fastq_folder        = os.path.join(data_folder, category + "_fastq")
@@ -1311,7 +1174,7 @@ class mt_pipe_commands:
     def create_rRNA_filter_splitter_command(self, stage_name, category, file_name, marker_file):
     #file name expected to have no extensions.  eg: pair_1_0
     #expected to be called for each category (pair1, singletons).  not pair 2.  paired data is handled in combination
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         fasta_folder        = os.path.join(data_folder, category + "_fasta")
         fastq_folder        = os.path.join(data_folder, category + "_fastq")
@@ -1397,7 +1260,7 @@ class mt_pipe_commands:
         # 
         # Cat then final filter.  
         # operates in sections
-        subfolder               = os.path.join(self.Output_Path, stage_name)
+        subfolder               = os.path.join(self.output_path, stage_name)
         data_folder             = os.path.join(subfolder, "data")
         infernal_mRNA_folder    = os.path.join(data_folder, category + "_infernal_mRNA")
         infernal_rRNA_folder    = os.path.join(data_folder, category + "_infernal_other")
@@ -1444,12 +1307,12 @@ class mt_pipe_commands:
         # -> detect if we've run the preprocess stage.
         # -> if it's run, grab data
         # -> if not, run our own custom preprocess up to what we need
-        dep_loc                 = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
-        subfolder               = os.path.join(self.Output_Path, stage_name)
+        dep_loc                 = os.path.join(self.output_path, dependency_stage_name, "final_results")
+        subfolder               = os.path.join(self.output_path, stage_name)
         data_folder             = os.path.join(subfolder, "data")
         repop_folder            = os.path.join(data_folder, "0_repop")
         final_folder            = os.path.join(subfolder, "final_results")
-        preprocess_subfolder    = os.path.join(self.Output_Path, preprocess_stage_name)
+        preprocess_subfolder    = os.path.join(self.output_path, preprocess_stage_name)
         
         tut_keyword = "repop"
 
@@ -1500,7 +1363,7 @@ class mt_pipe_commands:
         repop_pair_1 += self.tool_path_obj.Python + " " + self.tool_path_obj.duplicate_repopulate + " "
         repop_pair_1 += os.path.join(hq_path, "pair_1_match.fastq") + " "
         if(self.tutorial_keyword == tut_keyword):
-            repop_pair_1 += self.sequence_path_1 + " "
+            repop_pair_1 += self.self.config_dict["pair_1"] + " "
         else:
             repop_pair_1 += os.path.join(dep_loc, "mRNA", "pair_1.fastq") + " "
         repop_pair_1 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
@@ -1517,7 +1380,7 @@ class mt_pipe_commands:
         repop_pair_2 += self.tool_path_obj.Python + " " + self.tool_path_obj.duplicate_repopulate + " "
         repop_pair_2 += os.path.join(hq_path, "pair_2_match.fastq") + " "
         if(self.tutorial_keyword == tut_keyword):
-            repop_pair_2 += self.sequence_path_2 + " "
+            repop_pair_2 += self.self.config_dict["pair_2"] + " "
         else:
             repop_pair_2 += os.path.join(dep_loc, "mRNA", "pair_2.fastq") + " "
         repop_pair_2 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
@@ -1594,12 +1457,12 @@ class mt_pipe_commands:
         # -> detect if we've run the preprocess stage.
         # -> if it's run, grab data
         # -> if not, run our own custom preprocess up to what we need
-        dep_loc                 = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
-        subfolder               = os.path.join(self.Output_Path, stage_name)
+        dep_loc                 = os.path.join(self.output_path, dependency_stage_name, "final_results")
+        subfolder               = os.path.join(self.output_path, stage_name)
         data_folder             = os.path.join(subfolder, "data")
         repop_folder            = os.path.join(data_folder, "0_repop")
         final_folder            = os.path.join(subfolder, "final_results")
-        preprocess_subfolder    = os.path.join(self.Output_Path, preprocess_stage_name)
+        preprocess_subfolder    = os.path.join(self.output_path, preprocess_stage_name)
         
         tut_keyword = "repop"
 
@@ -1650,7 +1513,7 @@ class mt_pipe_commands:
         repop_pair_1 += self.tool_path_obj.Python + " " + self.tool_path_obj.duplicate_repopulate + " "
         repop_pair_1 += os.path.join(hq_path, "pair_1_match.fastq") + " "
         if(self.tutorial_keyword == tut_keyword):
-            repop_pair_1 += self.sequence_path_1 + " "
+            repop_pair_1 += self.self.config_dict["pair_1"] + " "
         else:
             repop_pair_1 += os.path.join(dep_loc, "mRNA", "pair_1.fastq") + " "
         repop_pair_1 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
@@ -1667,7 +1530,7 @@ class mt_pipe_commands:
         repop_pair_2 += self.tool_path_obj.Python + " " + self.tool_path_obj.duplicate_repopulate + " "
         repop_pair_2 += os.path.join(hq_path, "pair_2_match.fastq") + " "
         if(self.tutorial_keyword == tut_keyword):
-            repop_pair_2 += self.sequence_path_2 + " "
+            repop_pair_2 += self.self.config_dict["pair_2"] + " "
         else:
             repop_pair_2 += os.path.join(dep_loc, "mRNA", "pair_2.fastq") + " "
         repop_pair_2 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
@@ -1744,12 +1607,12 @@ class mt_pipe_commands:
         # -> detect if we've run the preprocess stage.
         # -> if it's run, grab data
         # -> if not, run our own custom preprocess up to what we need
-        dep_loc                 = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
-        subfolder               = os.path.join(self.Output_Path, stage_name)
+        dep_loc                 = os.path.join(self.output_path, dependency_stage_name, "final_results")
+        subfolder               = os.path.join(self.output_path, stage_name)
         data_folder             = os.path.join(subfolder, "data")
         repop_folder            = os.path.join(data_folder, "0_repop")
         final_folder            = os.path.join(subfolder, "final_results")
-        preprocess_subfolder    = os.path.join(self.Output_Path, preprocess_stage_name)
+        preprocess_subfolder    = os.path.join(self.output_path, preprocess_stage_name)
         
         tut_keyword = "repop"
 
@@ -1796,9 +1659,9 @@ class mt_pipe_commands:
         return COMMANDS_Repopulate 
 
     def create_assemble_contigs_command(self, stage_name, dependency_stage_name):
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        dep_loc             = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
+        dep_loc             = os.path.join(self.output_path, dependency_stage_name, "final_results")
         spades_folder       = os.path.join(data_folder, "0_spades")
         mgm_folder          = os.path.join(data_folder, "1_mgm")
         bwa_folder          = os.path.join(data_folder, "2_bwa_align")
@@ -1821,9 +1684,9 @@ class mt_pipe_commands:
         spades += self.tool_path_obj.Spades + " --rna"
         if(self.tutorial_keyword == tut_keyword):
             if self.read_mode == "paired":
-                spades += " -1 " + self.sequence_path_1  # in1 (pair 1)
-                spades += " -2 " + self.sequence_path_2  # in2 (pair 2)
-            spades += " -s " + self.sequence_single  # in_single (singletons)
+                spades += " -1 " + self.self.config_dict["pair_1"]  # in1 (pair 1)
+                spades += " -2 " + self.self.config_dict["pair_2"]  # in2 (pair 2)
+            spades += " -s " + self.self.config_dict["single"]  # in_single (singletons)
         else:
             if self.read_mode == "paired":
                 spades += " -1 " + os.path.join(dep_loc, "pair_1.fastq")  # in1 (pair 1)
@@ -1926,7 +1789,7 @@ class mt_pipe_commands:
         return COMMANDS_Assemble
 
     def create_GA_pre_scan_command(self, stage_name, marker_file):
-        subfolder       = os.path.join(self.Output_Path, stage_name)
+        subfolder       = os.path.join(self.output_path, stage_name)
         final_folder    = os.path.join(subfolder, "final_results")
         data_folder     = os.path.join(subfolder, "data")
         dest_folder     = os.path.join(data_folder, "4_libs")
@@ -1956,7 +1819,7 @@ class mt_pipe_commands:
         
         
     def create_GA_pre_scan_assemble_lib_command(self, stage_name, marker_file):
-        subfolder       = os.path.join(self.Output_Path, stage_name)
+        subfolder       = os.path.join(self.output_path, stage_name)
         final_folder    = os.path.join(subfolder, "final_results")
         data_folder     = os.path.join(subfolder, "data")
         dest_folder     = os.path.join(data_folder, "4_libs")
@@ -1989,11 +1852,11 @@ class mt_pipe_commands:
         
  
     def create_split_ga_fastq_data_command(self, stage_name, dependency_stage_name, category, marker_file):
-        subfolder       = os.path.join(self.Output_Path, stage_name)
+        subfolder       = os.path.join(self.output_path, stage_name)
         final_folder    = os.path.join(subfolder, "final_results")
         data_folder     = os.path.join(subfolder, "data")
         split_folder    = os.path.join(final_folder, category)#, os.path.join(data_folder, "0_read_split", category)
-        dep_loc         = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
+        dep_loc         = os.path.join(self.output_path, dependency_stage_name, "final_results")
         
         jobs_folder     = os.path.join(data_folder, "jobs")
         self.make_folder(subfolder)
@@ -2008,7 +1871,7 @@ class mt_pipe_commands:
             
                 split_fastq = ">&2 echo splitting fastq for " + category + " GA | "
                 split_fastq += "split -l " + str(int(self.tool_path_obj.GA_chunksize) * 4) + " "        
-                split_fastq += self.sequence_path_1 + " "
+                split_fastq += self.self.config_dict["pair_1"] + " "
                 split_fastq += "--additional-suffix .fastq" + " "
                 split_fastq += "-d" + " "
                 split_fastq += os.path.join(split_folder, category + "_")
@@ -2023,7 +1886,7 @@ class mt_pipe_commands:
             elif(category == "pair_2"):
                 split_fastq = ">&2 echo splitting fastq for " + category + " GA | "
                 split_fastq += "split -l " + str(int(self.tool_path_obj.GA_chunksize) * 4) + " "        
-                split_fastq += self.sequence_path_2 + " "
+                split_fastq += self.self.config_dict["pair_2"] + " "
                 split_fastq += "--additional-suffix .fastq" + " "
                 split_fastq += "-d" + " "
                 split_fastq += os.path.join(split_folder, category + "_")
@@ -2037,7 +1900,7 @@ class mt_pipe_commands:
             elif(category == "singletons"):
                 split_fastq = ">&2 echo splitting fastq for " + category + " GA | "
                 split_fastq += "split -l " + str(int(self.tool_path_obj.GA_chunksize) * 4) + " "        
-                split_fastq += self.sequence_single + " "
+                split_fastq += self.self.config_dict["single"] + " "
                 split_fastq += "--additional-suffix .fastq" + " "
                 split_fastq += "-d" + " "
                 split_fastq += os.path.join(split_folder, category + "_")
@@ -2067,11 +1930,11 @@ class mt_pipe_commands:
         return COMMANDS_GA_prep_fastq
 
     def create_split_ga_fasta_data_command(self, stage_name, dependency_stage_name, category, marker_file):
-        subfolder       = os.path.join(self.Output_Path, stage_name)
+        subfolder       = os.path.join(self.output_path, stage_name)
         data_folder     = os.path.join(subfolder, "data")
         final_folder    = os.path.join(subfolder, "final_results")
         split_folder    = os.path.join(final_folder, category)#os.path.join(data_folder, "0_read_split", category)
-        dep_folder      = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
+        dep_folder      = os.path.join(self.output_path, dependency_stage_name, "final_results")
         jobs_folder     = os.path.join(data_folder, "jobs")
         
         self.make_folder(subfolder)
@@ -2086,7 +1949,7 @@ class mt_pipe_commands:
                 split_fasta = ">&2 echo splitting fasta for " + category + " | "
                 split_fasta += self.tool_path_obj.Python + " "    
                 split_fasta += self.tool_path_obj.File_splitter + " "
-                split_fasta += self.sequence_single + " "
+                split_fasta += self.self.config_dict["single"] + " "
                 split_fasta += os.path.join(split_folder, category) + " "
                 split_fasta += str(self.tool_path_obj.GA_chunksize)
                 
@@ -2115,7 +1978,7 @@ class mt_pipe_commands:
                 split_fasta = ">&2 echo splitting fasta for " + category + " | "
                 split_fasta += self.tool_path_obj.Python + " "    
                 split_fasta += self.tool_path_obj.File_splitter + " "
-                split_fasta += self.sequence_path_1 + " "
+                split_fasta += self.self.config_dict["pair_1"] + " "
                 split_fasta += os.path.join(split_folder, category) + " "
                 split_fasta += str(self.tool_path_obj.GA_chunksize)
                 
@@ -2129,7 +1992,7 @@ class mt_pipe_commands:
                 split_fasta = ">&2 echo splitting fasta for " + category + " | "
                 split_fasta += self.tool_path_obj.Python + " "    
                 split_fasta += self.tool_path_obj.File_splitter + " "
-                split_fasta += self.sequence_path_2 + " "
+                split_fasta += self.self.config_dict["pair_2"] + " "
                 split_fasta += os.path.join(split_folder, category) + " "
                 split_fasta += str(self.tool_path_obj.GA_chunksize)
                 
@@ -2161,7 +2024,7 @@ class mt_pipe_commands:
     def create_BWA_annotate_command_v2(self, stage_name, ref_path, ref_tag, query_file, marker_file):
         # meant to be called multiple times: query file is a split file
         # aug 10, 2021: changed ref path to accomodate new split-chocophlan
-        subfolder       = os.path.join(self.Output_Path, stage_name)
+        subfolder       = os.path.join(self.output_path, stage_name)
         data_folder     = os.path.join(subfolder, "data")
         bwa_folder      = os.path.join(data_folder, "1_bwa")
         jobs_folder     = os.path.join(data_folder, "jobs")
@@ -2199,13 +2062,13 @@ class mt_pipe_commands:
             
         
         #meant to be called on the split-file version.  PP script will not merge gene maps.
-        subfolder       = os.path.join(self.Output_Path, stage_name)
+        subfolder       = os.path.join(self.output_path, stage_name)
         data_folder     = os.path.join(subfolder, "data")
         bwa_folder      = os.path.join(data_folder, "1_bwa")
         split_folder    = os.path.join(data_folder, "0_read_split")
         pp_folder       = os.path.join(data_folder, "2_bwa_pp")
         final_folder    = os.path.join(subfolder, "final_results")
-        dep_loc         = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
+        dep_loc         = os.path.join(self.output_path, dependency_stage_name, "final_results")
         jobs_folder     = os.path.join(data_folder, "jobs")
         
         self.make_folder(subfolder)
@@ -2260,13 +2123,13 @@ class mt_pipe_commands:
  
 
     def create_BWA_copy_contig_map_command(self, stage_name, dependency_stage_name, marker_file):
-        subfolder       = os.path.join(self.Output_Path, stage_name)
+        subfolder       = os.path.join(self.output_path, stage_name)
         data_folder     = os.path.join(subfolder, "data")
         bwa_folder      = os.path.join(data_folder, "1_bwa")
         pp_folder       = os.path.join(data_folder, "2_bwa_pp")
         split_folder    = os.path.join(data_folder, "0_read_split")
         final_folder    = os.path.join(subfolder, "final_results")
-        dep_loc         = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
+        dep_loc         = os.path.join(self.output_path, dependency_stage_name, "final_results")
         jobs_folder     = os.path.join(data_folder, "jobs")
         
         self.make_folder(subfolder)
@@ -2288,7 +2151,7 @@ class mt_pipe_commands:
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
 
-        subfolder       = os.path.join(self.Output_Path, stage_name)
+        subfolder       = os.path.join(self.output_path, stage_name)
         data_folder     = os.path.join(subfolder, "data")
         bwa_folder      = os.path.join(data_folder, "1_bwa")
         split_folder    = os.path.join(data_folder, "0_read_split")
@@ -2323,7 +2186,7 @@ class mt_pipe_commands:
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
         
-        subfolder   = os.path.join(self.Output_Path, stage_name)
+        subfolder   = os.path.join(self.output_path, stage_name)
         data_folder = os.path.join(subfolder, "data")
         blat_folder = os.path.join(data_folder, "0_blat")
         jobs_folder = os.path.join(data_folder, "jobs")
@@ -2354,7 +2217,7 @@ class mt_pipe_commands:
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
         # This merges each blatout file based on the sample's name
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         blat_folder         = os.path.join(data_folder, "0_blat")
         #blat_merge_folder   = os.path.join(data_folder, "1_blat_merge")
@@ -2385,11 +2248,11 @@ class mt_pipe_commands:
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
         
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         blat_folder         = os.path.join(data_folder, "0_blat")
         final_folder        = os.path.join(subfolder, "final_results")
-        dep_loc             = os.path.join(self.Output_Path, dependency_stage_name, "final_results")  # implied to be BWA
+        dep_loc             = os.path.join(self.output_path, dependency_stage_name, "final_results")  # implied to be BWA
         jobs_folder         = os.path.join(data_folder, "jobs")
 
         self.make_folder(subfolder)
@@ -2434,12 +2297,12 @@ class mt_pipe_commands:
         no_ext_ref_root_name = sample_ref_root_name.strip(".fasta")
         
         
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         blat_folder         = os.path.join(data_folder, "0_blat")
         pp_folder           = os.path.join(data_folder, "1_pp")
         final_folder        = os.path.join(subfolder, "final_results")
-        dep_loc             = os.path.join(self.Output_Path, dependency_stage_name, "final_results")  # implied to be BWA
+        dep_loc             = os.path.join(self.output_path, dependency_stage_name, "final_results")  # implied to be BWA
         jobs_folder         = os.path.join(data_folder, "jobs")
 
         self.make_folder(subfolder)
@@ -2476,10 +2339,10 @@ class mt_pipe_commands:
         return COMMANDS_Annotate_BLAT_Post        
 
     def create_BLAT_copy_contig_map_command(self, stage_name, dependency_stage_name, marker_file):
-        subfolder       = os.path.join(self.Output_Path, stage_name)
+        subfolder       = os.path.join(self.output_path, stage_name)
         data_folder     = os.path.join(subfolder, "data")
         final_folder    = os.path.join(subfolder, "final_results")
-        dep_loc         = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
+        dep_loc         = os.path.join(self.output_path, dependency_stage_name, "final_results")
         jobs_folder     = os.path.join(data_folder, "jobs")
         
         self.make_folder(subfolder)
@@ -2498,7 +2361,7 @@ class mt_pipe_commands:
 
     def create_BLAT_merge_fasta_command(self, stage_name, sample_root_name, marker_file):
         
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
         blat_folder         = os.path.join(data_folder, "0_blat")
         pp_folder           = os.path.join(data_folder, "1_pp")
@@ -2530,9 +2393,9 @@ class mt_pipe_commands:
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
     
-        subfolder           = os.path.join(self.Output_Path, stage_name)
+        subfolder           = os.path.join(self.output_path, stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        #dep_loc             = os.path.join(self.Output_Path, dependency_stage_name, "final_results")
+        #dep_loc             = os.path.join(self.output_path, dependency_stage_name, "final_results")
         diamond_folder      = os.path.join(data_folder, "0_diamond")
         main_temp_folder    = os.path.join(data_folder, sample_root_name + "_diamond_temp")
         temp_folder         = os.path.join(main_temp_folder, "temp")
@@ -2567,9 +2430,9 @@ class mt_pipe_commands:
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
         # the command just calls the merger program
-        subfolder       = os.path.join(self.Output_Path, stage_name)
+        subfolder       = os.path.join(self.output_path, stage_name)
         data_folder     = os.path.join(subfolder, "data")
-        dep_loc         = os.path.join(self.Output_Path, dependency_stage_name, "final_results")  # implied to be blat pp
+        dep_loc         = os.path.join(self.output_path, dependency_stage_name, "final_results")  # implied to be blat pp
         diamond_folder  = os.path.join(data_folder, "0_diamond/")
         final_folder    = os.path.join(subfolder, "final_results")
         jobs_folder     = os.path.join(data_folder, "jobs")
@@ -2610,13 +2473,13 @@ class mt_pipe_commands:
 
 
     def create_GA_final_merge_command(self, current_stage_name, dep_0_name, dep_1_name, dep_2_name, dep_3_name, marker_file):
-        subfolder       = os.path.join(self.Output_Path, current_stage_name)
+        subfolder       = os.path.join(self.output_path, current_stage_name)
         data_folder     = os.path.join(subfolder, "data")
         final_folder    = os.path.join(subfolder, "final_results")
-        dep_0_path      = os.path.join(self.Output_Path, dep_0_name, "final_results")   #assemble-contigs
-        dep_1_path      = os.path.join(self.Output_Path, dep_1_name, "final_results")   #bwa
-        dep_2_path      = os.path.join(self.Output_Path, dep_2_name, "final_results")   #blat
-        dep_3_path      = os.path.join(self.Output_Path, dep_3_name, "final_results")   #dmd
+        dep_0_path      = os.path.join(self.output_path, dep_0_name, "final_results")   #assemble-contigs
+        dep_1_path      = os.path.join(self.output_path, dep_1_name, "final_results")   #bwa
+        dep_2_path      = os.path.join(self.output_path, dep_2_name, "final_results")   #blat
+        dep_3_path      = os.path.join(self.output_path, dep_3_name, "final_results")   #dmd
         jobs_folder     = os.path.join(data_folder, "jobs")
         
         self.make_folder(subfolder)
@@ -2670,9 +2533,9 @@ class mt_pipe_commands:
     
 
     def create_TA_kraken2_command(self, current_stage_name, assemble_contigs_stage, operating_mode, marker_file):
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        subfolder               = os.path.join(self.output_path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
-        assemble_contigs_folder = os.path.join(self.Output_Path, assemble_contigs_stage, "final_results")
+        assemble_contigs_folder = os.path.join(self.output_path, assemble_contigs_stage, "final_results")
         kraken2_folder            = os.path.join(data_folder, "1_kraken2")
         jobs_folder             = os.path.join(data_folder, "jobs")
         
@@ -2718,7 +2581,7 @@ class mt_pipe_commands:
             return [kraken2_p + " && " + make_marker]
             
     def create_TA_kraken2_pp_command(self, current_stage_name, marker_file):
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        subfolder               = os.path.join(self.output_path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
         kraken2_folder            = os.path.join(data_folder, "1_kraken2")
         jobs_folder             = os.path.join(data_folder, "jobs")
@@ -2741,10 +2604,10 @@ class mt_pipe_commands:
     
         
     def create_TA_centrifuge_command(self, current_stage_name, rRNA_stage, assemble_contigs_stage, operating_mode, marker_file):
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        subfolder               = os.path.join(self.output_path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
-        rRNA_folder             = os.path.join(self.Output_Path, rRNA_stage, "final_results", "other")
-        assemble_contigs_folder = os.path.join(self.Output_Path, assemble_contigs_stage, "final_results")
+        rRNA_folder             = os.path.join(self.output_path, rRNA_stage, "final_results", "other")
+        assemble_contigs_folder = os.path.join(self.output_path, assemble_contigs_stage, "final_results")
         centrifuge_folder       = os.path.join(data_folder, "2_centrifuge")
         jobs_folder             = os.path.join(data_folder, "jobs")
         final_folder            = os.path.join(subfolder, "final_results")
@@ -2755,7 +2618,7 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
         self.make_folder(final_folder)
         
-        singletons_extension = os.path.splitext(self.sequence_single)[1]
+        singletons_extension = os.path.splitext(self.self.config_dict["single"])[1]
         
         if(operating_mode == "contigs"):
             patch_contig_name = self.tool_path_obj.Python + " "
@@ -2794,12 +2657,12 @@ class mt_pipe_commands:
             
             if(self.tutorial_keyword == "TA"):
                 if(singletons_extension == ".fa" or singletons_extension == ".fasta"):
-                    centrifuge_on_reads += " -f -U " + self.sequence_single
+                    centrifuge_on_reads += " -f -U " + self.self.config_dict["single"]
                 else:
-                    centrifuge_on_reads += " -U " + self.sequence_single
+                    centrifuge_on_reads += " -U " + self.self.config_dict["single"]
                 if self.read_mode == "paired":
-                    centrifuge_on_reads += " -1 " + self.sequence_path_1
-                    centrifuge_on_reads += " -2 " + self.sequence_path_2
+                    centrifuge_on_reads += " -1 " + self.self.config_dict["pair_1"]
+                    centrifuge_on_reads += " -2 " + self.self.config_dict["pair_2"]
             else:
                 centrifuge_on_reads += " -U " + os.path.join(assemble_contigs_folder, "singletons.fastq")
                 if self.read_mode == "paired":
@@ -2837,7 +2700,7 @@ class mt_pipe_commands:
             return [centrifuge_on_rRNA + " &&  " + make_marker]
         
     def create_TA_centrifuge_pp_command(self, current_stage_name, marker_file):
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        subfolder               = os.path.join(self.output_path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
         centrifuge_folder       = os.path.join(data_folder, "2_centrifuge")
         jobs_folder             = os.path.join(data_folder, "jobs")
@@ -2860,9 +2723,9 @@ class mt_pipe_commands:
         return [cat_centrifuge + " && " + make_marker]
     
     def create_TA_taxon_pull_command(self, current_stage_name, ga_final_merge_stage, marker_file):
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        subfolder               = os.path.join(self.output_path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
-        final_merge_folder      = os.path.join(self.Output_Path, ga_final_merge_stage, "final_results")
+        final_merge_folder      = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
         ga_taxa_folder          = os.path.join(data_folder, "0_gene_taxa")
         jobs_folder             = os.path.join(data_folder, "jobs")
 
@@ -2885,9 +2748,9 @@ class mt_pipe_commands:
         return [get_taxa_from_gene + " && " + make_marker]
         
     def create_TA_wevote_combine_command(self, current_stage_name, assemble_contigs_stage, marker_file):
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        subfolder               = os.path.join(self.output_path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
-        assemble_contigs_folder = os.path.join(self.Output_Path, assemble_contigs_stage, "final_results")
+        assemble_contigs_folder = os.path.join(self.output_path, assemble_contigs_stage, "final_results")
         #kaiju_folder            = os.path.join(data_folder, "1_kaiju")
         kraken2_folder          = os.path.join(data_folder, "1_kraken2")
         centrifuge_folder       = os.path.join(data_folder, "2_centrifuge")
@@ -2935,9 +2798,9 @@ class mt_pipe_commands:
         
     
     def create_TA_final_command(self, current_stage_name, assemble_contigs_stage, marker_file):
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        subfolder               = os.path.join(self.output_path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
-        assemble_contigs_folder = os.path.join(self.Output_Path, assemble_contigs_stage, "final_results")
+        assemble_contigs_folder = os.path.join(self.output_path, assemble_contigs_stage, "final_results")
         ga_taxa_folder          = os.path.join(data_folder, "0_gene_taxa")
         kraken2_folder            = os.path.join(data_folder, "1_kraken2")
         centrifuge_folder       = os.path.join(data_folder, "2_centrifuge")
@@ -2997,9 +2860,9 @@ class mt_pipe_commands:
       
 
     def create_EC_DETECT_command(self, current_stage_name, ga_final_merge_stage, marker_file):
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        final_merge_folder  = os.path.join(self.Output_Path, ga_final_merge_stage, "final_results")
+        final_merge_folder  = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
         detect_folder       = os.path.join(data_folder, "0_detect")
         jobs_folder         = os.path.join(data_folder, "jobs")
     
@@ -3035,9 +2898,9 @@ class mt_pipe_commands:
 
     def create_EC_PRIAM_split_command(self, current_stage_name, ga_final_merge_stage, split_folder, marker_file):
         #used to split the proteins file to run PRIAM
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        final_merge_folder  = os.path.join(self.Output_Path, ga_final_merge_stage, "final_results")
+        final_merge_folder  = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
         jobs_folder         = os.path.join(data_folder, "jobs")
 
         self.make_folder(subfolder)
@@ -3061,9 +2924,9 @@ class mt_pipe_commands:
     def create_EC_PRIAM_command(self, current_stage_name, ga_final_merge_stage, marker_file):
         #april 06, 2021: This one's a little tricky.  PRIAM has a user-prompt (and no args) to auto-resume.  
         #We must feed it the bash "Yes" in order to activate it.  So, mind the mess
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        final_merge_folder  = os.path.join(self.Output_Path, ga_final_merge_stage, "final_results")
+        final_merge_folder  = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
         PRIAM_folder        = os.path.join(data_folder, "1_priam")
         jobs_folder    = os.path.join(data_folder, "jobs")
 
@@ -3100,9 +2963,9 @@ class mt_pipe_commands:
         #april 06, 2021: This one's a little tricky.  PRIAM has a user-prompt (and no args) to auto-resume.  
         #We must feed it the bash "Yes" in order to activate it.  So, mind the mess
         #dec 05, 2022: now designed to run on split protein files
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        final_merge_folder  = os.path.join(self.Output_Path, ga_final_merge_stage, "final_results")
+        final_merge_folder  = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
         PRIAM_folder        = os.path.join(data_folder, "1_priam")
         jobs_folder    = os.path.join(data_folder, "jobs")
 
@@ -3135,7 +2998,7 @@ class mt_pipe_commands:
         return COMMANDS_PRIAM
         
     def create_EC_PRIAM_cat_command(self, current_stage_name, marker_file):
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
         PRIAM_folder        = os.path.join(data_folder, "1_priam")
         jobs_folder    = os.path.join(data_folder, "jobs")
@@ -3149,9 +3012,9 @@ class mt_pipe_commands:
         
         
     def create_EC_DIAMOND_command(self, current_stage_name, ga_final_merge_stage, marker_file):
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        final_merge_folder  = os.path.join(self.Output_Path, ga_final_merge_stage, "final_results")
+        final_merge_folder  = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
         diamond_ea_folder   = os.path.join(data_folder, "2_diamond")
         jobs_folder         = os.path.join(data_folder, "jobs")
         
@@ -3178,9 +3041,9 @@ class mt_pipe_commands:
         return COMMANDS_DIAMOND_EC
         
     def create_EC_postprocess_command(self, current_stage_name, ga_final_merge_stage, marker_file):
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        final_merge_folder  = os.path.join(self.Output_Path, ga_final_merge_stage, "final_results")
+        final_merge_folder  = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
         detect_folder       = os.path.join(data_folder, "0_detect")
         PRIAM_folder        = os.path.join(data_folder, "1_priam")
         diamond_ea_folder   = os.path.join(data_folder, "2_diamond")
@@ -3219,9 +3082,9 @@ class mt_pipe_commands:
         
     def create_output_copy_gene_map_command(self, current_stage_name, ga_final_merge_stage):
         #just copies the gene map over to the output
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        subfolder               = os.path.join(self.output_path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
-        ga_final_merge_folder   = os.path.join(self.Output_Path, ga_final_merge_stage, "final_results")
+        ga_final_merge_folder   = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
         final_folder            = os.path.join(subfolder, "final_results")
 
         self.make_folder(subfolder)
@@ -3237,11 +3100,11 @@ class mt_pipe_commands:
 
         
     def create_output_network_generation_command(self, current_stage_name, ga_final_merge_stage, taxonomic_annotation_stage, enzyme_annotation_stage):
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        ga_final_merge_folder  = os.path.join(self.Output_Path, ga_final_merge_stage, "final_results")
-        ta_folder           = os.path.join(self.Output_Path, taxonomic_annotation_stage, "final_results")
-        ea_folder           = os.path.join(self.Output_Path, enzyme_annotation_stage, "final_results")
+        ga_final_merge_folder  = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
+        ta_folder           = os.path.join(self.output_path, taxonomic_annotation_stage, "final_results")
+        ea_folder           = os.path.join(self.output_path, enzyme_annotation_stage, "final_results")
         data_folder         = os.path.join(subfolder, "data")
         final_folder        = os.path.join(subfolder, "final_results")
 
@@ -3277,10 +3140,10 @@ class mt_pipe_commands:
         
     def create_output_unique_hosts_singletons_command(self, current_stage_name, quality_stage, host_stage):
         #only call if we had hosts to filter
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        quality_folder      = os.path.join(self.Output_Path, quality_stage, "final_results")
-        host_folder         = os.path.join(self.Output_Path, host_stage, "final_results")
+        quality_folder      = os.path.join(self.output_path, quality_stage, "final_results")
+        host_folder         = os.path.join(self.output_path, host_stage, "final_results")
         data_folder         = os.path.join(subfolder, "data")
         unique_hosts_folder = os.path.join(data_folder, "1_unique_hosts")
         full_hosts_folder   = os.path.join(data_folder, "2_full_hosts")
@@ -3317,10 +3180,10 @@ class mt_pipe_commands:
         
     def create_output_unique_hosts_pair_1_command(self, current_stage_name, quality_stage, host_stage):
         #only call if we had hosts to filter
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        quality_folder      = os.path.join(self.Output_Path, quality_stage, "final_results")
-        host_folder         = os.path.join(self.Output_Path, host_stage, "final_results")
+        quality_folder      = os.path.join(self.output_path, quality_stage, "final_results")
+        host_folder         = os.path.join(self.output_path, host_stage, "final_results")
         data_folder         = os.path.join(subfolder, "data")
         unique_hosts_folder = os.path.join(data_folder, "1_unique_hosts")
         full_hosts_folder   = os.path.join(data_folder, "2_full_hosts")
@@ -3353,10 +3216,10 @@ class mt_pipe_commands:
         
     def create_output_unique_hosts_pair_2_command(self, current_stage_name, quality_stage, host_stage):
         #only call if we had hosts to filter
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        quality_folder      = os.path.join(self.Output_Path, quality_stage, "final_results")
-        host_folder         = os.path.join(self.Output_Path, host_stage, "final_results")
+        quality_folder      = os.path.join(self.output_path, quality_stage, "final_results")
+        host_folder         = os.path.join(self.output_path, host_stage, "final_results")
         data_folder         = os.path.join(subfolder, "data")
         unique_hosts_folder = os.path.join(data_folder, "1_unique_hosts")
         full_hosts_folder   = os.path.join(data_folder, "2_full_hosts")
@@ -3387,11 +3250,11 @@ class mt_pipe_commands:
 #-------------------------------------------------------------------------------------------
     def create_output_unique_vectors_singletons_command(self, current_stage_name, quality_stage, host_stage, vectors_stage):
         #only call if we had hosts to filter
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        subfolder               = os.path.join(self.output_path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
-        quality_folder          = os.path.join(self.Output_Path, quality_stage, "final_results")
-        host_folder             = os.path.join(self.Output_Path, host_stage, "final_results")
-        vectors_folder          = os.path.join(self.Output_Path, vectors_stage, "final_results")
+        quality_folder          = os.path.join(self.output_path, quality_stage, "final_results")
+        host_folder             = os.path.join(self.output_path, host_stage, "final_results")
+        vectors_folder          = os.path.join(self.output_path, vectors_stage, "final_results")
         data_folder             = os.path.join(subfolder, "data")
         unique_vectors_folder   = os.path.join(data_folder, "3_unique_vectors")
         full_vectors_folder     = os.path.join(data_folder, "4_full_vectors")
@@ -3435,11 +3298,11 @@ class mt_pipe_commands:
         
     def create_output_unique_vectors_pair_1_command(self, current_stage_name, quality_stage, host_stage, vectors_stage):
         #only call if we had hosts to filter
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        subfolder               = os.path.join(self.output_path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
-        quality_folder          = os.path.join(self.Output_Path, quality_stage, "final_results")
-        host_folder             = os.path.join(self.Output_Path, host_stage, "final_results")
-        vectors_folder          = os.path.join(self.Output_Path, vectors_stage, "final_results")
+        quality_folder          = os.path.join(self.output_path, quality_stage, "final_results")
+        host_folder             = os.path.join(self.output_path, host_stage, "final_results")
+        vectors_folder          = os.path.join(self.output_path, vectors_stage, "final_results")
         data_folder             = os.path.join(subfolder, "data")
         unique_vectors_folder   = os.path.join(data_folder, "3_unique_vectors")
         full_vectors_folder     = os.path.join(data_folder, "4_full_vectors")
@@ -3477,11 +3340,11 @@ class mt_pipe_commands:
         
     def create_output_unique_vectors_pair_2_command(self, current_stage_name, quality_stage, host_stage, vectors_stage):
         #only call if we had hosts to filter
-        subfolder               = os.path.join(self.Output_Path, current_stage_name)
+        subfolder               = os.path.join(self.output_path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
-        quality_folder          = os.path.join(self.Output_Path, quality_stage, "final_results")
-        host_folder             = os.path.join(self.Output_Path, host_stage, "final_results")
-        vectors_folder          = os.path.join(self.Output_Path, vectors_stage, "final_results")
+        quality_folder          = os.path.join(self.output_path, quality_stage, "final_results")
+        host_folder             = os.path.join(self.output_path, host_stage, "final_results")
+        vectors_folder          = os.path.join(self.output_path, vectors_stage, "final_results")
         data_folder             = os.path.join(subfolder, "data")
         unique_vectors_folder   = os.path.join(data_folder, "3_unique_vectors")
         full_vectors_folder     = os.path.join(data_folder, "4_full_vectors")
@@ -3520,9 +3383,9 @@ class mt_pipe_commands:
         
     def create_output_per_read_scores_command(self, current_stage_name, quality_stage):
         #only call if we had hosts to filter, and run it after the host regen is complete.
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        quality_folder      = os.path.join(self.Output_Path, quality_stage, "final_results")
+        quality_folder      = os.path.join(self.output_path, quality_stage, "final_results")
         data_folder         = os.path.join(subfolder, "data")
         final_folder        = os.path.join(subfolder, "final_results")
 
@@ -3535,14 +3398,14 @@ class mt_pipe_commands:
         per_read_scores += self.tool_path_obj.read_quality_metrics + " "
         if(self.read_mode == "single"):
             per_read_scores += "single" + " "
-            per_read_scores += self.sequence_single + " "
+            per_read_scores += self.self.config_dict["single"] + " "
             per_read_scores += os.path.join(quality_folder, "singletons_hq.fastq") + " "
             per_read_scores += os.path.join(final_folder)
             
         elif(self.read_mode == "paired"):
             per_read_scores += "paired" + " " 
-            per_read_scores += self.sequence_path_1 + " "
-            per_read_scores += self.sequence_path_2 + " "
+            per_read_scores += self.self.config_dict["pair_1"] + " "
+            per_read_scores += self.self.config_dict["pair_2"] + " "
             per_read_scores += os.path.join(quality_folder, "pair_1_match.fastq") + " "
             per_read_scores += os.path.join(quality_folder, "pair_2_match.fastq") + " "
             per_read_scores += os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
@@ -3551,8 +3414,8 @@ class mt_pipe_commands:
         return [per_read_scores]
         
     def create_output_copy_taxa_command(self, current_stage_name, taxa_stage):
-        subfolder       = os.path.join(self.Output_Path, current_stage_name)
-        taxa_folder     = os.path.join(self.Output_Path, taxa_stage, "final_results")
+        subfolder       = os.path.join(self.output_path, current_stage_name)
+        taxa_folder     = os.path.join(self.output_path, taxa_stage, "final_results")
         final_folder    = os.path.join(subfolder, "final_results")
         
         self.make_folder(subfolder)
@@ -3569,9 +3432,9 @@ class mt_pipe_commands:
         
     def create_output_contig_stats_command(self, current_stage_name, contig_stage):
         #only call if we had hosts to filter, and run it after the host regen is complete.
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        contig_folder       = os.path.join(self.Output_Path, contig_stage, "final_results")
+        contig_folder       = os.path.join(self.output_path, contig_stage, "final_results")
         final_folder        = os.path.join(subfolder, "final_results")
 
         self.make_folder(subfolder)
@@ -3588,7 +3451,7 @@ class mt_pipe_commands:
         
     def create_output_EC_heatmap_command(self, current_stage_name):
         #only call if we had hosts to filter, and run it after the host regen is complete.
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
         final_folder        = os.path.join(subfolder, "final_results")
 
@@ -3610,12 +3473,12 @@ class mt_pipe_commands:
         
     def create_output_read_count_command(self, current_stage_name, quality_stage, repopulation_stage, ga_final_merge_stage, enzyme_annotation_stage):
         #only call if we had hosts to filter, and run it after the host regen is complete.
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
-        quality_folder      = os.path.join(self.Output_Path, quality_stage, "final_results")
-        repopulation_folder = os.path.join(self.Output_Path, repopulation_stage, "final_results")
-        final_merge_folder  = os.path.join(self.Output_Path, ga_final_merge_stage, "final_results")
-        ea_folder           = os.path.join(self.Output_Path, enzyme_annotation_stage, "final_results")
+        quality_folder      = os.path.join(self.output_path, quality_stage, "final_results")
+        repopulation_folder = os.path.join(self.output_path, repopulation_stage, "final_results")
+        final_merge_folder  = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
+        ea_folder           = os.path.join(self.output_path, enzyme_annotation_stage, "final_results")
         full_hosts_folder   = os.path.join(data_folder, "2_full_hosts")
         full_vectors_folder = os.path.join(data_folder, "4_full_vectors")
         final_folder        = os.path.join(subfolder, "final_results")
@@ -3631,10 +3494,10 @@ class mt_pipe_commands:
         read_counts += self.tool_path_obj.Python + " "
         read_counts += self.tool_path_obj.read_count + " "
         if self.read_mode == "single":
-            read_counts += self.sequence_single + " "
+            read_counts += self.self.config_dict["single"] + " "
             
         elif self.read_mode == "paired":
-            read_counts += self.sequence_path_1 + " "
+            read_counts += self.self.config_dict["pair_1"] + " "
         read_counts += quality_folder + " "
         read_counts += full_hosts_folder + " "
         read_counts += full_vectors_folder + " "
@@ -3648,7 +3511,7 @@ class mt_pipe_commands:
         
         
     def create_output_taxa_groupby_command(self, current_stage_name):
-        subfolder           = os.path.join(self.Output_Path, current_stage_name)
+        subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
         final_folder        = os.path.join(subfolder, "final_results")
         

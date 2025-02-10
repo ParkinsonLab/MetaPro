@@ -162,7 +162,7 @@ class mp_util:
             quality_encoding = 64
         else:
             quality_encoding =  33
-        return quality_encoding
+        return str(quality_encoding)
 
 
     # handles where to kill the pipeline, due to the prev step behaving badly
