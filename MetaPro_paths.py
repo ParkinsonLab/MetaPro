@@ -319,7 +319,7 @@ class mpro_dir:
         self.dir_dict["qf_adapt"] = os.path.join(self.dir_dict["qf_data"], "1_adapters")
         self.dir_dict["qf_tags"] = os.path.join(self.dir_dict["qf_data"], "2_tags")
         self.dir_dict["qf_merge"] = os.path.join(self.dir_dict["qf_data"], "3_merge")
-        self.dir_dict["qf_filter"] = os.path.join(self.dir_dict["qf_data"], "4_filter")
+        self.dir_dict["qf_hq"] = os.path.join(self.dir_dict["qf_data"], "4_hq")
         self.dir_dict["qf_orphan"] = os.path.join(self.dir_dict["qf_data"], "5_orphan")
         self.dir_dict["qf_dup"] = os.path.join(self.dir_dict["qf_data"], "6_dup")
         self.dir_dict["qf_export"] = os.path.join(self.dir_dict["qf"], "export")
@@ -328,14 +328,14 @@ class mpro_dir:
 
         self.dir_dict["host"] = os.path.join(self.out_dir, self.label_dict["host_filter"])
         self.dir_dict["host_data"] = os.path.join(self.dir_dict["host"], "data")
-        self.dir_dict["host_scan"] = os.path.join(self.dir_dict["host_data"], "0_bt2_scan")
+        self.dir_dict["host_scan"] = os.path.join(self.dir_dict["host_data"], "0_bwa_scan")
         self.dir_dict["host_export"] = os.path.join(self.dir_dict["host"], "export")
 
         self.dir_dict["host_list"] = ["host", "host_data", "host_scan", "host_export"]
 
         self.dir_dict["vec"] = os.path.join(self.out_dir, self.label_dict["vec"])
         self.dir_dict["vec_data"] = os.path.join(self.dir_dict["vec"], "data")
-        self.dir_dict["vec_scan"] = os.path.join(self.dir_dict["vec_data"], "0_bt2")
+        self.dir_dict["vec_scan"] = os.path.join(self.dir_dict["vec_data"], "0_bwa")
         self.dir_dict["vec_export"] = os.path.join(self.dir_dict["vec"], "export")
 
         self.dir_dict["vec_list"] = ["vec", "vec_data", "vec_scan", "vec_export"]
@@ -425,7 +425,20 @@ class mpro_dir:
 
         
 class mpro_file:
-    #the file-interconnect, but only the important files needed
+    #the file-interconnect. 
+    
+    def clean_files(self, stage):
+        key_list = []
+        if(stage == "qf"):
+            key_list = self.file_dict["qf_clean_list"]
+
+
+        for item in key_list:
+            if(os.path.exists(self.file_dict[item])):
+                os.remove(self.file_dict[item])
+
+
+
     def __init__(self, config_dict, dir_dict):
         self.dir_dict = dir_dict
         self.config_dict = config_dict
@@ -433,7 +446,63 @@ class mpro_file:
         self.file_dict["raw_s"] = self.config_dict["single"]
         self.file_dict["raw_p1"] = self.config_dict["pair_1"]
         self.file_dict["raw_p2"] = self.config_dict["pair_2"]
+        self.file_dict["qf_sort_p1"] = os.path.join(self.dir_dict["qf_sort"], "pair_1_sorted.fastq")
+        self.file_dict["qf_sort_p2"] = os.path.join(self.dir_dict["qf_sort"], "pair_2_sorted.fastq") 
+        self.file_dict["qf_adapt_s"] = os.path.join(self.dir_dict["qf_adapt"], "s_no_adapt.fastq")
+        self.file_dict["qf_adapt_p1"] = os.path.join(self.dir_dict["qf_adapt"], "p1_no_adapt.fastq")
+        self.file_dict["qf_adapt_p2"] = os.path.join(self.dir_dict["qf_adapt"], "p2_no_adapt.fastq")
+        self.file_dict["qf_tags_p1"] = os.path.join(self.dir_dict["qf_tags"], "p1_no_tags.fastq")
+        self.file_dict["qf_tags_p2"] = os.path.join(self.dir_dict["qf_tags"], "p2_no_tags.fastq")
+        self.file_dict["qf_tags_s"] = os.path.join(self.dir_dict["qf_tags"], "s_no_tags.fastq")
+        self.file_dict["qf_merge_p1"] = os.path.join(self.dir_dict["qf_merge"], "p1_no_merge.fastq")
+        self.file_dict["qf_merge_p2"] = os.path.join(self.dir_dict["qf_merge"], "p2_no_merge.fastq")
+        self.file_dict["qf_merge_s"] = os.path.join(self.dir_dict["qf_merge"], "s_merge.fastq")
+        self.file_dict["qf_merge_s2"] = os.path.join(self.dir_dict["qf_merge"], "all_s.fastq")
+        self.file_dict["qf_hq_s"] = os.path.join(self.dir_dict["qf_export"], "s_hq.fastq")
+        self.file_dict["qf_hq_p1"] = os.path.join(self.dir_dict["qf_export"], "p1_hq.fastq")
+        self.file_dict["qf_hq_p2"] = os.path.join(self.dir_dict["qf_export"], "p2_hq.fastq")
+        self.file_dict["qf_o_p1"] = os.path.join(self.dir_dict["qf_export"], "p1_match.fastq")
+        self.file_dict["qf_o_p2"] = os.path.join(self.dir_dict["qf_export"], "p2_match.fastq")
+        self.file_dict["qf_o_s"] = os.path.join(self.dir_dict["qf_export"], "s_dupes.fastq")
+        self.file_dict["qf_u_p1"] = os.path.join(self.dir_dict["qf_export"], "p1_unique.fastq")
+        self.file_dict["qf_u_p2"] = os.path.join(self.dir_dict["qf_export"], "p2_unique.fastq")
+        self.file_dict["qf_u_s"] = os.path.join(self.dir_dict["qf_export"], "s_unique.fastq")
+        
+        self.file_dict["qf_clean_list"] = [
+            "qf_sort_p1", "qf_sort_p2", 
+            "qf_adapt_s", "qf_adapt_p1", "qf_adapt_p2",
+            "qf_tags_s", "qf_tags_p1", "qf_tags_p2",
+            "qf_merge_s", "qf_merge_s2", "qf_merge_p1", "qf_merge_p2"                                           
+        ]
 
+
+        self.file_dict["no_host_s_sam"] = os.path.join(self.dir_dict["host_scan"], "s_no_host.sam")
+        self.file_dict["no_host_s_bam"] = os.path.join(self.dir_dict["host_scan"], "s_no_host.bam")
+        self.file_dict["no_host_s"] = os.path.join(self.dir_dict["host_export"], "s_no_host.fastq")
+        self.file_dict["host_s"] = os.path.join(self.dir_dict["host_export"], "s_host_only.fastq")
+        self.file_dict["no_host_p_sam"] = os.path.join(self.dir_dict["host_scan"], "p_no_host.sam")
+        self.file_dict["no_host_p1"] = os.path.join(self.dir_dict["host_export"], "p1_no_host.fastq")
+        self.file_dict["no_host_p2"] = os.path.join(self.dir_dict["host_export"], "p2_no_host.fastq")
+        self.file_dict["host_p1"] = os.path.join(self.dir_dict["host_export"], "p1_host.fastq")
+        self.file_dict["host_p2"] = os.path.join(self.dir_dict["host_export"], "p2_host.fastq")
+
+        self.file_dict["host_clean_list"] = [
+            "no_host_s_sam", "no_host_s_bam", "no_host_p_sam"
+        ]
+        
+        self.file_dict["vec_s_sam"] = os.path.join(self.dir_dict["vec_scan"], "s_no_vec.sam")
+        self.file_dict["vec_s_bam"] = os.path.join(self.dir_dict["vec_scan"], "s_no_vec.bam")
+        self.file_dict["no_vec_s"] = os.path.join(self.dir_dict["vec_export"], "s_no_vec.fastq")
+        self.file_dict["vec_s"] = os.path.join(self.dir_dict["vec_export"], "s_vec.fastq") 
+        self.file_dict["vec_p_sam"] = os.path.join(self.dir_dict["vec_scan"], "p_no_vec.sam")
+        self.file_dict["vec_p1"] = os.path.join(self.dir_dict["vec_export"], "p1_vec.fastq")
+        self.file_dict["vec_p2"] = os.path.join(self.dir_dict["vec_export"], "p2_vec.fastq")
+        self.file_dict["no_vec_p1"] = os.path.join(self.dir_dict["vec_export"], "p1_no_vec.fastq")
+        self.file_dict["no_vec_p2"] = os.path.join(self.dir_dict["vec_export"], "p2_no_vec.fastq")
+
+        self.file_dict["vec_clean_list"] = [
+            "vec_s_sam", "vec_s_bam", "vec_p_sam"
+        ]
 
 class mpro_config:    
     def value_assignment(self, filetype, config, config_section, var_name, default):
@@ -567,7 +636,8 @@ class mpro_config:
                     ok_flag = self.check_file_valid(file_4)
 
                     if(not ok_flag):
-                        sys.exit("BWA Database FILE has not been fully indexed. Try reindexing the database")
+                        print("BWA Database FILE has not been fully indexed. Try reindexing the database")
+                        sys.exit()
                     else:
                         print(dt.today(), "BWA Database File OK")
                         self.GA_DB_mode = "single"
@@ -741,7 +811,7 @@ class mpro_config:
         self.config_dict["tutorial_keyword"] = self.value_assignment("str", config, "Settings", "tutorial_keyword", "None")
 
         self.config_dict["target_rank"]                 = self.value_assignment("str", config, "Settings", "target_rank", "genus")
-        self.config_dict["adapterremoval_minlength"]    = self.value_assignment("int", config, "Settings", "AdapterRemoval_minlength", 30)
+        self.config_dict["adapterremoval_minlength"]    = self.value_assignment("str", config, "Settings", "AdapterRemoval_minlength", 30)
         self.config_dict["show_unclassified"]           = self.value_assignment("str", config, "Settings", "Show_unclassified", "No")
         self.config_dict["bypass_log_name"]             = self.value_assignment("str", config, "Settings", "bypass_log_name", "bypass_log.txt")
         self.config_dict["debug_stop_flag"]             = self.value_assignment("str", config, "Settings", "debug_stop_flag", "none")
@@ -853,9 +923,9 @@ class mpro_config:
         # Note: default host is Mouse CDS
         
         #if config:
-        self.config_dict["UniVec_Core"]        = self.value_assignment("path", config, "Databases", "UniVec_Core", os.path.join(database_path, "univec_core/UniVec_Core.fasta")) 
+        self.config_dict["vectors"]        = self.value_assignment("path", config, "Databases", "vectors", os.path.join(database_path, "univec_core/UniVec_Core.fasta")) 
         self.config_dict["Adapter"]            = self.value_assignment("path", config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"))
-        self.config_dict["Host"]               = self.value_assignment("path", config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"))
+        self.config_dict["Host_db"]            = self.value_assignment("path", config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"))
         self.config_dict["Rfam"]               = self.value_assignment("path", config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
         self.config_dict["DNA_DB"]             = self.value_assignment("path", config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
         self.config_dict["source_taxa_DB"]     = self.value_assignment("path", config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"))
@@ -886,6 +956,7 @@ class mpro_config:
             self.check_bwa_valid(self.DNA_DB)
             #self.check_blat_valid(self.DNA_DB)
         
+        
 
         #----------------------------------------------------------
         # external tools
@@ -897,9 +968,9 @@ class mpro_config:
         self.config_dict["AdapterRemoval"] = self.value_assignment("path", config, "Tools", "AdapterRemoval", os.path.join(tool_path, "adapterremoval/AdapterRemoval"))
         self.config_dict["vsearch"]        = self.value_assignment("path", config, "Tools", "vsearch", os.path.join(tool_path, "vsearch/vsearch"))
         self.config_dict["BWA"]            = self.value_assignment("path", config, "Tools", "BWA", os.path.join(tool_path, "BWA/bwa"))
-        self.config_dict["SAMTOOLS"]       = self.value_assignment("path", config, "Tools", "SAMTOOLS", os.path.join(tool_path, "samtools/samtools"))
+        self.config_dict["samtools"]       = self.value_assignment("path", config, "Tools", "SAMTOOLS", os.path.join(tool_path, "samtools/samtools"))
         self.config_dict["BLAT"]           = self.value_assignment("path", config, "Tools", "BLAT", os.path.join(tool_path, "PBLAT/pblat"))
-        self.config_dict["DIAMOND"]        = self.value_assignment("path", config, "Tools", "DIAMOND", os.path.join(tool_path, "DIAMOND/diamond"))
+        self.config_dict["DMD"]        = self.value_assignment("path", config, "Tools", "DIAMOND", os.path.join(tool_path, "DIAMOND/diamond"))
         self.config_dict["Blastp"]         = self.value_assignment("path", config, "Tools", "Blastp", os.path.join(tool_path, "BLAST_p/blastp"))
         self.config_dict["Needle"]         = self.value_assignment("path", config, "Tools", "Needle", os.path.join(tool_path, "EMBOSS-6.6.0/emboss/stretcher"))
         self.config_dict["Makeblastdb"]    = self.value_assignment("path", config, "Tools", "Makeblastdb", os.path.join(tool_path, "BLAST_p/makeblastdb"))
@@ -914,7 +985,7 @@ class mpro_config:
         self.config_dict["Spades"]         = self.value_assignment("path", config, "Tools", "Spades", os.path.join(tool_path, "SPAdes/bin/spades.py"))
         self.config_dict["MetaGeneMark"]   = self.value_assignment("path", config, "Tools", "MetaGeneMark", os.path.join(tool_path, "mgm/gmhmmp"))
         self.config_dict["kraken2"]        = self.value_assignment("path", config, "Tools", "kraken2", os.path.join(tool_path, "kraken2/kraken2"))
-            
+
         #--------------------------------------------
         # Python scripts
         #if config:

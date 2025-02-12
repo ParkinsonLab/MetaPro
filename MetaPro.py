@@ -276,8 +276,14 @@ if __name__ == "__main__":
         output_folder = os.path.abspath(output_folder)
         print(dt.today(), "output destination:", output_folder)
 
- 
-    
+    #Check DB integrity
+    if(config_dict["no_host"] is True):
+        print(dt.today(), "pre-flight check: host-DB indexing")
+        config_obj.check_bwa_valid(config_dict["Host_db"])
+
+    #Check vector lib integrity
+    config_obj.check_bwa_valid(config_dict["vectors"])
+
     if (tutorial_mode != "none"):
         print("working in tutorial mode:", tutorial_mode)
         tutorial_main(config_dict, dir_dict)
