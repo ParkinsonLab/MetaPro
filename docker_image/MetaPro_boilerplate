@@ -129,12 +129,15 @@ RUN wget http://ccb.jhu.edu/software/FLASH/FLASH-1.2.11.tar.gz -O FLASH.tar.gz \
 
 #-------------------------------------------
 # Install Infernal
-RUN wget http://eddylab.org/infernal/infernal-1.1.2-linux-intel-gcc.tar.gz -O infernal.tar.gz \
+RUN wget http://eddylab.org/infernal/infernal-1.1.5.tar.gz -O infernal.tar.gz \
 && tar --remove-files -xzvf infernal.tar.gz \
 && rm infernal.tar.gz \
 && mkdir infernal \
-&& mv infernal-1.1.2-linux-intel-gcc/binaries/* infernal \
-&& rm -r infernal-1.1.2-linux-intel-gcc \
+&& mv infernal-1.1.5/* infernal \
+&& rm -r infernal-1.1.5 \
+&& cd infernal \
+&& sh configure \
+&& make \
 && cd /pipeline_tools
 
 #-------------------------------------------
@@ -365,6 +368,7 @@ RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.
 ENV PATH="${PATH}:/pipeline_tools/SPAdes/bin:/pipeline_tools/BWA:/pipeline_tools/MetaGeneMark_linux_64:/pipeline_tools/barrnap-0.9/bin:/pipeline_tools/"
 ENV PATH="${PATH}:/pipeline_tools/cdhit_dup/cd-hit-auxtools:/pipeline_tools/DIAMOND:/pipeline_tools/kraken2:/pipeline_tools/samtools:/pipeline_tools/vsearch/vsearch-2.29.2-linux-x86_64/bin"
 ENV PATH="${PATH}:/pipeline_tools/adapterremoval:/pipeline_tools/WEVOTE:/pipeline_tools/PRIAM_search:/pipeline_tools/PBLAT:/pipeline_tools/BLAST_p"
+ENV PATH="${PATH}:/pipeline_tools/infernal/src"
 
-
-RUN apt-get update
+#RUN apt-get update
+#RUN apt-get upgrade

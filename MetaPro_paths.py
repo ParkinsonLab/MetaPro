@@ -134,6 +134,7 @@ class mpro_timing:
         self.out_start      = time.time()
         self.out_end        = time.time()
 
+
         
 class mpro_dir:
 
@@ -423,7 +424,44 @@ class mpro_dir:
         
         self.dir_dict["out_list"] = ["out", "out_export", "out_data", "out_jobs", "out_ng", "out_unique_hosts", "out_unique_vec", "out_heatmap"]
 
+
+class mpro_marker:
+    def place_marker(self, tag):
+        if(not os.path.exist(self.marker_dict[tag])):
+            marker = open(self.marker_dict[tag])
+            marker.close()
+        with open(self.bypass_log, "a") as log:
+            log.write(self.m_name[tag] + "\n")
+
+    def check_marker(self, tag):
+        if(os.path.exists(self.marker_dict[tag])):
+            return True
+        else:
+            return False
         
+
+    def __init__ (self, config_dict, dir_dict):
+        self.dir_dict = dir_dict
+        self.config_dict = config_dict
+        self.bypass_log = config_dict["bypass_log"]
+        self.m_name = dict()
+        self.m_name["qf"] = "qf_marker"
+        self.m_name["host"] = "host_marker"
+        self.m_name["vec"] = "vec_marker"
+        self.m_name["rRNA"] = "rRNA_marker"
+        self.m_name["repop"] = "repop_marker"
+        self.m_name["GA_BWA"] = "GA_BWA_marker"
+        self.m_name["GA_DMD"] = "GA_DMD_marker"
+        self.m_name["TA"] = "TA_marker"
+
+        self.marker_dict = dict()
+        self.marker_dict["qf"] = os.path.join(self.dir_dict["qf"], self.m_name["qf"])
+        self.marker_dict["host"] = os.path.join(self.dir_dict["host"], self.m_name["host"])
+        self.marker_dict["vec"] = os.path.join(self.dir_dict["vec"], self.m_name["vec"])
+        self.marker_dict["rRNA"] = os.path.join(self.dir_dict["rRNA"], self.m_name["rRNA"])
+        
+        
+
 class mpro_file:
     #the file-interconnect. 
     
