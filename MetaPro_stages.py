@@ -21,7 +21,7 @@ import queue as q
 #makes for a neat package/capsule
 
 class mp_stage:
-    def __init__ (self, config_dict, dir_dict, label_dict, time_obj): #config_obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
+    def __init__ (self, config_dict, dir_dict, label_dict, file_dict): #config_obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
         #make our util obj
         #refresher: self -> instance var.  not self: class var (shared among class obj instances)
         
@@ -33,18 +33,24 @@ class mp_stage:
         #self.tutorial_string = tutorial_mode_string
         self.output_folder_path = dir_dict["main"] #output_folder_path
         self.mp_util = mpu.mp_util(config_dict, dir_dict)
+        self.marker_control = mpp.mpro_marker(config_dict, dir_dict)
+        self.marker_dict = self.marker_control.marker_dict
         #self.config_dict = config_dict
         
         self.config_dict = config_dict
         self.dir_dict = dir_dict
         self.label_dict = label_dict
+        self.file_dict = file_dict
+        
+        self.seq_handler = mpu.mp_seq_handler(self.config_dict, self.dir_dict, self.file_dict)
+        
 
         #time.sleep(10)
         self.GA_DB_mode = self.paths.GA_DB_mode
         self.segmented_chocophlan_flag = True
         if(config_dict["DNA_DB"].endswith(".fasta")):
             self.segmented_chocophlan_flag = False
-        self.no_host = config_dict["no_host"]
+        self.config_dict["no_host"] = config_dict["no_host"]
         self.verbose_mode = config_dict["verbose_mode"]
         self.rRNA_chunks = int(self.paths.rRNA_chunksize)
         self.EC_chunksize = int(self.paths.EC_chunksize)
@@ -129,34 +135,33 @@ class mp_stage:
     #--------------------------------------------------------------------------------------------------------------
     # main calls
     def mp_quality_filter(self):
-        self.time_obj.measure_time("qc", "start")
-        for item in self.dir_dict["qc_list"]:
-            self.dir_dict.make_dirs(self.dir_dict[item])
+        if(self.marker_control.check_marker(self.marker_dict["qf"])):
+            self.time_obj.measure_time("qc", "start")
+            for item in self.dir_dict["qc_list"]:
+                self.dir_dict.make_dirs(self.dir_dict[item])
 
-        command_list = self.commands.create_quality_control_command(self.label_dict["qc"])
-        self.mp_util.launch_stage_simple(self.label_dict["qc"], self.dir_dict["qc"], self.commands, command_list, self.keep_all, self.keep_quality)
-        self.time_obj.measure_time("qc", "end")
-        
-        self.debug_stop_check(self.quality_filter_label)
-        
+            command_list = self.commands.create_quality_control_command(self.marker_dict["qf"])
+            self.mp_util.launch_stage_simple(self.label_dict["qc"], self.dir_dict["qc"], self.commands, command_list, self.keep_all, self.keep_quality)
+            self.time_obj.measure_time("qc", "end")
+            
+            self.debug_stop_check(self.quality_filter_label)
+            
 
     def mp_host_filter(self):
-        if not self.no_host:
+        if not self.config_dict["no_host"]:
             self.time_obj.measure_time("host", "start")
             for item in self.dir_dict["host_list"]:
                 self.dir_dict.make_dirs(self.dir_dict[item])
-            #if not check_where_resume(host_path, None, self.quality_path):
-            command_list = self.commands.create_host_filter_command(self.label_dict["host"], self.label_dict["qc"])
-            self.cleanup_host_start, self.cleanup_host_end = self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
-            self.host_end = time.time()
-            print("host filter:", '%1.1f' % (self.host_end - self.host_start - (self.cleanup_host_end - self.cleanup_host_start)), "s")
-            print("host filter cleanup:", '%1.1f' %(self.cleanup_host_end - self.cleanup_host_start),"s")
+            command_list = self.commands.create_host_filter_command(self.marker_dict["host"])
+            self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
+            self.time_obj.measure_time("host", "end")
+
             self.debug_stop_check(self.host_filter_label)
 
     def mp_vector_filter(self):
         self.vector_start = time.time()
         
-        if self.no_host:
+        if self.config_dict["no_host"]:
             #get dep args from quality filter
             #if not check_where_resume(vector_path, None, self.quality_path):
             command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.quality_filter_label)
@@ -179,60 +184,12 @@ class mp_stage:
         rRNA_filter_jobs_folder = os.path.join(self.rRNA_filter_path, "data", "jobs")
         #if not check_where_resume(self.rRNA_filter_path, None, self.vector_path):
         if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_label): 
-            marker_path_list = []
-            sections = ["singletons"]
-            if self.read_mode == "paired":
-                sections.extend(["pair_1", "pair_2"])
+            split_count_s = self.seq_handler.split_fastq(self.file_dict["no_vec_s"], self.file_dict["rRNA_split_s"], self.config_dict["rRNA_chunksize"], "fasta")
+            split_count_p1 = self.seq_handler.split_fastq(self.file_dict["no_vec_p1"], self.file_dict["rRNA_split_p1"], self.config_dict["rRNA_chunksize"], "fasta")
+            split_count_p2 = self.seq_handler.split_fastq(self.file_dict["no_vec_p2"], self.file_dict["rRNA_split_p2"], self.config_dict["rRNA_chunksize"], "fasta")
+
             
-            for section in reversed(sections):  #we go backwards due to a request by Ana.  pairs first, if applicable, then singletons
-                #split the data, if necessary.
-                #initial split -> by lines.  we can do both
-                split_path = os.path.join(self.rRNA_filter_path, "data", section + "_fastq")
-                barrnap_path = os.path.join(self.output_folder_path, self.rRNA_filter_label, "data", section, section + "_barrnap")
-                infernal_path = os.path.join(self.output_folder_path, self.rRNA_filter_label, "data", section, section + "_infernal") 
-                marker_file = "rRNA_filter_prep_" + section
-                marker_path = os.path.join(rRNA_filter_jobs_folder, marker_file)
-                #if not check_where_resume(job_label = None, full_path = second_split_path, dep_job_path = vector_path):
-                if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_split_label + "_" + section):
-                    print(dt.today(), "splitting:", section, " for rRNA filtration")
-                    job_name = "rRNA_filter_prep_" + section
-                    marker_path_list.append(marker_path)
-                    command_list = self.commands.create_rRNA_filter_prep_command_v3(self.rRNA_filter_label, section, self.vector_filter_label, marker_file)
-                    self.mp_util.launch_and_create_with_mp_store(self.rRNA_filter_label, job_name, self.commands, command_list)
-            self.mp_util.wait_for_mp_store()
-            final_checklist = os.path.join(self.rRNA_filter_path, "rRNA_filter_prep.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            for element in sections:
-                if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_split_label + "_" + element):
-                    self.mp_util.write_to_bypass_log(self.output_folder_path, self.rRNA_filter_split_label + "_" + element)
-                
-            #-------------------------------------------------------------------------------------------------
-            # Convert fastq segments to fasta
-            
-            for section in reversed(sections):
-                split_path = os.path.join(self.rRNA_filter_path, "data", section + "_fastq")
-                if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_convert_label + "_" + section):
-                    marker_path_list = []
-                    for item in os.listdir(split_path):
-                        root_name = item.split(".")[0]
-                        fasta_path = os.path.join(self.rRNA_filter_path, "data", section + "_fasta")
-                        fasta_file = os.path.join(fasta_path, root_name + ".fasta")
-                        marker_file = root_name + "_convert_fasta"
-                        marker_path = os.path.join(rRNA_filter_jobs_folder, marker_file)
-                        
-                        fasta_out_size = os.stat(fasta_file).st_size if (os.path.exists(fasta_file)) else 0
-                        if(fasta_out_size > 0) or (os.path.exists(marker_path)):
-                            print(dt.today(), item, "already converted to fasta.  skipping")
-                            continue
-                        else:
-                            job_name = root_name + "_convert_to_fasta"
-                            marker_path_list.append(marker_path)
-                            command_list = self.commands.create_rRNA_filter_convert_fastq_command("rRNA_filter", section, root_name+".fastq", marker_file)
-                            self.mp_util.launch_only_with_hold(self.Barrnap_mem_threshold, self.Barrnap_job_limit, self.Barrnap_job_delay, job_name, self.commands, command_list)
-                            
-                    final_checklist = os.path.join(self.rRNA_filter_path, "rRNA_filter_convert_" + section + ".txt")
-                    self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-                    self.mp_util.write_to_bypass_log(self.output_folder_path, self.rRNA_filter_convert_label + "_" + section)
+
                 
                         
             #-------------------------------------------------------------------------------------------------
@@ -1522,7 +1479,7 @@ class mp_stage:
                 
             
                 
-            if not(self.no_host):
+            if not(self.config_dict["no_host"]):
                 print(dt.today(), "repopulating hosts for output")
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_singletons_label):
                     job_name = self.output_unique_hosts_singletons_label
@@ -1570,7 +1527,7 @@ class mp_stage:
                 self.mp_util.conditional_write_to_bypass_log(self.output_unique_vectors_pair_1_label, "outputs/data/4_full_vectors", "pair_1_full_vectors.fastq")
                 self.mp_util.conditional_write_to_bypass_log(self.output_unique_vectors_pair_2_label, "outputs/data/4_full_vectors", "pair_2_full_vectors.fastq")
                 
-            if not (self.no_host):
+            if not (self.config_dict["no_host"]):
                 self.mp_util.conditional_write_to_bypass_log(self.output_unique_hosts_singletons_label, "outputs/data/2_full_hosts", "singletons_full_hosts.fastq")
                 if(self.read_mode == "paired"):
                     self.mp_util.conditional_write_to_bypass_log(self.output_unique_hosts_pair_1_label, "outputs/data/2_full_hosts", "pair_1_full_hosts.fastq")
@@ -1632,7 +1589,7 @@ class mp_stage:
         print("Total runtime:", '%1.1f' % (self.end_time - self.start_time), "s")
         print("quality filter:", '%1.1f' % (self.quality_end - self.quality_start - (self.cleanup_quality_end - self.cleanup_quality_start)), "s")
         print("quality filter cleanup:", '%1.1f' %(self.cleanup_quality_end - self.cleanup_quality_start), "s")
-        if not self.no_host:
+        if not self.config_dict["no_host"]:
             print("host filter:", '%1.1f' % (self.host_end - self.host_start - (self.cleanup_host_end - self.cleanup_host_start)), "s")
             print("host filter cleanup:", '%1.1f' %(self.cleanup_host_end - self.cleanup_host_start),"s")
         print("vector filter:", '%1.1f' % (self.vector_end - self.vector_start - (self.cleanup_vector_end - self.cleanup_vector_start)), "s")

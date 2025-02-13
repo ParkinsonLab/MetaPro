@@ -14,6 +14,7 @@ class mt_pipe_commands:
         self.config_dict = config_dict
         self.file_dict = file_dict
         self.dir_dict = dir_dict
+        
         #self.config_dict = config_dict
         #self.tool_path_obj = config_obj #mpp.tool_path_obj(Config_path)
         self.no_host_flag = self.config_dict["no_host"]
@@ -51,24 +52,24 @@ class mt_pipe_commands:
 
     
                 
-    def create_quality_control_command(self):
+    def create_quality_control_command(self, marker):
 
         sort_pair_1 = ">&2 echo Sorting pair 1 | "
-        sort_pair_1 += self.config_dict["Python + " "
-        sort_pair_1 += self.config_dict["sort_reads + " "
+        sort_pair_1 += self.config_dict["Python"] + " "
+        sort_pair_1 += self.config_dict["sort_reads"] + " "
         sort_pair_1 += self.file_dict["raw_p1"] + " "
         sort_pair_1 += self.file_dict["qf_sort_p1"] + " "
         sort_pair_1 += "forward"
 
         sort_pair_2 = ">&2 echo Sorting pair 2 | "
-        sort_pair_2 += self.config_dict["Python + " "
-        sort_pair_2 += self.config_dict["sort_reads + " "
+        sort_pair_2 += self.config_dict["Python"] + " "
+        sort_pair_2 += self.config_dict["sort_reads"] + " "
         sort_pair_2 += self.file_dict["raw_p2"] + " "
         sort_pair_2 += self.file_dict["qf_sort_p2"] + " "
         sort_pair_2 += "reverse"
 
         adapter_removal_line = ">&2 echo Removing adapters | "
-        adapter_removal_line += self.config_dict["AdapterRemoval
+        adapter_removal_line += self.config_dict["AdapterRemoval"]
         if self.read_mode == "single":
             adapter_removal_line += " --file1 " + self.file_dict["raw_s"]
         elif self.read_mode == "paired":
@@ -91,27 +92,27 @@ class mt_pipe_commands:
 
         #Sort-reads introduces tags at the read-level of the 
         tag_remove_pair_1 = ">&2 echo Remove tags pair 1 | "
-        tag_remove_pair_1 += self.config_dict["Python + " "
-        tag_remove_pair_1 += self.config_dict["remove_tag + " "
+        tag_remove_pair_1 += self.config_dict["Python"] + " "
+        tag_remove_pair_1 += self.config_dict["remove_tag"] + " "
         tag_remove_pair_1 += self.file_dict["qf_adapt_p1"] + " "
         tag_remove_pair_1 += self.file_dict["qf_tags_p1"]
         
         tag_remove_pair_2 = ">&2 echo Remove tags pair 2 | "
-        tag_remove_pair_2 += self.config_dict["Python + " "
-        tag_remove_pair_2 += self.config_dict["remove_tag + " "
+        tag_remove_pair_2 += self.config_dict["Python"] + " "
+        tag_remove_pair_2 += self.config_dict["remove_tag"] + " "
         tag_remove_pair_2 += self.file_dict["qf_adapt_p2"] + " "
         tag_remove_pair_2 += self.file_dict["qf_tags_p2"]
 
         tag_remove_singletons =  ">&2 echo Remove tags singletons | " 
-        tag_remove_singletons += self.config_dict["Python + " "
-        tag_remove_singletons += self.config_dict["remove_tag + " "
+        tag_remove_singletons += self.config_dict["Python"] + " "
+        tag_remove_singletons += self.config_dict["remove_tag"] + " "
         tag_remove_singletons += self.file_dict["qf_adapt_s"] + " "
         tag_remove_singletons += self.file_dict["qf_tags_s"
                                                 ]
         # tries to merge the cleaned pairs
         # rejects get sent out
         vsearch_merge = ">&2 echo " + "Vsearch Merge pairs | "
-        vsearch_merge += self.config_dict["vsearch
+        vsearch_merge += self.config_dict["vsearch"]
         vsearch_merge += " --fastq_mergepairs " + self.file_dict["qf_tags_p1"]
         vsearch_merge += " --reverse " + self.file_dict["qf_tags_p2"]
         vsearch_merge += " --fastq_ascii " + self.config_dict["q_enc"]
@@ -130,7 +131,7 @@ class mt_pipe_commands:
         # start with the singles / merged sections
         
         vsearch_filter_0 = ">&2 echo low-quality filter on singletons | "
-        vsearch_filter_0 += self.config_dict["vsearch
+        vsearch_filter_0 += self.config_dict["vsearch"]
         if self.read_mode == "single":
             vsearch_filter_0 += " --fastq_filter " + self.file_dict["qf_tags_s"]
         elif self.read_mode == "paired":
@@ -141,14 +142,14 @@ class mt_pipe_commands:
 
         # then move onto the standalones in pair 1
         vsearch_filter_1 = ">&2 echo low-quality filter on pair 1 | "
-        vsearch_filter_1 += self.config_dict["vsearch
+        vsearch_filter_1 += self.config_dict["vsearch"]
         vsearch_filter_1 += " --fastq_filter " + self.file_dict["qf_merge_p1"]
         vsearch_filter_1 += " --fastq_ascii " + self.Qual_str
         vsearch_filter_1 += " --fastq_maxee " + "2.0"
         vsearch_filter_1 += " --fastqout " + self.file_dict["qf_hq_p1"]
 
         vsearch_filter_2 = ">&2 echo low-quality filter on pair 2 | "
-        vsearch_filter_2 += self.config_dict["vsearch
+        vsearch_filter_2 += self.config_dict["vsearch"]
         vsearch_filter_2 += " --fastq_filter " + self.file_dict["qf_merge_p2"]
         vsearch_filter_2 += " --fastq_ascii " + self.Qual_str
         vsearch_filter_2 += " --fastq_maxee " + "2.0"
@@ -156,8 +157,8 @@ class mt_pipe_commands:
 
         # redistribute data into singletons, or paired-reads
         orphan_read_filter = ">&2 echo moving newly orphaned reads | "
-        orphan_read_filter += self.config_dict["Python + " "
-        orphan_read_filter += self.config_dict["orphaned_read_filter + " "
+        orphan_read_filter += self.config_dict["Python"] + " "
+        orphan_read_filter += self.config_dict["orphaned_read_filter"] + " "
         orphan_read_filter += self.file_dict["qf_hq_p1"] + " "
         orphan_read_filter += self.file_dict["qf_hq_p2"] + " "
         orphan_read_filter += self.file_dict["qf_hq_s"] + " "
@@ -167,7 +168,7 @@ class mt_pipe_commands:
 
         # remove duplicates (to shrink the data size)
         cdhit_singletons = ">&2 echo removing singleton duplicates | "
-        cdhit_singletons += self.config_dict["cdhit_dup + " -i "
+        cdhit_singletons += self.config_dict["cdhit_dup"] + " -i "
         if self.read_mode == "single":
             cdhit_singletons += self.file_dict["qf_hq_s"]
         elif self.read_mode == "paired":
@@ -176,18 +177,20 @@ class mt_pipe_commands:
 
         # remove duplicates in the pairs
         cdhit_paired = ">&2 echo remove duplicates from paired | "
-        cdhit_paired += self.config_dict["cdhit_dup + " "
+        cdhit_paired += self.config_dict["cdhit_dup"] + " "
         cdhit_paired += "-i"    + " " + self.file_dict["qf_o_p1"] + " "
         cdhit_paired += "-i2"   + " " + self.file_dict["qf_o_p2"] + " "
         cdhit_paired += "-o"    + " " + self.file_dict["qf_u_p1"] + " "
         cdhit_paired += "-o2"   + " " + self.file_dict["qf_u_p2"]
 
+        make_marker = "touch " + marker
         
         if self.read_mode == "single":
             COMMANDS_qual = [
                 adapter_removal_line,
                 vsearch_filter_0,
-                cdhit_singletons
+                cdhit_singletons, 
+                make_marker
             ]
         elif self.read_mode == "paired":
             COMMANDS_qual = [
@@ -204,12 +207,13 @@ class mt_pipe_commands:
                 vsearch_filter_2,
                 orphan_read_filter,
                 cdhit_singletons,
-                cdhit_paired
+                cdhit_paired,
+                make_marker
             ]
 
         return COMMANDS_qual
 
-    def create_host_filter_command(self):
+    def create_host_filter_command(self, marker):
         
         # host removal on unique singletons
        
@@ -281,7 +285,7 @@ class mt_pipe_commands:
         bwa_hr_filter_paired += self.file_dict["host_p2"]
 
         
-
+        make_marker = "touch " + marker
 
         
         #-----------------------------
@@ -296,7 +300,8 @@ class mt_pipe_commands:
                     bwa_hr_s,
                     samtools_hr_s_sam_to_bam,
                     samtools_no_host_s_bam_to_fastq,
-                    samtools_host_s_bam_to_fastq
+                    samtools_host_s_bam_to_fastq,
+                    make_marker
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_host = [
@@ -305,7 +310,8 @@ class mt_pipe_commands:
                     samtools_no_host_s_bam_to_fastq,
                     samtools_host_s_bam_to_fastq,
                     bwa_hr_paired,
-                    bwa_hr_filter_paired
+                    bwa_hr_filter_paired,
+                    make_marker
 
                 ]
         else:
@@ -315,7 +321,8 @@ class mt_pipe_commands:
                     bwa_hr_tut_s,
                     samtools_hr_s_sam_to_bam,
                     samtools_no_host_s_bam_to_fastq,
-                    samtools_host_s_bam_to_fastq
+                    samtools_host_s_bam_to_fastq,
+                    make_marker
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_host = [
@@ -324,7 +331,8 @@ class mt_pipe_commands:
                     samtools_no_host_s_bam_to_fastq,
                     samtools_host_s_bam_to_fastq,
                     bwa_hr_tut_paired,
-                    bwa_hr_filter_paired
+                    bwa_hr_filter_paired,
+                    make_marker
                 ]
 
                 
@@ -390,10 +398,10 @@ class mt_pipe_commands:
         bwa_vr_tut_paired += " > " + self.file_dict["vec_p_sam"]
         
         bwa_vr_filter_paired = ">&2 echo BWA vector filter on paired | "
-        bwa_vr_filter_paired += self.config_dict["Python + " "
+        bwa_vr_filter_paired += self.config_dict["Python"] + " "
         bwa_vr_filter_paired += self.config_dict["bwa_read_sorter"] + " "
         bwa_vr_filter_paired += "paired" + " "
-        bwa_vr_filter_paired += self.config_dict["filter_stringency + " "
+        bwa_vr_filter_paired += self.config_dict["filter_stringency"] + " "
         bwa_vr_filter_paired += self.file_dict["vec_p_sam"] + " "
         bwa_vr_filter_paired += self.file_dict["no_host_p1"] + " "
         bwa_vr_filter_paired += self.file_dict["no_host_p2"] + " "
@@ -409,7 +417,7 @@ class mt_pipe_commands:
                     bwa_vr_tut_s,
                     samtools_no_vec_s_convert,
                     samtools_no_vec_s_export,
-                    samtools_vector_s_export,
+                    samtools_vec_s_export
                     
                 ]
             elif self.read_mode == "paired":
@@ -442,41 +450,10 @@ class mt_pipe_commands:
         return COMMANDS_vector
          
          
-    def create_rRNA_filter_convert_fastq_command(self, stage_name, category, fastq_name, marker_file):
-        subfolder           = os.path.join(self.output_path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        fasta_folder        = os.path.join(data_folder, category + "_fasta")
-        fastq_folder        = os.path.join(data_folder, category + "_fastq")
-        file_name           = fastq_name.split(".")[0]
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        
-        fastq_seqs          = os.path.join(fastq_folder, fastq_name)
-        
-        fasta_seqs          = os.path.join(fasta_folder, file_name + ".fasta")
-        
-        tut_fasta_folder    = os.path.join(data_folder, "tutorial_fasta")
 
-        self.make_folder(jobs_folder)
-        
-        #if(self.tutorial_keyword == "rRNA"):
-        #    self.make_folder(tut_fasta_folder)
-        #else:
-        self.make_folder(fasta_folder)
-            
-        
-        convert_fastq_to_fasta = ">&2 echo " + " converting " + file_name + " file to fasta | "
-        convert_fastq_to_fasta += self.config_dict["vsearch
-        convert_fastq_to_fasta += " --fastq_filter " + fastq_seqs
-        convert_fastq_to_fasta += " --fastq_ascii " + self.Qual_str
-        convert_fastq_to_fasta += " --fastaout " + fasta_seqs
-        
-        
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
- 
-        return [convert_fastq_to_fasta + " && " + make_marker]
-    
+
+
+"""
     def create_rRNA_filter_barrnap_arc_command(self, stage_name, category, fastq_name, marker_file):
         # called by each split file
         # category -> singletons, pair 1, pair 2
@@ -506,7 +483,7 @@ class mt_pipe_commands:
     
         
         Barrnap_archaea = ">&2 echo running Barrnap on " + file_name + " file: arc | "
-        Barrnap_archaea += self.config_dict["Barrnap
+        Barrnap_archaea += self.config_dict["Barrnap"]
         Barrnap_archaea += " --quiet --reject 0.01 --kingdom " + "arc"
         Barrnap_archaea += " --threads " + self.threads_str
         Barrnap_archaea += " " + fasta_seqs
@@ -542,7 +519,7 @@ class mt_pipe_commands:
         
 
         Barrnap_bacteria = ">&2 echo Running Barrnap on " + file_name + " file:  bac | "
-        Barrnap_bacteria += self.config_dict["Barrnap
+        Barrnap_bacteria += self.config_dict["Barrnap"]
         Barrnap_bacteria += " --quiet --reject 0.01 --kingdom " + "bac"
         Barrnap_bacteria += " --threads " + self.threads_str
         Barrnap_bacteria += " " + fasta_seqs
@@ -580,7 +557,7 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
 
         Barrnap_eukaryote = ">&2 echo Running Barrnap on " + file_name + " file: euk | "
-        Barrnap_eukaryote += self.config_dict["Barrnap
+        Barrnap_eukaryote += self.config_dict["Barrnap"]
         Barrnap_eukaryote += " --quiet --reject 0.01 --kingdom " + "euk"
         Barrnap_eukaryote += " --threads " + self.threads_str
         Barrnap_eukaryote += " " + fasta_seqs
@@ -614,7 +591,7 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
 
         Barrnap_mitochondria = ">&2 echo Running Barrnap on " + file_name + " file: mito | " 
-        Barrnap_mitochondria += self.config_dict["Barrnap
+        Barrnap_mitochondria += self.config_dict["Barrnap"]
         Barrnap_mitochondria += " --quiet --reject 0.01 --kingdom " + "mito"
         Barrnap_mitochondria += " --threads " + self.threads_str
         Barrnap_mitochondria += " " + fasta_seqs
@@ -706,8 +683,8 @@ class mt_pipe_commands:
         
         
         Barrnap_pp = ">&2 echo Running Barrnap pp scripts | "
-        Barrnap_pp += self.config_dict["Python + " "
-        Barrnap_pp += self.config_dict["barrnap_post + " "
+        Barrnap_pp += self.config_dict["Python"] + " "
+        Barrnap_pp += self.config_dict["Barrnap"]_post + " "
         Barrnap_pp += Barrnap_out + " "
         Barrnap_pp += fastq_seqs + " "
         Barrnap_pp += mRNA_folder + " "
@@ -849,7 +826,7 @@ class mt_pipe_commands:
             self.make_folder(Barrnap_pair_2_out_folder)
             
             rRNA_filtration = ">&2 echo extracting mRNA with infernal report: " + file_name + " | "
-            rRNA_filtration += self.config_dict["Python + " "
+            rRNA_filtration += self.config_dict["Python"] + " "
             rRNA_filtration += self.config_dict["rRNA_filter + " "
             rRNA_filtration += self.config_dict["filter_stringency + " "
             rRNA_filtration += "paired" + " "
@@ -876,7 +853,7 @@ class mt_pipe_commands:
             self.make_folder(infernal_rRNA_singletons_folder)
             
             rRNA_filtration = ">&2 echo extracting mRNA with infernal report: " + file_name + " | "
-            rRNA_filtration += self.config_dict["Python + " "
+            rRNA_filtration += self.config_dict["Python"] + " "
             rRNA_filtration += self.config_dict["rRNA_filter + " "
             rRNA_filtration += self.config_dict["filter_stringency + " "
             rRNA_filtration += "single" + " "
@@ -966,7 +943,7 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
 
         repop_singletons = ">&2 echo " + str(dt.today()) + " Duplication repopulation singletons mRNA| "
-        repop_singletons += self.config_dict["Python + " " + self.config_dict["duplicate_repopulate + " "
+        repop_singletons += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
         #the reference data to be drawn from 
         if self.read_mode == "single":
             repop_singletons += os.path.join(singleton_path, "singletons_hq.fastq") + " "
@@ -985,7 +962,7 @@ class mt_pipe_commands:
             
 
         repop_singletons_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulations singletons rRNA | "
-        repop_singletons_rRNA += self.config_dict["Python + " " + self.config_dict["duplicate_repopulate + " "
+        repop_singletons_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
         if self.read_mode == "single":
             repop_singletons_rRNA += os.path.join(singleton_path, "singletons_hq.fastq") + " "
         elif self.read_mode == "paired":
@@ -998,7 +975,7 @@ class mt_pipe_commands:
             repop_singletons_rRNA += os.path.join(repop_folder, "singletons_rRNA.fastq")  # out
 
         repop_pair_1 = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 1 mRNA | "
-        repop_pair_1 += self.config_dict["Python + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_1 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
         repop_pair_1 += os.path.join(hq_path, "pair_1_match.fastq") + " "
         if(self.tutorial_keyword == tut_keyword):
             repop_pair_1 += self.config_dict["pair_1"] + " "
@@ -1008,14 +985,14 @@ class mt_pipe_commands:
         repop_pair_1 += os.path.join(repop_folder, "pair_1.fastq")
 
         repop_pair_1_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 1 rRNA | "
-        repop_pair_1_rRNA += self.config_dict["Python + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_1_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
         repop_pair_1_rRNA += os.path.join(hq_path, "pair_1_match.fastq") + " "
         repop_pair_1_rRNA += os.path.join(dep_loc, "other", "pair_1_other.fastq") + " "
         repop_pair_1_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
         repop_pair_1_rRNA += os.path.join(repop_folder, "pair_1_rRNA.fastq")
 
         repop_pair_2 = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 2 | "
-        repop_pair_2 += self.config_dict["Python + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_2 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
         repop_pair_2 += os.path.join(hq_path, "pair_2_match.fastq") + " "
         if(self.tutorial_keyword == tut_keyword):
             repop_pair_2 += self.config_dict["pair_2"] + " "
@@ -1025,14 +1002,14 @@ class mt_pipe_commands:
         repop_pair_2 += os.path.join(repop_folder, "pair_2.fastq")
 
         repop_pair_2_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 2 | "
-        repop_pair_2_rRNA += self.config_dict["Python + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_2_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
         repop_pair_2_rRNA += os.path.join(hq_path, "pair_2_match.fastq") + " "
         repop_pair_2_rRNA += os.path.join(dep_loc, "other", "pair_2_other.fastq") + " "
         repop_pair_2_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
         repop_pair_2_rRNA += os.path.join(repop_folder, "pair_2_rRNA.fastq")
 
         singleton_repop_filter = ">&2 echo filtering mRNA for new singletons | "
-        singleton_repop_filter += self.config_dict["Python + " "
+        singleton_repop_filter += self.config_dict["Python"] + " "
         singleton_repop_filter += self.config_dict["orphaned_read_filter + " "
         singleton_repop_filter += os.path.join(repop_folder, "pair_1.fastq") + " "
         singleton_repop_filter += os.path.join(repop_folder, "pair_2.fastq") + " "
@@ -1042,7 +1019,7 @@ class mt_pipe_commands:
         singleton_repop_filter += os.path.join(final_folder, "singletons.fastq")
     
         singleton_repop_filter_rRNA = ">&2 echo filtering rRNA for new singletons | "  
-        singleton_repop_filter_rRNA += self.config_dict["Python + " "
+        singleton_repop_filter_rRNA += self.config_dict["Python"] + " "
         singleton_repop_filter_rRNA += self.config_dict["orphaned_read_filter + " "
         singleton_repop_filter_rRNA += os.path.join(repop_folder, "pair_1_rRNA.fastq") + " "
         singleton_repop_filter_rRNA += os.path.join(repop_folder, "pair_2_rRNA.fastq") + " "
@@ -1116,7 +1093,7 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
 
         repop_singletons = ">&2 echo " + str(dt.today()) + " Duplication repopulation singletons mRNA| "
-        repop_singletons += self.config_dict["Python + " " + self.config_dict["duplicate_repopulate + " "
+        repop_singletons += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
         #the reference data to be drawn from 
         if self.read_mode == "single":
             repop_singletons += os.path.join(singleton_path, "singletons_hq.fastq") + " "
@@ -1135,7 +1112,7 @@ class mt_pipe_commands:
             
 
         repop_singletons_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulations singletons rRNA | "
-        repop_singletons_rRNA += self.config_dict["Python + " " + self.config_dict["duplicate_repopulate + " "
+        repop_singletons_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
         if self.read_mode == "single":
             repop_singletons_rRNA += os.path.join(singleton_path, "singletons_hq.fastq") + " "
         elif self.read_mode == "paired":
@@ -1148,7 +1125,7 @@ class mt_pipe_commands:
             repop_singletons_rRNA += os.path.join(repop_folder, "singletons_rRNA.fastq")  # out
 
         repop_pair_1 = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 1 mRNA | "
-        repop_pair_1 += self.config_dict["Python + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_1 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
         repop_pair_1 += os.path.join(hq_path, "pair_1_match.fastq") + " "
         if(self.tutorial_keyword == tut_keyword):
             repop_pair_1 += self.config_dict["pair_1"] + " "
@@ -1158,14 +1135,14 @@ class mt_pipe_commands:
         repop_pair_1 += os.path.join(repop_folder, "pair_1.fastq")
 
         repop_pair_1_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 1 rRNA | "
-        repop_pair_1_rRNA += self.config_dict["Python + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_1_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
         repop_pair_1_rRNA += os.path.join(hq_path, "pair_1_match.fastq") + " "
         repop_pair_1_rRNA += os.path.join(dep_loc, "other", "pair_1_other.fastq") + " "
         repop_pair_1_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
         repop_pair_1_rRNA += os.path.join(repop_folder, "pair_1_rRNA.fastq")
 
         repop_pair_2 = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 2 | "
-        repop_pair_2 += self.config_dict["Python + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_2 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
         repop_pair_2 += os.path.join(hq_path, "pair_2_match.fastq") + " "
         if(self.tutorial_keyword == tut_keyword):
             repop_pair_2 += self.config_dict["pair_2"] + " "
@@ -1175,14 +1152,14 @@ class mt_pipe_commands:
         repop_pair_2 += os.path.join(repop_folder, "pair_2.fastq")
 
         repop_pair_2_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 2 | "
-        repop_pair_2_rRNA += self.config_dict["Python + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_2_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
         repop_pair_2_rRNA += os.path.join(hq_path, "pair_2_match.fastq") + " "
         repop_pair_2_rRNA += os.path.join(dep_loc, "other", "pair_2_other.fastq") + " "
         repop_pair_2_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
         repop_pair_2_rRNA += os.path.join(repop_folder, "pair_2_rRNA.fastq")
 
         singleton_repop_filter = ">&2 echo filtering mRNA for new singletons | "
-        singleton_repop_filter += self.config_dict["Python + " "
+        singleton_repop_filter += self.config_dict["Python"] + " "
         singleton_repop_filter += self.config_dict["orphaned_read_filter + " "
         singleton_repop_filter += os.path.join(repop_folder, "pair_1.fastq") + " "
         singleton_repop_filter += os.path.join(repop_folder, "pair_2.fastq") + " "
@@ -1192,7 +1169,7 @@ class mt_pipe_commands:
         singleton_repop_filter += os.path.join(final_folder, "singletons.fastq")
     
         singleton_repop_filter_rRNA = ">&2 echo filtering rRNA for new singletons | "  
-        singleton_repop_filter_rRNA += self.config_dict["Python + " "
+        singleton_repop_filter_rRNA += self.config_dict["Python"] + " "
         singleton_repop_filter_rRNA += self.config_dict["orphaned_read_filter + " "
         singleton_repop_filter_rRNA += os.path.join(repop_folder, "pair_1_rRNA.fastq") + " "
         singleton_repop_filter_rRNA += os.path.join(repop_folder, "pair_2_rRNA.fastq") + " "
@@ -1268,7 +1245,7 @@ class mt_pipe_commands:
         
 
         singleton_repop_filter = ">&2 echo filtering mRNA for new singletons | "
-        singleton_repop_filter += self.config_dict["Python + " "
+        singleton_repop_filter += self.config_dict["Python"] + " "
         singleton_repop_filter += self.config_dict["orphaned_read_filter + " "
         singleton_repop_filter += os.path.join(repop_folder, "pair_1.fastq") + " "
         singleton_repop_filter += os.path.join(repop_folder, "pair_2.fastq") + " "
@@ -1278,7 +1255,7 @@ class mt_pipe_commands:
         singleton_repop_filter += os.path.join(final_folder, "singletons.fastq")
     
         singleton_repop_filter_rRNA = ">&2 echo filtering rRNA for new singletons | "  
-        singleton_repop_filter_rRNA += self.config_dict["Python + " "
+        singleton_repop_filter_rRNA += self.config_dict["Python"] + " "
         singleton_repop_filter_rRNA += self.config_dict["orphaned_read_filter + " "
         singleton_repop_filter_rRNA += os.path.join(repop_folder, "pair_1_rRNA.fastq") + " "
         singleton_repop_filter_rRNA += os.path.join(repop_folder, "pair_2_rRNA.fastq") + " "
@@ -1318,7 +1295,7 @@ class mt_pipe_commands:
         
         # this assembles contigs
         spades = ">&2 echo Spades Contig assembly | "
-        spades += self.config_dict["Python + " "
+        spades += self.config_dict["Python"] + " "
         spades += self.config_dict["Spades + " --rna"
         if(self.tutorial_keyword == tut_keyword):
             if self.read_mode == "paired":
@@ -1350,7 +1327,7 @@ class mt_pipe_commands:
         disassemble_contigs += os.path.join(spades_folder, "contigs.fasta")
         
         remove_whitespace = ">&2 echo Removing whitespace from fasta | " 
-        remove_whitespace += self.config_dict["Python + " " + self.config_dict["remove_gaps_in_fasta + " "
+        remove_whitespace += self.config_dict["Python"] + " " + self.config_dict["remove_gaps_in_fasta + " "
         remove_whitespace += post_mgm_contig + " "
         remove_whitespace += final_contigs
         
@@ -1374,7 +1351,7 @@ class mt_pipe_commands:
         bwa_singletons_contigs += " > " + os.path.join(bwa_folder, "singletons_on_contigs.sam")
         
         make_contig_map = ">&2 echo Making contig map | " 
-        make_contig_map += self.config_dict["Python + " "
+        make_contig_map += self.config_dict["Python"] + " "
         make_contig_map += self.config_dict["Map_contig + " "
         make_contig_map += self.read_mode + " "
         make_contig_map += dep_loc + " "
@@ -1385,7 +1362,7 @@ class mt_pipe_commands:
             
             
         flush_bad_contigs = ">&2 echo flush bad contigs | " 
-        flush_bad_contigs += self.config_dict["Python + " "
+        flush_bad_contigs += self.config_dict["Python"] + " "
         flush_bad_contigs += self.config_dict["flush_bad_contigs + " "
         flush_bad_contigs += contig_map + " "
         flush_bad_contigs += final_contigs + " "
@@ -1439,7 +1416,7 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
         
         ga_get_lib = ">&2 echo GA pre-scan get libs | "
-        ga_get_lib += self.config_dict["Python + " "
+        ga_get_lib += self.config_dict["Python"] + " "
         ga_get_lib += self.config_dict["GA_pre_scan_get_lib + " "
         ga_get_lib += os.path.join(data_folder, "3_wevote", "taxonomic_classifications.tsv") + " "
         ga_get_lib += self.config_dict["taxid_tree + " "
@@ -1469,7 +1446,7 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
     
         assemble_lib = ">&2 echo GA assemble libs | " 
-        assemble_lib += self.config_dict["Python + " " 
+        assemble_lib += self.config_dict["Python"] + " " 
         assemble_lib += self.config_dict["GA_pre_scan_assemble_lib + " "
         assemble_lib += os.path.join(dest_folder, "lib_list.txt") + " " 
         assemble_lib += self.config_dict["source_taxa_DB +  " "
@@ -1585,7 +1562,7 @@ class mt_pipe_commands:
         if(self.tutorial_keyword == "GA"):
             if(category == "singletons"):
                 split_fasta = ">&2 echo splitting fasta for " + category + " | "
-                split_fasta += self.config_dict["Python + " "    
+                split_fasta += self.config_dict["Python"] + " "    
                 split_fasta += self.config_dict["File_splitter + " "
                 split_fasta += self.config_dict["single"] + " "
                 split_fasta += os.path.join(split_folder, category) + " "
@@ -1600,7 +1577,7 @@ class mt_pipe_commands:
                 
             elif(category == "contigs"):
                 split_fasta = ">&2 echo splitting fasta for " + category + " | "
-                split_fasta += self.config_dict["Python + " "    
+                split_fasta += self.config_dict["Python"] + " "    
                 split_fasta += self.config_dict["File_splitter + " "
                 split_fasta += self.sequence_contigs + " "
                 split_fasta += os.path.join(split_folder, category) + " "
@@ -1614,7 +1591,7 @@ class mt_pipe_commands:
                 ]
             elif(category == "pair_1"):
                 split_fasta = ">&2 echo splitting fasta for " + category + " | "
-                split_fasta += self.config_dict["Python + " "    
+                split_fasta += self.config_dict["Python"] + " "    
                 split_fasta += self.config_dict["File_splitter + " "
                 split_fasta += self.config_dict["pair_1"] + " "
                 split_fasta += os.path.join(split_folder, category) + " "
@@ -1628,7 +1605,7 @@ class mt_pipe_commands:
                 ]
             elif(category == "pair_2"):
                 split_fasta = ">&2 echo splitting fasta for " + category + " | "
-                split_fasta += self.config_dict["Python + " "    
+                split_fasta += self.config_dict["Python"] + " "    
                 split_fasta += self.config_dict["File_splitter + " "
                 split_fasta += self.config_dict["pair_2"] + " "
                 split_fasta += os.path.join(split_folder, category) + " "
@@ -1643,7 +1620,7 @@ class mt_pipe_commands:
                 
         else:
             split_fasta = ">&2 echo splitting fasta for " + category + " | "
-            split_fasta += self.config_dict["Python + " "    
+            split_fasta += self.config_dict["Python"] + " "    
             split_fasta += self.config_dict["File_splitter + " "
             split_fasta += os.path.join(dep_folder, category +".fasta") + " "
             split_fasta += os.path.join(split_folder, category) + " "
@@ -1728,7 +1705,7 @@ class mt_pipe_commands:
         
 
         map_read_bwa = ">&2 echo " + str(dt.today()) + " GA BWA PP generic: " + sample_root_name + " | "
-        map_read_bwa += self.config_dict["Python + " "
+        map_read_bwa += self.config_dict["Python"] + " "
         map_read_bwa += self.config_dict["Map_reads_gene_BWA + " "
         map_read_bwa += str(self.config_dict["BWA"]_cigar_cutoff) + " "
         map_read_bwa += ref_path + " "
@@ -1806,7 +1783,7 @@ class mt_pipe_commands:
         self.make_folder(pp_folder)
 
         merge_bwa_fastas = ">&2 echo " + str(dt.today()) + " GA BWA merge leftover reads " + sample_root_name + " | "
-        merge_bwa_fastas += self.config_dict["Python + " "
+        merge_bwa_fastas += self.config_dict["Python"] + " "
         merge_bwa_fastas += self.config_dict["GA_merge_fasta + " "
         merge_bwa_fastas += pp_folder + " " 
         merge_bwa_fastas += sample_root_name + " " 
@@ -1900,7 +1877,7 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
 
         blat_pp = ">&2 echo " + str(dt.today()) + " BLAT post-processing " + sample_root_name + " | "
-        blat_pp += self.config_dict["Python + " "
+        blat_pp += self.config_dict["Python"] + " "
         blat_pp += self.config_dict["Map_reads_gene_BLAT + " "
         blat_pp += str(self.config_dict["BLAT_identity_cutoff) + " "
         blat_pp += str(self.config_dict["BLAT_length_cutoff) + " "
@@ -1951,7 +1928,7 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
 
         blat_pp = ">&2 echo " + str(dt.today()) + " BLAT post-processing " + sample_root_name + " | "
-        blat_pp += self.config_dict["Python + " "
+        blat_pp += self.config_dict["Python"] + " "
         blat_pp += self.config_dict["Map_reads_gene_BLAT + " "
         blat_pp += str(self.config_dict["BLAT_identity_cutoff) + " "
         blat_pp += str(self.config_dict["BLAT_length_cutoff) + " "
@@ -2014,7 +1991,7 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
 
         merge_blat_fastas = ">&2 echo " + str(dt.today()) + " GA BLAT merge leftover reads " + sample_root_name + " | "
-        merge_blat_fastas += self.config_dict["Python + " "
+        merge_blat_fastas += self.config_dict["Python"] + " "
         merge_blat_fastas += self.config_dict["GA_merge_fasta + " "
         merge_blat_fastas += pp_folder + " " 
         merge_blat_fastas += sample_root_name + " " 
@@ -2081,7 +2058,7 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
 
         diamond_pp = ">&2 echo " + str(dt.today()) + " DIAMOND post process " + sample_root_name + " | "
-        diamond_pp += self.config_dict["Python + " "
+        diamond_pp += self.config_dict["Python"] + " "
         diamond_pp += self.config_dict["Map_reads_prot_DMND + " "
         diamond_pp += str(self.config_dict["DMD"]_identity_cutoff) + " "
         diamond_pp += str(self.config_dict["DMD"]_length_cutoff) + " "
@@ -2125,21 +2102,21 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
         self.make_folder(jobs_folder)
         
-        final_merge_fastq = self.config_dict["Python + " "
+        final_merge_fastq = self.config_dict["Python"] + " "
         final_merge_fastq += self.config_dict["GA_final_merge_fasta + " "
         final_merge_fastq += dep_0_path + " "
         final_merge_fastq += dep_3_path + " "
         final_merge_fastq += self.read_mode + " "
         final_merge_fastq += final_folder
         
-        final_merge_proteins = self.config_dict["Python + " "
+        final_merge_proteins = self.config_dict["Python"] + " "
         final_merge_proteins += self.config_dict["GA_final_merge_proteins + " "
         final_merge_proteins += dep_1_path + " "
         final_merge_proteins += dep_2_path + " "
         final_merge_proteins += dep_3_path + " "
         final_merge_proteins += final_folder
         
-        final_merge_maps = self.config_dict["Python + " "
+        final_merge_maps = self.config_dict["Python"] + " "
         final_merge_maps += self.config_dict["GA_final_merge_maps + " "
         final_merge_maps += dep_1_path + " "
         final_merge_maps += dep_2_path + " "
@@ -2259,7 +2236,7 @@ class mt_pipe_commands:
         singletons_extension = os.path.splitext(self.config_dict["single"])[1]
         
         if(operating_mode == "contigs"):
-            patch_contig_name = self.config_dict["Python + " "
+            patch_contig_name = self.config_dict["Python"] + " "
             patch_contig_name += self.config_dict["ta_contig_name_convert + " "
             if(self.tutorial_keyword == "TA"):
                 patch_contig_name += self.sequence_contigs + " "
@@ -2277,7 +2254,7 @@ class mt_pipe_commands:
             centrifuge_on_contigs += " -S " + os.path.join(centrifuge_folder, "raw_contigs.tsv")
             centrifuge_on_contigs += " --report-file " + os.path.join(centrifuge_folder, "raw_contigs.txt")
             
-            back_convert_report = self.config_dict["Python + " "
+            back_convert_report = self.config_dict["Python"] + " "
             back_convert_report += self.config_dict["ta_contig_name_convert + " "
             back_convert_report += os.path.join(centrifuge_folder, "raw_contigs.tsv") + " "
             back_convert_report += os.path.join(centrifuge_folder, "contigs.tsv")
@@ -2374,7 +2351,7 @@ class mt_pipe_commands:
         
 
         get_taxa_from_gene = ">&2 echo get taxa from gene | "
-        get_taxa_from_gene += self.config_dict["Python + " "
+        get_taxa_from_gene += self.config_dict["Python"] + " "
         get_taxa_from_gene += self.config_dict["Annotated_taxid + " "  # SLOW STEP
         get_taxa_from_gene += os.path.join(final_merge_folder, "gene_map.tsv") + " "
         get_taxa_from_gene += self.config_dict["accession2taxid + " "
@@ -2403,7 +2380,7 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
         
         wevote_combine = ">&2 echo combining classification outputs for wevote | "
-        wevote_combine += self.config_dict["Python + " "
+        wevote_combine += self.config_dict["Python"] + " "
         wevote_combine += self.config_dict["Classification_combine + " "
         wevote_combine += os.path.join(assemble_contigs_folder, "contig_map.tsv")
         wevote_combine += " " + os.path.join(wevote_folder, "wevote_input.csv") + " "
@@ -2424,7 +2401,7 @@ class mt_pipe_commands:
         wevote_call += " -s " + "0"
         
         wevote_collect = ">&2 echo gathering WEVOTE results | "
-        wevote_collect += self.config_dict["Python + " "
+        wevote_collect += self.config_dict["Python"] + " "
         wevote_collect += self.config_dict["Wevote_parser + " "
         wevote_collect += os.path.join(wevote_folder, "wevote_WEVOTE_Details.txt") + " "
         wevote_collect += os.path.join(wevote_folder, "taxonomic_classifications.tsv")
@@ -2456,7 +2433,7 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
 
         wevote_combine = ">&2 echo combining classification outputs for wevote | "
-        wevote_combine += self.config_dict["Python + " "
+        wevote_combine += self.config_dict["Python"] + " "
         wevote_combine += self.config_dict["Classification_combine + " "
         wevote_combine += os.path.join(assemble_contigs_folder, "contig_map.tsv")
         wevote_combine += " " + os.path.join(wevote_folder, "wevote_ensemble.csv") + " "
@@ -2477,13 +2454,13 @@ class mt_pipe_commands:
         wevote_call += " -s " + "0"
         
         wevote_collect = ">&2 echo gathering WEVOTE results | "
-        wevote_collect += self.config_dict["Python + " "
+        wevote_collect += self.config_dict["Python"] + " "
         wevote_collect += self.config_dict["Wevote_parser + " "
         wevote_collect += os.path.join(wevote_folder, "wevote_WEVOTE_Details.txt") + " "
         wevote_collect += os.path.join(final_folder, "taxonomic_classifications.tsv")
         
         constrain = ">&2 echo Constraining the Taxonomic Annotation | " 
-        constrain += self.config_dict["Python + " " + self.config_dict["Constrain_classification + " "
+        constrain += self.config_dict["Python"] + " " + self.config_dict["Constrain_classification + " "
         constrain += self.config_dict["target_rank + " "
         constrain += os.path.join(final_folder, "taxonomic_classifications.tsv") + " "
         constrain += self.config_dict["nodes + " "
@@ -2511,7 +2488,7 @@ class mt_pipe_commands:
         
         
         detect_protein = ">&2 echo running detect on split file | "
-        detect_protein += self.config_dict["Python + " "
+        detect_protein += self.config_dict["Python"] + " "
         detect_protein += self.config_dict["Detect + " "
         detect_protein += os.path.join(final_merge_folder,"all_proteins.faa")
         detect_protein += " --output_file " + os.path.join(detect_folder, "proteins.detect")
@@ -2546,7 +2523,7 @@ class mt_pipe_commands:
         self.make_folder(split_folder)
         self.make_folder(jobs_folder)
 
-        split_command = self.config_dict["Python + " "
+        split_command = self.config_dict["Python"] + " "
         split_command += self.config_dict["File_splitter + " "
         split_command += os.path.join(final_merge_folder, "all_proteins.faa") + " "
         split_command += os.path.join(split_folder, "protein_split") + " "
@@ -2557,8 +2534,8 @@ class mt_pipe_commands:
         
 
         return [split_command + " && " + make_marker]
-        
-    """
+"""       
+"""
     def create_EC_PRIAM_command(self, current_stage_name, ga_final_merge_stage, marker_file):
         #april 06, 2021: This one's a little tricky.  PRIAM has a user-prompt (and no args) to auto-resume.  
         #We must feed it the bash "Yes" in order to activate it.  So, mind the mess
@@ -2596,7 +2573,7 @@ class mt_pipe_commands:
 
         return COMMANDS_PRIAM
     """
-
+"""
     def create_EC_PRIAM_command_v2(self, current_stage_name, ga_final_merge_stage, priam_out_folder, split_file, id, marker_file):
         #april 06, 2021: This one's a little tricky.  PRIAM has a user-prompt (and no args) to auto-resume.  
         #We must feed it the bash "Yes" in order to activate it.  So, mind the mess
@@ -2694,7 +2671,7 @@ class mt_pipe_commands:
         #combine_detect += " > " + os.path.join(detect_folder, "proteins.toppred")
 
         postprocess_command = ">&2 echo combining enzyme annotation output | "
-        postprocess_command += self.config_dict["Python + " "
+        postprocess_command += self.config_dict["Python"] + " "
         postprocess_command += self.config_dict["EC_Annotation_Post + " "
         postprocess_command += os.path.join(detect_folder, "proteins.fbeta") + " "
         postprocess_command += os.path.join(PRIAM_folder, "all_sequenceECs.txt") + " "
@@ -2753,7 +2730,7 @@ class mt_pipe_commands:
         gene_map_location = os.path.join(ga_final_merge_folder, "gene_map.tsv")
         
         network_generation = ">&2 echo Generating RPKM and Cytoscape network | "
-        network_generation += self.config_dict["Python + " "
+        network_generation += self.config_dict["Python"] + " "
         network_generation += self.config_dict["RPKM + " "
         network_generation += str(self.config_dict["RPKM_cutoff) + " "
         network_generation += "None" + " "
@@ -2769,7 +2746,7 @@ class mt_pipe_commands:
         
         
         flatten_rpkm = ">&2 echo Reformat RPKM for EC heatmap | "
-        flatten_rpkm += self.config_dict["Python + " "
+        flatten_rpkm += self.config_dict["Python"] + " "
         flatten_rpkm += self.config_dict["format_RPKM + " "
         flatten_rpkm += os.path.join(final_folder, "RPKM_table.tsv") + " "
         flatten_rpkm += os.path.join(final_folder, "EC_heatmap_RPKM.tsv")
@@ -2796,7 +2773,7 @@ class mt_pipe_commands:
         
         
         get_unique_host_reads_singletons = ">&2 echo get singleton host reads for stats | "
-        get_unique_host_reads_singletons += self.config_dict["Python + " "
+        get_unique_host_reads_singletons += self.config_dict["Python"] + " "
         get_unique_host_reads_singletons += self.config_dict["get_unique_host_reads + " "
         get_unique_host_reads_singletons += os.path.join(host_folder, "singletons.fastq") + " "
         get_unique_host_reads_singletons += os.path.join(quality_folder, "singletons.fastq") + " "
@@ -2804,7 +2781,7 @@ class mt_pipe_commands:
         
         
         repop_singletons_hosts = ">&2 echo repopulating singletons hosts | " 
-        repop_singletons_hosts += self.config_dict["Python + " "
+        repop_singletons_hosts += self.config_dict["Python"] + " "
         repop_singletons_hosts += self.config_dict["duplicate_repopulate + " "
         if(self.read_mode == "single"):
             repop_singletons_hosts += os.path.join(quality_folder, "singletons_hq.fastq") + " "
@@ -2836,14 +2813,14 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
         
         get_unique_host_reads_pair_1 = ">&2 echo get pair 1 host reads for stats | " 
-        get_unique_host_reads_pair_1 += self.config_dict["Python + " "
+        get_unique_host_reads_pair_1 += self.config_dict["Python"] + " "
         get_unique_host_reads_pair_1 += self.config_dict["get_unique_host_reads + " "
         get_unique_host_reads_pair_1 += os.path.join(host_folder, "pair_1.fastq") + " "
         get_unique_host_reads_pair_1 += os.path.join(quality_folder, "pair_1.fastq") + " "
         get_unique_host_reads_pair_1 += os.path.join(unique_hosts_folder, "pair_1_hosts.fastq")
         
         repop_pair_1_hosts = ">&2 echo repopulating pair 1 hosts | " 
-        repop_pair_1_hosts += self.config_dict["Python + " "
+        repop_pair_1_hosts += self.config_dict["Python"] + " "
         repop_pair_1_hosts += self.config_dict["duplicate_repopulate + " "
         repop_pair_1_hosts += os.path.join(quality_folder, "pair_1_match.fastq") + " "
         repop_pair_1_hosts += os.path.join(unique_hosts_folder, "pair_1_hosts.fastq") + " "
@@ -2870,14 +2847,14 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
         
         get_unique_host_reads_pair_2 = ">&2 echo get pair 2 host reads for stats | " 
-        get_unique_host_reads_pair_2 += self.config_dict["Python + " "
+        get_unique_host_reads_pair_2 += self.config_dict["Python"] + " "
         get_unique_host_reads_pair_2 += self.config_dict["get_unique_host_reads + " "
         get_unique_host_reads_pair_2 += os.path.join(host_folder, "pair_2.fastq") + " "
         get_unique_host_reads_pair_2 += os.path.join(quality_folder, "pair_2.fastq") + " "
         get_unique_host_reads_pair_2 += os.path.join(unique_hosts_folder, "pair_2_hosts.fastq")
         
         repop_pair_2_hosts = ">&2 echo repopulating pair 2 hosts | " 
-        repop_pair_2_hosts += self.config_dict["Python + " "
+        repop_pair_2_hosts += self.config_dict["Python"] + " "
         repop_pair_2_hosts += self.config_dict["duplicate_repopulate + " "
         repop_pair_2_hosts += os.path.join(quality_folder, "pair_2_match.fastq") + " "
         repop_pair_2_hosts += os.path.join(unique_hosts_folder, "pair_2_hosts.fastq") + " "
@@ -2905,7 +2882,7 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
         
         get_unique_vectors_reads_singletons = ">&2 echo get singleton vectors reads for stats | "
-        get_unique_vectors_reads_singletons += self.config_dict["Python + " "
+        get_unique_vectors_reads_singletons += self.config_dict["Python"] + " "
         get_unique_vectors_reads_singletons += self.config_dict["get_unique_host_reads + " "
             
         
@@ -2922,7 +2899,7 @@ class mt_pipe_commands:
             
             
         repop_singletons_vectors = ">&2 echo repopulating singletons vectors | " 
-        repop_singletons_vectors += self.config_dict["Python + " "
+        repop_singletons_vectors += self.config_dict["Python"] + " "
         repop_singletons_vectors += self.config_dict["duplicate_repopulate + " "
         if(self.read_mode == "single"):
             repop_singletons_vectors += os.path.join(quality_folder, "singletons_hq.fastq") + " "
@@ -2953,7 +2930,7 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
         
         get_unique_vectors_reads_pair_1 = ">&2 echo get pair 1 vector reads for stats | " 
-        get_unique_vectors_reads_pair_1 += self.config_dict["Python + " "
+        get_unique_vectors_reads_pair_1 += self.config_dict["Python"] + " "
         get_unique_vectors_reads_pair_1 += self.config_dict["get_unique_host_reads + " "
         
         if(self.no_host_flag):
@@ -2967,7 +2944,7 @@ class mt_pipe_commands:
             get_unique_vectors_reads_pair_1 += os.path.join(unique_vectors_folder, "pair_1_vectors.fastq")
         
         repop_pair_1_vectors = ">&2 echo repopulating pair 1 vectors | " 
-        repop_pair_1_vectors += self.config_dict["Python + " "
+        repop_pair_1_vectors += self.config_dict["Python"] + " "
         repop_pair_1_vectors += self.config_dict["duplicate_repopulate + " "
         repop_pair_1_vectors += os.path.join(quality_folder, "pair_1_match.fastq") + " "
         repop_pair_1_vectors += os.path.join(unique_vectors_folder, "pair_1_vectors.fastq") + " "
@@ -2995,7 +2972,7 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
         
         get_unique_vectors_reads_pair_2 = ">&2 echo get pair 2 vector reads for stats | " 
-        get_unique_vectors_reads_pair_2 += self.config_dict["Python + " "
+        get_unique_vectors_reads_pair_2 += self.config_dict["Python"] + " "
         get_unique_vectors_reads_pair_2 += self.config_dict["get_unique_host_reads + " "
         
         if(self.no_host_flag):
@@ -3008,7 +2985,7 @@ class mt_pipe_commands:
             get_unique_vectors_reads_pair_2 += os.path.join(unique_vectors_folder, "pair_2_vectors.fastq")
             
         repop_pair_2_vectors = ">&2 echo repopulating pair 2 vectors | " 
-        repop_pair_2_vectors += self.config_dict["Python + " "
+        repop_pair_2_vectors += self.config_dict["Python"] + " "
         repop_pair_2_vectors += self.config_dict["duplicate_repopulate + " "
         repop_pair_2_vectors += os.path.join(quality_folder, "pair_2_match.fastq") + " "
         repop_pair_2_vectors += os.path.join(unique_vectors_folder, "pair_2_vectors.fastq") + " "
@@ -3032,7 +3009,7 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
         
         per_read_scores = ">&2 echo collecting per-read quality | " 
-        per_read_scores += self.config_dict["Python + " "
+        per_read_scores += self.config_dict["Python"] + " "
         per_read_scores += self.config_dict["read_quality_metrics + " "
         if(self.read_mode == "single"):
             per_read_scores += "single" + " "
@@ -3080,7 +3057,7 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
         
         contig_stats = ">&2 echo " + str(dt.today()) + " collecting contig stats | " 
-        contig_stats += self.config_dict["Python + " "
+        contig_stats += self.config_dict["Python"] + " "
         contig_stats += self.config_dict["contig_stats + " "
         contig_stats += os.path.join(contig_folder, "contigs.fasta") + " "
         contig_stats += os.path.join(final_folder, "contig_stats.txt")
@@ -3098,7 +3075,7 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
         
         EC_heatmap = ">&2 echo " + str(dt.today()) + " forming EC heatmap | "
-        EC_heatmap += self.config_dict["Python + " "
+        EC_heatmap += self.config_dict["Python"] + " "
         EC_heatmap += self.config_dict["ec_heatmap + " "
         EC_heatmap += self.config_dict["EC_pathway + " "
         EC_heatmap += os.path.join(final_folder, "EC_heatmap_RPKM.tsv") + " "
@@ -3129,7 +3106,7 @@ class mt_pipe_commands:
         gene_map_location = os.path.join(final_folder, "gene_map.tsv")
         
         read_counts = ">&2 echo " + str(dt.today()) + " generating read count table | "
-        read_counts += self.config_dict["Python + " "
+        read_counts += self.config_dict["Python"] + " "
         read_counts += self.config_dict["read_count + " "
         if self.read_mode == "single":
             read_counts += self.config_dict["single"] + " "
@@ -3158,9 +3135,10 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
         
         taxa_groupby = ">&2 echo making Taxa summary | " 
-        taxa_groupby += self.config_dict["Python + " "
+        taxa_groupby += self.config_dict["Python"] + " "
         taxa_groupby += self.config_dict["taxa_table + " "
         taxa_groupby += os.path.join(final_folder, "taxa_classifications.tsv") + " "
         taxa_groupby += os.path.join(final_folder, "taxa_summary.tsv")
         
         return [taxa_groupby]
+"""

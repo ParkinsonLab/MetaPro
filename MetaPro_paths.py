@@ -142,8 +142,6 @@ class mpro_dir:
         if(not os.path.exists(path)):
             os.makedirs(path)
 
-    
-
     def value_assignment(self, config, config_section, var_name, default):
         value = ""
         #print("CONFIG:", config)
@@ -178,11 +176,17 @@ class mpro_dir:
         return self.dir_dict
 
     def __init__ (self, config_path, output_folder):
-
+        
         self.out_dir = output_folder
+        if not(os.path.isabs(self.out_dir)):
+            self.out_dir = os.path.abspath(self.out_dir)
+            print(dt.today(), "output destination:", self.out_dir)
+
+
 
         print("dir obj CHECKING CONFIG")
         self.config_path = config_path
+
         if(not os.path.isabs(self.config_path)):
             self.config_path = os.path.join(os.path.dirname(__file__), self.config_path)
         #print("full path:", self.config_path)
@@ -202,7 +206,7 @@ class mpro_dir:
         # Labels.  
         # why? to change them during integration + new feature testing
 
-        quality_filter_label_default                    = "quality_filter"
+        qf_label_default                    = "qf"
         host_filter_label_default                       = "host_filter"
         vector_filter_label_default                     = "vector_filter"
         rRNA_filter_label_default                       = "rRNA_filter"
@@ -217,7 +221,6 @@ class mpro_dir:
         rRNA_filter_post_label_default                  = "rRNA_filter_post"
         repop_label_default                             = "duplicate_repopulation"
         contigs_label_default                           = "assemble_contigs"
-        destroy_contigs_label_default                   = "destroy_contigs"
         GA_pre_scan_label_default                       = "GA_pre_scan"
         GA_split_label_default                          = "GA_split"
         GA_BWA_label_default                            = "GA_BWA"
@@ -258,7 +261,7 @@ class mpro_dir:
         output_read_count_label_default                 = "output_read_count"
         
 
-        self.label_dict["qf"]                   = self.value_assignment(config, "Labels", "quality_filter",                     quality_filter_label_default)
+        self.label_dict["qf"]                   = self.value_assignment(config, "Labels", "qf",                     qf_label_default)
         self.label_dict["host"]                      = self.value_assignment(config, "Labels", "host_filter",                        host_filter_label_default)
         self.label_dict["vec"]                    = self.value_assignment(config, "Labels", "vector_filter",                      vector_filter_label_default)
         self.label_dict["rRNA"]                      = self.value_assignment(config, "Labels", "rRNA_filter",                        rRNA_filter_label_default)
@@ -273,7 +276,6 @@ class mpro_dir:
         self.label_dict["rRNA_post"]                 = self.value_assignment(config, "Labels", "rRNA_filter_post",                   rRNA_filter_post_label_default)
         self.label_dict["repop"]                            = self.value_assignment(config, "Labels", "repop",                              repop_label_default)
         self.label_dict["contigs"]                 = self.value_assignment(config, "Labels", "contigs",                                     contigs_label_default)
-        self.label_dict["destroy_contigs"]                  = self.value_assignment(config, "Labels", "destroy_contigs",                    destroy_contigs_label_default)
         self.label_dict["GA_pre_scan"]                      = self.value_assignment(config, "Labels", "GA_pre_scan",                        GA_pre_scan_label_default)
         self.label_dict["GA_split"]                         = self.value_assignment(config, "Labels", "GA_split",                           GA_split_label_default)
         self.label_dict["GA_BWA"]                           = self.value_assignment(config, "Labels", "GA_BWA",                             GA_BWA_label_default)
@@ -284,8 +286,8 @@ class mpro_dir:
         self.label_dict["GA_BLAT_cat"]                      = self.value_assignment(config, "Labels", "GA_BLAT_cat",                        GA_BLAT_cat_label_default)
         self.label_dict["GA_BLAT_pp"]                       = self.value_assignment(config, "Labels", "GA_BLAT_pp",                         GA_BLAT_pp_label_default)
         self.label_dict["GA_BLAT_merge"]                    = self.value_assignment(config, "Labels", "GA_BLAT_merge",                      GA_BLAT_merge_label_default)
-        self.label_dict["GA_DIAMOND"]                       = self.value_assignment(config, "Labels", "GA_DIAMOND",                         GA_DIAMOND_label_default)
-        self.label_dict["GA_DIAMOND_pp"]                    = self.value_assignment(config, "Labels", "GA_DIAMOND_pp",                      GA_DIAMOND_pp_label_default)
+        self.label_dict["GA_DMD"]                       = self.value_assignment(config, "Labels", "GA_DIAMOND",                         GA_DIAMOND_label_default)
+        self.label_dict["GA_DMD_pp"]                    = self.value_assignment(config, "Labels", "GA_DIAMOND_pp",                      GA_DIAMOND_pp_label_default)
         self.label_dict["GA_final_merge"]                   = self.value_assignment(config, "Labels", "GA_final_merge",                     GA_final_merge_label_default)
         self.label_dict["TA"]                               = self.value_assignment(config, "Labels", "TA",                                 taxon_annotation_label_default)
         self.label_dict["EC"]                               = self.value_assignment(config, "Labels", "EC",                                 ec_annotation_label_default)
@@ -314,8 +316,8 @@ class mpro_dir:
         self.label_dict["out_read_count"]                = self.value_assignment(config, "Labels", "output_read_count",                  output_read_count_label_default)
         
         
-        self.dir_dict["qf"] = os.path.join(self.out_dir, self.label_dict["quality_filter"])
-        self.dir_dict["qf_data"] = os.path.join(self.dir_dict["gf"], "data")
+        self.dir_dict["qf"] = os.path.join(self.out_dir, self.label_dict["qf"])
+        self.dir_dict["qf_data"] = os.path.join(self.dir_dict["qf"], "data")
         self.dir_dict["qf_sort"] = os.path.join(self.dir_dict["qf_data"], "0_ID_sort")
         self.dir_dict["qf_adapt"] = os.path.join(self.dir_dict["qf_data"], "1_adapters")
         self.dir_dict["qf_tags"] = os.path.join(self.dir_dict["qf_data"], "2_tags")
@@ -327,7 +329,7 @@ class mpro_dir:
 
         self.dir_dict["qf_list"] = ["qf", "qf_data", "qf_sort", "qf_adapt", "qf_tags", "qf_merge", "qf_filter", "qf_orphan", "qf_dup", "qf_export"]
 
-        self.dir_dict["host"] = os.path.join(self.out_dir, self.label_dict["host_filter"])
+        self.dir_dict["host"] = os.path.join(self.out_dir, self.label_dict["host"])
         self.dir_dict["host_data"] = os.path.join(self.dir_dict["host"], "data")
         self.dir_dict["host_scan"] = os.path.join(self.dir_dict["host_data"], "0_bwa_scan")
         self.dir_dict["host_export"] = os.path.join(self.dir_dict["host"], "export")
@@ -364,8 +366,8 @@ class mpro_dir:
         self.dir_dict["contigs"] = os.path.join(self.out_dir, self.label_dict["contigs"])
         self.dir_dict["contigs_data"] = os.path.join(self.dir_dict["contigs"], "data")
         self.dir_dict["contigs_export"] = os.path.join(self.dir_dict["contigs"], "export")
-        self.dir_dict["contigs_spades"] = os.path.join(self.dir_dict["data"], "0_spades")
-        self.dir_dict["contigs_mgm"] = os.path.join(self.dir_dict["data"], "1_mgm")
+        self.dir_dict["contigs_spades"] = os.path.join(self.dir_dict["contigs_data"], "0_spades")
+        self.dir_dict["contigs_mgm"] = os.path.join(self.dir_dict["contigs_data"], "1_mgm")
         self.dir_dict["spades_transcripts"] = os.path.join(self.dir_dict["contigs_spades"], "transcripts.fasta")
         self.dir_dict["spades_done"] = os.path.join(self.dir_dict["contigs_spades"], "stage_7_terminate")
         
@@ -381,7 +383,7 @@ class mpro_dir:
         self.dir_dict["GA_BWA_list"] = ["GA_BWA", "GA_BWA_jobs", "GA_BWA_data", "GA_BWA_split", "GA_BWA_run", "GA_BWA_pp", "GA_BWA_export"]
 
         self.dir_dict["GA_DMD"] = os.path.join(self.out_dir, self.label_dict["GA_DMD"])        
-        self.dif_dict["GA_DMD_data"] = os.path.join(self.dir_dict["GA_DMD"], "data")
+        self.dir_dict["GA_DMD_data"] = os.path.join(self.dir_dict["GA_DMD"], "data")
         self.dir_dict["GA_DMD_export"] = os.path.join(self.dir_dict["GA_DMD"], "export")
         self.dir_dict["GA_DMD_jobs"] = os.path.join(self.dir_dict["GA_DMD"], "jobs")
         self.dir_dict["GA_DMD_run"] = os.path.join(self.dir_dict["GA_DMD_data"], "0_dmd")
@@ -417,15 +419,23 @@ class mpro_dir:
         self.dir_dict["out_export"] = os.path.join(self.dir_dict["out"], "export")
         self.dir_dict["out_data"] = os.path.join(self.dir_dict["out"], "data")
         self.dir_dict["out_jobs"] = os.path.join(self.dir_dict["out"], "jobs")
-        self.dir_dict["out_ng"] = os.path.join(self.dir_dict["data"], "metabolic_network")
-        self.dir_dict["out_unique_hosts"] = os.path.join(self.dir_dict["data"], "unique_hosts")
-        self.dir_dict["out_unique_vec"] = os.path.join(self.dir_dict["data"], "unique_vectors")
-        self.dir_dict["out_heatmap"] = os.path.join(self.dir_dict["data"], "heatmap")
+        self.dir_dict["out_ng"] = os.path.join(self.dir_dict["out_data"], "metabolic_network")
+        self.dir_dict["out_unique_hosts"] = os.path.join(self.dir_dict["out_data"], "unique_hosts")
+        self.dir_dict["out_unique_vec"] = os.path.join(self.dir_dict["out_data"], "unique_vectors")
+        self.dir_dict["out_heatmap"] = os.path.join(self.dir_dict["out_data"], "heatmap")
         
         self.dir_dict["out_list"] = ["out", "out_export", "out_data", "out_jobs", "out_ng", "out_unique_hosts", "out_unique_vec", "out_heatmap"]
 
 
 class mpro_marker:
+    def issue_markers(self, header, count, location):
+        #used for rRNA barrnap + infernal
+        #auto-creates the marker to be used.
+        for i in range(0, count):
+            marker_name = header + "_" + str(i)
+            self.m_name[marker_name] = os.path.join(self.dir_dict[location], marker_name)
+            
+
     def place_marker(self, tag):
         if(not os.path.exist(self.marker_dict[tag])):
             marker = open(self.marker_dict[tag])
@@ -435,10 +445,10 @@ class mpro_marker:
 
     def check_marker(self, tag):
         if(os.path.exists(self.marker_dict[tag])):
-            return True
-        else:
             return False
-        
+        else:
+            return True
+
 
     def __init__ (self, config_dict, dir_dict):
         self.dir_dict = dir_dict
@@ -459,10 +469,14 @@ class mpro_marker:
         self.marker_dict["host"] = os.path.join(self.dir_dict["host"], self.m_name["host"])
         self.marker_dict["vec"] = os.path.join(self.dir_dict["vec"], self.m_name["vec"])
         self.marker_dict["rRNA"] = os.path.join(self.dir_dict["rRNA"], self.m_name["rRNA"])
-        
-        
+        self.marker_dict["rRNA_split_s"] = os.path.join(self.dir_dict["rRNA_jobs"], "split_s")
+        self.marker_dict["rRNA_split_p1"] = os.path.join(self.dir_dict["rRNA_jobs"], "split_p1")
+        self.marker_dict["rrNA_split_p2"] = os.path.join(self.dir_dict["rRNA_jobs"], "split_p2")
 
-class mpro_file:
+
+
+
+class mpro_file_handler:
     #the file-interconnect. 
     
     def clean_files(self, stage):
@@ -475,7 +489,8 @@ class mpro_file:
             if(os.path.exists(self.file_dict[item])):
                 os.remove(self.file_dict[item])
 
-
+    def get_file_dict(self):
+        return self.file_dict
 
     def __init__(self, config_dict, dir_dict):
         self.dir_dict = dir_dict
@@ -542,6 +557,12 @@ class mpro_file:
             "vec_s_sam", "vec_s_bam", "vec_p_sam"
         ]
 
+        self.file_dict["rRNA_split_s"] = os.path.join(self.dir_dict["rRNA_split"], "s_split") #note: the splits are guides. not the actual file
+        self.file_dict["rRNA_split_p1"] = os.path.join(self.dir_dict["rRNA_split"], "p1_split")
+        self.file_dict["rRNA_split_p2"] = os.path.join(self.dir_dict["rRNA_split"], "p2_split")
+
+
+
 class mpro_config:    
     def value_assignment(self, filetype, config, config_section, var_name, default):
         value = ""
@@ -576,7 +597,7 @@ class mpro_config:
             value = int(value)
 
         elif((filetype == "float") or (filetype == "flt")):
-            value = float(filetype)
+            value = float(value)
 
         return value
         
@@ -591,20 +612,20 @@ class mpro_config:
     def check_dmd_valid(self):
         #if there's a .dmnd file
         #if it's sufficiently big
-        dir_name = os.path.dirname(self.Prot_DB)
-        basename = os.path.basename(self.Prot_DB)
+        dir_name = os.path.dirname(self.config_dict["Prot_DB"])
+        basename = os.path.basename(self.config_dict["Prot_DB"])
         print("dir name:", dir_name)
         file_name = basename.split(".")[0]
         print("file name:", file_name)#, "extension:", extension)
         
         
-        print(self.Prot_DB)
-        if not(os.path.exists(self.Prot_DB)):
+        print(self.config_dict["Prot_DB"])
+        if not(os.path.exists(self.config_dict["Prot_DB"])):
             sys.exit("file does not exists")
         else:
-            print(dt.today(), self.Prot_DB, "exists")
+            print(dt.today(), self.config_dict["Prot_DB"], "exists")
         dmd_index_path = os.path.join(dir_name, file_name + ".dmnd")
-        db_size = os.path.getsize(self.Prot_DB)
+        db_size = os.path.getsize(self.config_dict["Prot_DB"])
         
         if(os.path.exists(dmd_index_path)):
             if(os.path.getsize(dmd_index_path) >= db_size * 0.9):
@@ -724,7 +745,7 @@ class mpro_config:
     def get_config_dict(self):
         return self.config_dict
 
-    def __init__ (self, config_path, main_dir):
+    def __init__ (self, config_path, output_folder):
         print("CHECKING CONFIG")
         self.config_path = config_path
         if(not os.path.isabs(self.config_path)):
@@ -743,14 +764,14 @@ class mpro_config:
 
         script_path             = "/pipeline/Scripts"
         tool_path               = "/pipeline_tools/"
-        database_path           = self.value_assignment(config, "Databases", "database_path", "/project/j/jparkin/Lab_Databases")
+        database_path           = self.value_assignment("path", config, "Databases", "database_path", "/project/j/jparkin/Lab_Databases")
         
         custom_database_path    = "/pipeline/custom_databases/"
 
-        output_path_default = main_dir
-        self.output_path        = self.value_assignment(config, "Settings", "workdir", output_path_default)
-
-
+        self.out_dir = output_folder
+        if not(os.path.isabs(self.out_dir)):
+            self.out_dir = os.path.abspath(self.out_dir)
+            print(dt.today(), "output destination:", self.out_dir)
         
         #--------------------------------------------------
         # miscellaneous values
@@ -835,7 +856,7 @@ class mpro_config:
         #length_cutoff= 0.65
         #score_cutoff= 60
         
-        self.config_dict["singleton"] = self.value_assignment("path", config, "Input", "singleton","None")
+        self.config_dict["single"] = self.value_assignment("path", config, "Input", "singleton","None")
         self.config_dict["pair_1"] = self.value_assignment("path", config, "Input", "pair_1", "None")
         self.config_dict["pair_2"] = self.value_assignment("path", config, "Input", "pair_2", "None")
 
@@ -845,7 +866,7 @@ class mpro_config:
 
          
 
-        self.config_dict["bypass_log"] = self.value_assignment("path", config, "Settings", "bypass_log", os.path.join(self.output_path), "bypass_long.txt")
+        self.config_dict["bypass_log"] = self.value_assignment("path", config, "Settings", "bypass_log", os.path.join(self.out_dir, "bypass_long.txt"))
         self.config_dict["tutorial_keyword"] = self.value_assignment("str", config, "Settings", "tutorial_keyword", "None")
 
         self.config_dict["target_rank"]                 = self.value_assignment("str", config, "Settings", "target_rank", "genus")
@@ -865,10 +886,10 @@ class mpro_config:
         self.config_dict["RPKM_cutoff"]                = self.value_assignment("float", config, "Settings", "RPKM_cutoff", 0.01)
         self.config_dict["BWA_cigar_cutoff"]           = self.value_assignment("int", config, "Settings", "BWA_cigar_cutoff", BWA_cigar_default)
         self.config_dict["BLAT_identity_cutoff"]       = self.value_assignment("int", config, "Settings", "BLAT_identity_cutoff", BLAT_identity_default)
-        self.config_dict["BLAT_length_cutoff"]         = self.value_assignment("int", config, "Settings", "BLAT_length_cutoff", BLAT_length_default)
+        self.config_dict["BLAT_length_cutoff"]         = self.value_assignment("float", config, "Settings", "BLAT_length_cutoff", BLAT_length_default)
         self.config_dict["BLAT_score_cutoff"]          = self.value_assignment("int", config, "Settings", "BLAT_score_cutoff", BLAT_score_default)            
         self.config_dict["DIAMOND_identity_cutoff"]    = self.value_assignment("int", config, "Settings", "DIAMOND_identity_cutoff", DIAMOND_identity_default)
-        self.config_dict["DIAMOND_length_cutoff"]      = self.value_assignment("int", config, "Settings", "DIAMOND_length_cutoff", DIAMOND_length_default)
+        self.config_dict["DIAMOND_length_cutoff"]      = self.value_assignment("float", config, "Settings", "DIAMOND_length_cutoff", DIAMOND_length_default)
         self.config_dict["DIAMOND_score_cutoff"]       = self.value_assignment("int", config, "Settings", "DIAMOND_score_cutoff", DIAMOND_score_default)
         #-----------------------------------------------------------------------------------------------   
 
@@ -911,19 +932,19 @@ class mpro_config:
         
         #------------------------------------------------------------------------
         
-        self.config_dict["Infernal_job_delay"]         = self.value_assignment("int", config, "Settings", "Infernal_job_delay", Infernal_job_delay_default)
-        self.config_dict["Barrnap_job_delay"]          = self.value_assignment("int", config, "Settings", "Barrnap_job_delay", Barrnap_job_delay_default)
-        self.config_dict["BWA_job_delay"]              = self.value_assignment("int", config, "Settings", "BWA_job_delay", BWA_job_delay_default)
-        self.config_dict["BLAT_job_delay"]             = self.value_assignment("int", config, "Settings", "BLAT_job_delay", BLAT_job_delay_default)
-        self.config_dict["DIAMOND_job_delay"]          = self.value_assignment("int", config, "Settings", "DIAMOND_job_delay", DIAMOND_job_delay_default)
-        self.config_dict["DETECT_job_delay"]           = self.value_assignment("int", config, "Settings", "DETECT_job_delay", DETECT_job_delay_default)
-        self.config_dict["BWA_pp_job_delay"]           = self.value_assignment("int", config, "Settings", "BWA_pp_job_delay", BWA_pp_job_delay_default)
-        self.config_dict["BLAT_pp_job_delay"]          = self.value_assignment("int", config, "Settings", "BLAT_pp_job_delay", BLAT_pp_job_delay_default)
-        self.config_dict["DIAMOND_pp_job_delay"]       = self.value_assignment("int", config, "Settings", "DIAMOND_pp_job_delay", DIAMOND_pp_job_delay_default)
-        self.config_dict["GA_final_merge_job_delay"]   = self.value_assignment("int", config, "Settings", "GA_final_merge_job_delay", GA_final_merge_job_delay_default)
-        self.config_dict["TA_job_delay"]               = self.value_assignment("int", config, "Settings", "TA_job_delay", TA_job_delay_default)
-        self.config_dict["repop_job_delay"]            = self.value_assignment("int", config, "Settings", "repop_job_delay", repop_job_delay_default)
-        self.config_dict["EC_job_delay"]               = self.value_assignment("int", config, "Settings", "EC_job_delay", EC_job_delay_default)
+        self.config_dict["Infernal_job_delay"]         = self.value_assignment("float", config, "Settings", "Infernal_job_delay", Infernal_job_delay_default)
+        self.config_dict["Barrnap_job_delay"]          = self.value_assignment("float", config, "Settings", "Barrnap_job_delay", Barrnap_job_delay_default)
+        self.config_dict["BWA_job_delay"]              = self.value_assignment("float", config, "Settings", "BWA_job_delay", BWA_job_delay_default)
+        self.config_dict["BLAT_job_delay"]             = self.value_assignment("float", config, "Settings", "BLAT_job_delay", BLAT_job_delay_default)
+        self.config_dict["DIAMOND_job_delay"]          = self.value_assignment("float", config, "Settings", "DIAMOND_job_delay", DIAMOND_job_delay_default)
+        self.config_dict["DETECT_job_delay"]           = self.value_assignment("float", config, "Settings", "DETECT_job_delay", DETECT_job_delay_default)
+        self.config_dict["BWA_pp_job_delay"]           = self.value_assignment("float", config, "Settings", "BWA_pp_job_delay", BWA_pp_job_delay_default)
+        self.config_dict["BLAT_pp_job_delay"]          = self.value_assignment("float", config, "Settings", "BLAT_pp_job_delay", BLAT_pp_job_delay_default)
+        self.config_dict["DIAMOND_pp_job_delay"]       = self.value_assignment("float", config, "Settings", "DIAMOND_pp_job_delay", DIAMOND_pp_job_delay_default)
+        self.config_dict["GA_final_merge_job_delay"]   = self.value_assignment("float", config, "Settings", "GA_final_merge_job_delay", GA_final_merge_job_delay_default)
+        self.config_dict["TA_job_delay"]               = self.value_assignment("float", config, "Settings", "TA_job_delay", TA_job_delay_default)
+        self.config_dict["repop_job_delay"]            = self.value_assignment("float", config, "Settings", "repop_job_delay", repop_job_delay_default)
+        self.config_dict["EC_job_delay"]               = self.value_assignment("float", config, "Settings", "EC_job_delay", EC_job_delay_default)
 
         #------------------------------------------------------------------------------------------------
         self.config_dict["keep_all"]                   = self.value_assignment("str", config, "Settings", "keep_all", keep_all_default)

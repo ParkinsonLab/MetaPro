@@ -31,7 +31,7 @@ import shutil
 from datetime import datetime as dt
 import psutil as psu
 
-class mp_file_handler:
+class mp_seq_handler:
     #internalized because we need the number of files generated + saves another file from being generated
     def __init__(self, config_dict, dir_dict, file_dict):
         self.config_dict = config_dict
@@ -39,13 +39,15 @@ class mp_file_handler:
         self.file_dict = file_dict
         self.file_count = 0
 
-    def split_fastq(file_name_in, file_name_out, chunks, export_mode):
+    def split_fastq(self, file_name_in, file_name_out, chunks, export_mode):
         print(dt.today(), "FASTQ file name in:", file_name_in)
         #FASTQ has 4 lines per entry.
         file_base_name = os.path.splitext(file_name_in)[0]
         fastq_df = pd.read_csv(file_name_in, header=None, names=[None], sep="\n", skip_blank_lines = False, quoting=3)
         fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
-        fastq_df.columns = ["ID", "seq", "junk", "qual"]
+        fastq_df.rename(columns = {0:"ID", 1:"seq", 2:"junk", 3:"qual"}, inplace = True)
+
+        print(fastq_df)
         #At this point, we've already got the number of reads.
         #chunks = m.ceil(len(fastq_df) / split_count) #how many sequences each split file will have
         #print("total df length:", len(fastq_df))
@@ -75,23 +77,29 @@ class mp_file_handler:
                 if not(fastq_df.iloc[start_index:end_index, :].empty):
                     fastq_df.iloc[start_index:end_index, :].to_csv(new_file_name, chunksize = chunks, mode = "w+", index=False, sep='\n', header=False, quoting = 3)
                 else:
-                    print("empty frame detected.  no sense in running the rest of the fastq splitter")
+                    #print("empty frame detected.  no sense in running the rest of the fastq splitter")
                     break
         else:
             #export as fasta.  Save a step.
             index_count = 0
+            file_count = 0
             while(True):
                 new_file_name = file_name_out + "_" + str(index_count) + ".fasta"
                 start_index = int(index_count * chunks)
                 end_index = int(((index_count+1) * chunks))
                 index_count += 1
-                subselect_df = fastq_df.iloc[start_index:end_index, :]["ID", "seq"]
+                subselect_df = fastq_df[["ID", "seq"]]
+                subselect_df = subselect_df.iloc[start_index:end_index, :]
                 subselect_df["ID"] = subselect_df["ID"].apply(lambda x: x.replace("@", ">"))
                 if(not subselect_df.empty):
+                    print(dt.today(), "exporting FASTQ split to FASTA:", new_file_name)
                     subselect_df.to_csv(new_file_name, mode = "w+", index = False, sep = "\n", header = False, quoting=3)
+                    file_count += 1
+                else:
+                    break
 
 
-        return (index_count + 1)
+        return (file_count)
     
 
     def split_fasta(file_name_in, file_name_out, chunks):#split_count = 4):

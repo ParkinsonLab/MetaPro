@@ -222,13 +222,16 @@ if __name__ == "__main__":
 
     config_obj = mpp.mpro_config(config_file, output_folder)
     dir_obj = mpp.mpro_dir(config_file, output_folder)
+    
     time_obj = mpp.mpro_timing()
 
 
     config_dict = config_obj.get_config_dict()
     dir_dict = dir_obj.get_dir_dict()
     label_dict = dir_obj.get_label_dict()
+    file_obj = mpp.mpro_file_handler(config_dict, dir_dict)
     
+    file_dict = file_obj.get_file_dict()
 
     config_dict["no_host"] = no_host
     config_dict["verbose_mode"] = verbose_mode
