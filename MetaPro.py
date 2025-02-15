@@ -38,10 +38,10 @@ def debug_stop_check(self, stop_flag, signal):
         
 
 
-def main(config_dict, dir_dict, label_dict, time_obj):
+def main(config_dict, dir_dict, time_obj, file_obj):
 
     
-    metapro_stage_obj = mps.mp_stage(config_dict, dir_dict, label_dict, time_obj) #obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
+    metapro_stage_obj = mps.mp_stage(config_dict, dir_dict, time_obj, file_obj) #obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
 
     # This is the format we use to launch each stage of the pipeline.
     # We start a multiprocess that starts a subprocess.
@@ -292,4 +292,4 @@ if __name__ == "__main__":
         tutorial_main(config_dict, dir_dict)
     
     else:
-        main(config_dict, dir_dict, label_dict, time_obj)
+        main(config_dict, dir_dict, label_dict, time_obj, file_obj)

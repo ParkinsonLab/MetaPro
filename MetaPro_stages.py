@@ -21,7 +21,7 @@ import queue as q
 #makes for a neat package/capsule
 
 class mp_stage:
-    def __init__ (self, config_dict, dir_dict, label_dict, file_dict): #config_obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
+    def __init__ (self, config_dict, dir_dict, time_obj, file_control): #config_obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
         #make our util obj
         #refresher: self -> instance var.  not self: class var (shared among class obj instances)
         
@@ -39,9 +39,9 @@ class mp_stage:
         
         self.config_dict = config_dict
         self.dir_dict = dir_dict
-        self.label_dict = label_dict
-        self.file_dict = file_dict
-        
+        self.file_control = file_control
+        self.file_dict = self.file_control.get_file_dict() #recall python passes by reference.
+        self.time_control = time_obj
         self.seq_handler = mpu.mp_seq_handler(self.config_dict, self.dir_dict, self.file_dict)
         
 
@@ -81,8 +81,6 @@ class mp_stage:
         # Creates our command object, for creating shellscripts.
 
         self.commands = mpcom.mt_pipe_commands(self.config_dict, self.dir_dict)
-
-
         
         #special contig-bypasser logic vars
         self.contigs_present = True  #for the contig/assembly bypasser
@@ -188,8 +186,16 @@ class mp_stage:
             split_count_p1 = self.seq_handler.split_fastq(self.file_dict["no_vec_p1"], self.file_dict["rRNA_split_p1"], self.config_dict["rRNA_chunksize"], "fasta")
             split_count_p2 = self.seq_handler.split_fastq(self.file_dict["no_vec_p2"], self.file_dict["rRNA_split_p2"], self.config_dict["rRNA_chunksize"], "fasta")
 
-            
+            self.marker_control.issue_rRNA_markers("rRNA_barrnap_s", split_count_s, self.dir_dict["rRNA_jobs"])
+            self.marker_control.issue_rRNA_markers("rRNA_barrnap_p1", split_count_p1,self.dir_dict["rRNA_jobs"])
+            self.marker_control.issue_rRNA_markers("rRNA_barrnap_p2", split_count_p2, self.dir_dict["rRNA_jobs"])
 
+            self.file_control.issue_rRNA_split("rRNA_barrnap_s", split_count_s, self.dir_dict["rRNA_barrnap"])
+
+            for i in range(0, split_count_s):
+                marker_name = "rRNA_barrnap_s_" + str(i)
+                if(self.marker_control.check_marker(marker_name)):
+                    command = self.commands.create_rRNA_filter_barrnap_command(self.file_dict["rRNA_"])
                 
                         
             #-------------------------------------------------------------------------------------------------

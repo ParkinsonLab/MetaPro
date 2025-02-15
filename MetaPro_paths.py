@@ -428,7 +428,7 @@ class mpro_dir:
 
 
 class mpro_marker:
-    def issue_markers(self, header, count, location):
+    def issue_rRNA_markers(self, header, count, location):
         #used for rRNA barrnap + infernal
         #auto-creates the marker to be used.
         for i in range(0, count):
@@ -478,7 +478,14 @@ class mpro_marker:
 
 class mpro_file_handler:
     #the file-interconnect. 
-    
+    def issue_rRNA_split(self, header, count, location):
+        #used for rRNA barrnap + infernal
+        #auto-creates the marker to be used.
+        for i in range(0, count):
+            file_name = header + "_" + str(i)
+            self.file_dict[file_name] = os.path.join(self.dir_dict[location], file_name)
+
+
     def clean_files(self, stage):
         key_list = []
         if(stage == "qf"):
