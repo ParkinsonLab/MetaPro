@@ -347,6 +347,7 @@ class mpro_dir:
         self.dir_dict["rRNA"] = os.path.join(self.out_dir, self.label_dict["rRNA"])
         self.dir_dict["rRNA_data"] = os.path.join(self.dir_dict["rRNA"], "data")
         self.dir_dict["rRNA_jobs"] = os.path.join(self.dir_dict["rRNA"], "jobs")
+        self.dir_dict["rRNA_mkrs"] = os.path.join(self.dir_dict["rRNA"], "mkrs")
         self.dir_dict["rRNA_split"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_split")
         self.dir_dict["rRNA_barrnap"] = os.path.join(self.dir_dict["rRNA_data"], "barrnap")
         self.dir_dict["rRNA_inf"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_inf")
@@ -431,7 +432,7 @@ class mpro_marker:
         #auto-creates the marker to be used.
         for i in range(0, count):
             marker_name = header + "_" + str(i)
-            self.m_name[marker_name] = os.path.join(self.dir_dict[location], marker_name)
+            self.marker_dict[marker_name] = os.path.join(self.dir_dict[location], marker_name)
             
 
     def place_marker(self, tag):
@@ -461,6 +462,12 @@ class mpro_marker:
         self.m_name["GA_BWA"] = "GA_BWA_marker"
         self.m_name["GA_DMD"] = "GA_DMD_marker"
         self.m_name["TA"] = "TA_marker"
+        self.m_name["rRNA_barrnap_s"] = "rRNA_barrnap_s_marker"
+        self.m_name["rRNA_barrnap_p1"] = "rRNA_barrnap_p1_marker"
+        self.m_name["rRNA_barrnap_p2"] = "rrNA_barrnap_p2_marker"
+        self.m_name["rRNA_inf_s"] = "rRNA_inf_s_marker"
+        self.m_name["rRNA_inf_p1"] = "rRNA_inf_p1_marker"
+        self.m_name["rRNA_inf_p2"] = "rRNA_inf_p2_marker"
 
         self.marker_dict = dict()
         self.marker_dict["qf"] = os.path.join(self.dir_dict["qf"], self.m_name["qf"])
@@ -470,6 +477,7 @@ class mpro_marker:
         self.marker_dict["rRNA_split_s"] = os.path.join(self.dir_dict["rRNA_jobs"], "split_s")
         self.marker_dict["rRNA_split_p1"] = os.path.join(self.dir_dict["rRNA_jobs"], "split_p1")
         self.marker_dict["rrNA_split_p2"] = os.path.join(self.dir_dict["rRNA_jobs"], "split_p2")
+        sel.f
 
 
 
@@ -574,6 +582,13 @@ class mpro_file_handler:
         self.file_dict["rRNA_mRNA_barrnap_s"] = os.path.join(self.dir_dict["rRNA_mRNA"], "barrnap", "s")
         self.file_dict["rRNA_mRNA_barrnap_p1"] = os.path.join(self.dir_dict["rRNA_mRNA"], "barrnap", "p1")
         self.file_dict["rRNA_mRNA_barrnap_p2"] = os.path.join(self.dir_dict["rRNA_mRNA"], "barrnap", "p2")
+
+        self.file_dict["rRNA_inf_out_s"] = os.path.join(self.dir_dict["rRNA_inf"], "s")
+        self.file_dict["rRNA_inf_out_p1"] = os.path.join(self.dir_dict["rRNA_inf"], "p1")
+        self.file_dict["rRNA_inf_out_p2"] = os.path.join(self.dir_dict["rRNA_inf"], "p2")
+        
+
+        
 
 class mpro_config:    
     def value_assignment(self, filetype, config, config_section, var_name, default):
@@ -1068,7 +1083,7 @@ class mpro_config:
         self.config_dict["BLAT_Contaminant_Filter"]    = self.value_assignment("path", config, "code", "blat_contaminant_filter", os.path.join(script_path, "read_BLAT_filter_v3.py"))
         self.config_dict["File_splitter"]              = self.value_assignment("path", config, "code", "file_splitter", os.path.join(script_path, "read_split.py"))
         self.config_dict["barrnap_post"]               = self.value_assignment("path", config, "code", "barrnap_post", os.path.join(script_path, "read_rRNA_barrnap.py"))
-        self.config_dict["rRNA_filter"]                = self.value_assignment("path", config, "code", "rRNA_filter", os.path.join(script_path, "read_rRNA_infernal.py"))
+        self.config_dict["rRNA_inf_pp"]                = self.value_assignment("path", config, "code", "rRNA_filter", os.path.join(script_path, "read_rRNA_infernal.py"))
         self.config_dict["Map_contig"]                 = self.value_assignment("path", config, "code", "map_contig", os.path.join(script_path, "assembly_make_contig_map.py"))
         self.config_dict["flush_bad_contigs"]          = self.value_assignment("path", config, "code", "flush_bad_contigs", os.path.join(script_path, "assembly_flush_bad_contigs.py"))
         self.config_dict["contig_duplicate_remover"]   = self.value_assignment("path", config, "code", "contig_duplicate_remover", os.path.join(script_path, "assembly_deduplicate.py"))

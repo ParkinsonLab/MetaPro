@@ -35,6 +35,7 @@ class mp_stage:
         self.mp_util = mpu.mp_util(config_dict, dir_dict)
         self.marker_control = mpp.mpro_marker(config_dict, dir_dict)
         self.marker_dict = self.marker_control.marker_dict
+        self.m_name = self.marker_control.m_name
         #self.config_dict = config_dict
         
         self.config_dict = config_dict
@@ -186,25 +187,28 @@ class mp_stage:
             split_count_p1 = self.seq_handler.split_fastq(self.file_dict["no_vec_p1"], self.file_dict["rRNA_split_p1"], self.config_dict["rRNA_chunksize"], "fasta")
             split_count_p2 = self.seq_handler.split_fastq(self.file_dict["no_vec_p2"], self.file_dict["rRNA_split_p2"], self.config_dict["rRNA_chunksize"], "fasta")
 
-            self.marker_control.issue_rRNA_markers("rRNA_barrnap_s", split_count_s, self.dir_dict["rRNA_jobs"])
-            self.marker_control.issue_rRNA_markers("rRNA_barrnap_p1", split_count_p1,self.dir_dict["rRNA_jobs"])
-            self.marker_control.issue_rRNA_markers("rRNA_barrnap_p2", split_count_p2, self.dir_dict["rRNA_jobs"])
+            if(split_count_p2 != split_count_p1):
+                print(dt.today(), "something is off with the p1 and p2 split.  they should be equal, but they're not")
+                sys.exit()
 
-
-            self.file_dict["rRNA_split_s_fastq"] = []
-            self.file_dict["rRNA_split_p1_fastq"] = []
-            self.file_dict["rRNA_split_p2_fastq"] = []
-
+            self.marker_control.issue_rRNA_markers(self.m_name["rRNA_barrnap_s"], split_count_s, "rRNA_mkrs")
+            self.marker_control.issue_rRNA_markers(self.m_name["rRNA_barrnap_p1"], split_count_p1, "rRNA_mkrs")
+            self.marker_control.issue_rRNA_markers(self.m_name["rRNA_barrnap_p2"], split_count_p2, "rRNA_mkrs")
+            
 
             for i in range(0, split_count_s):
-                marker_name = "rRNA_barrnap_s_" + str(i)
+                marker_name = self.marker_dict["rRNA_barrnap_s_" + str(i)]
                 s_fasta_path = self.file_dict["rRNA_split_s"] + "_" + str(i) + ".fasta"
                 s_split_fastq = self.file_dict["rRNA_split_s"] + "_" + str(i) + ".fastq"
                 
                 s_barrnap_out = self.file_dict["rRNA_barrnap_s"] + "_" + str(i)
                 s_reject = self.file_dict["rRNA_barrnap_other_s"] + "_" + str(i)
                 s_mRNA = self.file_dict["rRNA_mRNA_barrnap_s"] + "_" + str(i)
-                self.file_dict["rRNA_split_s_fastq"].append(s_split_fastq)
+
+
+                self.file_dict["rRNA_barrnap_mRNA_s_" + str(i)] = s_mRNA
+                self.file_dict["rRNA_split_s_fastq_" + str(i)] = s_split_fastq
+                self.file_dict["rRNA_barrnap_out_s_" + str(i)] = s_barrnap_out
                 s_job_name = "rRNA_barrnap_s_" + str(i)
 
                 if(self.marker_control.check_marker(marker_name)):
@@ -219,44 +223,55 @@ class mp_stage:
                         command)
 
 
+            if((split_count_p1 > 0) and (split_count_p2 > 0)):
+                for i in range(0, split_count_p1):
+                    marker_name = self.m_name["rRNA_barrnap_p1_" + str(i)]
+                    p1_fasta_path = self.file_dict["rRNA_split_p1"] + "_" + str(i) + ".fasta"
+                    p1_split_fastq = self.file_dict["rRNA_split_p1"] + "_" + str(i) + ".fastq"
+                    p1_barrnap_out = self.file_dict["rRNA_barrnap_p1"] + "_" + str(i)
+                    p1_reject = self.file_dict["rRNA_barrnap_other_p1"] + "_" + str(i)
+                    p1_job_name = "rRNA_barrnap_p1_" + str(i)
+                    p1_mRNA = self.file_dict["rRNA_mRNA_barrnap_p1"] + "_" + str(i)
+                    self.file_dict["rRNA_split_p1_fastq_" + str(i)] = p1_split_fastq
+                    self.file_dict["rRNA_barrnap_mRNA_p1_" + str(i)] = p1_mRNA
+                    self.file_dict["rENA_barrnap_out_p1_" + str(i)] = p1_barrnap_out
 
-            for i in range(0, split_count_p1):
-                marker_name = "rRNA_barrnap_p1_" + str(i)
-                p1_fasta_path = self.file_dict["rRNA_split_p1"] + "_" + str(i) + ".fasta"
-                p1_barrnap_out = self.file_dict["rRNA_barrnap_p1"] + "_" + str(i)
-                p1_reject = self.file_dict["rRNA_barrnap_other_p1"] + "_" + str(i)
-                p1_job_name = "rRNA_barrnap_p1_" + str(i)
+                    if(self.marker_control.check_marker(marker_name)):
+                        command = self.commands.create_rRNA_filter_barrnap_command(p1_fasta_path, p1_barrnap_out, p1_reject, marker_name)
+                        self.mp_util.launch_and_create_with_hold(
+                            self.config_dict["Barrnap_mem_threshold"], 
+                            self.config_dict["Barrnap_job_limit"],
+                            self.config_dict["Barrnap_job_delay"],
+                            self.dir_dict["rRNA_jobs"], 
+                            p1_job_name,
+                            self.commands,
+                            command)
 
-                if(self.marker_control.check_marker(marker_name)):
-                    command = self.commands.create_rRNA_filter_barrnap_command(p1_fasta_path, p1_barrnap_out, p1_reject, marker_name)
-                    self.mp_util.launch_and_create_with_hold(
-                        self.config_dict["Barrnap_mem_threshold"], 
-                        self.config_dict["Barrnap_job_limit"],
-                        self.config_dict["Barrnap_job_delay"],
-                        self.dir_dict["rRNA_jobs"], 
-                        p1_job_name,
-                        self.commands,
-                        command)
+                    
+                for i in range(0, split_count_p2):
+                    marker_name = self.marker_dict["rRNA_barrnap_p2_" + str(i)]
+                    p2_fasta_path = self.file_dict["rRNA_split_p2"] + "_" + str(i) + ".fasta"
+                    p2_split_fastq = self.file_dict["rRNA_split_p2"] + "_" + str(i) + ".fastq"
+                    p2_barrnap_out = self.file_dict["rRNA_barrnap_p2"] + "_" + str(i)
+                    p2_reject = self.file_dict["rRNA_barrnap_other_p2"] + "_" + str(i)
+                    p2_job_name = "rRNA_barrnap_p2_" + str(i)
 
-                
-            for i in range(0, split_count_p2):
-                marker_name = "rRNA_barrnap_p2_" + str(i)
-                p2_fasta_path = self.file_dict["rRNA_split_p2"] + "_" + str(i) + ".fasta"
-                p2_barrnap_out = self.file_dict["rRNA_barrnap_p2"] + "_" + str(i)
-                p2_reject = self.file_dict["rRNA_barrnap_other_p2"] + "_" + str(i)
-                p2_job_name = "rRNA_barrnap_p2_" + str(i)
+                    p2_mRNA = self.file_dict["rRNA_mRNA_barrnap_p2"] + "_" + str(i)
+                    self.file_dict["rRNA_split_p2_fastq_" + str(i)] = p2_split_fastq
+                    self.file_dict["rRNA_barrnap_mRNA_p2_" + str(i)] = p2_mRNA
+                    self.file_dict["rRNA_barrnap_p2_" + str(i)] = p2_barrnap_out
 
-                if(self.marker_control.check_marker(marker_name)):
-                    command = self.commands.create_rRNA_filter_barrnap_command(p2_fasta_path, p2_barrnap_out, p2_reject, marker_name)
-                    self.mp_util.launch_and_create_with_hold(
-                        self.config_dict["Barrnap_mem_threshold"], 
-                        self.config_dict["Barrnap_job_limit"],
-                        self.config_dict["Barrnap_job_delay"],
-                        self.dir_dict["rRNA_jobs"], 
-                        p2_job_name,
-                        self.commands,
-                        command)    
-                
+                    if(self.marker_control.check_marker(marker_name)):
+                        command = self.commands.create_rRNA_filter_barrnap_command(p2_fasta_path, p2_barrnap_out, p2_reject, marker_name)
+                        self.mp_util.launch_and_create_with_hold(
+                            self.config_dict["Barrnap_mem_threshold"], 
+                            self.config_dict["Barrnap_job_limit"],
+                            self.config_dict["Barrnap_job_delay"],
+                            self.dir_dict["rRNA_jobs"], 
+                            p2_job_name,
+                            self.commands,
+                            command)    
+                    
                         
             #wait for everything.
             self.mp_util.wait_for_mp_store()
@@ -265,97 +280,78 @@ class mp_stage:
             #----------------------------------------------------------------------------
             # INFERNAL
 
+            self.marker_control.issue_rRNA_markers(self.m_name["rRNA_inf_s"], split_count_s, "rRNA_mkrs")
+            self.marker_control.issue_rRNA_markers(self.m_name["rRNA_inf_p1"], split_count_p1, "rRNA_mkrs")
+            self.marker_control.issue_rRNA_markers(self.m_name["rRNA_inf_p2"], split_count_p2, "rRNA_mkrs")
 
-            for section in reversed(sections):  
-                #split the data, if necessary.
-                #initial split -> by lines.  we can do both
-                barrnap_mRNA_fastq_path = os.path.join(self.output_folder_path, self.rRNA_filter_label, "data", section + "_barrnap_mRNA")
-                infernal_path = os.path.join(self.output_folder_path, self.rRNA_filter_label, "data", section + "_infernal") 
-                barrnap_mRNA_fasta_path = os.path.join(self.output_folder_path, self.rRNA_filter_label, "data", section + "_barrnap_mRNA_fasta")
-                splitter_path = os.path.join(self.output_folder_path, self.rRNA_filter_label, "data", section + "_infernal_mRNA")
-            
-                if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_infernal_prep_label + "_" + section):
-                    concurrent_job_count = 0
-                    batch_count = 0
-                    #these jobs now have to be launched in segments
-                    for item in os.listdir(barrnap_mRNA_fastq_path):
-                    
-                        if(item.endswith("_barrnap_mRNA.fastq")):
-                            root_name = item.split(".")[0]
-                            marker_file = root_name + "_infernal_prep"
-                            marker_path = os.path.join(rRNA_filter_jobs_folder, marker_file)
-                            infernal_prep_out_file = os.path.join(barrnap_mRNA_fasta_path, root_name + ".fasta")
-                            infernal_prep_file_size = os.stat(infernal_prep_out_file).st_size if (os.path.exists(infernal_prep_out_file)) else 0
-                            if(os.path.exists(marker_path)):
-                                print(dt.today(), "Infernal prep already ran on this sample.  skipping", item)
-                                continue
-                            
-                            else:
-                                marker_path_list.append(marker_path)
-                                job_name = "rRNA_filter_infernal_prep_" + root_name
-                                command_list = self.commands.create_rRNA_filter_infernal_prep_command("rRNA_filter", section, item, root_name, marker_file)
-                                self.mp_util.launch_only_with_hold(self.Infernal_mem_threshold, self.Infernal_job_limit, self.Infernal_job_delay, job_name, self.commands, command_list)
-                                
-                    print(dt.today(), "final batch: infernal prep")
-                    self.mp_util.wait_for_mp_store()
-                    final_checklist = os.path.join(self.rRNA_filter_path, "rRNA_filter_infernal_prep_" + section + ".txt")
-                    self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-                    self.mp_util.write_to_bypass_log(self.output_folder_path, self.rRNA_filter_infernal_prep_label + "_" + section)
+            for i in range(0, split_count_s):
+                s_seq = self.file_dict["rRNA_barrnap_mRNA_s_" + str(i)]
+                inf_out = self.file_dict["rRNA_inf_out_s"] + "_" + str(i) + ".inf_out"
+                self.file_dict["rRNA_inf_s_" + str(i)] = inf_out
+                marker = self.marker_dict["rRNA_inf_s_" + str(i)]
+                job_name = "rRNA_inf_s" + "_" + str(i)
+                if(self.marker_control.check_marker(marker)):
+                    command = self.commands.create_rRNA_filter_infernal_command(s_seq, inf_out, marker)
+                    self.mp_util.launch_and_create_with_hold(
+                        self.config_dict["Infernal_mem_threshold"],
+                        self.config_dict["Infernal_job_limit"],
+                        self.config_dict["Infernal_job_delay"],
+                        self.dir_dict["rRNA_jobs"],
+                        job_name,
+                        self.commands,
+                        command)    
+
+
+            for i in range(0, split_count_p1):
+                p1_seq = self.file_dict["rRNA_barrnap_mRNA_p1_" + str(i)]
+                inf_out = self.file_dict["rRNA_inf_out_p1"] + "_" + str(i) + ".inf_out"
+                self.file_dict["rRNA_inf_p1_" + str(i)] = inf_out
+                marker = self.marker_dict["rRNA_inf_p1_" + str(i)]
+                job_name = "rRNA_inf_p1" + "_" + str(i)
+                if(self.marker_control.check_marker(marker)):
+                    command = self.commands.create_rRNA_filter_infernal_command(p1_seq, inf_out, marker)
+                    self.mp_util.launch_and_create_with_hold(
+                        self.config_dict["Infernal_mem_threshold"],
+                        self.config_dict["Infernal_job_limit"],
+                        self.config_dict["Infernal_job_delay"],
+                        self.dir_dict["rRNA_jobs"],
+                        job_name,
+                        self.commands,
+                        command)    
+
+            for i in range(0, split_count_p2):
+                p2_seq = self.file_dict["rRNA_barrnap_mRNA_p2_" + str(i)]
+                inf_out = self.file_dict["rRNA_inf_out_p2"] + "_" + str(i) + ".inf_out"
+                self.file_dict["rRNA_inf_p2_" + str(i)] = inf_out
+                marker = self.marker_dict["rRNA_inf_p2_" + str(i)]
+                job_name = "rRNA_inf_p2" + "_" + str(i)
+                if(self.marker_control.check_marker(marker)):
+                    command = self.commands.create_rRNA_filter_infernal_command(p2_seq, inf_out, marker)
+                    self.mp_util.launch_and_create_with_hold(
+                        self.config_dict["Infernal_mem_threshold"],
+                        self.config_dict["Infernal_job_limit"],
+                        self.config_dict["Infernal_job_delay"],
+                        self.dir_dict["rRNA_jobs"],
+                        job_name,
+                        self.commands,
+                        command)    
+
+            #wait for everything.
+            self.mp_util.wait_for_mp_store()
+
+            #inf pp then merge
+            for i in range(0, split_count_s):
+                inf_p1 = self.file_dict["rRNA_inf_p1_" + str(i)]
+                inf_p2 = self.file_dict["rRNA_inf_p2_" + str(i)]
+                barrnap_p1 = self.file_dict["rRNA_barrnap_p1_" + str(i)]
+                barrnap_p2 = self.file_dict["rRNA_barrnap_p2_" + str(i)] 
+                raw_fq_p1 = self.file_dict["rRNA_split_p1_fastq_" + str(i)]
+                raw_fq_p2 = self.file_dict["rRNA_split_p2_fastq_" + str(i)]
                 
 
-                if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_infernal_label + "_" + section):
-                    marker_path_list = []
-                    for item in os.listdir(barrnap_mRNA_fasta_path):
-                        #using a job marker is ineffective.  The marker will still write 
-                        root_name = item.split("_barrnap_mRNA")[0]
-                        marker_file = root_name + "_infernal"
-                        marker_path = os.path.join(rRNA_filter_jobs_folder, marker_file)
-                        
-                        if(os.path.exists(marker_path)):
-                            print(dt.today(), "infernal already run. skipping:", root_name + "_infernal")
-                            continue
-                        else:
-                            marker_path_list.append(marker_path)
-                            inf_command = self.commands.create_rRNA_filter_infernal_command("rRNA_filter", section, root_name, marker_file)
-                            job_name = "rRNA_filter_infernal_" + root_name
-                            #launch_only_with_hold(mp_store, Infernal_mem_threshold, Infernal_job_limit, Infernal_job_delay, job_name, self.commands, inf_command)
-                            self.mp_util.launch_and_create_with_hold(self.Infernal_mem_threshold, self.Infernal_job_limit, self.Infernal_job_delay, self.rRNA_filter_label, job_name, self.commands, inf_command)
-                            
-                            
-                    print(dt.today(), "final batch: infernal")
-                    self.mp_util.wait_for_mp_store()
-                    final_checklist = os.path.join(self.rRNA_filter_path, "rRNA_filter_infernal_" + section + ".txt")
-                    self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-                    self.mp_util.write_to_bypass_log(self.output_folder_path, self.rRNA_filter_infernal_label + "_" + section)
-                
-                if (section != "pair_2"):
-                    if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_splitter_label + "_" + section):
-                        marker_path_list = []
-                        for item in os.listdir(barrnap_mRNA_fasta_path):
-                            root_name = item.split("_barrnap_mRNA")[0]
-                            splitter_out_file = os.path.join(self.output_folder_path, self.rRNA_filter_label, "data", section + "_infernal_mRNA", root_name + "_mRNA.fastq")
-                            splitter_out_file_size = os.stat(splitter_out_file).st_size if os.path.exists(splitter_out_file) else 0
-                            marker_file = root_name + "_infernal_pp"
-                            marker_path = os.path.join(rRNA_filter_jobs_folder, marker_file)
-                            if(os.path.exists(marker_path)):
-                                print(dt.today(), "infernal mRNA splitter already run. skipping:", marker_file)
-                                print("file size:", splitter_out_file_size, "file:", splitter_out_file)
-                                continue
-                            else:
-                                job_name = "rRNA_filter_infernal_splitter_" + root_name
-                                marker_path_list.append(marker_path)
-                                command_list = self.commands.create_rRNA_filter_splitter_command("rRNA_filter", section, root_name, marker_file)
-                                print(command_list)
-                                self.mp_util.launch_only_with_hold(self.Infernal_mem_threshold, self.Infernal_job_limit, self.Infernal_job_delay, job_name, self.commands, command_list)
-                                
-                        print(dt.today(), "final batch: infernal splitter")
-                        self.mp_util.wait_for_mp_store()
-                        final_checklist = os.path.join(self.rRNA_filter_path, "rRNA_filter_infernal_splitter_" + section + ".txt")
-                        self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-                        self.mp_util.write_to_bypass_log(self.output_folder_path, self.rRNA_filter_splitter_label + "_" + section)
-                else:
-                    print(dt.today(), "not calling Infernal rRNA splitter on pair 2.  data handled by pair 1 as a combination")
-                        
+
+
+
             marker_path_list = []
             for section in reversed(sections):
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_post_label + "_" + section):
@@ -385,6 +381,10 @@ class mp_stage:
         print("rRNA filter:", '%1.1f' % (self.rRNA_filter_end - self.rRNA_filter_start - (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start)), "s")
         print("rRNA filter cleanup:", '%1.1f' % (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start), "s")
         self.debug_stop_check(self.rRNA_filter_label)
+
+
+
+#-----------------------------------------------------------------------------------------------------------------------        
 
     def mp_repop(self):
         
