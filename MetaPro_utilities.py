@@ -42,7 +42,7 @@ class mp_seq_handler:
     def split_fastq(self, file_name_in, file_name_out, chunks, export_mode):
         print(dt.today(), "FASTQ file name in:", file_name_in)
         #FASTQ has 4 lines per entry.
-        file_base_name = os.path.splitext(file_name_in)[0]
+        
         fastq_df = pd.read_csv(file_name_in, header=None, names=[None], sep="\n", skip_blank_lines = False, quoting=3)
         fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
         fastq_df.rename(columns = {0:"ID", 1:"seq", 2:"junk", 3:"qual"}, inplace = True)

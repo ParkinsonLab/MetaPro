@@ -350,9 +350,7 @@ class mpro_dir:
         self.dir_dict["rRNA_split"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_split")
         self.dir_dict["rRNA_barrnap"] = os.path.join(self.dir_dict["rRNA_data"], "barrnap")
         self.dir_dict["rRNA_inf"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_inf")
-        self.dir_dict["rRNA_s_fasta"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_s_fasta")
-        self.dir_dict["rRNA_p1_fasta"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_p1_fasta")
-        self.dir_dict["rRNA_p2_fasta"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_p2_fasta")
+        
         self.dir_dict["rRNA_export"] = os.path.join(self.dir_dict["rRNA"], "export")
         self.dir_dict["rRNA_mRNA"] = os.path.join(self.dir_dict["rRNA_export"], "mRNA")
         self.dir_dict["rRNA_other"] = os.path.join(self.dir_dict["rRNA_export"], "other")
@@ -478,12 +476,7 @@ class mpro_marker:
 
 class mpro_file_handler:
     #the file-interconnect. 
-    def issue_rRNA_split(self, header, count, location):
-        #used for rRNA barrnap + infernal
-        #auto-creates the marker to be used.
-        for i in range(0, count):
-            file_name = header + "_" + str(i)
-            self.file_dict[file_name] = os.path.join(self.dir_dict[location], file_name)
+    
 
 
     def clean_files(self, stage):
@@ -568,7 +561,19 @@ class mpro_file_handler:
         self.file_dict["rRNA_split_p1"] = os.path.join(self.dir_dict["rRNA_split"], "p1_split")
         self.file_dict["rRNA_split_p2"] = os.path.join(self.dir_dict["rRNA_split"], "p2_split")
 
+        
 
+        self.file_dict["rRNA_barrnap_s"] = os.path.join(self.dir_dict["rRNA_barrnap"], "s")
+        self.file_dict["rRNA_barrnap_p1"] = os.path.join(self.dir_dict["rRNA_barrnap"], "p1")
+        self.file_dict["rRNA_barrnap_p2"] = os.path.join(self.dir_dict["rRNA_barrnap_p2"], "p2")
+
+        self.file_dict["rRNA_barrnap_other_s"] = os.path.join(self.dir_dict["rRNA_other"], "s_barrnap")
+        self.file_dict["rRNA_barrnap_other_p1"] = os.path.join(self.dir_dict["rRNA_other"], "p1_barrnap")
+        self.file_dict["rRNA_barrnap_other_p2"] = os.path.join(self.dir_dict["rRNA_other"], "p2_barrnap")
+
+        self.file_dict["rRNA_mRNA_barrnap_s"] = os.path.join(self.dir_dict["rRNA_mRNA"], "barrnap", "s")
+        self.file_dict["rRNA_mRNA_barrnap_p1"] = os.path.join(self.dir_dict["rRNA_mRNA"], "barrnap", "p1")
+        self.file_dict["rRNA_mRNA_barrnap_p2"] = os.path.join(self.dir_dict["rRNA_mRNA"], "barrnap", "p2")
 
 class mpro_config:    
     def value_assignment(self, filetype, config, config_section, var_name, default):
