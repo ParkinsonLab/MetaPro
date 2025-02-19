@@ -27,7 +27,8 @@ def filter_for_orphans(pair_0_path_i, pair_1_path_i, orphans_path_i, pair_0_path
     df_0[~df_0.ID.isin(common.ID)].to_csv(unique_path_o, sep = '\n', mode = 'w+', header=False, index = False, quoting = 3)
     df_1[~df_1.ID.isin(common.ID)].to_csv(unique_path_o, sep = '\n', mode = 'a', header=False, index = False, quoting = 3)
     
-    #There's some situations where there's no orphans generated from the previous steps.  
+    #There's some situations where there's no orphans generated from the previous steps.
+    # feb 19, 2025: this code should work if it's opening the same file it's appending to.  
     if(os.path.exists(orphans_path_i)):
         orphans_i_file = pd.read_csv(orphans_path_i, header=None, names=[None], sep = '\n', skip_blank_lines = False, quoting = 3)
         orphans_df = pd.DataFrame(orphans_i_file.values.reshape(int(len(orphans_i_file)/4), 4))

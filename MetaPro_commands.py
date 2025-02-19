@@ -561,52 +561,34 @@ class mt_pipe_commands:
         # -> detect if we've run the preprocess stage.
         # -> if it's run, grab data
         # -> if not, run our own custom preprocess up to what we need
-        dep_loc                 = os.path.join(self.output_path, dependency_stage_name, "final_results")
-        subfolder               = os.path.join(self.output_path, stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        repop_folder            = os.path.join(data_folder, "0_repop")
-        final_folder            = os.path.join(subfolder, "final_results")
-        preprocess_subfolder    = os.path.join(self.output_path, preprocess_stage_name)
-        
-        tut_keyword = "repop"
 
-        # we ran a previous preprocess.  grab files
-        # need 3, 5(clstr only), and mRNA from the 2nd stage.
-        hq_path                 = os.path.join(preprocess_subfolder, "final_results")
-        cluster_path            = os.path.join(preprocess_subfolder, "final_results")
-        singleton_path          = os.path.join(preprocess_subfolder, "final_results")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(repop_folder)
-        self.make_folder(final_folder)
 
         repop_singletons = ">&2 echo " + str(dt.today()) + " Duplication repopulation singletons mRNA| "
         repop_singletons += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"] + " "
         #the reference data to be drawn from 
         if self.read_mode == "single":
-            repop_singletons += os.path.join(singleton_path, "singletons_hq.fastq") + " "
+            repop_s += self.file_dict["qf_s_hq"] + " "
         elif self.read_mode == "paired":
-            repop_singletons += os.path.join(hq_path, "singletons_with_duplicates.fastq") + " "
+            repop_singletons += self.file_dict["qf_o_s"] + " "
+        repop_singletons += self.file_dict["rRNA_mRNA_s_fq"] + " "  # in -> rRNA filtration output
+        repop_singletons += self.file_dict["repop_clstr_s"] + " "  # in -> duplicates filter output
+        repop_singletons += self.file_dict["repop_s"] #doesn't matter if it's single or paired.  
         
-        repop_singletons += os.path.join(dep_loc, "mRNA", "singletons.fastq") + " "  # in -> rRNA filtration output
-        repop_singletons += os.path.join(cluster_path, "singletons_unique.fastq.clstr") + " "  # in -> duplicates filter output
-
-        
-        if self.read_mode == "single":
-            repop_singletons += os.path.join(final_folder, "singletons.fastq")  # out
-        elif self.read_mode == "paired":
-            repop_singletons += os.path.join(repop_folder, "singletons.fastq")  # out
+        #if self.read_mode == "single":
+        #    repop_singletons += os.path.join(final_folder, "singletons.fastq")  # out
+        #elif self.read_mode == "paired":
+        #    repop_singletons += os.path.join(repop_folder, "singletons.fastq")  # out
             
             
 
         repop_singletons_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulations singletons rRNA | "
-        repop_singletons_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
+        repop_singletons_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"] + " "
         if self.read_mode == "single":
-            repop_singletons_rRNA += os.path.join(singleton_path, "singletons_hq.fastq") + " "
+            #repop_singletons_rRNA += os.path.join(singleton_path, "singletons_hq.fastq") + " "
+            repop_singletons_rRNA += self.file_dict["qf_s_hq"] + " "
         elif self.read_mode == "paired":
-            repop_singletons_rRNA += os.path.join(hq_path, "singletons_with_duplicates.fastq") + " "
-        repop_singletons_rRNA += os.path.join(dep_loc, "other", "singletons_other.fastq") + " "  # in -> rRNA filtration output
+            repop_singletons_rRNA += self.file_dict["qf_o_s"] + " "
+        repop_singletons_rRNA += self.file_dict["rRNA_other_s_fq"] + " "  # in -> rRNA filtration output
         repop_singletons_rRNA += os.path.join(cluster_path, "singletons_unique.fastq.clstr") + " "  # in -> duplicates filter output
         if self.read_mode == "single":
             repop_singletons_rRNA += os.path.join(final_folder, "singletons_rRNA.fastq")  # out
@@ -614,7 +596,7 @@ class mt_pipe_commands:
             repop_singletons_rRNA += os.path.join(repop_folder, "singletons_rRNA.fastq")  # out
 
         repop_pair_1 = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 1 mRNA | "
-        repop_pair_1 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_1 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"] + " "
         repop_pair_1 += os.path.join(hq_path, "pair_1_match.fastq") + " "
         if(self.tutorial_keyword == tut_keyword):
             repop_pair_1 += self.config_dict["pair_1"] + " "
@@ -624,14 +606,14 @@ class mt_pipe_commands:
         repop_pair_1 += os.path.join(repop_folder, "pair_1.fastq")
 
         repop_pair_1_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 1 rRNA | "
-        repop_pair_1_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_1_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"] + " "
         repop_pair_1_rRNA += os.path.join(hq_path, "pair_1_match.fastq") + " "
         repop_pair_1_rRNA += os.path.join(dep_loc, "other", "pair_1_other.fastq") + " "
         repop_pair_1_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
         repop_pair_1_rRNA += os.path.join(repop_folder, "pair_1_rRNA.fastq")
 
         repop_pair_2 = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 2 | "
-        repop_pair_2 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_2 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
         repop_pair_2 += os.path.join(hq_path, "pair_2_match.fastq") + " "
         if(self.tutorial_keyword == tut_keyword):
             repop_pair_2 += self.config_dict["pair_2"] + " "
@@ -641,7 +623,7 @@ class mt_pipe_commands:
         repop_pair_2 += os.path.join(repop_folder, "pair_2.fastq")
 
         repop_pair_2_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 2 | "
-        repop_pair_2_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_2_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
         repop_pair_2_rRNA += os.path.join(hq_path, "pair_2_match.fastq") + " "
         repop_pair_2_rRNA += os.path.join(dep_loc, "other", "pair_2_other.fastq") + " "
         repop_pair_2_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
@@ -649,7 +631,7 @@ class mt_pipe_commands:
 
         singleton_repop_filter = ">&2 echo filtering mRNA for new singletons | "
         singleton_repop_filter += self.config_dict["Python"] + " "
-        singleton_repop_filter += self.config_dict["orphaned_read_filter + " "
+        singleton_repop_filter += self.config_dict["orphaned_read_filter"] + " "
         singleton_repop_filter += os.path.join(repop_folder, "pair_1.fastq") + " "
         singleton_repop_filter += os.path.join(repop_folder, "pair_2.fastq") + " "
         singleton_repop_filter += os.path.join(repop_folder, "singletons.fastq") + " "
@@ -732,7 +714,7 @@ class mt_pipe_commands:
         self.make_folder(final_folder)
 
         repop_singletons = ">&2 echo " + str(dt.today()) + " Duplication repopulation singletons mRNA| "
-        repop_singletons += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
+        repop_singletons += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
         #the reference data to be drawn from 
         if self.read_mode == "single":
             repop_singletons += os.path.join(singleton_path, "singletons_hq.fastq") + " "
@@ -751,7 +733,7 @@ class mt_pipe_commands:
             
 
         repop_singletons_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulations singletons rRNA | "
-        repop_singletons_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
+        repop_singletons_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
         if self.read_mode == "single":
             repop_singletons_rRNA += os.path.join(singleton_path, "singletons_hq.fastq") + " "
         elif self.read_mode == "paired":
@@ -764,7 +746,7 @@ class mt_pipe_commands:
             repop_singletons_rRNA += os.path.join(repop_folder, "singletons_rRNA.fastq")  # out
 
         repop_pair_1 = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 1 mRNA | "
-        repop_pair_1 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_1 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
         repop_pair_1 += os.path.join(hq_path, "pair_1_match.fastq") + " "
         if(self.tutorial_keyword == tut_keyword):
             repop_pair_1 += self.config_dict["pair_1"] + " "
@@ -774,14 +756,14 @@ class mt_pipe_commands:
         repop_pair_1 += os.path.join(repop_folder, "pair_1.fastq")
 
         repop_pair_1_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 1 rRNA | "
-        repop_pair_1_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_1_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
         repop_pair_1_rRNA += os.path.join(hq_path, "pair_1_match.fastq") + " "
         repop_pair_1_rRNA += os.path.join(dep_loc, "other", "pair_1_other.fastq") + " "
         repop_pair_1_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
         repop_pair_1_rRNA += os.path.join(repop_folder, "pair_1_rRNA.fastq")
 
         repop_pair_2 = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 2 | "
-        repop_pair_2 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_2 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
         repop_pair_2 += os.path.join(hq_path, "pair_2_match.fastq") + " "
         if(self.tutorial_keyword == tut_keyword):
             repop_pair_2 += self.config_dict["pair_2"] + " "
@@ -791,7 +773,7 @@ class mt_pipe_commands:
         repop_pair_2 += os.path.join(repop_folder, "pair_2.fastq")
 
         repop_pair_2_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 2 | "
-        repop_pair_2_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate + " "
+        repop_pair_2_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
         repop_pair_2_rRNA += os.path.join(hq_path, "pair_2_match.fastq") + " "
         repop_pair_2_rRNA += os.path.join(dep_loc, "other", "pair_2_other.fastq") + " "
         repop_pair_2_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
@@ -2421,7 +2403,7 @@ class mt_pipe_commands:
         
         repop_singletons_hosts = ">&2 echo repopulating singletons hosts | " 
         repop_singletons_hosts += self.config_dict["Python"] + " "
-        repop_singletons_hosts += self.config_dict["duplicate_repopulate + " "
+        repop_singletons_hosts += self.config_dict["duplicate_repopulate"]+ " "
         if(self.read_mode == "single"):
             repop_singletons_hosts += os.path.join(quality_folder, "singletons_hq.fastq") + " "
         else:
@@ -2460,7 +2442,7 @@ class mt_pipe_commands:
         
         repop_pair_1_hosts = ">&2 echo repopulating pair 1 hosts | " 
         repop_pair_1_hosts += self.config_dict["Python"] + " "
-        repop_pair_1_hosts += self.config_dict["duplicate_repopulate + " "
+        repop_pair_1_hosts += self.config_dict["duplicate_repopulate"]+ " "
         repop_pair_1_hosts += os.path.join(quality_folder, "pair_1_match.fastq") + " "
         repop_pair_1_hosts += os.path.join(unique_hosts_folder, "pair_1_hosts.fastq") + " "
         repop_pair_1_hosts += os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
@@ -2494,7 +2476,7 @@ class mt_pipe_commands:
         
         repop_pair_2_hosts = ">&2 echo repopulating pair 2 hosts | " 
         repop_pair_2_hosts += self.config_dict["Python"] + " "
-        repop_pair_2_hosts += self.config_dict["duplicate_repopulate + " "
+        repop_pair_2_hosts += self.config_dict["duplicate_repopulate"]+ " "
         repop_pair_2_hosts += os.path.join(quality_folder, "pair_2_match.fastq") + " "
         repop_pair_2_hosts += os.path.join(unique_hosts_folder, "pair_2_hosts.fastq") + " "
         repop_pair_2_hosts += os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " " #we do this based on pairs now
@@ -2539,7 +2521,7 @@ class mt_pipe_commands:
             
         repop_singletons_vectors = ">&2 echo repopulating singletons vectors | " 
         repop_singletons_vectors += self.config_dict["Python"] + " "
-        repop_singletons_vectors += self.config_dict["duplicate_repopulate + " "
+        repop_singletons_vectors += self.config_dict["duplicate_repopulate"]+ " "
         if(self.read_mode == "single"):
             repop_singletons_vectors += os.path.join(quality_folder, "singletons_hq.fastq") + " "
         else:
@@ -2584,7 +2566,7 @@ class mt_pipe_commands:
         
         repop_pair_1_vectors = ">&2 echo repopulating pair 1 vectors | " 
         repop_pair_1_vectors += self.config_dict["Python"] + " "
-        repop_pair_1_vectors += self.config_dict["duplicate_repopulate + " "
+        repop_pair_1_vectors += self.config_dict["duplicate_repopulate"]+ " "
         repop_pair_1_vectors += os.path.join(quality_folder, "pair_1_match.fastq") + " "
         repop_pair_1_vectors += os.path.join(unique_vectors_folder, "pair_1_vectors.fastq") + " "
         repop_pair_1_vectors += os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
@@ -2625,7 +2607,7 @@ class mt_pipe_commands:
             
         repop_pair_2_vectors = ">&2 echo repopulating pair 2 vectors | " 
         repop_pair_2_vectors += self.config_dict["Python"] + " "
-        repop_pair_2_vectors += self.config_dict["duplicate_repopulate + " "
+        repop_pair_2_vectors += self.config_dict["duplicate_repopulate"]+ " "
         repop_pair_2_vectors += os.path.join(quality_folder, "pair_2_match.fastq") + " "
         repop_pair_2_vectors += os.path.join(unique_vectors_folder, "pair_2_vectors.fastq") + " "
         repop_pair_2_vectors += os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " " #we do this based on pairs now

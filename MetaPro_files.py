@@ -130,6 +130,8 @@ class mpro_file_handler:
         self.file_dict["rRNA_other_p1_fq"] = os.path.join(self.dir_dict["rRNA_other"], "all", "p1_other.fastq")
         self.file_dict["rRNA_other_p2_fq"] = os.path.join(self.dir_dict["rRNA_other"], "all", "p2_other.fastq")
 
-        self.file_dict["repop"]
+        self.file_dict["repop_clstr_s"] = os.path.join(self.dir_dict["repop_data"], "s.clstr")
+        self.file_dict["repop_s"] = os.path.join(self.dir_dict["repop_export"], "s.fastq")
+        self.file_dict["repop_other_s"] = os.path.join(self.dir_dict["repop_export"], "s_other.fastq")
 
         
