@@ -23,6 +23,10 @@ from configparser import ConfigParser, ExtendedInterpolation
 import multiprocessing as mp
 import MetaPro_paths as mpp
 import MetaPro_stages as mps
+import MetaPro_dir as mpd
+import MetaPro_time as mpt
+import MetaPro_files as mpf
+import MetaPro_marker as mpm
 import time
 import zipfile
 import pandas as pd
@@ -221,15 +225,15 @@ if __name__ == "__main__":
         print("full path:", config_file)
 
     config_obj = mpp.mpro_config(config_file, output_folder)
-    dir_obj = mpp.mpro_dir(config_file, output_folder)
+    dir_obj = mpd.mpro_dir(config_file, output_folder)
     
-    time_obj = mpp.mpro_timing()
+    time_obj = mpt.mpro_timing()
 
 
     config_dict = config_obj.get_config_dict()
     dir_dict = dir_obj.get_dir_dict()
     label_dict = dir_obj.get_label_dict()
-    file_obj = mpp.mpro_file_handler(config_dict, dir_dict)
+    file_obj = mpf.mpro_file_handler(config_dict, dir_dict)
     
     file_dict = file_obj.get_file_dict()
 

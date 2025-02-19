@@ -8,6 +8,7 @@ import multiprocessing as mp
 import MetaPro_commands as mpcom
 import MetaPro_paths as mpp
 import MetaPro_utilities as mpu
+import MetaPro_marker as mpm
 import time
 import zipfile
 import pandas as pd
@@ -16,6 +17,7 @@ from datetime import datetime as dt
 import psutil as psu
 import threading as th
 import queue as q
+import shutil
 
 #stores code for stage-launch.
 #makes for a neat package/capsule
@@ -33,7 +35,7 @@ class mp_stage:
         #self.tutorial_string = tutorial_mode_string
         self.output_folder_path = dir_dict["main"] #output_folder_path
         self.mp_util = mpu.mp_util(config_dict, dir_dict)
-        self.marker_control = mpp.mpro_marker(config_dict, dir_dict)
+        self.marker_control = mpm.mpro_marker(config_dict, dir_dict)
         self.marker_dict = self.marker_control.marker_dict
         self.m_name = self.marker_control.m_name
         #self.config_dict = config_dict
@@ -338,51 +340,99 @@ class mp_stage:
 
             #wait for everything.
             self.mp_util.wait_for_mp_store()
+            #-----------------------------------------------
+            #merge the inf and barrnap files, then send it through inf pp.
+            if(split_count_s > 0):
+                with open(self.file_dict["rRNA_inf_all_s"], "wb") as out_file:
+                    for i in range(0, split_count_s):
+                        inf_out = self.file_dict["rRNA_inf_s_" + str(i)]
+                        with open(inf_out, "rb") as in_file:
+                            shutil.copyfileobj(in_file, out_file)
+                        out_file.write(b"\n")
+                with open(self.file_dict["rRNA_barrnap_all_s"], "wb") as out_file:
+                    for i in range(0, split_count_s):
+                        inf_out = self.file_dict["rRNA_barrnap_s_" + str(i)]
+                        with open(inf_out, "rb") as in_file:
+                            shutil.copyfileobj(in_file, out_file)
+                        out_file.write(b"\n")
 
-            #inf pp then merge
-            for i in range(0, split_count_s):
-                inf_p1 = self.file_dict["rRNA_inf_p1_" + str(i)]
-                inf_p2 = self.file_dict["rRNA_inf_p2_" + str(i)]
-                barrnap_p1 = self.file_dict["rRNA_barrnap_p1_" + str(i)]
-                barrnap_p2 = self.file_dict["rRNA_barrnap_p2_" + str(i)] 
-                raw_fq_p1 = self.file_dict["rRNA_split_p1_fastq_" + str(i)]
-                raw_fq_p2 = self.file_dict["rRNA_split_p2_fastq_" + str(i)]
+            if(split_count_p1 > 0):
+                with open(self.file_dict["rRNA_inf_all_p1"], "wb") as out_file:
+                    for i in range(0, split_count_p1):
+                        inf_out = self.file_dict["rRNA_inf_p1_" + str(i)]
+                        with open(inf_out, "rb") as in_file:
+                            shutil.copyfileobj(in_file, out_file)
+                        out_file.write(b"\n")
+                with open(self.file_dict["rRNA_barrnap_all_p1"], "wb") as out_file:
+                    for i in range(0, split_count_p1):
+                        inf_out = self.file_dict["rRNA_barrnap_p1_" + str(i)]
+                        with open(inf_out, "rb") as in_file:
+                            shutil.copyfileobj(in_file, out_file)
+                        out_file.write(b"\n")
+
+            if(split_count_p2 > 0):
+                with open(self.file_dict["rRNA_inf_all_p2"], "wb") as out_file:
+                    for i in range(0, split_count_p2):
+                        inf_out = self.file_dict["rRNA_inf_p2_" + str(i)]
+                        with open(inf_out, "rb") as in_file:
+                            shutil.copyfileobj(in_file, out_file)
+                        out_file.write(b"\n")
+                with open(self.file_dict["rRNA_barrnap_all_p2"], "wb") as out_file:
+                    for i in range(0, split_count_p2):
+                        inf_out = self.file_dict["rRNA_barrnap_p2_" + str(i)]
+                        with open(inf_out, "rb") as in_file:
+                            shutil.copyfileobj(in_file, out_file)
+                        out_file.write(b"\n")
+
+            
+
+
+            #inf pp 3 sections
+            if(split_count_p1 > 0):
+                inf_p1 = self.file_dict["rRNA_inf_all_p1"]
+                inf_p2 = self.file_dict["rRNA_inf_all_p2"]
+                barrnap_p1 = self.file_dict["rRNA_barrnap_all_p1"]
+                barrnap_p2 = self.file_dict["rRNA_barrnap_all_p2"]
+                mRNA_p1 = self.file_dict["rRNA_mRNA_p1_fq"]
+                mRNA_p2 = self.file_dict["rRNA_mRNA_p2_fq"]
+                other_p1 = self.file_dict["rRNA_other_p1_fq"]
+                other_p2 = self.file_dict["rRNA_other_p2_fq"]
+
+                command = self.commands.create_rRNA_inf_pp_pair_command(inf_p1, inf_p2, 
+                                                                        barrnap_p1, barrnap_p2,
+                                                                        self.file_dict["no_vec_p1"],
+                                                                        self.file_dict["no_vec_p2"],
+                                                                        mRNA_p1, mRNA_p2,
+                                                                        other_p1, other_p2,
+                                                                        self.marker_dict["rRNA_inf_pp_paired"]
+                                                                        )
                 
+                self.mp_util.launch_and_create_with_hold(
+                        self.config_dict["Infernal_mem_threshold"],
+                        self.config_dict["Infernal_job_limit"],
+                        self.config_dict["Infernal_job_delay"],
+                        self.dir_dict["rRNA_jobs"],
+                        "rRNA_inf_pp_paired",
+                        self.commands,
+                        command) 
 
 
-
-
-            marker_path_list = []
-            for section in reversed(sections):
-                if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_post_label + "_" + section):
-                    print(dt.today(), "now running rRNA filter post:", section)
-                    marker_file = section + "_rRNA_packup"
-                    marker_path = os.path.join(rRNA_filter_jobs_folder, marker_file)
-                    job_name = "rRNA_post_cat"
-                    marker_path_list.append(marker_path)
-                    command_list = self.commands.create_rRNA_filter_final_cat_command("rRNA_filter", section, marker_file)
-                    print("command list:", command_list)
-                    self.mp_util.launch_only_with_hold(self.Infernal_mem_threshold, self.Infernal_job_limit, self.Infernal_job_delay, job_name, self.commands, command_list)
-                    
+            command = self.commands.create_rRNA_inf_pp_s_command(self.file_dict["rRNA_inf_all_s"],
+                                                                 self.file_dict["rRNA_barrnap_all_s"],
+                                                                 self.file_dict["no_vec_s"],
+                                                                 self.file_dict["rRNA_mRNA_s_fq"],
+                                                                 self.file_dict["rRNA_other_s_fq"],
+                                                                 self.marker_dict["rRNA_inf_pp_s"]
+                                                                 )
+            self.mp_util.launch_and_create_with_hold(
+                        self.config_dict["Infernal_mem_threshold"],
+                        self.config_dict["Infernal_job_limit"],
+                        self.config_dict["Infernal_job_delay"],
+                        self.dir_dict["rRNA_jobs"],
+                        "rRNA_inf_pp_s",
+                        self.commands,
+                        command) 
             self.mp_util.wait_for_mp_store()
-            final_checklist = os.path.join(self.rRNA_filter_path, "rRNA_filter_final_cat.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            for section in reversed(sections):
-                self.mp_util.write_to_bypass_log(self.output_folder_path, self.rRNA_filter_splitter_label + "_" + section)
-            
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.rRNA_filter_label)
-            self.cleanup_rRNA_filter_start = time.time()
-            self.mp_util.delete_folder_simple(rRNA_filter_jobs_folder)
-            self.mp_util.clean_or_compress(self.rRNA_filter_path, self.keep_all, self.keep_rRNA)
-            
-            self.cleanup_rRNA_filter_end = time.time()
-        self.rRNA_filter_end = time.time()
-        
-        print("rRNA filter:", '%1.1f' % (self.rRNA_filter_end - self.rRNA_filter_start - (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start)), "s")
-        print("rRNA filter cleanup:", '%1.1f' % (self.cleanup_rRNA_filter_end - self.cleanup_rRNA_filter_start), "s")
-        self.debug_stop_check(self.rRNA_filter_label)
-
-
 
 #-----------------------------------------------------------------------------------------------------------------------        
 
