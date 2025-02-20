@@ -64,7 +64,9 @@ class mpro_marker:
         self.marker_dict["rRNA_inf_pp_s"] = os.path.join(self.dir_dict["rRNA"], "inf_pp_s_marker")
         self.marker_dict["repop"] = os.path.join(self.dir_dict["repop"], self.m_name["repop"])
         self.marker_dict["contigs"] = os.path.join(self.dir_dict["contigs"], self.m_name["contigs"])
+        self.marker_dict["ga_ps_s"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_s_marker")
+        self.marker_dict["ga_ps_c"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_c_marker")
+        self.marker_dict["ga_ps_p"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_p_marker")
         
-
 
 

@@ -799,286 +799,87 @@ class mt_pipe_commands:
 
         return COMMANDS_Assemble
     
-    def create_GA_pre_scan_taxa_command(self, current_stage_name, assemble_contigs_stage, operating_mode, marker_file):
-        subfolder               = os.path.join(self.output_path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        assemble_contigs_folder = os.path.join(self.output_path, assemble_contigs_stage, "final_results")
-        kraken2_folder            = os.path.join(data_folder, "1_kraken2")
-        jobs_folder             = os.path.join(data_folder, "jobs")
-        
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(kraken2_folder)
-        self.make_folder(jobs_folder)
+    def create_GA_pre_scan_taxa_command(self, operating_mode, marker_file):
 
-        if(operating_mode == "contigs"):
+
+        if(operating_mode == "c"):
             kraken2_c = ">&2 echo Kraken2 on contigs | "
-            kraken2_c += self.config_dict["kraken2 + " "
-            kraken2_c += "--db " + self.config_dict["kraken2_db + " "
-            kraken2_c += "--threads " + str(self.config_dict["num_threads) + " "
-            kraken2_c += os.path.join(assemble_contigs_folder, "contigs.fasta") + " "
-            kraken2_c += "--output " + os.path.join(kraken2_folder, "kraken2_c_report.txt")
+            kraken2_c += self.config_dict["kraken2"] + " "
+            kraken2_c += "--db " + self.config_dict["kraken2_db"] + " "
+            kraken2_c += "--threads " + str(self.config_dict["num_threads"]) + " "
+            kraken2_c += self.file_dict["contigs_out_fa"] + " "
+            kraken2_c += "--output " + self.file_dict["ga_ps_k2_report_c"]
             
-            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
-            
+            make_marker = "touch " + marker_file
             return [kraken2_c + " && " + make_marker]
             
-        elif(operating_mode == "singletons"):
+        elif(operating_mode == "s"):
             kraken2_s = ">&2 echo Kraken2 on singletons | "
-            kraken2_s += self.config_dict["kraken2 + " "
-            kraken2_s += "--db " + self.config_dict["kraken2_db + " "
-            kraken2_s += "--threads " + str(self.config_dict["num_threads) + " "
-            kraken2_s += os.path.join(assemble_contigs_folder, "singletons.fastq") + " " 
-            kraken2_s += "--output " + os.path.join(kraken2_folder, "kraken2_s_report.txt")
+            kraken2_s += self.config_dict["kraken2"] + " "
+            kraken2_s += "--db " + self.config_dict["kraken2_db"] + " "
+            kraken2_s += "--threads " + str(self.config_dict["num_threads"]) + " "
+            kraken2_s += self.file_dict["contigs_s"] + " " 
+            kraken2_s += "--output " + self.file_dict["GA_ps_k2_report_s"]
             
-            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
+            make_marker = "touch " + marker_file
             
             return [kraken2_s + " && " + make_marker]
             
-        elif(operating_mode == "paired"):
+        elif(operating_mode == "p"):
             kraken2_p = ">&2 echo Kraken2 on paired | " 
-            kraken2_p += self.config_dict["kraken2 + " "
-            kraken2_p += "--db " + self.config_dict["kraken2_db +  " "
-            kraken2_p += "--threads " + str(self.config_dict["num_threads) + " "
-            kraken2_p += "--paired " + os.path.join(assemble_contigs_folder, "pair_1.fastq") + " " + os.path.join(assemble_contigs_folder, "pair_2.fastq") + " "
-            kraken2_p += "--output " + os.path.join(kraken2_folder, "kraken2_p_report.txt")
+            kraken2_p += self.config_dict["kraken2"] + " "
+            kraken2_p += "--db " + self.config_dict["kraken2_db"] +  " "
+            kraken2_p += "--threads " + str(self.config_dict["num_threads"]) + " "
+            kraken2_p += "--paired " + self.file_dict["contigs_p1"] + " " 
+            kraken2_p += self.file_dict["contigs_p2"]+ " "
+            kraken2_p += "--output " + self.file_dict["ga_ps_k2_report_p"]
             
-            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
+            make_marker = "touch " + marker_file
             
             return [kraken2_p + " && " + make_marker]
 
-    def create_GA_pre_scan_command(self, stage_name, marker_file):
-        subfolder       = os.path.join(self.output_path, stage_name)
-        final_folder    = os.path.join(subfolder, "final_results")
-        data_folder     = os.path.join(subfolder, "data")
-        dest_folder     = os.path.join(data_folder, "4_libs")
-        jobs_folder     = os.path.join(subfolder, "jobs")
-        
-        self.make_folder(data_folder)
-        self.make_folder(dest_folder)
-        self.make_folder(jobs_folder)
-        self.make_folder(final_folder)
+    def create_GA_pre_scan_command(self, marker_file):
+
         
         ga_get_lib = ">&2 echo GA pre-scan get libs | "
         ga_get_lib += self.config_dict["Python"] + " "
         ga_get_lib += self.config_dict["GA_pre_scan_get_lib"] + " "
-        ga_get_lib += os.path.join(data_folder, "3_wevote", "taxonomic_classifications.tsv") + " "
+        ga_get_lib += "k2" + " "
+        ga_get_lib += self.file_dict["ga_ps_k2_report_all"] + " "
         ga_get_lib += self.config_dict["taxid_tree"] + " "
         ga_get_lib += self.config_dict["nodes"] + " "
-        ga_get_lib += os.path.join(dest_folder, "lib_list.txt") + " "
-        ga_get_lib += os.path.join(dest_folder, "lib_reject.txt") + " "
+        ga_get_lib += self.file_dict["ga_lib_list"]+ " "
+        ga_get_lib += self.file_dict["ga_lib_reject"] + " "
         ga_get_lib += self.config_dict["source_taxa_DB"] + " "
         ga_get_lib += str(self.config_dict["taxa_exist_cutoff"])
         
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
-        
+        make_marker = "touch " + marker_file
         
         return [ga_get_lib + " && " + make_marker]
         
         
-    def create_GA_pre_scan_assemble_lib_command(self, stage_name, marker_file):
-        subfolder       = os.path.join(self.output_path, stage_name)
-        final_folder    = os.path.join(subfolder, "final_results")
-        data_folder     = os.path.join(subfolder, "data")
-        dest_folder     = os.path.join(data_folder, "4_libs")
-        jobs_folder     = os.path.join(subfolder, "jobs")
+    def create_GA_pre_scan_assemble_lib_command(self, marker_file):
         
-        self.make_folder(data_folder)
-        self.make_folder(dest_folder)
-        self.make_folder(jobs_folder)
-        self.make_folder(final_folder)
-    
         assemble_lib = ">&2 echo GA assemble libs | " 
         assemble_lib += self.config_dict["Python"] + " " 
-        assemble_lib += self.config_dict["GA_pre_scan_assemble_lib + " "
-        assemble_lib += os.path.join(dest_folder, "lib_list.txt") + " " 
-        assemble_lib += self.config_dict["source_taxa_DB +  " "
-        assemble_lib += final_folder +  " " 
+        assemble_lib += self.config_dict["GA_pre_scan_assemble_lib"] + " "
+        assemble_lib += self.file_dict["ga_lib_list"] + " " 
+        assemble_lib += self.config_dict["source_taxa_DB"] +  " "
+        assemble_lib += self.dir_dict["GA_ps_export"] +  " " 
         assemble_lib += "all"
         
         #index_lib = "for i in $(ls " + final_folder + ");" + " "
         #index_lib += "do " + self.config_dict["BWA"] + " index" + " "
         #index_lib += final_folder + "/$i; done" 
         
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
+        make_marker = "touch" + " " + marker_file
         
-        self.config_dict["DNA_DB = final_folder
+        self.config_dict["DNA_DB"] = self.dir_dict["GA_ps_export"]
         
         #return [assemble_lib + " && " + index_lib + " && " + make_marker]
         return [assemble_lib + " && " + make_marker]
         
  
-    def create_split_ga_fastq_data_command(self, stage_name, dependency_stage_name, category, marker_file):
-        subfolder       = os.path.join(self.output_path, stage_name)
-        final_folder    = os.path.join(subfolder, "final_results")
-        data_folder     = os.path.join(subfolder, "data")
-        split_folder    = os.path.join(final_folder, category)#, os.path.join(data_folder, "0_read_split", category)
-        dep_loc         = os.path.join(self.output_path, dependency_stage_name, "final_results")
-        
-        jobs_folder     = os.path.join(data_folder, "jobs")
-        self.make_folder(subfolder)
-        self.make_folder(final_folder)
-        self.make_folder(data_folder)
-        self.make_folder(split_folder)
-        self.make_folder(jobs_folder)
-        
-        
-        if(self.tutorial_keyword == "GA"):
-            if(category == "pair_1"):
-            
-                split_fastq = ">&2 echo splitting fastq for " + category + " GA | "
-                split_fastq += "split -l " + str(int(self.config_dict["GA_chunksize) * 4) + " "        
-                split_fastq += self.config_dict["pair_1"] + " "
-                split_fastq += "--additional-suffix .fastq" + " "
-                split_fastq += "-d" + " "
-                split_fastq += os.path.join(split_folder, category + "_")
-                
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
-                
-                COMMANDS_GA_prep_fastq = [
-                    split_fastq + " && " + make_marker
-                ]
-                
-            elif(category == "pair_2"):
-                split_fastq = ">&2 echo splitting fastq for " + category + " GA | "
-                split_fastq += "split -l " + str(int(self.config_dict["GA_chunksize) * 4) + " "        
-                split_fastq += self.config_dict["pair_2"] + " "
-                split_fastq += "--additional-suffix .fastq" + " "
-                split_fastq += "-d" + " "
-                split_fastq += os.path.join(split_folder, category + "_")
-                
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
-                
-                COMMANDS_GA_prep_fastq = [
-                    split_fastq + " && " + make_marker
-                ]
-            elif(category == "singletons"):
-                split_fastq = ">&2 echo splitting fastq for " + category + " GA | "
-                split_fastq += "split -l " + str(int(self.config_dict["GA_chunksize) * 4) + " "        
-                split_fastq += self.config_dict["single"] + " "
-                split_fastq += "--additional-suffix .fastq" + " "
-                split_fastq += "-d" + " "
-                split_fastq += os.path.join(split_folder, category + "_")
-                
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
-                
-                COMMANDS_GA_prep_fastq = [
-                    split_fastq + " && " + make_marker
-                ]
-     
-        else:
-            split_fastq = ">&2 echo splitting fastq for " + category + " GA | "
-            split_fastq += "split -l " + str(int(self.config_dict["GA_chunksize) * 4) + " "        
-            split_fastq += os.path.join(dep_loc, category + ".fastq") + " "
-            split_fastq += "--additional-suffix .fastq" + " "
-            split_fastq += "-d" + " "
-            split_fastq += os.path.join(split_folder, category + "_")
-            
-            make_marker = "touch" + " "
-            make_marker += os.path.join(jobs_folder, marker_file)
-            
-            COMMANDS_GA_prep_fastq = [
-                split_fastq + " && " + make_marker
-            ]
-            
-        return COMMANDS_GA_prep_fastq
-
-    def create_split_ga_fasta_data_command(self, stage_name, dependency_stage_name, category, marker_file):
-        subfolder       = os.path.join(self.output_path, stage_name)
-        data_folder     = os.path.join(subfolder, "data")
-        final_folder    = os.path.join(subfolder, "final_results")
-        split_folder    = os.path.join(final_folder, category)#os.path.join(data_folder, "0_read_split", category)
-        dep_folder      = os.path.join(self.output_path, dependency_stage_name, "final_results")
-        jobs_folder     = os.path.join(data_folder, "jobs")
-        
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(final_folder)
-        self.make_folder(split_folder)
-        self.make_folder(jobs_folder)
-        
-        
-        if(self.tutorial_keyword == "GA"):
-            if(category == "singletons"):
-                split_fasta = ">&2 echo splitting fasta for " + category + " | "
-                split_fasta += self.config_dict["Python"] + " "    
-                split_fasta += self.config_dict["File_splitter + " "
-                split_fasta += self.config_dict["single"] + " "
-                split_fasta += os.path.join(split_folder, category) + " "
-                split_fasta += str(self.config_dict["GA_chunksize)
-                
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
-                
-                COMMANDS_GA_prep_fasta = [
-                    split_fasta + " && " + make_marker
-                ]
-                
-            elif(category == "contigs"):
-                split_fasta = ">&2 echo splitting fasta for " + category + " | "
-                split_fasta += self.config_dict["Python"] + " "    
-                split_fasta += self.config_dict["File_splitter + " "
-                split_fasta += self.sequence_contigs + " "
-                split_fasta += os.path.join(split_folder, category) + " "
-                split_fasta += str(self.config_dict["GA_chunksize)
-                
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
-                
-                COMMANDS_GA_prep_fasta = [
-                    split_fasta + " && " + make_marker
-                ]
-            elif(category == "pair_1"):
-                split_fasta = ">&2 echo splitting fasta for " + category + " | "
-                split_fasta += self.config_dict["Python"] + " "    
-                split_fasta += self.config_dict["File_splitter + " "
-                split_fasta += self.config_dict["pair_1"] + " "
-                split_fasta += os.path.join(split_folder, category) + " "
-                split_fasta += str(self.config_dict["GA_chunksize)
-                
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
-                
-                COMMANDS_GA_prep_fasta = [
-                    split_fasta + " && " + make_marker
-                ]
-            elif(category == "pair_2"):
-                split_fasta = ">&2 echo splitting fasta for " + category + " | "
-                split_fasta += self.config_dict["Python"] + " "    
-                split_fasta += self.config_dict["File_splitter + " "
-                split_fasta += self.config_dict["pair_2"] + " "
-                split_fasta += os.path.join(split_folder, category) + " "
-                split_fasta += str(self.config_dict["GA_chunksize)
-                
-                make_marker = "touch" + " "
-                make_marker += os.path.join(jobs_folder, marker_file)
-                
-                COMMANDS_GA_prep_fasta = [
-                    split_fasta + " && " + make_marker
-                ]
-                
-        else:
-            split_fasta = ">&2 echo splitting fasta for " + category + " | "
-            split_fasta += self.config_dict["Python"] + " "    
-            split_fasta += self.config_dict["File_splitter + " "
-            split_fasta += os.path.join(dep_folder, category +".fasta") + " "
-            split_fasta += os.path.join(split_folder, category) + " "
-            split_fasta += str(self.config_dict["GA_chunksize)
-            
-            make_marker = "touch" + " "
-            make_marker += os.path.join(jobs_folder, marker_file)
-            
-            COMMANDS_GA_prep_fasta = [
-                split_fasta + " && " + make_marker
-            ]
-        
-        return COMMANDS_GA_prep_fasta
-
 
     def create_BWA_annotate_command_v2(self, stage_name, ref_path, ref_tag, query_file, marker_file):
         # meant to be called multiple times: query file is a split file

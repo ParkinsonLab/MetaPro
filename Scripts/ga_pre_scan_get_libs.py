@@ -18,6 +18,32 @@ def import_nodes(nodes_file):
             
     return nodes_dict
 
+def import_k2_report(k2_file, existence_percent):
+    read_counter = 0
+    taxa_tally_dict = dict()
+    unique_taxa = set()
+    tally_dict = dict()
+    with open(k2_file, "r") as k2_in:
+        for line in k2_in:
+            line_split = line.split("\t")
+            if(line_split[0] == "C"):
+                read_counter += 1
+                final_taxa = line_split[2]
+                if(final_taxa in taxa_tally_dict):
+                    taxa_tally_dict[final_taxa] += 1
+                else:
+                    taxa_tally_dict[final_taxa] = 1
+
+    #figure out percentages
+    for taxa in taxa_tally_dict:
+        rep_val = taxa_tally_dict[taxa] * 100/ read_counter
+        if(rep_val >= existence_percent):
+            unique_taxa.add(taxa)
+            tally_dict[taxa] = rep_val
+    return unique_taxa, tally_dict
+
+
+
 def import_wevote(wevote_file, existence_percent):
     #filter the taxa. only include taxa that reps 1% or more
     read_counter = 0
@@ -73,15 +99,20 @@ def export_lines(lib_file_path, nodes_dict, class_item, yes_count, no_count):
 
 
 if __name__ == "__main__":
-    wevote_file_path = sys.argv[1]      
-    taxa_class_map_path = sys.argv[2]
-    nodes_file = sys.argv[3]
-    export_lib_file = sys.argv[4]
-    reject_lib_file = sys.argv[5]       
-    lib_root_path = sys.argv[6]         #the stash of DB files 
-    exist_percent = float(sys.argv[7])
-    
-    unique_taxa, tally_dict = import_wevote(wevote_file_path, exist_percent)
+    op_mode = sys.argv[1]
+    taxa_file_path = sys.argv[2] #k2 or wevote  
+    taxa_class_map_path = sys.argv[3]
+    nodes_file = sys.argv[4]
+    export_lib_file = sys.argv[5]
+    reject_lib_file = sys.argv[6]       
+    lib_root_path = sys.argv[7]         #the stash of DB files 
+    exist_percent = float(sys.argv[8])
+    unique_taxa = ""
+    tally_dict = ""
+    if(op_mode == "wevote"):
+        unique_taxa, tally_dict = import_wevote(taxa_file_path, exist_percent)
+    elif(op_mode == "k2"):
+        unique_taxa, tally_dict = import_k2_report(taxa_file_path, exist_percent)
     taxa_class_dict = import_taxa_class_map(taxa_class_map_path)
     nodes_dict = import_nodes(nodes_file)
     

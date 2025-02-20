@@ -131,8 +131,6 @@ class mp_stage:
         else:
             print(dt.today(), "continuing from:", stop_signal)
             
-    
-
     #--------------------------------------------------------------------------------------------------------------
     # main calls
     def mp_quality_filter(self):
@@ -188,6 +186,9 @@ class mp_stage:
             split_count_s = self.seq_handler.split_fastq(self.file_dict["no_vec_s"], self.file_dict["rRNA_split_s"], self.config_dict["rRNA_chunksize"], "fasta")
             split_count_p1 = self.seq_handler.split_fastq(self.file_dict["no_vec_p1"], self.file_dict["rRNA_split_p1"], self.config_dict["rRNA_chunksize"], "fasta")
             split_count_p2 = self.seq_handler.split_fastq(self.file_dict["no_vec_p2"], self.file_dict["rRNA_split_p2"], self.config_dict["rRNA_chunksize"], "fasta")
+            self.config_dict["split_count_s"] = split_count_s
+            self.config_dict["split_count_p1"] = split_count_p1
+            self.config_dict["split_count_p2"] = split_count_p2
 
             if(split_count_p2 != split_count_p1):
                 print(dt.today(), "something is off with the p1 and p2 split.  they should be equal, but they're not")
@@ -545,92 +546,42 @@ class mp_stage:
             marker_path_list = []
             #----------------------------------------------------------------------
             #kaiju on reads
-            sections = ["singletons"]
+            sections = ["s"]
             if self.read_mode == "paired":
-                sections.extend(["paired"])
+                sections.extend(["p"])
             if(self.contigs_present):
-                sections.extend(["contigs"])    
+                sections.extend(["c"])    
             
             for section in sections:
-                marker_file = "mp_ta_kraken2_" + section
-                marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
-                if(os.path.exists(marker_path)):
-                    print(dt.today(), "skipping:", marker_file)
+                marker_tag = "ga_ps_" + section
+                if(os.path.exists(self.marker_dict[marker_tag])):
+                    print(dt.today(), "skipping:", marker_tag)
                 else:
                     marker_path_list.append(marker_path)
-                    command_list = self.commands.create_TA_kraken2_command(self.GA_pre_scan_label, self.assemble_contigs_label, section, marker_file)
+                    command_list = self.commands.create_ga_pre_scan_taxa_command(section, marker_file)
                     self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)        
             
-            #---------------------------------------------------------------------
-            #centrifuge on reads
-            
-            sections_list = ["reads"]
-            if(self.contigs_present):
-                sections_list.extend(["contigs"])
-                
-            for read_cat in sections_list:
-                marker_file = "mp_ta_centrifuge_" + read_cat
-                marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
-                print(marker_path)
-                if(os.path.exists(marker_path)):
-                    print(dt.today(), "skipping:", marker_file)
-                else:
-                    marker_path_list.append(marker_path)
-                    command_list = self.commands.create_TA_centrifuge_command(self.GA_pre_scan_label, self.rRNA_filter_label, self.assemble_contigs_label, read_cat, marker_file)
-                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
-            
-            self.mp_util.wait_for_mp_store()
-            
-            #------------------------------------------
-            #merge kraken + centrifuge into single file
-            
-            marker_file = "TA_kraken2_pp"
-            marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
-            if(os.path.exists(marker_path)):
-                print(dt.today(), "skipping:", marker_file)
-            else:
-                marker_path_list.append(marker_path)
-                command_list = self.commands.create_TA_kraken2_pp_command(self.GA_pre_scan_label, marker_file)
-                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
-            self.mp_util.wait_for_mp_store()
-            
-            
-            marker_path_list = []
-            marker_file = "TA_centrifuge_pp"
-            marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
-            if(os.path.exists(marker_path)):
-                print(dt.today(), "skipping:", marker_file)
-            else:
-                marker_path_list.append(marker_path)
-                command_list = self.commands.create_TA_centrifuge_pp_command(self.GA_pre_scan_label, marker_file)
-                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
-            self.mp_util.wait_for_mp_store()
-            
-            #----------------------------------------------------
-            #
-            
-            marker_file = "TA_wevote_combine"
-            marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
-            if(os.path.exists(marker_path)):
-                print(dt.today(), "skipping:", marker_file)
-            else:
-                marker_path_list.append(marker_path)
-                command_list = self.commands.create_TA_wevote_combine_command(self.GA_pre_scan_label, self.assemble_contigs_label, marker_file)
-                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
-                print(dt.today(), "running:", marker_file)
-            self.mp_util.wait_for_mp_store()
-            
+           
             
             #-------------------------------------------------------
-            #collect the wevote results, get the unique taxa, and match them to a class-level taxa
+            #use the kraken2 results to make the DB
             
             marker_file = "ga_collect_db"
             marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
+            #glue all k2 reports together
+            k2_reports = ["ga_ps_k2_report_s", "ga_ps_k2_report_c", "ga_ps_k2_report_p"]
+            with open(self.file_dict["ga_ps_k2_report_all"], "wb") as out_file:
+                for item in k2_reports:
+                    with open(self.file_dict[item], "rb") as in_file:
+                        shutil.copyfileobj(in_file, out_file)
+
+
+
             if(os.path.exists(marker_path)):
                 print(dt.today(), "skipping:", marker_file)
             else:
                 marker_path_list.append(marker_path)
-                command_list = self.commands.create_GA_pre_scan_command(self.GA_pre_scan_label, marker_file)
+                command_list = self.commands.create_GA_pre_scan_command(marker_file)
                 self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
                 print(dt.today(), "running:", marker_file)
             self.mp_util.wait_for_mp_store()
@@ -642,7 +593,7 @@ class mp_stage:
                 print(dt.today(), "skipping:", marker_file)
             else:
                 marker_path_list.append(marker_path)
-                command_list = self.commands.create_GA_pre_scan_assemble_lib_command(self.GA_pre_scan_label, marker_file)
+                command_list = self.commands.create_GA_pre_scan_assemble_lib_command(marker_file)
                 self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
                 print(dt.today(), "running:", marker_file)
             self.mp_util.wait_for_mp_store()
@@ -661,41 +612,23 @@ class mp_stage:
         #separating GA split-data from GA_BWA for a few reasons:
         #1) so the pipe has the option to not split all the time
         #2) modularity
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_split_label):
-            marker_path_list = []
-            if(self.contigs_present):
-                print(dt.today(), "splitting contigs")
-                marker_file = "GA_split_fasta_contigs"
-                marker_path = os.path.join(self.GA_split_jobs_folder, marker_file)
-                if(os.path.exists(marker_path)):
-                    print(dt.today(), "skipping", marker_file)
-                else:
-                    job_name = "GA_prep_split_contigs"
-                    marker_path_list.append(marker_path)
-                    command_list = self.commands.create_split_ga_fasta_data_command(self.GA_split_label, self.assemble_contigs_label, "contigs", marker_file)
-                    self.mp_util.launch_and_create_with_mp_store(self.GA_split_label, job_name, self.commands, command_list)
-            else:
-                print(dt.today(), "no contigs present. skipping split")
+        self.config_dict["GA_split_count_s"] = self.seq_handler.split_fastq(self.file_dict["contigs_s"], self.file_dict["ga_split_s"], self.config_dict["GA_chunksize"], "fasta")
+        self.config_dict["GA_split_count_p1"] = self.seq_handler.split_fastq(self.file_dict["contigs_p1"], self.file_dict["ga_split_p1"], self.config_dict["GA_chunksize"], "fasta")
+        self.config_dict["GA_split_count_p2"] = self.seq_handler.split_fastq(self.file_dict["contigs_p2"], self.file_dict["ga_split_p2"], self.config_dict["GA_chunksize"], "fasta")
             
-            sections = ["singletons"]
-            if(self.read_mode == "paired"):
-                sections.extend(["pair_1", "pair_2"])
-            for section in sections: 
-                marker_file = "GA_split_fastq_" + section
-                marker_path = os.path.join(self.GA_split_jobs_folder, marker_file)
-                if(os.path.exists(marker_path)):
-                    print(dt.today(), "skipping", marker_file)
-                else:
-                    marker_path_list.append(marker_path)
-                    job_name = "GA_prep_split_" + section
-                    command_list = self.commands.create_split_ga_fastq_data_command(self.GA_split_label, self.assemble_contigs_label, section, marker_file)
-                    self.mp_util.launch_and_create_with_mp_store(self.GA_split_label, job_name, self.commands, command_list)
-            self.mp_util.wait_for_mp_store()
+        for i in range(0, self.config_dict["GA_split_count_s"]):
+            tag = self.file_dict["ga_split_s"] + "_" + str(i)
+            self.file_dict[tag] = self.file_dict["ga_split_s"] + "_" + str(i) + ".fasta"
+            
+        for i in range(0, self.config_dict["GA_split_count_p1"]):
+            tag = self.file_dict["ga_split_p1"] + "_" + str(i)
+            self.file_dict[tag] = self.file_dict["ga_split_p1"] + "_" + str(i) + ".fasta"
+        
+        for i in range(0, self.config_dict["GA_split_count_p2"]):
+            tag = self.file_dict["ga_split_p2"] + "_" + str(i)
+            self.file_dict[tag] = self.file_dict["ga_split_p2"] + "_" + str(i) + ".fasta"
 
-            final_checklist = os.path.join(self.GA_split_path, "GA_split.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_split_label)
-            
+
         self.debug_stop_check(self.GA_split_label)
         
     def mp_GA_lib_check(self):

@@ -303,13 +303,13 @@ RUN wget https://github.com/s-andrews/FastQC/archive/refs/tags/v0.12.1.zip -O fa
 #----------------------------------------
 #Add kraken2
 WORKDIR /pipeline_tools
-RUN wget https://github.com/DerrickWood/kraken2/archive/refs/tags/v2.1.3.zip -O kraken2.zip \
+RUN wget https://github.com/DerrickWood/kraken2/archive/refs/tags/v2.14.zip -O kraken2.zip \
 && unzip kraken2.zip \
-&& cd kraken2-2.1.3 \
+&& cd kraken2-2.14 \
 && ./install_kraken2.sh . \
 && cd .. \
 && rm kraken2.zip \
-&& mv kraken2-2.1.3 kraken2
+&& mv kraken2-2.14 kraken2
 
 
 #------------------------------------------------------------------------------------------
