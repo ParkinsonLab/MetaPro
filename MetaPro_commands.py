@@ -881,33 +881,20 @@ class mt_pipe_commands:
         
  
 
-    def create_BWA_annotate_command_v2(self, stage_name, ref_path, ref_tag, query_file, marker_file):
+    def create_BWA_annotate_command_v2(self, db_path, sample_file, sam_out, marker_file):
         # meant to be called multiple times: query file is a split file
         # aug 10, 2021: changed ref path to accomodate new split-chocophlan
-        subfolder       = os.path.join(self.output_path, stage_name)
-        data_folder     = os.path.join(subfolder, "data")
-        bwa_folder      = os.path.join(data_folder, "1_bwa")
-        jobs_folder     = os.path.join(data_folder, "jobs")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(bwa_folder)
-        self.make_folder(jobs_folder)
-
-        file_tag = os.path.basename(query_file)
-        file_tag = os.path.splitext(file_tag)[0]
+        #feb 20, 2025: reiterating call-per-file.
         
-        bwa_job = ">&2 echo " + str(dt.today()) + " BWA on " + file_tag + " | "
-        bwa_job += self.config_dict["BWA"] + " mem -t " + self.threads_str + " "
-        bwa_job += ref_path + " "
+        bwa_job = self.config_dict["BWA"] + " mem -t " + self.threads_str + " "
+        bwa_job += db_path + " "
         #bwa_job += os.path.join(dep_loc, section_file) + " | "
-        bwa_job += query_file + " | "
+        bwa_job += sample_file + " | "
         bwa_job += self.config_dict["samtools"] + " view "
-        bwa_job += "> " + os.path.join(bwa_folder, file_tag +"_" + ref_tag + ".sam")
+        bwa_job += "> " + sam_out
         
         #make_marker = ">&2 echo marking BWA job complete: " + file_tag + " | "
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
+        make_marker = "touch" + " " + marker_file
 
         COMMANDS_BWA = [
             bwa_job + " && " + make_marker

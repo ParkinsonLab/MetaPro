@@ -634,10 +634,10 @@ class mp_stage:
     def mp_GA_lib_check(self):
         print(dt.today(), "Running GA lib check")
         
-        if(self.paths.DNA_DB_mode == "chocophlan"):
-            self.paths.DNA_DB = os.path.join(self.GA_pre_scan_path, "final_results")
-        self.paths.check_bwa_valid(self.paths.DNA_DB)
-        self.paths.check_blat_valid(self.paths.DNA_DB)
+        if(self.config_dict["DNA_DB_mode"] == "chocophlan"):
+            self.config_dict["DNA_DB"] = self.dir_dict["GA_ps_export"]
+        self.paths.check_bwa_valid(self.config_dict["DNA_DB"])
+        self.paths.check_blat_valid(self.config_dict["DNA_DB"])
         
     def mp_GA_BWA(self):
         self.GA_BWA_start = time.time()
@@ -648,13 +648,13 @@ class mp_stage:
             if not self.mp_util.check_where_resume(self.GA_BWA_path, None, self.GA_split_path):
             
                 #-------------------------------------------------------------------------
-                sections = ["singletons"]
+                sections = ["s"]
                 if self.read_mode == "paired":
-                    sections.extend(["pair_1", "pair_2"])
+                    sections.extend(["p1", "p2"])
                 if(self.contigs_present):
-                    
-                    sections.extend(["contigs"])
+                    sections.extend(["c"])
                 
+
                 for section in sections:
                     for split_sample in os.listdir(os.path.join(self.GA_split_path, "final_results", section)):
                         full_sample_path = os.path.join(os.path.join(self.GA_split_path, "final_results",section, split_sample))
@@ -839,184 +839,6 @@ class mp_stage:
         print("GA BWA cleanup:", '%1.1f' % (self.cleanup_GA_BWA_end - self.cleanup_GA_BWA_start), "s")
         self.debug_stop_check("GA_BWA_merge")
 
-    def mp_GA_BLAT(self):    
-        # ------------------------------------------------
-        # BLAT gene annotation
-        GA_BLAT_start = time.time()
-        print("new DNA DB path:", self.paths.DNA_DB)
-        
-        self.mp_util.make_folder(self.GA_BLAT_path)
-        self.mp_util.make_folder(self.GA_BLAT_data_folder)
-        self.mp_util.make_folder(self.GA_BLAT_jobs_folder)
-        
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BLAT_label):
-            marker_path_list = []
-            
-            for split_sample in os.listdir(os.path.join(self.GA_BWA_path, "final_results")):
-                if(split_sample.endswith(".fasta")):
-                    file_tag = os.path.basename(split_sample)
-                    file_tag = os.path.splitext(file_tag)[0]
-                    full_sample_path = os.path.join(os.path.join(self.GA_BWA_path, "final_results", split_sample))
-
-                    delay_count = 0
-                    for fasta_db in os.listdir(self.paths.DNA_DB):
-                        if fasta_db.endswith(".fasta") or fasta_db.endswith(".ffn") or fasta_db.endswith(".fsa") or fasta_db.endswith(".fas") or fasta_db.endswith(".fna"):
-                            job_name = "BLAT_" + file_tag + "_" + fasta_db
-                            marker_file = file_tag + "_blat_" + fasta_db
-                            marker_path = os.path.join(self.GA_BLAT_jobs_folder, marker_file)
-                            blatout_path = os.path.join(self.GA_BLAT_path, "data", "0_blat", file_tag + "_"+fasta_db + ".blatout")
-                            blat_queue_package = blatout_path+"|" + marker_file
-                            #ref_db = os.path.join(self.paths.DNA_DB, fasta_db)
-                            
-                            #This checker assume BLAT only exports a file when it's finished running
-                            if(os.path.exists(marker_path)):
-                                if(os.path.exists(blatout_path)):
-                                    #recover from a restart.  there will be files that have been missed.  thread would have deleted the file
-                                    print(dt.today(), "file still exists. adding to merge thread:", blatout_path)
-                                    #blat_file_queue.put(blat_queue_package)
-                                    
-                                else:
-                                    print(dt.today(), "file doesn't exist anymore already merged", blatout_path)
-                                    
-                                print(dt.today(), "BLAT job ran already, skipping:", marker_file)
-                                #time.sleep(1)
-                                continue
-                                
-                            else:
-                                print(dt.today(), "RUNNING:", marker_file)
-                                
-                                marker_path_list.append(marker_path)
-                                command_list = self.commands.create_BLAT_annotate_command_v2(self.GA_BLAT_label, full_sample_path, self.paths.DNA_DB, fasta_db, marker_file)
-                                #self.mp_util.launch_only_with_hold(self.BLAT_mem_threshold, self.BLAT_job_limit, self.BLAT_job_delay, job_name, self.commands, command_list)
-                                self.mp_util.launch_and_create_with_mem_footprint(self.BLAT_mem_footprint, self.BLAT_job_limit, self.GA_BLAT_label, job_name, self.commands, command_list)
-            #---------------------------------------------------------------------------
-
-            
-            print(dt.today(), "final BLAT job removal. now waiting for mp-store flush")
-            #note: this wait is disabled because we now have a separate thread.  it will hang if we enable it.
-            print(dt.today(), "flushing mp_store")
-            #self.mp_util.mp_store[:] = []        
-            self.mp_util.wait_for_mp_store()
-            print(dt.today(), "moving onto BLAT PP")
-            final_checklist = os.path.join(self.GA_BLAT_path, "GA_BLAT.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BLAT_label)
-        
-        self.debug_stop_check(self.GA_BLAT_label)
-        
-    def mp_GA_BLAT_pp(self):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BLAT_pp_label):
-            marker_path_list = []
-            for split_sample in os.listdir(os.path.join(self.GA_BWA_path, "final_results")):
-                if(split_sample.endswith(".fasta")):
-                    file_tag = os.path.basename(split_sample)
-                    file_tag = os.path.splitext(file_tag)[0]
-                    
-                    ref_path = self.paths.DNA_DB#_Split  #the chocophlan chunks
-                    if (ref_path.endswith(".fasta")):
-                        #single chocophlan mode
-                        job_name = "BLAT_" + file_tag + "_pp"
-                        full_sample_path = os.path.join(os.path.join(self.GA_BWA_path, "final_results", split_sample))
-                        marker_file = file_tag + "_blat_pp"
-                        marker_path = os.path.join(self.GA_BLAT_jobs_folder, marker_file)
-                        if(os.path.exists(marker_path)):
-                            print(dt.today(), "skipping:", marker_file)
-                            continue
-                        else:
-                            marker_path_list.append(marker_path)
-                            command_list = self.commands.create_BLAT_pp_command_v2(self.GA_BLAT_label, full_sample_path, self.GA_BWA_label, ref_path, marker_file)
-                            #self.mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, self.GA_BLAT_label, job_name, self.commands, command_list)
-                            self.mp_util.launch_only_with_hold(self.BLAT_pp_mem_threshold, self.BLAT_pp_job_limit, self.BLAT_pp_job_delay, job_name, self.commands, command_list)
-                            
-                    else:
-                        for fasta_db in os.listdir(ref_path):
-                            if fasta_db.endswith(".fasta") or fasta_db.endswith(".ffn") or fasta_db.endswith(".fsa") or fasta_db.endswith(".fas") or fasta_db.endswith(".fna"):
-                                #split chocophlan mode
-                                #decode the chocophlan chunk, and supply the appropriate one.
-                                #print("file tag:", file_tag.split("chocophlan"))
-                                choco_chunk = fasta_db.split(".fasta")[0]
-                                ref_file = os.path.join(ref_path, fasta_db)
-                                #print("BLAT file tag:", file_tag, "|chunk: ", ref_file)
-                                
-                                job_name = "BLAT_" + file_tag + "_" + choco_chunk + "_pp"
-                                full_sample_path = os.path.join(os.path.join(self.GA_BWA_path, "final_results", split_sample))
-                                #print("query file:", full_sample_path)
-                                marker_file = file_tag + "_" + choco_chunk + "_blat_pp"
-                                print("MARKER FILE:", marker_file)
-                                marker_path = os.path.join(self.GA_BLAT_jobs_folder, marker_file)
-                                
-                                if(os.path.exists(marker_path)):
-                                    print(dt.today(), "skipping:", marker_file)
-                                    continue
-                                else:
-                                    marker_path_list.append(marker_path)
-                                    command_list = self.commands.create_BLAT_pp_command_v3(self.GA_BLAT_label, full_sample_path, self.GA_BWA_label, ref_file, marker_file)
-                                    #print("Command list:", command_list)
-                                    #time.sleep(10)
-                                    #self.mp_util.launch_and_create_with_hold(BLAT_pp_mem_threshold, BLAT_pp_job_limit, BLAT_pp_job_delay, self.GA_BLAT_label, job_name, self.commands, command_list)
-                                    self.mp_util.launch_only_with_hold(self.BLAT_pp_mem_threshold, self.BLAT_pp_job_limit, self.BLAT_pp_job_delay, job_name, self.commands, command_list)
-                                #time.sleep(10)
-
-                    
-            print(dt.today(), "submitted all BLAT pp jobs.  waiting for sync")
-            self.mp_util.wait_for_mp_store()
-            
-            job_name = "GA_BLAT_copy_contigs"
-            marker_file = "blat_copy_contig_map"
-            marker_path = os.path.join(self.GA_BLAT_jobs_folder, marker_file)
-            if(os.path.exists(marker_path)):
-                print(dt.today(), "skipping:", marker_file)
-            else:
-                marker_path_list.append(marker_path)
-                command_list = self.commands.create_BLAT_copy_contig_map_command(self.GA_BLAT_label, self.GA_BWA_label, marker_file)
-                self.mp_util.launch_and_create_simple(self.GA_BLAT_label, job_name, self.commands, command_list)
-            final_checklist = os.path.join(self.GA_BLAT_path, "GA_BLAT_pp.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BLAT_pp_label)
-        
-        self.debug_stop_check(self.GA_BLAT_pp_label)
-
-
-    def mp_GA_BLAT_merge(self):
-        # GA BLAT merge    
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BLAT_merge_label):
-            marker_path_list = []
-            for split_sample in os.listdir(os.path.join(self.GA_BWA_path, "final_results")):
-                if(split_sample.endswith(".fasta")):
-                    file_tag = os.path.basename(split_sample)
-                    file_tag = os.path.splitext(file_tag)[0]
-
-                    marker_file = "BLAT_merge_" + file_tag
-                    marker_path = os.path.join(self.GA_BLAT_jobs_folder, marker_file)
-                    if(os.path.exists(marker_path)):
-                        print(dt.today(), "skipping: ", marker_file)
-                        continue
-                    else:
-                        marker_path_list.append(marker_path)
-                        command_list = self.commands.create_BLAT_merge_fasta_command(self.GA_BLAT_label, file_tag, marker_file)
-                        self.mp_util.launch_and_create_with_hold(self.BLAT_pp_mem_threshold, self.BLAT_pp_job_limit, self.BLAT_pp_job_delay, self.GA_BLAT_label, marker_file, self.commands, command_list)
-
-            print(dt.today(), "submitted all BLAT merge jobs. waiting for sync")
-            self.mp_util.wait_for_mp_store()
-
-            final_checklist = os.path.join(self.GA_BLAT_path, "GA_BLAT_merge.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BLAT_merge_label)
-
-        #print(dt.today(), "stopping for a sanity check: BLAT merge")
-        #sys.exit()
-
-        self.cleanup_GA_BLAT_start = time.time()
-        self.mp_util.delete_folder_simple(self.GA_BLAT_jobs_folder)
-        self.mp_util.clean_or_compress(self.GA_BLAT_path, self.keep_all, self.keep_GA_BLAT)
-
-        self.cleanup_GA_BLAT_end = time.time()
-        GA_BLAT_end = time.time()
-        print("GA BLAT:", '%1.1f' % (self.GA_BLAT_end - self.GA_BLAT_start - (self.cleanup_GA_BLAT_end - self.cleanup_GA_BLAT_start)), "s")
-        print("GA BLAT cleanup:", '%1.1f' % (self.cleanup_GA_BLAT_end - self.cleanup_GA_BLAT_start), "s")
-        
-        self.debug_stop_check(self.GA_BLAT_merge_label)
-    
     
     def mp_GA_dmd(self):
         # ------------------------------------------------------

@@ -13,6 +13,17 @@ class mpro_file_handler:
     #the file-interconnect. 
     
 
+    def read_lib_list(self):
+        #reads the lib list and fills in the file dict
+        lib_set = set()
+        with open(self.file_dict["ga_lib_list"], "r") as lib_list:
+            for line in lib_list:
+                line_split = line.split("|")
+                if(line_split[0] == "yes"):
+                    lib_file = str(line_split[2])
+                    lib_set.add(lib_file)
+        return lib_set
+
 
     def clean_files(self, stage):
         key_list = []
