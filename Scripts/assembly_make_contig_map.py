@@ -2,6 +2,8 @@
 #This script makes the contig map.
 #-> it makes sure only 1 read-ID is represented.
 #-> it also separates what's used by contig assembly and exports those reads all at once
+#------------------------------------------------
+# Feb 20, 2025: changed to break out the arguments.  New filesystem now centrally controls all files
 
 import os
 import sys
@@ -163,26 +165,37 @@ def pull_unmapped_reads(read_id, read_status_dict):
         print(dt.today(), "read ID not found in status dict. this shouldn't happen")
         sys.exit("what??")
         
-def export_unmapped_reads(raw_read_location, export_location, sample_file, sample_read_status_dict):
-    export_path = os.path.join(raw_read_location, sample_file + ".fastq")
-    sample_df = import_fastq(export_path)
+#def export_unmapped_reads(raw_read_location, export_location, sample_file, sample_read_status_dict):
+def export_unmapped_reads(read_in, read_out, sample_read_status_dict):
+    #export_path = os.path.join(raw_read_location, sample_file + ".fastq")
+    sample_df = import_fastq(read_in)
     unmapped_sample_df = sample_df[sample_df["ID"].apply(lambda x: pull_unmapped_reads(x, sample_read_status_dict))]
     unmapped_sample_df["ID"] = "@" + unmapped_sample_df["ID"]
-    export_sample_path = os.path.join(export_location, sample_file + ".fastq")
-    unmapped_sample_df.to_csv(export_sample_path, header = False, index = False, mode = "w", sep = "\n", quoting = 3)
+    #export_sample_path = os.path.join(export_location, sample_file + ".fastq")
+    unmapped_sample_df.to_csv(read_out, header = False, index = False, mode = "w", sep = "\n", quoting = 3)
        
 
 if __name__ == "__main__":
     operating_mode = sys.argv[1]
-    raw_read_location = sys.argv[2]
-    export_location = sys.argv[3]
-    singletons_sam = sys.argv[4]
+    contig_map_out = sys.argv[2]
+    p1_in = sys.argv[3]
+    p2_in = sys.argv[4]
+    p1_out = sys.argv[5]
+    p2_out = sys.argv[6]
+    s_in = sys.argv[7]
+    s_out = sys.argv[8]
+
+    #raw_read_location = sys.argv[2]
+    #export_location = sys.argv[3]
+    singletons_sam = sys.argv[9]
+
+
     singletons_contig_read_dict, singletons_read_status_dict = import_samfile(singletons_sam)
     paired_contig_read_dict = dict()
     paired_read_status_dict = dict()
     
     if(operating_mode == "paired"):
-        paired_sam = sys.argv[5]
+        paired_sam = sys.argv[10]
         paired_contig_read_dict, paired_read_status_dict = import_samfile(paired_sam)
     
         singletons_reads = singletons_read_status_dict.keys()
@@ -193,7 +206,7 @@ if __name__ == "__main__":
             sys.exit("death")
         
     final_contig_read_dict = merge_dict(paired_contig_read_dict, singletons_contig_read_dict, "contigs")
-    contig_map_out = os.path.join(export_location, "contig_map.tsv")
+    #contig_map_out = os.path.join(export_location, "contig_map.tsv")
     export_contig_map(contig_map_out, final_contig_read_dict)
     
     export_unmapped_reads(raw_read_location, export_location, "singletons", singletons_read_status_dict)

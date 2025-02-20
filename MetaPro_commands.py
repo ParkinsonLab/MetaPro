@@ -550,7 +550,7 @@ class mt_pipe_commands:
         return [inf_pp + " && " + make_marker]
   
 
-    def create_repop_command(self, stage_name, preprocess_stage_name, dependency_stage_name):
+    def create_repop_command(self, marker_file):
         # This stage reintroduces the duplicate reads into the data.  We need it to count towards things.
         # Due to time, and hierarchical importance, we're leaving this stage alone.
         # Leaving it alone in a tangled state
@@ -571,8 +571,8 @@ class mt_pipe_commands:
         elif self.read_mode == "paired":
             repop_singletons += self.file_dict["qf_o_s"] + " "
         repop_singletons += self.file_dict["rRNA_mRNA_s_fq"] + " "  # in -> rRNA filtration output
-        repop_singletons += self.file_dict["repop_clstr_s"] + " "  # in -> duplicates filter output
-        repop_singletons += self.file_dict["repop_s"] #doesn't matter if it's single or paired.  
+        repop_singletons += self.file_dict["qf_clstr_s"] + " "  # in -> duplicates filter output
+        repop_singletons += self.file_dict["repop_s"] #OUT doesn't matter if it's single or paired.  
         
         #if self.read_mode == "single":
         #    repop_singletons += os.path.join(final_folder, "singletons.fastq")  # out
@@ -589,84 +589,84 @@ class mt_pipe_commands:
         elif self.read_mode == "paired":
             repop_singletons_rRNA += self.file_dict["qf_o_s"] + " "
         repop_singletons_rRNA += self.file_dict["rRNA_other_s_fq"] + " "  # in -> rRNA filtration output
-        repop_singletons_rRNA += os.path.join(cluster_path, "singletons_unique.fastq.clstr") + " "  # in -> duplicates filter output
-        if self.read_mode == "single":
-            repop_singletons_rRNA += os.path.join(final_folder, "singletons_rRNA.fastq")  # out
-        elif self.read_mode == "paired":
-            repop_singletons_rRNA += os.path.join(repop_folder, "singletons_rRNA.fastq")  # out
+        repop_singletons_rRNA += self.file_dict["qf_clstr_s"] + " "  # in -> duplicates filter output
+        repop_singletons_rRNA += self.file_dict["repop_other_s"]  # out
+
 
         repop_pair_1 = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 1 mRNA | "
         repop_pair_1 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"] + " "
-        repop_pair_1 += os.path.join(hq_path, "pair_1_match.fastq") + " "
-        if(self.tutorial_keyword == tut_keyword):
+        repop_pair_1 += self.file_dict["qf_o_p1"] + " "
+        if(self.tutorial_keyword == "repop"):
             repop_pair_1 += self.config_dict["pair_1"] + " "
         else:
-            repop_pair_1 += os.path.join(dep_loc, "mRNA", "pair_1.fastq") + " "
-        repop_pair_1 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
-        repop_pair_1 += os.path.join(repop_folder, "pair_1.fastq")
+            repop_pair_1 += self.file_dict["rRNA_mRNA_p1_fq"] + " "
+        repop_pair_1 += self.file_dict["qf_clstr_p1"] + " "
+        repop_pair_1 += self.file_dict["repop_p1"]
 
         repop_pair_1_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 1 rRNA | "
         repop_pair_1_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"] + " "
-        repop_pair_1_rRNA += os.path.join(hq_path, "pair_1_match.fastq") + " "
-        repop_pair_1_rRNA += os.path.join(dep_loc, "other", "pair_1_other.fastq") + " "
-        repop_pair_1_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
-        repop_pair_1_rRNA += os.path.join(repop_folder, "pair_1_rRNA.fastq")
+        repop_pair_1_rRNA += self.file_dict["qf_o_p1"] + " "
+        repop_pair_1_rRNA += self.file_dict["rRNA_other_p1_fq"] + " "
+        repop_pair_1_rRNA += self.file_dict["qf_clstr_p1"] + " "
+        repop_pair_1_rRNA += self.file_dict["repop_other_p1"]
 
         repop_pair_2 = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 2 | "
         repop_pair_2 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
-        repop_pair_2 += os.path.join(hq_path, "pair_2_match.fastq") + " "
-        if(self.tutorial_keyword == tut_keyword):
+        repop_pair_2 += self.file_dict["qf_o_p2"] + " "
+        if(self.tutorial_keyword == "repop"):
             repop_pair_2 += self.config_dict["pair_2"] + " "
         else:
-            repop_pair_2 += os.path.join(dep_loc, "mRNA", "pair_2.fastq") + " "
-        repop_pair_2 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
-        repop_pair_2 += os.path.join(repop_folder, "pair_2.fastq")
+            repop_pair_2 += self.file_dict["rRNA_mRNA_p2_fq"] + " "
+        repop_pair_2 += self.file_dict["qf_clstr_p1"] + " "
+        repop_pair_2 += self.file_dict["repop_p2"]
 
         repop_pair_2_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 2 | "
         repop_pair_2_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
-        repop_pair_2_rRNA += os.path.join(hq_path, "pair_2_match.fastq") + " "
-        repop_pair_2_rRNA += os.path.join(dep_loc, "other", "pair_2_other.fastq") + " "
-        repop_pair_2_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
-        repop_pair_2_rRNA += os.path.join(repop_folder, "pair_2_rRNA.fastq")
+        repop_pair_2_rRNA += self.file_dict["qf_o_p2"] + " "
+        repop_pair_2_rRNA += self.file_dict["rRNA_other_p2_fq"] + " "
+        repop_pair_2_rRNA += self.file_dict["qf_clstr_p1"] + " "
+        repop_pair_2_rRNA += self.file_dict["repop_other_p2"]
 
         singleton_repop_filter = ">&2 echo filtering mRNA for new singletons | "
         singleton_repop_filter += self.config_dict["Python"] + " "
         singleton_repop_filter += self.config_dict["orphaned_read_filter"] + " "
-        singleton_repop_filter += os.path.join(repop_folder, "pair_1.fastq") + " "
-        singleton_repop_filter += os.path.join(repop_folder, "pair_2.fastq") + " "
-        singleton_repop_filter += os.path.join(repop_folder, "singletons.fastq") + " "
-        singleton_repop_filter += os.path.join(final_folder, "pair_1.fastq") + " "
-        singleton_repop_filter += os.path.join(final_folder, "pair_2.fastq") + " "
-        singleton_repop_filter += os.path.join(final_folder, "singletons.fastq")
+        singleton_repop_filter += self.file_dict["repop_p1"] + " "
+        singleton_repop_filter += self.file_dict["repop_p2"] + " "
+        singleton_repop_filter += self.file_dict["repop_s"] + " "
+        singleton_repop_filter += self.file_dict["repop_p1"] + " "
+        singleton_repop_filter += self.file_dict["repop_p2"] + " "
+        singleton_repop_filter += self.file_dict["repop_s"]
     
         singleton_repop_filter_rRNA = ">&2 echo filtering rRNA for new singletons | "  
         singleton_repop_filter_rRNA += self.config_dict["Python"] + " "
-        singleton_repop_filter_rRNA += self.config_dict["orphaned_read_filter + " "
-        singleton_repop_filter_rRNA += os.path.join(repop_folder, "pair_1_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(repop_folder, "pair_2_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(repop_folder, "singletons_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(final_folder, "pair_1_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(final_folder, "pair_2_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(final_folder, "singletons_rRNA.fastq")
+        singleton_repop_filter_rRNA += self.config_dict["orphaned_read_filter"] + " "
+        singleton_repop_filter_rRNA += self.file_dict["repop_other_p1"] + " "
+        singleton_repop_filter_rRNA += self.file_dict["repop_other_p2"] + " "
+        singleton_repop_filter_rRNA += self.file_dict["repop_other_s"] + " "
+        singleton_repop_filter_rRNA += self.file_dict["repop_other_p1"] + " "
+        singleton_repop_filter_rRNA += self.file_dict["repop_other_p2"] + " "
+        singleton_repop_filter_rRNA += self.file_dict["repop_other_s"]
         
-        if(self.tutorial_keyword == tut_keyword):
+        make_marker = "touch " + marker_file
+
+        if(self.tutorial_keyword == "repop"):
             if self.read_mode == "single":
                 COMMANDS_Repopulate = [
-                    repop_singletons
+                    repop_singletons + " && " + make_marker
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_Repopulate = [
                     repop_singletons,
                     repop_pair_1,
                     repop_pair_2,
-                    singleton_repop_filter
+                    singleton_repop_filter  + " && " + make_marker
                 ]
         
         else:
             if self.read_mode == "single":
                 COMMANDS_Repopulate = [
                     repop_singletons,
-                    repop_singletons_rRNA
+                    repop_singletons_rRNA  + " && " + make_marker
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_Repopulate = [
@@ -677,247 +677,21 @@ class mt_pipe_commands:
                     repop_pair_2,
                     repop_pair_2_rRNA,
                     singleton_repop_filter,
-                    singleton_repop_filter_rRNA
+                    singleton_repop_filter_rRNA  + " && " + make_marker
                 ]
 
         return COMMANDS_Repopulate
         
-    def create_repop_command_v2_step_1(self, stage_name, preprocess_stage_name, dependency_stage_name):
-        # This stage reintroduces the duplicate reads into the data.  We need it to count towards things.
-        # Due to time, and hierarchical importance, we're leaving this stage alone.
-        # Leaving it alone in a tangled state
-        # But the issue is that by leaving it alone, we violate the design plan
-        # The fix? We have to detect if preprocess has been run.  If so, pull the missing data there
-        # if not,
-        # What has to happen here:
-        # -> detect if we've run the preprocess stage.
-        # -> if it's run, grab data
-        # -> if not, run our own custom preprocess up to what we need
-        dep_loc                 = os.path.join(self.output_path, dependency_stage_name, "final_results")
-        subfolder               = os.path.join(self.output_path, stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        repop_folder            = os.path.join(data_folder, "0_repop")
-        final_folder            = os.path.join(subfolder, "final_results")
-        preprocess_subfolder    = os.path.join(self.output_path, preprocess_stage_name)
-        
-        tut_keyword = "repop"
 
-        # we ran a previous preprocess.  grab files
-        # need 3, 5(clstr only), and mRNA from the 2nd stage.
-        hq_path                 = os.path.join(preprocess_subfolder, "final_results")
-        cluster_path            = os.path.join(preprocess_subfolder, "final_results")
-        singleton_path          = os.path.join(preprocess_subfolder, "final_results")
 
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(repop_folder)
-        self.make_folder(final_folder)
-
-        repop_singletons = ">&2 echo " + str(dt.today()) + " Duplication repopulation singletons mRNA| "
-        repop_singletons += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
-        #the reference data to be drawn from 
-        if self.read_mode == "single":
-            repop_singletons += os.path.join(singleton_path, "singletons_hq.fastq") + " "
-        elif self.read_mode == "paired":
-            repop_singletons += os.path.join(hq_path, "singletons_with_duplicates.fastq") + " "
-        
-        repop_singletons += os.path.join(dep_loc, "mRNA", "singletons.fastq") + " "  # in -> rRNA filtration output
-        repop_singletons += os.path.join(cluster_path, "singletons_unique.fastq.clstr") + " "  # in -> duplicates filter output
-
-        
-        if self.read_mode == "single":
-            repop_singletons += os.path.join(final_folder, "singletons.fastq")  # out
-        elif self.read_mode == "paired":
-            repop_singletons += os.path.join(repop_folder, "singletons.fastq")  # out
-            
-            
-
-        repop_singletons_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulations singletons rRNA | "
-        repop_singletons_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
-        if self.read_mode == "single":
-            repop_singletons_rRNA += os.path.join(singleton_path, "singletons_hq.fastq") + " "
-        elif self.read_mode == "paired":
-            repop_singletons_rRNA += os.path.join(hq_path, "singletons_with_duplicates.fastq") + " "
-        repop_singletons_rRNA += os.path.join(dep_loc, "other", "singletons_other.fastq") + " "  # in -> rRNA filtration output
-        repop_singletons_rRNA += os.path.join(cluster_path, "singletons_unique.fastq.clstr") + " "  # in -> duplicates filter output
-        if self.read_mode == "single":
-            repop_singletons_rRNA += os.path.join(final_folder, "singletons_rRNA.fastq")  # out
-        elif self.read_mode == "paired":
-            repop_singletons_rRNA += os.path.join(repop_folder, "singletons_rRNA.fastq")  # out
-
-        repop_pair_1 = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 1 mRNA | "
-        repop_pair_1 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
-        repop_pair_1 += os.path.join(hq_path, "pair_1_match.fastq") + " "
-        if(self.tutorial_keyword == tut_keyword):
-            repop_pair_1 += self.config_dict["pair_1"] + " "
-        else:
-            repop_pair_1 += os.path.join(dep_loc, "mRNA", "pair_1.fastq") + " "
-        repop_pair_1 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
-        repop_pair_1 += os.path.join(repop_folder, "pair_1.fastq")
-
-        repop_pair_1_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 1 rRNA | "
-        repop_pair_1_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
-        repop_pair_1_rRNA += os.path.join(hq_path, "pair_1_match.fastq") + " "
-        repop_pair_1_rRNA += os.path.join(dep_loc, "other", "pair_1_other.fastq") + " "
-        repop_pair_1_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
-        repop_pair_1_rRNA += os.path.join(repop_folder, "pair_1_rRNA.fastq")
-
-        repop_pair_2 = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 2 | "
-        repop_pair_2 += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
-        repop_pair_2 += os.path.join(hq_path, "pair_2_match.fastq") + " "
-        if(self.tutorial_keyword == tut_keyword):
-            repop_pair_2 += self.config_dict["pair_2"] + " "
-        else:
-            repop_pair_2 += os.path.join(dep_loc, "mRNA", "pair_2.fastq") + " "
-        repop_pair_2 += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
-        repop_pair_2 += os.path.join(repop_folder, "pair_2.fastq")
-
-        repop_pair_2_rRNA = ">&2 echo " + str(dt.today()) + " Duplication repopulation pair 2 | "
-        repop_pair_2_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"]+ " "
-        repop_pair_2_rRNA += os.path.join(hq_path, "pair_2_match.fastq") + " "
-        repop_pair_2_rRNA += os.path.join(dep_loc, "other", "pair_2_other.fastq") + " "
-        repop_pair_2_rRNA += os.path.join(cluster_path, "pair_1_unique.fastq.clstr") + " "
-        repop_pair_2_rRNA += os.path.join(repop_folder, "pair_2_rRNA.fastq")
-
-        singleton_repop_filter = ">&2 echo filtering mRNA for new singletons | "
-        singleton_repop_filter += self.config_dict["Python"] + " "
-        singleton_repop_filter += self.config_dict["orphaned_read_filter + " "
-        singleton_repop_filter += os.path.join(repop_folder, "pair_1.fastq") + " "
-        singleton_repop_filter += os.path.join(repop_folder, "pair_2.fastq") + " "
-        singleton_repop_filter += os.path.join(repop_folder, "singletons.fastq") + " "
-        singleton_repop_filter += os.path.join(final_folder, "pair_1.fastq") + " "
-        singleton_repop_filter += os.path.join(final_folder, "pair_2.fastq") + " "
-        singleton_repop_filter += os.path.join(final_folder, "singletons.fastq")
-    
-        singleton_repop_filter_rRNA = ">&2 echo filtering rRNA for new singletons | "  
-        singleton_repop_filter_rRNA += self.config_dict["Python"] + " "
-        singleton_repop_filter_rRNA += self.config_dict["orphaned_read_filter + " "
-        singleton_repop_filter_rRNA += os.path.join(repop_folder, "pair_1_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(repop_folder, "pair_2_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(repop_folder, "singletons_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(final_folder, "pair_1_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(final_folder, "pair_2_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(final_folder, "singletons_rRNA.fastq")
-        
-        if(self.tutorial_keyword == tut_keyword):
-            if self.read_mode == "single":
-                COMMANDS_Repopulate = [
-                    repop_singletons
-                ]
-            elif self.read_mode == "paired":
-                COMMANDS_Repopulate = [
-                    repop_singletons,
-                    repop_pair_1,
-                    repop_pair_2,
-                    singleton_repop_filter
-                ]
-        
-        else:
-            if self.read_mode == "single":
-                COMMANDS_Repopulate = [
-                    repop_singletons,
-                    repop_singletons_rRNA
-                ]
-            elif self.read_mode == "paired":
-                COMMANDS_Repopulate = [
-                    repop_singletons,
-                    repop_singletons_rRNA,
-                    repop_pair_1,
-                    repop_pair_1_rRNA,
-                    repop_pair_2,
-                    repop_pair_2_rRNA#,
-                    #singleton_repop_filter,
-                    #singleton_repop_filter_rRNA
-                ]
-
-        return COMMANDS_Repopulate        
-        
-    def create_repop_command_v2_step_2(self, stage_name, preprocess_stage_name, dependency_stage_name):
-        # This stage reintroduces the duplicate reads into the data.  We need it to count towards things.
-        # Due to time, and hierarchical importance, we're leaving this stage alone.
-        # Leaving it alone in a tangled state
-        # But the issue is that by leaving it alone, we violate the design plan
-        # The fix? We have to detect if preprocess has been run.  If so, pull the missing data there
-        # if not,
-        # What has to happen here:
-        # -> detect if we've run the preprocess stage.
-        # -> if it's run, grab data
-        # -> if not, run our own custom preprocess up to what we need
-        dep_loc                 = os.path.join(self.output_path, dependency_stage_name, "final_results")
-        subfolder               = os.path.join(self.output_path, stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        repop_folder            = os.path.join(data_folder, "0_repop")
-        final_folder            = os.path.join(subfolder, "final_results")
-        preprocess_subfolder    = os.path.join(self.output_path, preprocess_stage_name)
-        
-        tut_keyword = "repop"
-
-        # we ran a previous preprocess.  grab files
-        # need 3, 5(clstr only), and mRNA from the 2nd stage.
-        hq_path                 = os.path.join(preprocess_subfolder, "final_results")
-        cluster_path            = os.path.join(preprocess_subfolder, "final_results")
-        singleton_path          = os.path.join(preprocess_subfolder, "final_results")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(repop_folder)
-        self.make_folder(final_folder)
-
-        
-
-        singleton_repop_filter = ">&2 echo filtering mRNA for new singletons | "
-        singleton_repop_filter += self.config_dict["Python"] + " "
-        singleton_repop_filter += self.config_dict["orphaned_read_filter + " "
-        singleton_repop_filter += os.path.join(repop_folder, "pair_1.fastq") + " "
-        singleton_repop_filter += os.path.join(repop_folder, "pair_2.fastq") + " "
-        singleton_repop_filter += os.path.join(repop_folder, "singletons.fastq") + " "
-        singleton_repop_filter += os.path.join(final_folder, "pair_1.fastq") + " "
-        singleton_repop_filter += os.path.join(final_folder, "pair_2.fastq") + " "
-        singleton_repop_filter += os.path.join(final_folder, "singletons.fastq")
-    
-        singleton_repop_filter_rRNA = ">&2 echo filtering rRNA for new singletons | "  
-        singleton_repop_filter_rRNA += self.config_dict["Python"] + " "
-        singleton_repop_filter_rRNA += self.config_dict["orphaned_read_filter + " "
-        singleton_repop_filter_rRNA += os.path.join(repop_folder, "pair_1_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(repop_folder, "pair_2_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(repop_folder, "singletons_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(final_folder, "pair_1_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(final_folder, "pair_2_rRNA.fastq") + " "
-        singleton_repop_filter_rRNA += os.path.join(final_folder, "singletons_rRNA.fastq")
-        
-        if(not self.tutorial_keyword == tut_keyword):
-            if self.read_mode == "paired":
-                COMMANDS_Repopulate = [
-                    singleton_repop_filter,
-                    singleton_repop_filter_rRNA
-                ]
-
-        return COMMANDS_Repopulate 
-
-    def create_assemble_contigs_command(self, stage_name, dependency_stage_name):
-        subfolder           = os.path.join(self.output_path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        dep_loc             = os.path.join(self.output_path, dependency_stage_name, "final_results")
-        spades_folder       = os.path.join(data_folder, "0_spades")
-        mgm_folder          = os.path.join(data_folder, "1_mgm")
-        bwa_folder          = os.path.join(data_folder, "2_bwa_align")
-        mapped_reads_folder = os.path.join(data_folder, "3_mapped_reads")
-        final_folder        = os.path.join(subfolder, "final_results")
-        
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(spades_folder)
-        self.make_folder(bwa_folder)
-        self.make_folder(mgm_folder)
-        self.make_folder(final_folder)
+    def create_assemble_contigs_command(self, marker_file):
         
         tut_keyword = "assembly"
         
         # this assembles contigs
         spades = ">&2 echo Spades Contig assembly | "
         spades += self.config_dict["Python"] + " "
-        spades += self.config_dict["Spades + " --rna"
+        spades += self.config_dict["Spades"] + " --rna"
         if(self.tutorial_keyword == tut_keyword):
             if self.read_mode == "paired":
                 spades += " -1 " + self.config_dict["pair_1"]  # in1 (pair 1)
@@ -925,31 +699,31 @@ class mt_pipe_commands:
             spades += " -s " + self.config_dict["single"]  # in_single (singletons)
         else:
             if self.read_mode == "paired":
-                spades += " -1 " + os.path.join(dep_loc, "pair_1.fastq")  # in1 (pair 1)
-                spades += " -2 " + os.path.join(dep_loc, "pair_2.fastq")  # in2 (pair 2)
-            spades += " -s " + os.path.join(dep_loc, "singletons.fastq")  # in_single (singletons)
-        spades += " -o " + spades_folder  # out
+                spades += " -1 " + self.file_dict["repop_p1"]  # in1 (pair 1)
+                spades += " -2 " + self.file_dict["repop_p2"]  # in2 (pair 2)
+            spades += " -s " + self.file_dict["repop_s"]  # in_single (singletons)
+        spades += " -o " + self.dir_dict["contigs_spades"]  # out
 
         #if there is no output, bypass contigs. -> But this is a v2 upgrade.  
-        spades_rename = "cp " + os.path.join(spades_folder, "transcripts.fasta") + " " + os.path.join(spades_folder, "contigs.fasta")  # rename output
+        spades_rename = "cp " + self.file_dict["contigs_transcripts"] + " " + self.file_dict["contigs_og_fa"]  # rename output
         
-        original_contigs    = os.path.join(spades_folder, "contigs.fasta") 
-        post_mgm_contig     = os.path.join(mgm_folder, "disassembled_contigs.fasta")
-        mgm_report          = os.path.join(mgm_folder, "gene_report.txt")
-        final_contigs       = os.path.join(mgm_folder, "contigs.fasta")
-        contig_map          = os.path.join(final_folder, "contig_map.tsv")
+        
+        
+       
+        final_contigs       = self.file_dict["contigs_out_fa"]
+        contig_map          = self.file_dict["contigs_map"]
         
         #-------------------------------------------------------
         #spades does too good of a job sometimes.  Disassemble it into genes.
         disassemble_contigs = ">&2 echo Disassembling contigs | "
-        disassemble_contigs += self.config_dict["MetaGeneMark + " -o " + mgm_report + " "
-        disassemble_contigs += "-D " + post_mgm_contig + " "
-        disassemble_contigs += "-m " + self.config_dict["mgm_model + " "
-        disassemble_contigs += os.path.join(spades_folder, "contigs.fasta")
+        disassemble_contigs += self.config_dict["MetaGeneMark"] + " -o " + self.file_dict["contigs_gene_report"] + " "
+        disassemble_contigs += "-D " + self.file_dict["contigs_split"] + " "
+        disassemble_contigs += "-m " + self.config_dict["mgm_model"] + " "
+        disassemble_contigs += self.file_dict["contigs_og_fa"]
         
         remove_whitespace = ">&2 echo Removing whitespace from fasta | " 
-        remove_whitespace += self.config_dict["Python"] + " " + self.config_dict["remove_gaps_in_fasta + " "
-        remove_whitespace += post_mgm_contig + " "
+        remove_whitespace += self.config_dict["Python"] + " " + self.config_dict["remove_gaps_in_fasta"] + " "
+        remove_whitespace += self.file_dict["contigs_split"] + " "
         remove_whitespace += final_contigs
         
         #BWA-ing against the final contigs gives us a proper contig-segment -> read map. 
@@ -960,41 +734,41 @@ class mt_pipe_commands:
         bwa_paired_contigs = ">&2 echo BWA pair contigs | "
         bwa_paired_contigs += self.config_dict["BWA"] + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
         bwa_paired_contigs += final_contigs + " "
-        bwa_paired_contigs += os.path.join(dep_loc, "pair_1.fastq") + " "
-        bwa_paired_contigs += os.path.join(dep_loc, "pair_2.fastq") + " "
+        bwa_paired_contigs += self.file_dict["repop_p1"] + " "
+        bwa_paired_contigs += self.file_dict["repop_p2"] + " "
         bwa_paired_contigs += ">" + " " 
-        bwa_paired_contigs += os.path.join(bwa_folder, "paired_on_contigs.sam")
+        bwa_paired_contigs += self.file_dict["contigs_p_sam"]
 
         bwa_singletons_contigs = ">&2 echo BWA singleton contigs | "
         bwa_singletons_contigs += self.config_dict["BWA"] + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
         bwa_singletons_contigs += final_contigs + " "
-        bwa_singletons_contigs += os.path.join(dep_loc, "singletons.fastq")
-        bwa_singletons_contigs += " > " + os.path.join(bwa_folder, "singletons_on_contigs.sam")
+        bwa_singletons_contigs += self.file_dict["repop_s"]
+        bwa_singletons_contigs += " > " + self.file_dict["contigs_s_sam"]
         
         make_contig_map = ">&2 echo Making contig map | " 
         make_contig_map += self.config_dict["Python"] + " "
-        make_contig_map += self.config_dict["Map_contig + " "
+        make_contig_map += self.config_dict["Map_contig"] + " "
         make_contig_map += self.read_mode + " "
-        make_contig_map += dep_loc + " "
-        make_contig_map += final_folder + " "
-        make_contig_map += os.path.join(bwa_folder, "singletons_on_contigs.sam") + " "
+        make_contig_map += self.file_dict["repop_p1"] + " "
+        make_contig_map += self.file_dict["repop_p2"] + " "
+        make_contig_map += self.file_dict["contigs_p1"] + " "
+        make_contig_map += self.file_dict["contigs_p2"] + " "
+        make_contig_map += self.file_dict["repop_s"] + " "
+        make_contig_map += self.file_dict["contigs_s"] + " "
+        make_contig_map += self.file_dict["contigs_s_sam"] + " "
         if(self.read_mode == "paired"):
-            make_contig_map += os.path.join(bwa_folder, "paired_on_contigs.sam")
+            make_contig_map += self.file_dict["contigs_p_sam"]
             
             
         flush_bad_contigs = ">&2 echo flush bad contigs | " 
         flush_bad_contigs += self.config_dict["Python"] + " "
-        flush_bad_contigs += self.config_dict["flush_bad_contigs + " "
+        flush_bad_contigs += self.config_dict["flush_bad_contigs"] + " "
         flush_bad_contigs += contig_map + " "
         flush_bad_contigs += final_contigs + " "
-        flush_bad_contigs += os.path.join(final_folder, "contigs.fasta")
+        flush_bad_contigs += self.file_dict["contigs_out_fa"]
         
-            
-        move_gene_report = ">&2 echo moving gene report | "
-        move_gene_report += "cp" + " "
-        move_gene_report += os.path.join(mgm_folder, "gene_report.txt") + " "
-        move_gene_report += os.path.join(final_folder, "gene_report.txt") 
-            
+
+        make_marker = "touch " + marker_file
 
         if self.read_mode == "single":
             COMMANDS_Assemble = [
@@ -1005,8 +779,9 @@ class mt_pipe_commands:
                 bwa_index + " && " +
                 bwa_singletons_contigs + " && " +
                 make_contig_map + " && " +
-                flush_bad_contigs + " && " +
-                move_gene_report
+                flush_bad_contigs + " && " + 
+                make_marker
+                
             ]
         elif self.read_mode == "paired":
             COMMANDS_Assemble = [
@@ -1018,8 +793,8 @@ class mt_pipe_commands:
                 bwa_paired_contigs + " && " +
                 bwa_singletons_contigs + " && " +
                 make_contig_map + " && " + 
-                flush_bad_contigs + " && " +
-                move_gene_report
+                flush_bad_contigs + " && " + 
+                make_marker
             ]
 
         return COMMANDS_Assemble

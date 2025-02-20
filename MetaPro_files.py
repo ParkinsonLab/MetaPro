@@ -55,6 +55,9 @@ class mpro_file_handler:
         self.file_dict["qf_u_p1"] = os.path.join(self.dir_dict["qf_export"], "p1_unique.fastq")
         self.file_dict["qf_u_p2"] = os.path.join(self.dir_dict["qf_export"], "p2_unique.fastq")
         self.file_dict["qf_u_s"] = os.path.join(self.dir_dict["qf_export"], "s_unique.fastq")
+        self.file_dict["qf_clstr_s"] = os.path.join(self.dir_dict["qf_export"], "s_unique.fastq.clstr")
+        self.file_dict["qf_clstr_p1"] = os.path.join(self.dir_dict["qf_export"], "p1_unique.fastq.clstr")
+        self.file_dict["qf_clstr_p2"] = os.path.join(self.dir_dict["qf_export"], "p2_unique.fastq.clstr")
         
         self.file_dict["qf_clean_list"] = [
             "qf_sort_p1", "qf_sort_p2", 
@@ -130,8 +133,26 @@ class mpro_file_handler:
         self.file_dict["rRNA_other_p1_fq"] = os.path.join(self.dir_dict["rRNA_other"], "all", "p1_other.fastq")
         self.file_dict["rRNA_other_p2_fq"] = os.path.join(self.dir_dict["rRNA_other"], "all", "p2_other.fastq")
 
-        self.file_dict["repop_clstr_s"] = os.path.join(self.dir_dict["repop_data"], "s.clstr")
+
         self.file_dict["repop_s"] = os.path.join(self.dir_dict["repop_export"], "s.fastq")
         self.file_dict["repop_other_s"] = os.path.join(self.dir_dict["repop_export"], "s_other.fastq")
 
+        self.file_dict["repop_p1"] = os.path.join(self.dir_dict["repop_export"], "p1.fastq")
+        self.file_dict["repop_other_p1"] = os.path.join(self.dir_dict["repop_export"], "p1_other.fastq")
+
+        self.file_dict["repop_p2"] = os.path.join(self.dir_dict["repop_export"], "p2.fastq")
+        self.file_dict["repop_other_p2"] = os.path.join(self.dir_dict["repop_export"], "p2_other.fastq")
+
+        self.file_dict["contigs_transcripts"] = os.path.join(self.dir_dict["contigs_spades"], "transcripts.fasta")
+        self.file_dict["contigs_og_fa"] = os.path.join(self.dir_dict["contigs_spades"], "contigs.fasta")
+        self.file_dict["contigs_split"] = os.path.join(self.dir_dict["contigs_mgm"], "disassembled_contigs.fasta")
+        self.file_dict["contigs_gene_report"] = os.path.join(self.dir_dict["contigs_mgm"], "gene_report.txt")
         
+        self.file_dict["contigs_out_fa"] = os.path.join(self.dir_dict["contigs_export"], "contigs.fasta")
+        self.file_dict["contigs_map"] = os.path.join(self.dir_dict["contigs_export"], "contigs_map.tsv")
+
+        self.file_dict["contigs_p_sam"] = os.path.join(self.dir_dict["contigs_bwa"], "contigs_p.sam")
+        self.file_dict["contigs_s_sam"] = os.path.join(self.dir_dict["contigs_bwa"], "contigs_s.sam")
+        self.file_dict["contigs_p1"] = os.path.join(self.dir_dict["contigs_export"], "p1.fastq")
+        self.file_dict["contigs_p2"] = os.path.join(self.dir_dict["contigs_export"], "p2.fastq")
+        self.file_dict["contigs_s"] = os.path.join(self.dir_dict["contigs_export"], "s.fastq")
