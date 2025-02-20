@@ -242,6 +242,11 @@ class mpro_dir:
         
         self.dir_dict["contigs_list"] = ["contigs", "contigs_data", "contigs_spades", "contigs_mgm", "contigs_bwa", "contigs_export"]
 
+        self.dir_dict["GA_ps"] = os.path.join(self.out_dir, self.label_dict["GA_pre_scan"])
+        self.dir_dict["GA_ps_data"] = os.path.join(self.dir_dict["GA_ps"], "data")
+        self.dir_dict["GA_ps_export"] = os.path.join(self.dir_dict["GA_ps"], "export")
+        self.dir_dict["GA_ps_"]
+
         self.dir_dict["GA_BWA"] = os.path.join(self.out_dir, self.label_dict["GA_BWA"])
         self.dir_dict["GA_BWA_data"] = os.path.join(self.dir_dict["GA_BWA"], "data")
         self.dir_dict["GA_BWA_jobs"] = os.path.join(self.dir_dict["GA_BWA"], "jobs")

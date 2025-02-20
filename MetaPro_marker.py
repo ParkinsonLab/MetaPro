@@ -41,6 +41,7 @@ class mpro_marker:
         self.m_name["vec"] = "vec_marker"
         self.m_name["rRNA"] = "rRNA_marker"
         self.m_name["repop"] = "repop_marker"
+        self.m_name["contigs"] = "contigs_marker"
         self.m_name["GA_BWA"] = "GA_BWA_marker"
         self.m_name["GA_DMD"] = "GA_DMD_marker"
         self.m_name["TA"] = "TA_marker"
@@ -61,6 +62,8 @@ class mpro_marker:
         self.marker_dict["rrNA_split_p2"] = os.path.join(self.dir_dict["rRNA"], "split_p2_marker")
         self.marker_dict["rRNA_inf_pp_paired"] = os.path.join(self.dir_dict["rRNA"], "inf_pp_paired_marker")
         self.marker_dict["rRNA_inf_pp_s"] = os.path.join(self.dir_dict["rRNA"], "inf_pp_s_marker")
+        self.marker_dict["repop"] = os.path.join(self.dir_dict["repop"], self.m_name["repop"])
+        self.marker_dict["contigs"] = os.path.join(self.dir_dict["contigs"], self.m_name["contigs"])
         
 
 

@@ -442,26 +442,12 @@ class mp_stage:
         #if not check_where_resume(repop_job_path, None, rRNA_filter_path):
         if self.mp_util.check_bypass_log(self.output_folder_path, self.repop_job_label):
             job_name = self.repop_job_label
-            command_list = self.commands.create_repop_command_v2_step_1(self.repop_job_label, self.quality_filter_label, self.rRNA_filter_label)
+            command_list = self.commands.create_repop_command(self.marker_dict["repop"])
             self.mp_util.subdivide_and_launch(self.repop_job_delay, self.repop_mem_threshold, self.repop_job_limit, self.repop_job_label, job_name, self.commands, command_list)
             self.mp_util.wait_for_mp_store()
             
-            if(self.read_mode == "paired"):
-                job_name = self.repop_job_label
-                command_list = self.commands.create_repop_command_v2_step_2(self.repop_job_label, self.quality_filter_label, self.rRNA_filter_label)
-                self.mp_util.subdivide_and_launch(self.repop_job_delay, self.repop_mem_threshold, self.repop_job_limit, self.repop_job_label, job_name, self.commands, command_list)
-                self.mp_util.wait_for_mp_store()
-            
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.repop_job_label)
-            
-            self.cleanup_repop_start = time.time()
-            self.mp_util.clean_or_compress(self.repop_path, self.keep_all, self.keep_repop)
-            self.cleanup_repop_end = time.time()
-            
         self.repop_end = time.time()
-        print("repop:", '%1.1f' % (self.repop_end - self.repop_start - (self.cleanup_repop_end - self.cleanup_repop_start)), "s")
-        print("repop cleanup:", '%1.1f' % (self.cleanup_repop_end - self.cleanup_repop_start), "s")
-        self.debug_stop_check(self.repop_job_label)
+
 
     def mp_assemble(self):
         self.assemble_contigs_start = time.time()
@@ -477,7 +463,7 @@ class mp_stage:
 
         if self.mp_util.check_bypass_log(self.output_folder_path, self.assemble_contigs_label):
             job_name = self.assemble_contigs_label
-            command_list = self.commands.create_assemble_contigs_command(self.assemble_contigs_label, self.repop_job_label)
+            command_list = self.commands.create_assemble_contigs_command(self.marker_dict["contigs"])
             self.mp_util.launch_and_create_simple(self.assemble_contigs_label, job_name, self.commands, command_list)
             
             if(os.path.exists(spades_done_file)):
@@ -504,14 +490,14 @@ class mp_stage:
 
             if(spades_fail_flag and mgm_fail_flag):        
                 print(dt.today(), "moving contig files to compensate")
-                bypass_contig_map_path = os.path.join(self.assemble_contigs_path, "final_results", "contig_map.tsv")
-                bypass_contig_path = os.path.join(self.assemble_contigs_path, "final_results", "contigs.fasta")
-                s_src_path = os.path.join(self.rRNA_filter_path, "final_results", "mRNA", "singletons.fastq")
-                p1_src_path = os.path.join(self.rRNA_filter_path, "final_results", "mRNA", "pair_1.fastq")
-                p2_src_path = os.path.join(self.rRNA_filter_path, "final_results", "mRNA", "pair_2.fastq")
-                s_dest_path = os.path.join(self.assemble_contigs_path, "final_results", "singletons.fastq")
-                p1_dest_path = os.path.join(self.assemble_contigs_path, "final_results", "pair_1.fastq")
-                p2_dest_path = os.path.join(self.assemble_contigs_path, "final_results", "pair_2.fastq")
+                bypass_contig_map_path = self.file_dict["contigs_map"]                
+                bypass_contig_path = self.file_dict["contigs_out_fa"]
+                s_src_path = self.file_dict["repop_s"]
+                p1_src_path = self.file_dict["repop_p1"]
+                p2_src_path = self.file_dict["repop_p2"]
+                s_dest_path = self.file_dict["contigs_s"]
+                p1_dest_path = self.file_dict["contigs_p1"]
+                p2_dest_path = self.file_dict["contigs_p2"]
                 make_map = open(bypass_contig_map_path, "w")
                 make_contig = open(bypass_contig_path, "w")
                 shutil.copyfile(s_src_path, s_dest_path)

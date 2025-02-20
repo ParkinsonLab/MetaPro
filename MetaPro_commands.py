@@ -798,6 +798,54 @@ class mt_pipe_commands:
             ]
 
         return COMMANDS_Assemble
+    
+    def create_GA_pre_scan_taxa_command(self, current_stage_name, assemble_contigs_stage, operating_mode, marker_file):
+        subfolder               = os.path.join(self.output_path, current_stage_name)
+        data_folder             = os.path.join(subfolder, "data")
+        assemble_contigs_folder = os.path.join(self.output_path, assemble_contigs_stage, "final_results")
+        kraken2_folder            = os.path.join(data_folder, "1_kraken2")
+        jobs_folder             = os.path.join(data_folder, "jobs")
+        
+        self.make_folder(subfolder)
+        self.make_folder(data_folder)
+        self.make_folder(kraken2_folder)
+        self.make_folder(jobs_folder)
+
+        if(operating_mode == "contigs"):
+            kraken2_c = ">&2 echo Kraken2 on contigs | "
+            kraken2_c += self.config_dict["kraken2 + " "
+            kraken2_c += "--db " + self.config_dict["kraken2_db + " "
+            kraken2_c += "--threads " + str(self.config_dict["num_threads) + " "
+            kraken2_c += os.path.join(assemble_contigs_folder, "contigs.fasta") + " "
+            kraken2_c += "--output " + os.path.join(kraken2_folder, "kraken2_c_report.txt")
+            
+            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
+            
+            return [kraken2_c + " && " + make_marker]
+            
+        elif(operating_mode == "singletons"):
+            kraken2_s = ">&2 echo Kraken2 on singletons | "
+            kraken2_s += self.config_dict["kraken2 + " "
+            kraken2_s += "--db " + self.config_dict["kraken2_db + " "
+            kraken2_s += "--threads " + str(self.config_dict["num_threads) + " "
+            kraken2_s += os.path.join(assemble_contigs_folder, "singletons.fastq") + " " 
+            kraken2_s += "--output " + os.path.join(kraken2_folder, "kraken2_s_report.txt")
+            
+            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
+            
+            return [kraken2_s + " && " + make_marker]
+            
+        elif(operating_mode == "paired"):
+            kraken2_p = ">&2 echo Kraken2 on paired | " 
+            kraken2_p += self.config_dict["kraken2 + " "
+            kraken2_p += "--db " + self.config_dict["kraken2_db +  " "
+            kraken2_p += "--threads " + str(self.config_dict["num_threads) + " "
+            kraken2_p += "--paired " + os.path.join(assemble_contigs_folder, "pair_1.fastq") + " " + os.path.join(assemble_contigs_folder, "pair_2.fastq") + " "
+            kraken2_p += "--output " + os.path.join(kraken2_folder, "kraken2_p_report.txt")
+            
+            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
+            
+            return [kraken2_p + " && " + make_marker]
 
     def create_GA_pre_scan_command(self, stage_name, marker_file):
         subfolder       = os.path.join(self.output_path, stage_name)
@@ -813,14 +861,14 @@ class mt_pipe_commands:
         
         ga_get_lib = ">&2 echo GA pre-scan get libs | "
         ga_get_lib += self.config_dict["Python"] + " "
-        ga_get_lib += self.config_dict["GA_pre_scan_get_lib + " "
+        ga_get_lib += self.config_dict["GA_pre_scan_get_lib"] + " "
         ga_get_lib += os.path.join(data_folder, "3_wevote", "taxonomic_classifications.tsv") + " "
-        ga_get_lib += self.config_dict["taxid_tree + " "
-        ga_get_lib += self.config_dict["nodes + " "
+        ga_get_lib += self.config_dict["taxid_tree"] + " "
+        ga_get_lib += self.config_dict["nodes"] + " "
         ga_get_lib += os.path.join(dest_folder, "lib_list.txt") + " "
         ga_get_lib += os.path.join(dest_folder, "lib_reject.txt") + " "
-        ga_get_lib += self.config_dict["source_taxa_DB + " "
-        ga_get_lib += str(self.config_dict["taxa_exist_cutoff)
+        ga_get_lib += self.config_dict["source_taxa_DB"] + " "
+        ga_get_lib += str(self.config_dict["taxa_exist_cutoff"])
         
         make_marker = "touch" + " "
         make_marker += os.path.join(jobs_folder, marker_file)

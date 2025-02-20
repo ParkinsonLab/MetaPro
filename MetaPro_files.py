@@ -156,3 +156,6 @@ class mpro_file_handler:
         self.file_dict["contigs_p1"] = os.path.join(self.dir_dict["contigs_export"], "p1.fastq")
         self.file_dict["contigs_p2"] = os.path.join(self.dir_dict["contigs_export"], "p2.fastq")
         self.file_dict["contigs_s"] = os.path.join(self.dir_dict["contigs_export"], "s.fastq")
+
+        self.file_dict["ga_lib_list"] = os.path.join(self.dir_dict["GA_ps_data"], "lib_list.txt")
+        self.file_dict["ga_lib_reject"] = os.path.join(self.dir_dict["GA_ps_data"], "lib_reject.txt")
