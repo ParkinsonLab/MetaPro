@@ -248,6 +248,8 @@ class mpro_dir:
         self.dir_dict["GA_ps_k2"] = os.path.join(self.dir_dict["GA_ps_data"], "k2")
         self.dir_dict["GA_ps_wevote"] = os.path.join(self.dir_dict["GA_ps_data"], "wevote")
 
+        self.dir_dict["GA_split"] = os.path.join(self.out_dir, self.label_dict["GA_split"])
+
         self.dir_dict["GA_BWA"] = os.path.join(self.out_dir, self.label_dict["GA_BWA"])
         self.dir_dict["GA_BWA_data"] = os.path.join(self.dir_dict["GA_BWA"], "data")
         self.dir_dict["GA_BWA_jobs"] = os.path.join(self.dir_dict["GA_BWA"], "jobs")

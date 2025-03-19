@@ -42,10 +42,10 @@ def debug_stop_check(self, stop_flag, signal):
         
 
 
-def main(config_dict, dir_dict, time_obj, file_obj):
+def main(config_dict, dir_obj, time_obj, file_obj):
 
     
-    metapro_stage_obj = mps.mp_stage(config_dict, dir_dict, time_obj, file_obj) #obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
+    metapro_stage_obj = mps.mp_stage(config_dict, dir_obj, time_obj, file_obj) #obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
 
     # This is the format we use to launch each stage of the pipeline.
     # We start a multiprocess that starts a subprocess.
@@ -72,7 +72,7 @@ def main(config_dict, dir_dict, time_obj, file_obj):
     metapro_stage_obj.mp_assemble()  
 
     #metapro_stage_obj.mp_TA()
-    if(metapro_stage_obj.paths.DNA_DB_mode == "chocophlan"):
+    if(config_dict["DNA_DB_mode"] == "chocophlan"):
         metapro_stage_obj.mp_GA_pre_scan()
         
     #sys.exit("paused")
@@ -291,9 +291,9 @@ if __name__ == "__main__":
     #Check vector lib integrity
     config_obj.check_bwa_valid(config_dict["vectors"])
 
-    if (tutorial_mode != "none"):
-        print("working in tutorial mode:", tutorial_mode)
-        tutorial_main(config_dict, dir_dict)
+    #if (tutorial_mode != "none"):
+    #    print("working in tutorial mode:", tutorial_mode)
+    #    tutorial_main(config_dict, dir_dict, label_dict, time_obj)
     
-    else:
-        main(config_dict, dir_dict, label_dict, time_obj, file_obj)
+    #else:
+    main(config_dict, dir_obj, time_obj, file_obj)

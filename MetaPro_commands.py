@@ -49,8 +49,6 @@ class mt_pipe_commands:
                 
             print(queue)
         return queue
-
-    
                 
     def create_quality_control_command(self, marker):
 
@@ -215,8 +213,6 @@ class mt_pipe_commands:
     def create_host_filter_command(self, marker):
         
         # host removal on unique singletons
-       
-
         bwa_hr_s = ">&2 echo BWA host remove on singletons | "
         bwa_hr_s += self.config_dict["BWA"] + " mem -t "
         bwa_hr_s += self.threads_str + " "
@@ -432,8 +428,6 @@ class mt_pipe_commands:
 
         return COMMANDS_vector
          
-         
-
     def create_rRNA_filter_barrnap_command(self, fasta_seqs, fastq_in, fastq_out, Barrnap_out, marker_file):
         # called by each split file
         # category -> singletons, pair 1, pair 2
@@ -487,13 +481,8 @@ class mt_pipe_commands:
                 Barrnap_pp + " && " + make_marker
                 ]
               
-    
-
-
-
     def create_rRNA_filter_infernal_command(self, fasta_in, infernal_out, marker_file):
         
-
         infernal_command = self.config_dict["Infernal"]
         infernal_command += " -o /dev/null --tblout "
         infernal_command += infernal_out
@@ -509,7 +498,6 @@ class mt_pipe_commands:
 
         return [infernal_command + " && " + make_marker]
     
-
     def create_rRNA_inf_pp_pair_command(self, inf_p1, inf_p2, barrnap_p1, barrnap_p2, raw_p1, raw_p2, mRNA_p1, mRNA_p2, other_p1, other_p2, marker_file):
     #file name expected to have no extensions.  eg: pair_1_0
     #expected to be called for each category (pair1, singletons).  not pair 2.  paired data is handled in combination
@@ -549,7 +537,6 @@ class mt_pipe_commands:
             
         return [inf_pp + " && " + make_marker]
   
-
     def create_repop_command(self, marker_file):
         # This stage reintroduces the duplicate reads into the data.  We need it to count towards things.
         # Due to time, and hierarchical importance, we're leaving this stage alone.
@@ -682,8 +669,6 @@ class mt_pipe_commands:
 
         return COMMANDS_Repopulate
         
-
-
     def create_assemble_contigs_command(self, marker_file):
         
         tut_keyword = "assembly"
@@ -703,6 +688,8 @@ class mt_pipe_commands:
                 spades += " -2 " + self.file_dict["repop_p2"]  # in2 (pair 2)
             spades += " -s " + self.file_dict["repop_s"]  # in_single (singletons)
         spades += " -o " + self.dir_dict["contigs_spades"]  # out
+
+        spades += " && touch " + self.file_dict["contigs_spades_done"]
 
         #if there is no output, bypass contigs. -> But this is a v2 upgrade.  
         spades_rename = "cp " + self.file_dict["contigs_transcripts"] + " " + self.file_dict["contigs_og_fa"]  # rename output
@@ -801,7 +788,6 @@ class mt_pipe_commands:
     
     def create_GA_pre_scan_taxa_command(self, operating_mode, marker_file):
 
-
         if(operating_mode == "c"):
             kraken2_c = ">&2 echo Kraken2 on contigs | "
             kraken2_c += self.config_dict["kraken2"] + " "
@@ -819,7 +805,7 @@ class mt_pipe_commands:
             kraken2_s += "--db " + self.config_dict["kraken2_db"] + " "
             kraken2_s += "--threads " + str(self.config_dict["num_threads"]) + " "
             kraken2_s += self.file_dict["contigs_s"] + " " 
-            kraken2_s += "--output " + self.file_dict["GA_ps_k2_report_s"]
+            kraken2_s += "--output " + self.file_dict["ga_ps_k2_report_s"]
             
             make_marker = "touch " + marker_file
             
@@ -902,7 +888,7 @@ class mt_pipe_commands:
 
         return COMMANDS_BWA
         
-        
+    """
     def create_BWA_pp_command_v2(self, stage_name, dependency_stage_name, ref_tag, ref_path, query_file, marker_file):
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
@@ -928,7 +914,7 @@ class mt_pipe_commands:
         reads_in    = query_file
         bwa_in      = os.path.join(bwa_folder, sample_root_name + "_" + ref_tag + ".sam")
         reads_out = ""
-        if(self.config_dict["GA_DB_mode == "multi"):
+        if(self.config_dict["GA_DB_mode"] == "multi"):
             print(dt.today(), "BWA_pp running in split-mode")
             reads_out   = os.path.join(pp_folder, sample_root_name + "_" + ref_tag + ".fasta")
         else:
@@ -938,7 +924,7 @@ class mt_pipe_commands:
 
         map_read_bwa = ">&2 echo " + str(dt.today()) + " GA BWA PP generic: " + sample_root_name + " | "
         map_read_bwa += self.config_dict["Python"] + " "
-        map_read_bwa += self.config_dict["Map_reads_gene_BWA + " "
+        map_read_bwa += self.config_dict["Map_reads_gene_BWA"] + " "
         map_read_bwa += str(self.config_dict["BWA"]_cigar_cutoff) + " "
         map_read_bwa += ref_path + " "
         if(self.sequence_contigs == "None"):

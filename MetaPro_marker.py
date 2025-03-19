@@ -25,7 +25,8 @@ class mpro_marker:
             log.write(self.m_name[tag] + "\n")
 
     def check_marker(self, tag):
-        if(os.path.exists(self.marker_dict[tag])):
+        print(dt.today(), "checking:", tag)
+        if(os.path.exists(tag)):
             return False
         else:
             return True

@@ -114,7 +114,7 @@ class mpro_file_handler:
 
         self.file_dict["rRNA_barrnap_s"] = os.path.join(self.dir_dict["rRNA_barrnap"], "s")
         self.file_dict["rRNA_barrnap_p1"] = os.path.join(self.dir_dict["rRNA_barrnap"], "p1")
-        self.file_dict["rRNA_barrnap_p2"] = os.path.join(self.dir_dict["rRNA_barrnap_p2"], "p2")
+        self.file_dict["rRNA_barrnap_p2"] = os.path.join(self.dir_dict["rRNA_barrnap"], "p2")
 
         self.file_dict["rRNA_barrnap_other_s"] = os.path.join(self.dir_dict["rRNA_other"], "s_barrnap")
         self.file_dict["rRNA_barrnap_other_p1"] = os.path.join(self.dir_dict["rRNA_other"], "p1_barrnap")
@@ -158,6 +158,7 @@ class mpro_file_handler:
         self.file_dict["contigs_og_fa"] = os.path.join(self.dir_dict["contigs_spades"], "contigs.fasta")
         self.file_dict["contigs_split"] = os.path.join(self.dir_dict["contigs_mgm"], "disassembled_contigs.fasta")
         self.file_dict["contigs_gene_report"] = os.path.join(self.dir_dict["contigs_mgm"], "gene_report.txt")
+        self.file_dict["contigs_spades_done"] = os.path.join(self.dir_dict["contigs_spades"], "spades_done")
         
         self.file_dict["contigs_out_fa"] = os.path.join(self.dir_dict["contigs_export"], "contigs.fasta")
         self.file_dict["contigs_map"] = os.path.join(self.dir_dict["contigs_export"], "contigs_map.tsv")
@@ -167,7 +168,7 @@ class mpro_file_handler:
         self.file_dict["contigs_p1"] = os.path.join(self.dir_dict["contigs_export"], "p1.fastq")
         self.file_dict["contigs_p2"] = os.path.join(self.dir_dict["contigs_export"], "p2.fastq")
         self.file_dict["contigs_s"] = os.path.join(self.dir_dict["contigs_export"], "s.fastq")
-
+        
         self.file_dict["ga_lib_list"] = os.path.join(self.dir_dict["GA_ps_data"], "lib_list.txt")
         self.file_dict["ga_lib_reject"] = os.path.join(self.dir_dict["GA_ps_data"], "lib_reject.txt")
         self.file_dict["ga_ps_k2_report_c"] = os.path.join(self.dir_dict["GA_ps_k2"], "kraken2_report_c.txt")
@@ -178,4 +179,4 @@ class mpro_file_handler:
 
         self.file_dict["ga_split_s"] = os.path.join(self.dir_dict["GA_split"], "s")
         self.file_dict["ga_split_p1"] = os.path.join(self.dir_dict["GA_split"], "p1")
-        self.file_dict["ga_split_p2"] = os.path.join(self.dir_dict["GA_split_p2"], "p2")
+        self.file_dict["ga_split_p2"] = os.path.join(self.dir_dict["GA_split"], "p2")

@@ -23,41 +23,44 @@ import shutil
 #makes for a neat package/capsule
 
 class mp_stage:
-    def __init__ (self, config_dict, dir_dict, time_obj, file_control): #config_obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
+    def __init__ (self, config_dict, dir_control, time_control, file_control): #config_obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
         #make our util obj
         #refresher: self -> instance var.  not self: class var (shared among class obj instances)
         
         #---------------------------------------------------------
         #Operational flags and state-recorders
-        
-        print(dt.today(), "MP STAGE using:", dir_dict["main"])
+        self.dir_control = dir_control
+        self.dir_dict = self.dir_control.get_dir_dict()
+        self.label_dict = self.dir_control.get_label_dict()
+        self.config_dict = config_dict
+        print(dt.today(), "MP STAGE using:", self.dir_dict["main"])
         #time.sleep(5)
         #self.tutorial_string = tutorial_mode_string
-        self.output_folder_path = dir_dict["main"] #output_folder_path
-        self.mp_util = mpu.mp_util(config_dict, dir_dict)
-        self.marker_control = mpm.mpro_marker(config_dict, dir_dict)
+        self.output_folder_path = self.dir_dict["main"] #output_folder_path
+        self.mp_util = mpu.mp_util(self.config_dict, self.dir_dict)
+        self.marker_control = mpm.mpro_marker(self.config_dict, self.dir_dict)
         self.marker_dict = self.marker_control.marker_dict
         self.m_name = self.marker_control.m_name
         #self.config_dict = config_dict
         
-        self.config_dict = config_dict
-        self.dir_dict = dir_dict
+        
+        
         self.file_control = file_control
         self.file_dict = self.file_control.get_file_dict() #recall python passes by reference.
-        self.time_control = time_obj
+        self.time_control = time_control
         self.seq_handler = mpu.mp_seq_handler(self.config_dict, self.dir_dict, self.file_dict)
         
 
         #time.sleep(10)
-        self.GA_DB_mode = self.paths.GA_DB_mode
+        self.GA_DB_mode = self.config_dict["GA_DB_mode"]
         self.segmented_chocophlan_flag = True
-        if(config_dict["DNA_DB"].endswith(".fasta")):
+        if(self.config_dict["DNA_DB"].endswith(".fasta")):
             self.segmented_chocophlan_flag = False
         self.config_dict["no_host"] = config_dict["no_host"]
         self.verbose_mode = config_dict["verbose_mode"]
-        self.rRNA_chunks = int(self.paths.rRNA_chunksize)
-        self.EC_chunksize = int(self.paths.EC_chunksize)
-        self.GA_chunksize = int(self.paths.GA_chunksize)
+        self.rRNA_chunks = int(self.config_dict["rRNA_chunksize"])
+        self.EC_chunksize = int(self.config_dict["EC_chunksize"])
+        self.GA_chunksize = int(self.config_dict["GA_chunksize"])
         #self.config_path = config_path
         self.pair_1_path = config_dict["pair_1"]
         self.pair_2_path = config_dict["pair_2"]
@@ -65,7 +68,7 @@ class mp_stage:
         self.contig_path = config_dict["contig"] #_path  #tutorial/single-shot use
         self.quality_encoding = ""
         self.config_dict["read_mode"] = "none"
-        if not self.single_path is None:
+        if (self.single_path != "None"):
             self.config_dict["read_mode"] = "single"
             self.config_dict["q_enc"] = self.mp_util.determine_encoding(self.single_path)
             print("ENCODING USED:", self.config_dict["q_enc"])
@@ -83,7 +86,7 @@ class mp_stage:
 
         # Creates our command object, for creating shellscripts.
 
-        self.commands = mpcom.mt_pipe_commands(self.config_dict, self.dir_dict)
+        self.commands = mpcom.mt_pipe_commands(self.config_dict, self.dir_dict, self.file_dict)
         
         #special contig-bypasser logic vars
         self.contigs_present = True  #for the contig/assembly bypasser
@@ -135,54 +138,54 @@ class mp_stage:
     # main calls
     def mp_quality_filter(self):
         if(self.marker_control.check_marker(self.marker_dict["qf"])):
-            self.time_obj.measure_time("qc", "start")
+            self.time_control.measure_time("qc", "start")
             for item in self.dir_dict["qc_list"]:
-                self.dir_dict.make_dirs(self.dir_dict[item])
+                self.dir_control.make_dirs(self.dir_dict[item])
 
             command_list = self.commands.create_quality_control_command(self.marker_dict["qf"])
             self.mp_util.launch_stage_simple(self.label_dict["qc"], self.dir_dict["qc"], self.commands, command_list, self.keep_all, self.keep_quality)
-            self.time_obj.measure_time("qc", "end")
+            self.time_control.measure_time("qc", "end")
             
             self.debug_stop_check(self.quality_filter_label)
             
 
     def mp_host_filter(self):
         if not self.config_dict["no_host"]:
-            self.time_obj.measure_time("host", "start")
-            for item in self.dir_dict["host_list"]:
-                self.dir_dict.make_dirs(self.dir_dict[item])
-            command_list = self.commands.create_host_filter_command(self.marker_dict["host"])
-            self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
-            self.time_obj.measure_time("host", "end")
+            if(self.marker_control.check_marker(self.marker_dict["host"])):
+                self.time_control.measure_time("host", "start")
+                for item in self.dir_dict["host_list"]:
+                    self.dir_control.make_dirs(self.dir_dict[item])
+                command_list = self.commands.create_host_filter_command(self.marker_dict["host"])
+                self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
+                self.time_control.measure_time("host", "end")
 
-            self.debug_stop_check(self.host_filter_label)
+                self.debug_stop_check(self.host_filter_label)
 
     def mp_vector_filter(self):
         self.vector_start = time.time()
-        
-        if self.config_dict["no_host"]:
-            #get dep args from quality filter
-            #if not check_where_resume(vector_path, None, self.quality_path):
-            command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.quality_filter_label)
-            self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.keep_all, self.keep_vector)
+        if(self.marker_control.check_marker(self.marker_dict["vec"])):
+            if self.config_dict["no_host"]:
+                #get dep args from quality filter
+                #if not check_where_resume(vector_path, None, self.quality_path):
+                command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.quality_filter_label)
+                self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.keep_all, self.keep_vector)
 
-        else:
-            #get the dep args from host filter
-            #if not check_where_resume(vector_path, None, self.host_path):
-            command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.host_filter_label)
-            self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.keep_all, self.keep_vector)
-            
-        self.vector_end = time.time()
-        print("vector filter:", '%1.1f' % (self.vector_end - self.vector_start - (self.cleanup_vector_end - self.cleanup_vector_start)), "s")
-        print("vector filter cleanup:", '%1.1f' % (self.cleanup_vector_end - self.cleanup_vector_start), "s")
-        self.debug_stop_check(self.vector_filter_label)
+            else:
+                #get the dep args from host filter
+                #if not check_where_resume(vector_path, None, self.host_path):
+                command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.host_filter_label)
+                self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.keep_all, self.keep_vector)
+                
+            self.vector_end = time.time()
+            print("vector filter:", '%1.1f' % (self.vector_end - self.vector_start - (self.cleanup_vector_end - self.cleanup_vector_start)), "s")
+            print("vector filter cleanup:", '%1.1f' % (self.cleanup_vector_end - self.cleanup_vector_start), "s")
+            self.debug_stop_check(self.vector_filter_label)
 
     def mp_rRNA_filter(self):
         self.rRNA_filter_start = time.time()
         
-        rRNA_filter_jobs_folder = os.path.join(self.rRNA_filter_path, "data", "jobs")
         #if not check_where_resume(self.rRNA_filter_path, None, self.vector_path):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.rRNA_filter_label): 
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.label_dict["rRNA"]): 
             split_count_s = self.seq_handler.split_fastq(self.file_dict["no_vec_s"], self.file_dict["rRNA_split_s"], self.config_dict["rRNA_chunksize"], "fasta")
             split_count_p1 = self.seq_handler.split_fastq(self.file_dict["no_vec_p1"], self.file_dict["rRNA_split_p1"], self.config_dict["rRNA_chunksize"], "fasta")
             split_count_p2 = self.seq_handler.split_fastq(self.file_dict["no_vec_p2"], self.file_dict["rRNA_split_p2"], self.config_dict["rRNA_chunksize"], "fasta")
@@ -441,7 +444,7 @@ class mp_stage:
         
         self.repop_start = time.time()
         #if not check_where_resume(repop_job_path, None, rRNA_filter_path):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.repop_job_label):
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.label_dict["repop"]):
             job_name = self.repop_job_label
             command_list = self.commands.create_repop_command(self.marker_dict["repop"])
             self.mp_util.subdivide_and_launch(self.repop_job_delay, self.repop_mem_threshold, self.repop_job_limit, self.repop_job_label, job_name, self.commands, command_list)
@@ -454,15 +457,13 @@ class mp_stage:
         self.assemble_contigs_start = time.time()
         
         #if not check_where_resume(assemble_contigs_path, None, repop_job_path):
-        mgm_gene_report = os.path.join(self.assemble_contigs_path, "data", "1_mgm", "gene_report.txt")
-        mgm_folder = os.path.join(self.assemble_contigs_path, "data", "1_mgm")
-        spades_done_file = os.path.join(self.assemble_contigs_path, "data", "0_spades", "pipeline_state", "stage_7_terminate")
-        spades_transcript_file = os.path.join(self.assemble_contigs_path, "data", "0_spades", "transcripts.fasta")
-
+        mgm_gene_report = self.file_dict["contigs_gene_report"]
+        spades_done_file = self.file_dict["contigs_spades_done"]
+        spades_transcript_file = self.file_dict["contigs_transcripts"]
         mgm_fail_flag = True
         spades_fail_flag = True
 
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.assemble_contigs_label):
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.label_dict["contigs"]):
             job_name = self.assemble_contigs_label
             command_list = self.commands.create_assemble_contigs_command(self.marker_dict["contigs"])
             self.mp_util.launch_and_create_simple(self.assemble_contigs_label, job_name, self.commands, command_list)
@@ -534,32 +535,41 @@ class mp_stage:
                     print(dt.today(), "No contigs were assembled.")
                     self.contigs_present = False
                 
-        self.assemble_contigs_end = time.time()
-        print("assemble contigs:", '%1.1f' % (self.assemble_contigs_end - self.assemble_contigs_start - (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start)), "s")    
-        print("assemble contigs cleanup:", '%1.1f' % (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start), "s")
+        #self.assemble_contigs_end = time.time()
+        #print("assemble contigs:", '%1.1f' % (self.assemble_contigs_end - self.assemble_contigs_start - (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start)), "s")    
+        #print("assemble contigs cleanup:", '%1.1f' % (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start), "s")
         
-        self.debug_stop_check(self.assemble_contigs_label)
+        #self.debug_stop_check(self.assemble_contigs_label)
     
     def mp_GA_pre_scan(self):
         #scans the mRNA with a TA scanner to pick out a taxa trend.
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_pre_scan_label):
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.label_dict["GA_pre_scan"]):
             marker_path_list = []
             #----------------------------------------------------------------------
             #kaiju on reads
             sections = ["s"]
-            if self.read_mode == "paired":
+            if self.config_dict["read_mode"] == "paired":
                 sections.extend(["p"])
             if(self.contigs_present):
                 sections.extend(["c"])    
             
             for section in sections:
                 marker_tag = "ga_ps_" + section
+                
                 if(os.path.exists(self.marker_dict[marker_tag])):
                     print(dt.today(), "skipping:", marker_tag)
                 else:
-                    marker_path_list.append(marker_path)
-                    command_list = self.commands.create_ga_pre_scan_taxa_command(section, marker_file)
-                    self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)        
+                    marker_path_list.append(self.marker_dict[marker_tag])
+                    command_list = self.commands.create_GA_pre_scan_taxa_command(section, self.marker_dict[marker_tag])
+                    self.mp_util.launch_and_create_with_hold(
+                        self.config_dict["TA_mem_threshold"], 
+                        self.config_dict["TA_job_limit"], 
+                        self.config_dict["TA_job_delay"], 
+                        self.dir_dict["GA_ps"], 
+                        self.marker_dict[marker_tag], 
+                        self.commands, 
+                        command_list
+                    )        
             
            
             

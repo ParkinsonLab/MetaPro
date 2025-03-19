@@ -141,7 +141,7 @@ class mpro_config:
                     print(dt.today(), "BWA database OK")
                     self.GA_DB_mode = "multi"
             else:
-                if(self.DNA_DB.endswith(".fasta")):
+                if(DNA_DB.endswith(".fasta")):
                     ext_0 = ".amb"
                     ext_1 = ".ann"
                     ext_2 = ".bwt"
@@ -230,7 +230,7 @@ class mpro_config:
 
         script_path             = "/pipeline/Scripts"
         tool_path               = "/pipeline_tools/"
-        database_path           = self.value_assignment("path", config, "Databases", "database_path", "/project/j/jparkin/Lab_Databases")
+        database_path           = self.value_assignment("path", config, "Databases", "database_path", "None")
         
         custom_database_path    = "/pipeline/custom_databases/"
 
@@ -325,16 +325,21 @@ class mpro_config:
         self.config_dict["single"] = self.value_assignment("path", config, "Input", "singleton","None")
         self.config_dict["pair_1"] = self.value_assignment("path", config, "Input", "pair_1", "None")
         self.config_dict["pair_2"] = self.value_assignment("path", config, "Input", "pair_2", "None")
+        self.config_dict["contig"] = self.value_assignment("path", config, "Input", "contig", "None")
 
-        self.config_dict["pair_1"] = os.path.abspath(self.config_dict["pair_1"])
-        self.config_dict["pair_2"] = os.path.abspath(self.config_dict["pair_2"])
-        self.config_dict["single"] = os.path.abspath(self.config_dict["single"])
-
+        if(self.config_dict["pair_1"] != "None"):
+            self.config_dict["pair_1"] = os.path.abspath(self.config_dict["pair_1"])
+        if(self.config_dict["pair_2"] != "None"):
+            self.config_dict["pair_2"] = os.path.abspath(self.config_dict["pair_2"])
+        if(self.config_dict["single"] != "None"):
+            self.config_dict["single"] = os.path.abspath(self.config_dict["single"])
+        if(self.config_dict["contig"] != "None"):
+            self.config_dict["contig"] = os.path.abspath(self.config_dict["contig"])
          
 
         self.config_dict["bypass_log"] = self.value_assignment("path", config, "Settings", "bypass_log", os.path.join(self.out_dir, "bypass_long.txt"))
         self.config_dict["tutorial_keyword"] = self.value_assignment("str", config, "Settings", "tutorial_keyword", "None")
-
+        self.config_dict["tutorial_mode"] = self.value_assignment("str", config, "Settings", "tutorial_mode", "None")
         self.config_dict["target_rank"]                 = self.value_assignment("str", config, "Settings", "target_rank", "genus")
         self.config_dict["adapterremoval_minlength"]    = self.value_assignment("str", config, "Settings", "AdapterRemoval_minlength", 30)
         self.config_dict["show_unclassified"]           = self.value_assignment("str", config, "Settings", "Show_unclassified", "No")
@@ -448,7 +453,7 @@ class mpro_config:
         # Note: default host is Mouse CDS
         
         #if config:
-        self.config_dict["vectors"]        = self.value_assignment("path", config, "Databases", "vectors", os.path.join(database_path, "univec_core/UniVec_Core.fasta")) 
+        self.config_dict["vectors"]        = self.value_assignment("path", config, "Databases", "UniVec_Core", os.path.join(database_path, "univec_core/UniVec_Core.fasta")) 
         self.config_dict["Adapter"]            = self.value_assignment("path", config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"))
         self.config_dict["Host_db"]            = self.value_assignment("path", config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"))
         self.config_dict["Rfam"]               = self.value_assignment("path", config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
@@ -478,7 +483,7 @@ class mpro_config:
         self.config_dict["GA_DB_mode"] = "multi" #by default for the new DB changes.
         self.check_dmd_valid()
         if(self.config_dict["GA_DB_mode"] == "custom"):
-            self.check_bwa_valid(self.DNA_DB)
+            self.check_bwa_valid(self.config_dict["DNA_DB"])
             #self.check_blat_valid(self.DNA_DB)
         
         
