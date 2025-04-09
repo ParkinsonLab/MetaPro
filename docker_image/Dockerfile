@@ -1,4 +1,4 @@
-FROM parkinsonlab/mpro_stash:v1.0.5
+FROM parkinsonlab/mpro_stash:v1.0.6
 
 
 #-------------------------------------------
