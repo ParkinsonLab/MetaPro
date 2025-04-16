@@ -787,7 +787,7 @@ class mt_pipe_commands:
         return COMMANDS_Assemble
     
     def create_GA_pre_scan_taxa_command(self, operating_mode, marker_file):
-
+        #keep this but don't copy the DB files.  refer to the list instead. 
         if(operating_mode == "c"):
             kraken2_c = ">&2 echo Kraken2 on contigs | "
             kraken2_c += self.config_dict["kraken2"] + " "
@@ -865,28 +865,32 @@ class mt_pipe_commands:
         #return [assemble_lib + " && " + index_lib + " && " + make_marker]
         return [assemble_lib + " && " + make_marker]
         
- 
+    def bt2_command(self, marker_file):
 
-    def create_BWA_annotate_command_v2(self, db_path, sample_file, sam_out, marker_file):
+        command = "touch " + marker_file
+        return [command]
+
+
+    #def create_BWA_annotate_command_v2(self, db_path, sample_file, sam_out, marker_file):
         # meant to be called multiple times: query file is a split file
         # aug 10, 2021: changed ref path to accomodate new split-chocophlan
         #feb 20, 2025: reiterating call-per-file.
         
-        bwa_job = self.config_dict["BWA"] + " mem -t " + self.threads_str + " "
-        bwa_job += db_path + " "
-        #bwa_job += os.path.join(dep_loc, section_file) + " | "
-        bwa_job += sample_file + " | "
-        bwa_job += self.config_dict["samtools"] + " view "
-        bwa_job += "> " + sam_out
-        
-        #make_marker = ">&2 echo marking BWA job complete: " + file_tag + " | "
-        make_marker = "touch" + " " + marker_file
-
-        COMMANDS_BWA = [
-            bwa_job + " && " + make_marker
-        ]
-
-        return COMMANDS_BWA
+    #    bwa_job = self.config_dict["BWA"] + " mem -t " + self.threads_str + " "
+    #    bwa_job += db_path + " "
+    #    #bwa_job += os.path.join(dep_loc, section_file) + " | "
+    #    bwa_job += sample_file + " | "
+    #    bwa_job += self.config_dict["samtools"] + " view "
+    #    bwa_job += "> " + sam_out
+    #    
+    #    #make_marker = ">&2 echo marking BWA job complete: " + file_tag + " | "
+    #    make_marker = "touch" + " " + marker_file
+    #
+    #    COMMANDS_BWA = [
+    #        bwa_job + " && " + make_marker
+    #    ]
+    #
+    #    return COMMANDS_BWA
         
     """
     def create_BWA_pp_command_v2(self, stage_name, dependency_stage_name, ref_tag, ref_path, query_file, marker_file):

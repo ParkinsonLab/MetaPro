@@ -9,9 +9,10 @@ from configparser import ConfigParser, ExtendedInterpolation
         
 
 class mpro_marker:
-    def issue_rRNA_markers(self, header, count, location):
-        #used for rRNA barrnap + infernal
-        #auto-creates the marker to be used.
+    def issue_split_markers(self, header, count, location):
+        #used for creating markers where there are split data.
+        #auto-creates the marker to be used.  
+        #also writes it to the main registry <marker_dict>
         for i in range(0, count):
             marker_name = header + "_" + str(i)
             self.marker_dict[marker_name] = os.path.join(self.dir_dict[location], marker_name)

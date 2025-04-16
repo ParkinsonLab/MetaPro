@@ -256,7 +256,7 @@ class mpro_config:
         EC_mem_threshold_default = 5
         
         cpu_default = int(math.ceil(os.cpu_count() * 0.75))
-        rRNA_chunksize_default = 50000
+        rRNA_chunksize_default = 500000
         EC_chunksize_default = 50000
         GA_chunksize_default = 25000
         
@@ -563,4 +563,7 @@ class mpro_config:
         self.config_dict["ta_contig_name_convert"]     = self.value_assignment("path", config, "code", "ta_name_convert", os.path.join(script_path, "ta_contig_name_convert.py"))
         self.config_dict["GA_pre_scan_get_lib"]        = self.value_assignment("path", config, "code", "ga_pre_scan_get_lib", os.path.join(script_path, "ga_pre_scan_get_libs.py"))
         self.config_dict["GA_pre_scan_assemble_lib"]   = self.value_assignment("path", config, "code", "ga_pre_scan_assemble_lib", os.path.join(script_path, "ga_pre_scan_assemble_libs.py"))
+
+
+
         
