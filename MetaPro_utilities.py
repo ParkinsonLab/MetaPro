@@ -33,11 +33,19 @@ import psutil as psu
 
 class mp_seq_handler:
     #internalized because we need the number of files generated + saves another file from being generated
-    def __init__(self, config_dict, dir_dict, file_dict):
-        self.config_dict = config_dict
-        self.dir_dict = dir_dict
-        self.file_dict = file_dict
+    def __init__(self):
         self.file_count = 0
+        
+    def fastq_to_fasta(fastq_file, fasta_file):
+        with open(fastq_file) as fin, open(fasta_file, 'w') as fout:
+            while True:
+                header = fin.readline().strip()
+                if not header:
+                    break
+                seq = fin.readline().strip()
+                fin.readline()  # Skip '+' line
+                fin.readline()  # Skip quality line
+                fout.write(f">{header[1:]}\n{seq}\n")
 
     def split_fastq(self, file_name_in, file_name_out, chunks, export_mode):
         print(dt.today(), "FASTQ file name in:", file_name_in)

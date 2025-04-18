@@ -38,12 +38,13 @@ class mp_stage:
         #self.tutorial_string = tutorial_mode_string
         self.output_folder_path = self.dir_dict["main"] #output_folder_path
         self.mp_util = mpu.mp_util(self.config_dict, self.dir_dict)
+        self.mp_seq_handler = mpu.mp_seq_handler()
         self.marker_control = mpm.mpro_marker(self.config_dict, self.dir_dict)
         self.marker_dict = self.marker_control.marker_dict
         self.m_name = self.marker_control.m_name
         #self.config_dict = config_dict
         
-        
+        self.process_list = self.mp_util.mp_store
         
         self.file_control = file_control
         self.file_dict = self.file_control.get_file_dict() #recall python passes by reference.
@@ -182,103 +183,28 @@ class mp_stage:
             self.debug_stop_check(self.vector_filter_label)
 
     def mp_rRNA_filter(self):
+        #don't split barrnap.
+        #only split infernal.  but it can go over the 100k limit now.
+        #bnap takes fasta, but it's not worth it to keep it in memory.
+
+
         self.rRNA_filter_start = time.time()
         
         #if not check_where_resume(self.rRNA_filter_path, None, self.vector_path):
         if self.mp_util.check_bypass_log(self.output_folder_path, self.label_dict["rRNA"]): 
-            split_count_s = self.seq_handler.split_fastq(self.file_dict["no_vec_s"], self.file_dict["rRNA_split_s"], self.config_dict["rRNA_chunksize"], "fasta")
-            split_count_p1 = self.seq_handler.split_fastq(self.file_dict["no_vec_p1"], self.file_dict["rRNA_split_p1"], self.config_dict["rRNA_chunksize"], "fasta")
-            split_count_p2 = self.seq_handler.split_fastq(self.file_dict["no_vec_p2"], self.file_dict["rRNA_split_p2"], self.config_dict["rRNA_chunksize"], "fasta")
-            self.config_dict["split_count_s"] = split_count_s
-            self.config_dict["split_count_p1"] = split_count_p1
-            self.config_dict["split_count_p2"] = split_count_p2
+            #run barrnap
+            run_types = ["s"]
+            if(self.config_dict["read_mode"] == "paired"):
+                run_types.extend(["p1", "p2"])
 
-            if(split_count_p2 != split_count_p1):
-                print(dt.today(), "something is off with the p1 and p2 split.  they should be equal, but they're not")
-                sys.exit()
-
-            self.marker_control.issue_rRNA_markers(self.m_name["rRNA_barrnap_s"], split_count_s, "rRNA_mkrs")
-            self.marker_control.issue_rRNA_markers(self.m_name["rRNA_barrnap_p1"], split_count_p1, "rRNA_mkrs")
-            self.marker_control.issue_rRNA_markers(self.m_name["rRNA_barrnap_p2"], split_count_p2, "rRNA_mkrs")
-            
-
-            for i in range(0, split_count_s):
-                marker_name = self.marker_dict["rRNA_barrnap_s_" + str(i)]
-                s_fasta_path = self.file_dict["rRNA_split_s"] + "_" + str(i) + ".fasta"
-                s_split_fastq = self.file_dict["rRNA_split_s"] + "_" + str(i) + ".fastq"
-                
-                s_barrnap_out = self.file_dict["rRNA_barrnap_s"] + "_" + str(i)
-                s_reject = self.file_dict["rRNA_barrnap_other_s"] + "_" + str(i)
-                s_mRNA = self.file_dict["rRNA_mRNA_barrnap_s"] + "_" + str(i)
+            for run_type in run_types:
+                fa_in = self.file_dict["rRNA_"+str(run_type) + "_fa"]
+                fq_in = self.file_dict["no_vec_" + str(run_type)]
+                bnap_out = self.file_dict["rRNA_barrnap_all" + str(run_type)]
+                self.mp_seq_handler.fastq_to_fasta(fa_in, fq_in)
+                command = self.commands.create_rRNA_filter_barrnap_command(fa_in, fq_in, str(run_type), bnap_out)
 
 
-                self.file_dict["rRNA_barrnap_mRNA_s_" + str(i)] = s_mRNA
-                self.file_dict["rRNA_split_s_fastq_" + str(i)] = s_split_fastq
-                self.file_dict["rRNA_barrnap_out_s_" + str(i)] = s_barrnap_out
-                s_job_name = "rRNA_barrnap_s_" + str(i)
-
-                if(self.marker_control.check_marker(marker_name)):
-                    command = self.commands.create_rRNA_filter_barrnap_command(s_fasta_path, s_split_fastq, s_barrnap_out, s_reject, marker_name)
-                    self.mp_util.launch_and_create_with_hold(
-                        self.config_dict["Barrnap_mem_threshold"], 
-                        self.config_dict["Barrnap_job_limit"],
-                        self.config_dict["Barrnap_job_delay"],
-                        self.dir_dict["rRNA_jobs"], 
-                        s_job_name,
-                        self.commands,
-                        command)
-
-
-            if((split_count_p1 > 0) and (split_count_p2 > 0)):
-                for i in range(0, split_count_p1):
-                    marker_name = self.m_name["rRNA_barrnap_p1_" + str(i)]
-                    p1_fasta_path = self.file_dict["rRNA_split_p1"] + "_" + str(i) + ".fasta"
-                    p1_split_fastq = self.file_dict["rRNA_split_p1"] + "_" + str(i) + ".fastq"
-                    p1_barrnap_out = self.file_dict["rRNA_barrnap_p1"] + "_" + str(i)
-                    p1_reject = self.file_dict["rRNA_barrnap_other_p1"] + "_" + str(i)
-                    p1_job_name = "rRNA_barrnap_p1_" + str(i)
-                    p1_mRNA = self.file_dict["rRNA_mRNA_barrnap_p1"] + "_" + str(i)
-                    self.file_dict["rRNA_split_p1_fastq_" + str(i)] = p1_split_fastq
-                    self.file_dict["rRNA_barrnap_mRNA_p1_" + str(i)] = p1_mRNA
-                    self.file_dict["rENA_barrnap_out_p1_" + str(i)] = p1_barrnap_out
-
-                    if(self.marker_control.check_marker(marker_name)):
-                        command = self.commands.create_rRNA_filter_barrnap_command(p1_fasta_path, p1_barrnap_out, p1_reject, marker_name)
-                        self.mp_util.launch_and_create_with_hold(
-                            self.config_dict["Barrnap_mem_threshold"], 
-                            self.config_dict["Barrnap_job_limit"],
-                            self.config_dict["Barrnap_job_delay"],
-                            self.dir_dict["rRNA_jobs"], 
-                            p1_job_name,
-                            self.commands,
-                            command)
-
-                    
-                for i in range(0, split_count_p2):
-                    marker_name = self.marker_dict["rRNA_barrnap_p2_" + str(i)]
-                    p2_fasta_path = self.file_dict["rRNA_split_p2"] + "_" + str(i) + ".fasta"
-                    p2_split_fastq = self.file_dict["rRNA_split_p2"] + "_" + str(i) + ".fastq"
-                    p2_barrnap_out = self.file_dict["rRNA_barrnap_p2"] + "_" + str(i)
-                    p2_reject = self.file_dict["rRNA_barrnap_other_p2"] + "_" + str(i)
-                    p2_job_name = "rRNA_barrnap_p2_" + str(i)
-
-                    p2_mRNA = self.file_dict["rRNA_mRNA_barrnap_p2"] + "_" + str(i)
-                    self.file_dict["rRNA_split_p2_fastq_" + str(i)] = p2_split_fastq
-                    self.file_dict["rRNA_barrnap_mRNA_p2_" + str(i)] = p2_mRNA
-                    self.file_dict["rRNA_barrnap_p2_" + str(i)] = p2_barrnap_out
-
-                    if(self.marker_control.check_marker(marker_name)):
-                        command = self.commands.create_rRNA_filter_barrnap_command(p2_fasta_path, p2_barrnap_out, p2_reject, marker_name)
-                        self.mp_util.launch_and_create_with_hold(
-                            self.config_dict["Barrnap_mem_threshold"], 
-                            self.config_dict["Barrnap_job_limit"],
-                            self.config_dict["Barrnap_job_delay"],
-                            self.dir_dict["rRNA_jobs"], 
-                            p2_job_name,
-                            self.commands,
-                            command)    
-                    
-                        
             #wait for everything.
             self.mp_util.wait_for_mp_store()
 

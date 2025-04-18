@@ -106,15 +106,18 @@ class mpro_file_handler:
             "vec_s_sam", "vec_s_bam", "vec_p_sam"
         ]
 
-        self.file_dict["rRNA_split_s"] = os.path.join(self.dir_dict["rRNA_split"], "s_split") #note: the splits are guides. not the actual file
-        self.file_dict["rRNA_split_p1"] = os.path.join(self.dir_dict["rRNA_split"], "p1_split")
-        self.file_dict["rRNA_split_p2"] = os.path.join(self.dir_dict["rRNA_split"], "p2_split")
-
         
-
+        self.file_dict["rRNA_s_fa"] = os.path.join(self.dir_dict["rRNA_convert"], "s.fasta")
+        self.file_dict["rRNA_p1_fa"] = os.path.join(self.dir_dict["rRNA_convert"], "p1.fasta")
+        self.file_dict["rRNA_p2_fa"] = os.path.join(self.dir_dict["rRNA_convert"], "p2.fasta")
+        
         self.file_dict["rRNA_barrnap_s"] = os.path.join(self.dir_dict["rRNA_barrnap"], "s")
         self.file_dict["rRNA_barrnap_p1"] = os.path.join(self.dir_dict["rRNA_barrnap"], "p1")
         self.file_dict["rRNA_barrnap_p2"] = os.path.join(self.dir_dict["rRNA_barrnap"], "p2")
+
+        self.file_dict["rRNA_barrnap_job_s"] = os.path.join(self.dir_dict["rRNA_barrnap"], "s_bnap.sh")
+        self.file_dict["rRNA_barrnap_job_p1"] = os.path.join(self.dir_dict["rRNA_barrnap"], "p1_bnap.sh")
+        self.file_dict["rRNA_barrnap_job_p2"] = os.path.join(self.dir_dict["rRNA_barrnap"], "p2_bnap.sh")
 
         self.file_dict["rRNA_barrnap_other_s"] = os.path.join(self.dir_dict["rRNA_other"], "s_barrnap")
         self.file_dict["rRNA_barrnap_other_p1"] = os.path.join(self.dir_dict["rRNA_other"], "p1_barrnap")
