@@ -76,6 +76,7 @@ class mp_seq_handler:
                 #fancy naming
                 new_file_name = file_name_out + "_" + str(index_count) + ".fastq"
                 
+                
                 #split file by selective selection, and writing
                 start_index = int(index_count * chunks)
                 end_index = int(((index_count+1) * chunks))

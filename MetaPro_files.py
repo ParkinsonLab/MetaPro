@@ -111,29 +111,33 @@ class mpro_file_handler:
         self.file_dict["rRNA_p1_fa"] = os.path.join(self.dir_dict["rRNA_convert"], "p1.fasta")
         self.file_dict["rRNA_p2_fa"] = os.path.join(self.dir_dict["rRNA_convert"], "p2.fasta")
         
-        self.file_dict["rRNA_barrnap_s"] = os.path.join(self.dir_dict["rRNA_barrnap"], "s")
-        self.file_dict["rRNA_barrnap_p1"] = os.path.join(self.dir_dict["rRNA_barrnap"], "p1")
-        self.file_dict["rRNA_barrnap_p2"] = os.path.join(self.dir_dict["rRNA_barrnap"], "p2")
+        self.file_dict["rRNA_bnap_s"] = os.path.join(self.dir_dict["rRNA_bnap"], "s")
+        self.file_dict["rRNA_bnap_p1"] = os.path.join(self.dir_dict["rRNA_bnap"], "p1")
+        self.file_dict["rRNA_bnap_p2"] = os.path.join(self.dir_dict["rRNA_bnap"], "p2")
 
-        self.file_dict["rRNA_barrnap_job_s"] = os.path.join(self.dir_dict["rRNA_barrnap"], "s_bnap.sh")
-        self.file_dict["rRNA_barrnap_job_p1"] = os.path.join(self.dir_dict["rRNA_barrnap"], "p1_bnap.sh")
-        self.file_dict["rRNA_barrnap_job_p2"] = os.path.join(self.dir_dict["rRNA_barrnap"], "p2_bnap.sh")
+        self.file_dict["rRNA_bnap_job_s"] = os.path.join(self.dir_dict["rRNA_bnap"], "s_bnap.sh")
+        self.file_dict["rRNA_bnap_job_p1"] = os.path.join(self.dir_dict["rRNA_bnap"], "p1_bnap.sh")
+        self.file_dict["rRNA_bnap_job_p2"] = os.path.join(self.dir_dict["rRNA_bnap"], "p2_bnap.sh")
 
-        self.file_dict["rRNA_barrnap_other_s"] = os.path.join(self.dir_dict["rRNA_other"], "s_barrnap")
-        self.file_dict["rRNA_barrnap_other_p1"] = os.path.join(self.dir_dict["rRNA_other"], "p1_barrnap")
-        self.file_dict["rRNA_barrnap_other_p2"] = os.path.join(self.dir_dict["rRNA_other"], "p2_barrnap")
+        self.file_dict["rRNA_bnap_other_s"] = os.path.join(self.dir_dict["rRNA_other"], "other_bnap_s.fastq")
+        self.file_dict["rRNA_bnap_other_p1"] = os.path.join(self.dir_dict["rRNA_other"], "other_bnap_p1.fastq")
+        self.file_dict["rRNA_bnap_other_p2"] = os.path.join(self.dir_dict["rRNA_other"], "other_bnap_p2.fastq")
 
-        self.file_dict["rRNA_mRNA_barrnap_s"] = os.path.join(self.dir_dict["rRNA_mRNA"], "barrnap", "s")
-        self.file_dict["rRNA_mRNA_barrnap_p1"] = os.path.join(self.dir_dict["rRNA_mRNA"], "barrnap", "p1")
-        self.file_dict["rRNA_mRNA_barrnap_p2"] = os.path.join(self.dir_dict["rRNA_mRNA"], "barrnap", "p2")
+        self.file_dict["rRNA_bnap_mRNA_s"] = os.path.join(self.dir_dict["rRNA_mRNA"], "mRNA_bnap_s.fastq")
+        self.file_dict["rRNA_bnap_mRNA_p1"] = os.path.join(self.dir_dict["rRNA_mRNA"], "mRNA_bnap_p1.fastq")
+        self.file_dict["rRNA_bnap_mRNA_p2"] = os.path.join(self.dir_dict["rRNA_mRNA"], "mRNA_bnap_p2.fastq")
+
+        self.file_dict["rRNA_inf_in_s"] = os.path.join(self.dir_dict["rRNA_split"], "inf_s")
+        self.file_dict["rRNA_inf_in_p1"] = os.path.join(self.dir_dict["rRNA_split"], "inf_p1")
+        self.file_dict["rRNA_inf_in_p2"] = os.path.join(self.dir_dict["rRNA_split"], "inf_p2")
 
         self.file_dict["rRNA_inf_out_s"] = os.path.join(self.dir_dict["rRNA_inf"], "s")
         self.file_dict["rRNA_inf_out_p1"] = os.path.join(self.dir_dict["rRNA_inf"], "p1")
         self.file_dict["rRNA_inf_out_p2"] = os.path.join(self.dir_dict["rRNA_inf"], "p2")
 
-        self.file_dict["rRNA_barrnap_all_s"] = os.path.join(self.dir_dict["rRNA_barrnap"], "all_s.barrnap_out")
-        self.file_dict["rRNA_barrnap_all_p1"] = os.path.join(self.dir_dict["rRNA_barrnap"], "all_p1.barrnap_out")
-        self.file_dict["rRNA_barrnap_all_p2"] = os.path.join(self.dir_dict["rRNA_barrnap"], "all_p2.barrnap_out")
+        self.file_dict["rRNA_bnap_all_s"] = os.path.join(self.dir_dict["rRNA_bnap"], "all_s.bnap_out")
+        self.file_dict["rRNA_bnap_all_p1"] = os.path.join(self.dir_dict["rRNA_bnap"], "all_p1.bnap_out")
+        self.file_dict["rRNA_bnap_all_p2"] = os.path.join(self.dir_dict["rRNA_bnap"], "all_p2.bnap_out")
         
         self.file_dict["rRNA_inf_all_s"] = os.path.join(self.dir_dict["rRNA_inf"], "all_s.inf_out")
         self.file_dict["rRNA_inf_all_p1"] = os.path.join(self.dir_dict["rRNA_inf"], "all_p1.inf_out")

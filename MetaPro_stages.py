@@ -183,7 +183,7 @@ class mp_stage:
             self.debug_stop_check(self.vector_filter_label)
 
     def mp_rRNA_filter(self):
-        #don't split barrnap.
+        #don't split bnap.
         #only split infernal.  but it can go over the 100k limit now.
         #bnap takes fasta, but it's not worth it to keep it in memory.
 
@@ -192,7 +192,7 @@ class mp_stage:
         
         #if not check_where_resume(self.rRNA_filter_path, None, self.vector_path):
         if self.mp_util.check_bypass_log(self.output_folder_path, self.label_dict["rRNA"]): 
-            #run barrnap
+            #run bnap
             run_types = ["s"]
             if(self.config_dict["read_mode"] == "paired"):
                 run_types.extend(["p1", "p2"])
@@ -200,9 +200,12 @@ class mp_stage:
             for run_type in run_types:
                 fa_in = self.file_dict["rRNA_"+str(run_type) + "_fa"]
                 fq_in = self.file_dict["no_vec_" + str(run_type)]
-                bnap_out = self.file_dict["rRNA_barrnap_all" + str(run_type)]
+                mRNA_out = self.file_dict["rRNA_bnap_mRNA_" + str(run_type)]
+                rRNA_out = self.file_dict["rRNA_bnap_rRNA_" + str(run_type)]
+                bnap_out = self.file_dict["rRNA_bnap_all" + str(run_type)]
                 self.mp_seq_handler.fastq_to_fasta(fa_in, fq_in)
-                command = self.commands.create_rRNA_filter_barrnap_command(fa_in, fq_in, str(run_type), bnap_out)
+                command = self.commands.create_rRNA_filter_bnap_command(fa_in, fq_in, mRNA_out, rRNA_out, bnap_out)
+                self.mp_util.launch_and_create_with_mp_store()
 
 
             #wait for everything.
@@ -211,13 +214,24 @@ class mp_stage:
                 
             #----------------------------------------------------------------------------
             # INFERNAL
+            #split the fasta mRNA here
+            split_count_s = self.mp_seq_handler.split_fastq(self.file_dict["rRNA_bnap_mRNA_s"], self.file_dict["rRNA_inf_in_s"], self.config_dict["rRNA_chunksize"], "fasta")
+            split_count_p1 = self.mp_seq_handler.split_fastq(self.file_dict["rRNA_bnap_mRNA_p1"], self.file_dict["rRNA_inf_in_p1"], self.config_dict["rRNA_chunksize"], "fasta")
+            split_count_p2 = self.mp_seq_handler.split_fastq(self.file_dict["rRNA_bnap_mRNA_p2"], self.file_dict["rRNA_inf_in_p2"], self.config_dict["rRNA_chunksize"], "fasta")
+
+            for i in range(0, split_count_s):
+                self.file_dict["rRNA_inf_in_s_" + str(i)] = self.file_dict["rRNA_inf_in_s"] + "_" + str(i) + ".fasta"
+            for i in range(0, split_count_p1):
+                self.file_dict["rRNA_inf_in_p1_" + str(i)] = self.file_dict["rRNA_inf_in_p1"] + "_" + str(i) + ".fasta"
+            for i in range(0, split_count_p2):
+                self.file_dict["rRNA_inf_in_p2_" + str(i)] = self.file_dict["rRNA_inf_in_p2"] + "_" + str(i) + ".fasta"
 
             self.marker_control.issue_rRNA_markers(self.m_name["rRNA_inf_s"], split_count_s, "rRNA_mkrs")
             self.marker_control.issue_rRNA_markers(self.m_name["rRNA_inf_p1"], split_count_p1, "rRNA_mkrs")
             self.marker_control.issue_rRNA_markers(self.m_name["rRNA_inf_p2"], split_count_p2, "rRNA_mkrs")
 
             for i in range(0, split_count_s):
-                s_seq = self.file_dict["rRNA_barrnap_mRNA_s_" + str(i)]
+                s_seq = self.file_dict["rRNA_inf_in_s" + str(i)]
                 inf_out = self.file_dict["rRNA_inf_out_s"] + "_" + str(i) + ".inf_out"
                 self.file_dict["rRNA_inf_s_" + str(i)] = inf_out
                 marker = self.marker_dict["rRNA_inf_s_" + str(i)]
@@ -235,7 +249,7 @@ class mp_stage:
 
 
             for i in range(0, split_count_p1):
-                p1_seq = self.file_dict["rRNA_barrnap_mRNA_p1_" + str(i)]
+                p1_seq = self.file_dict["rRNA_bnap_mRNA_p1_" + str(i)]
                 inf_out = self.file_dict["rRNA_inf_out_p1"] + "_" + str(i) + ".inf_out"
                 self.file_dict["rRNA_inf_p1_" + str(i)] = inf_out
                 marker = self.marker_dict["rRNA_inf_p1_" + str(i)]
@@ -252,7 +266,7 @@ class mp_stage:
                         command)    
 
             for i in range(0, split_count_p2):
-                p2_seq = self.file_dict["rRNA_barrnap_mRNA_p2_" + str(i)]
+                p2_seq = self.file_dict["rRNA_bnap_mRNA_p2_" + str(i)]
                 inf_out = self.file_dict["rRNA_inf_out_p2"] + "_" + str(i) + ".inf_out"
                 self.file_dict["rRNA_inf_p2_" + str(i)] = inf_out
                 marker = self.marker_dict["rRNA_inf_p2_" + str(i)]
@@ -271,7 +285,7 @@ class mp_stage:
             #wait for everything.
             self.mp_util.wait_for_mp_store()
             #-----------------------------------------------
-            #merge the inf and barrnap files, then send it through inf pp.
+            #merge the inf and bnap files, then send it through inf pp.
             if(split_count_s > 0):
                 with open(self.file_dict["rRNA_inf_all_s"], "wb") as out_file:
                     for i in range(0, split_count_s):
@@ -279,9 +293,9 @@ class mp_stage:
                         with open(inf_out, "rb") as in_file:
                             shutil.copyfileobj(in_file, out_file)
                         out_file.write(b"\n")
-                with open(self.file_dict["rRNA_barrnap_all_s"], "wb") as out_file:
+                with open(self.file_dict["rRNA_bnap_all_s"], "wb") as out_file:
                     for i in range(0, split_count_s):
-                        inf_out = self.file_dict["rRNA_barrnap_s_" + str(i)]
+                        inf_out = self.file_dict["rRNA_bnap_s_" + str(i)]
                         with open(inf_out, "rb") as in_file:
                             shutil.copyfileobj(in_file, out_file)
                         out_file.write(b"\n")
@@ -293,9 +307,9 @@ class mp_stage:
                         with open(inf_out, "rb") as in_file:
                             shutil.copyfileobj(in_file, out_file)
                         out_file.write(b"\n")
-                with open(self.file_dict["rRNA_barrnap_all_p1"], "wb") as out_file:
+                with open(self.file_dict["rRNA_bnap_all_p1"], "wb") as out_file:
                     for i in range(0, split_count_p1):
-                        inf_out = self.file_dict["rRNA_barrnap_p1_" + str(i)]
+                        inf_out = self.file_dict["rRNA_bnap_p1_" + str(i)]
                         with open(inf_out, "rb") as in_file:
                             shutil.copyfileobj(in_file, out_file)
                         out_file.write(b"\n")
@@ -307,9 +321,9 @@ class mp_stage:
                         with open(inf_out, "rb") as in_file:
                             shutil.copyfileobj(in_file, out_file)
                         out_file.write(b"\n")
-                with open(self.file_dict["rRNA_barrnap_all_p2"], "wb") as out_file:
+                with open(self.file_dict["rRNA_bnap_all_p2"], "wb") as out_file:
                     for i in range(0, split_count_p2):
-                        inf_out = self.file_dict["rRNA_barrnap_p2_" + str(i)]
+                        inf_out = self.file_dict["rRNA_bnap_p2_" + str(i)]
                         with open(inf_out, "rb") as in_file:
                             shutil.copyfileobj(in_file, out_file)
                         out_file.write(b"\n")
@@ -321,15 +335,15 @@ class mp_stage:
             if(split_count_p1 > 0):
                 inf_p1 = self.file_dict["rRNA_inf_all_p1"]
                 inf_p2 = self.file_dict["rRNA_inf_all_p2"]
-                barrnap_p1 = self.file_dict["rRNA_barrnap_all_p1"]
-                barrnap_p2 = self.file_dict["rRNA_barrnap_all_p2"]
+                bnap_p1 = self.file_dict["rRNA_bnap_all_p1"]
+                bnap_p2 = self.file_dict["rRNA_bnap_all_p2"]
                 mRNA_p1 = self.file_dict["rRNA_mRNA_p1_fq"]
                 mRNA_p2 = self.file_dict["rRNA_mRNA_p2_fq"]
                 other_p1 = self.file_dict["rRNA_other_p1_fq"]
                 other_p2 = self.file_dict["rRNA_other_p2_fq"]
 
                 command = self.commands.create_rRNA_inf_pp_pair_command(inf_p1, inf_p2, 
-                                                                        barrnap_p1, barrnap_p2,
+                                                                        bnap_p1, bnap_p2,
                                                                         self.file_dict["no_vec_p1"],
                                                                         self.file_dict["no_vec_p2"],
                                                                         mRNA_p1, mRNA_p2,
@@ -348,7 +362,7 @@ class mp_stage:
 
 
             command = self.commands.create_rRNA_inf_pp_s_command(self.file_dict["rRNA_inf_all_s"],
-                                                                 self.file_dict["rRNA_barrnap_all_s"],
+                                                                 self.file_dict["rRNA_bnap_all_s"],
                                                                  self.file_dict["no_vec_s"],
                                                                  self.file_dict["rRNA_mRNA_s_fq"],
                                                                  self.file_dict["rRNA_other_s_fq"],

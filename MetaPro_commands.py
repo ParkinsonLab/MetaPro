@@ -428,7 +428,7 @@ class mt_pipe_commands:
 
         return COMMANDS_vector
          
-    def create_rRNA_filter_barrnap_command(self, fasta_seqs, fastq_in, fastq_out, Barrnap_out, marker_file):
+    def create_rRNA_filter_barrnap_command(self, fasta_seqs, fastq_in, mRNA_out, rRNA_out, Barrnap_out, marker_file):
         # called by each split file
         # category -> singletons, pair 1, pair 2
         # file name -> the specific split section of the category (the fastq segments)
@@ -467,9 +467,8 @@ class mt_pipe_commands:
         Barrnap_pp += self.config_dict["Barrnap_post"] + " "
         Barrnap_pp += Barrnap_out + " "
         Barrnap_pp += fastq_in + " "
-        Barrnap_pp += self.dir_dict["rRNA_mRNA"] + " "
-        Barrnap_pp += self.dir_dict["rRNA_other"] + " "
-        Barrnap_pp += fastq_out + "_barrnap"
+        Barrnap_pp += mRNA_out + " "
+        Barrnap_pp += rRNA_out + " "
         
         make_marker = "touch" + " " + marker_file
   

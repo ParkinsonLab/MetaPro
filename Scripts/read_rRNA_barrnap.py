@@ -30,7 +30,7 @@ def extract_rRNA_ID_fasta(barrnap_file):
     #pandas can't deal with sets, but we only need unique elements        
     return list(ID_list)
 
-def filter_rRNA(rRNA_ID_list, fastq_sequence, mRNA_loc, rRNA_loc, file_name):
+def filter_rRNA(rRNA_ID_list, fastq_sequence, mRNA_out, rRNA_out):
     #import the fastq as a DF
     fastq_df = pd.read_csv(fastq_sequence, sep="\n", skip_blank_lines=False, quoting=3, header=None, names = [None])
     fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
@@ -38,13 +38,15 @@ def filter_rRNA(rRNA_ID_list, fastq_sequence, mRNA_loc, rRNA_loc, file_name):
     
     #doing it inline so we don't create another DF
     #mRNA segment
-    mRNA_export = os.path.join(mRNA_loc, file_name + "_mRNA.fastq")
-    rRNA_export = os.path.join(rRNA_loc, file_name + "_rRNA.fastq")
+    #mRNA_export = os.path.join(mRNA_loc, file_name + "_mRNA.fastq")
+    #rRNA_export = os.path.join(rRNA_loc, file_name + "_rRNA.fastq")
+    mRNA_export = mRNA_out
+    rRNA_export = rRNA_out
     fastq_df[fastq_df["ID"].isin(rRNA_ID_list)].to_csv(rRNA_export, sep="\n", mode = "w+", header=False, index=False, quoting = 3)
     fastq_df[~fastq_df["ID"].isin(rRNA_ID_list)].to_csv(mRNA_export, sep = "\n", mode = "w+", header=False, index=False, quoting = 3)
     #writing mRNA last, so we can use it to check the progress of the Barrnap step
     
-def filter_rRNA_fasta(rRNA_ID_list, fasta_sequence, mRNA_loc, rRNA_loc, file_name):
+def filter_rRNA_fasta(rRNA_ID_list, fasta_sequence, mRNA_out, rRNA_out):
     fasta_df = pd.read_csv(fasta_sequence, error_bad_lines=False, header=None, sep="\n")  # import the fasta
     fasta_df.columns = ["row"]
     #There's apparently a possibility for NaNs to be introduced in the raw fasta.  We have to strip it before we process (from DIAMOND proteins.faa)
@@ -65,8 +67,8 @@ def filter_rRNA_fasta(rRNA_ID_list, fasta_sequence, mRNA_loc, rRNA_loc, file_nam
     
     #doing it inline so we don't create another DF
     #mRNA segment
-    mRNA_export = os.path.join(mRNA_loc, file_name + "_mRNA.fasta")
-    rRNA_export = os.path.join(rRNA_loc, file_name + "_rRNA.fasta")
+    mRNA_export = mRNA_out
+    rRNA_export = rRNA_out
     fasta_df[fasta_df["names"].isin(rRNA_ID_list)].to_csv(rRNA_export, sep="\n", mode = "w+", header=False, index=False, quoting = 3)
     fasta_df[~fasta_df["names"].isin(rRNA_ID_list)].to_csv(mRNA_export, sep = "\n", mode = "w+", header=False, index=False, quoting = 3)
 
@@ -74,18 +76,18 @@ if __name__ == "__main__":
     
     barrnap_file = sys.argv[1]
     input_sequence = sys.argv[2]
-    mRNA_location = sys.argv[3]
-    rRNA_location = sys.argv[4]
-    segment_name = sys.argv[5]
+    mRNA_out = sys.argv[3]
+    rRNA_out = sys.argv[4]
+    
     
     fasta_sequence = ""
     fastq_sequence = ""
     if(input_sequence.endswith(".fastq")):
         fastq_sequence = input_sequence
         ID_list = extract_rRNA_ID(barrnap_file)
-        filter_rRNA(ID_list, fastq_sequence, mRNA_location, rRNA_location, segment_name)
+        filter_rRNA(ID_list, fastq_sequence, mRNA_out, rRNA_out)
     
     else:
         fasta_sequence = input_sequence
         ID_list = extract_rRNA_ID_fasta(barrnap_file)
-        filter_rRNA_fasta()
+        filter_rRNA_fasta(ID_list, fastq_sequence, mRNA_out, rRNA_out)

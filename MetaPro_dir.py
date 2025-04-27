@@ -81,9 +81,9 @@ class mpro_dir:
         rRNA_filter_label_default                       = "rRNA_filter"
         rRNA_filter_split_label_default                 = "rRNA_filter_split"
         rRNA_filter_convert_label_default               = "rRNA_filter_convert"
-        rRNA_filter_barrnap_label_default               = "rRNA_filter_barrnap"
-        rRNA_filter_barrnap_merge_label_default         = "rRNA_filter_barrnap_merge"
-        rRNA_filter_barrnap_pp_label_default            = "rRNA_filter_barrnap_pp"
+        rRNA_filter_bnap_label_default               = "rRNA_filter_bnap"
+        rRNA_filter_bnap_merge_label_default         = "rRNA_filter_bnap_merge"
+        rRNA_filter_bnap_pp_label_default            = "rRNA_filter_bnap_pp"
         rRNA_filter_infernal_label_default              = "rRNA_filter_infernal"
         rRNA_filter_infernal_prep_label_default         = "rRNA_filter_infernal_prep"
         rRNA_filter_splitter_label_default              = "rRNA_filter_splitter"
@@ -136,9 +136,9 @@ class mpro_dir:
         self.label_dict["rRNA"]                      = self.value_assignment(config, "Labels", "rRNA_filter",                        rRNA_filter_label_default)
         self.label_dict["rRNA_split"]                = self.value_assignment(config, "Labels", "rRNA_filter_split",                  rRNA_filter_split_label_default)   
         self.label_dict["rRNA_convert"]              = self.value_assignment(config, "Labels", "rRNA_filter_convert",                rRNA_filter_convert_label_default)
-        self.label_dict["rRNA_barrnap"]              = self.value_assignment(config, "Labels", "rRNA_filter_barrnap",                rRNA_filter_barrnap_label_default)
-        self.label_dict["rRNA_barrnap_merge"]        = self.value_assignment(config, "Labels", "rRNA_filter_barrnap_merge",          rRNA_filter_barrnap_merge_label_default)
-        self.label_dict["rRNA_barrnap_pp"]           = self.value_assignment(config, "Labels", "rRNA_filter_barrnap_pp",             rRNA_filter_barrnap_pp_label_default)
+        self.label_dict["rRNA_bnap"]              = self.value_assignment(config, "Labels", "rRNA_filter_bnap",                rRNA_filter_bnap_label_default)
+        self.label_dict["rRNA_bnap_merge"]        = self.value_assignment(config, "Labels", "rRNA_filter_bnap_merge",          rRNA_filter_bnap_merge_label_default)
+        self.label_dict["rRNA_bnap_pp"]           = self.value_assignment(config, "Labels", "rRNA_filter_bnap_pp",             rRNA_filter_bnap_pp_label_default)
         self.label_dict["rRNA_infernal"]             = self.value_assignment(config, "Labels", "rRNA_filter_infernal",               rRNA_filter_infernal_label_default)
         self.label_dict["rRNA_infernal_prep"]        = self.value_assignment(config, "Labels", "rRNA_filter_infernal_prep",          rRNA_filter_infernal_prep_label_default)
         self.label_dict["rRNA_splitter"]             = self.value_assignment(config, "Labels", "rRNA_filter_splitter",               rRNA_filter_splitter_label_default)
@@ -212,19 +212,19 @@ class mpro_dir:
 
         self.dir_dict["vec_list"] = ["vec", "vec_data", "vec_scan", "vec_export"]
 
-        #we're keeping the split at barrnap.  Barrnap is O(n)
+        
         self.dir_dict["rRNA"] = os.path.join(self.out_dir, self.label_dict["rRNA"])
         self.dir_dict["rRNA_data"] = os.path.join(self.dir_dict["rRNA"], "data")
         self.dir_dict["rRNA_jobs"] = os.path.join(self.dir_dict["rRNA"], "jobs")
         self.dir_dict["rRNA_mkrs"] = os.path.join(self.dir_dict["rRNA"], "mkrs")
         self.dir_dict["rRNA_split"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_split")
-        self.dir_dict["rRNA_barrnap"] = os.path.join(self.dir_dict["rRNA_data"], "barrnap")
+        self.dir_dict["rRNA_bnap"] = os.path.join(self.dir_dict["rRNA_data"], "bnap")
         self.dir_dict["rRNA_inf"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_inf")
         
         self.dir_dict["rRNA_export"] = os.path.join(self.dir_dict["rRNA"], "export")
         self.dir_dict["rRNA_mRNA"] = os.path.join(self.dir_dict["rRNA_export"], "mRNA")
         self.dir_dict["rRNA_other"] = os.path.join(self.dir_dict["rRNA_export"], "other")
-        self.dir_dict["rRNA_list"] = ["rRNA", "rRNA_data", "rRNA_jobs", "rRNA_split", "rRNA_barrnap", "rRNA_inf", "rRNA_s_fasta", "rRNA_p1_fasta", "rRNA_p2_fasta", "rRNA_export", "rRNA_mRNA", "rRNA_other"]
+        self.dir_dict["rRNA_list"] = ["rRNA", "rRNA_data", "rRNA_jobs", "rRNA_split", "rRNA_bnap", "rRNA_inf", "rRNA_s_fasta", "rRNA_p1_fasta", "rRNA_p2_fasta", "rRNA_export", "rRNA_mRNA", "rRNA_other"]
 
         self.dir_dict["repop"] = os.path.join(self.out_dir, self.label_dict["repop"])
         self.dir_dict["repop_data"] = os.path.join(self.dir_dict["repop"], "data")
