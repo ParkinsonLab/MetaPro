@@ -498,6 +498,7 @@ class mpro_config:
         self.config_dict["AdapterRemoval"] = self.value_assignment("path", config, "Tools", "AdapterRemoval", os.path.join(tool_path, "adapterremoval/AdapterRemoval"))
         self.config_dict["vsearch"]        = self.value_assignment("path", config, "Tools", "vsearch", os.path.join(tool_path, "vsearch/vsearch"))
         self.config_dict["BWA"]            = self.value_assignment("path", config, "Tools", "BWA", os.path.join(tool_path, "BWA/bwa"))
+        self.config_dict["BT2"]             = self.value_assignment("path", config, "Tools", "BT2", os.path.join(tool_path, "bowtie2/bowtie2"))
         self.config_dict["samtools"]       = self.value_assignment("path", config, "Tools", "SAMTOOLS", os.path.join(tool_path, "samtools/samtools"))
         self.config_dict["BLAT"]           = self.value_assignment("path", config, "Tools", "BLAT", os.path.join(tool_path, "PBLAT/pblat"))
         self.config_dict["DMD"]        = self.value_assignment("path", config, "Tools", "DIAMOND", os.path.join(tool_path, "DIAMOND/diamond"))
@@ -515,6 +516,7 @@ class mpro_config:
         self.config_dict["Spades"]         = self.value_assignment("path", config, "Tools", "Spades", os.path.join(tool_path, "SPAdes/bin/spades.py"))
         self.config_dict["MetaGeneMark"]   = self.value_assignment("path", config, "Tools", "MetaGeneMark", os.path.join(tool_path, "mgm/gmhmmp"))
         self.config_dict["kraken2"]        = self.value_assignment("path", config, "Tools", "kraken2", os.path.join(tool_path, "kraken2/kraken2"))
+        self.config_dict["DeepEC"]      = self.value_assignment("path", config, "Tools", "DeepEC", os.path.join(tool_path, "DeepProZyme-v_1_0/run_deepextransformer.py"))
 
         #--------------------------------------------
         # Python scripts

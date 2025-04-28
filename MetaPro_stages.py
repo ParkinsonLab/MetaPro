@@ -202,7 +202,7 @@ class mp_stage:
                 fq_in = self.file_dict["no_vec_" + str(run_type)]
                 mRNA_out = self.file_dict["rRNA_bnap_mRNA_" + str(run_type)]
                 rRNA_out = self.file_dict["rRNA_bnap_rRNA_" + str(run_type)]
-                bnap_out = self.file_dict["rRNA_bnap_all" + str(run_type)]
+                bnap_out = self.file_dict["rRNA_bnap_all_" + str(run_type)]
                 self.mp_seq_handler.fastq_to_fasta(fa_in, fq_in)
                 command = self.commands.create_rRNA_filter_bnap_command(fa_in, fq_in, mRNA_out, rRNA_out, bnap_out)
                 self.mp_util.launch_and_create_with_mp_store()
@@ -293,12 +293,7 @@ class mp_stage:
                         with open(inf_out, "rb") as in_file:
                             shutil.copyfileobj(in_file, out_file)
                         out_file.write(b"\n")
-                with open(self.file_dict["rRNA_bnap_all_s"], "wb") as out_file:
-                    for i in range(0, split_count_s):
-                        inf_out = self.file_dict["rRNA_bnap_s_" + str(i)]
-                        with open(inf_out, "rb") as in_file:
-                            shutil.copyfileobj(in_file, out_file)
-                        out_file.write(b"\n")
+                
 
             if(split_count_p1 > 0):
                 with open(self.file_dict["rRNA_inf_all_p1"], "wb") as out_file:
@@ -307,12 +302,7 @@ class mp_stage:
                         with open(inf_out, "rb") as in_file:
                             shutil.copyfileobj(in_file, out_file)
                         out_file.write(b"\n")
-                with open(self.file_dict["rRNA_bnap_all_p1"], "wb") as out_file:
-                    for i in range(0, split_count_p1):
-                        inf_out = self.file_dict["rRNA_bnap_p1_" + str(i)]
-                        with open(inf_out, "rb") as in_file:
-                            shutil.copyfileobj(in_file, out_file)
-                        out_file.write(b"\n")
+                
 
             if(split_count_p2 > 0):
                 with open(self.file_dict["rRNA_inf_all_p2"], "wb") as out_file:
@@ -321,12 +311,7 @@ class mp_stage:
                         with open(inf_out, "rb") as in_file:
                             shutil.copyfileobj(in_file, out_file)
                         out_file.write(b"\n")
-                with open(self.file_dict["rRNA_bnap_all_p2"], "wb") as out_file:
-                    for i in range(0, split_count_p2):
-                        inf_out = self.file_dict["rRNA_bnap_p2_" + str(i)]
-                        with open(inf_out, "rb") as in_file:
-                            shutil.copyfileobj(in_file, out_file)
-                        out_file.write(b"\n")
+                
 
             
 
@@ -558,28 +543,7 @@ class mp_stage:
             
         self.debug_stop_check(self.GA_pre_scan_label)
     
-    def mp_GA_split(self):
-        #separating GA split-data from GA_BWA for a few reasons:
-        #1) so the pipe has the option to not split all the time
-        #2) modularity
-        self.config_dict["GA_split_count_s"] = self.seq_handler.split_fastq(self.file_dict["contigs_s"], self.file_dict["ga_split_s"], self.config_dict["GA_chunksize"], "fasta")
-        self.config_dict["GA_split_count_p1"] = self.seq_handler.split_fastq(self.file_dict["contigs_p1"], self.file_dict["ga_split_p1"], self.config_dict["GA_chunksize"], "fasta")
-        self.config_dict["GA_split_count_p2"] = self.seq_handler.split_fastq(self.file_dict["contigs_p2"], self.file_dict["ga_split_p2"], self.config_dict["GA_chunksize"], "fasta")
-            
-        for i in range(0, self.config_dict["GA_split_count_s"]):
-            tag = self.file_dict["ga_split_s"] + "_" + str(i)
-            self.file_dict[tag] = self.file_dict["ga_split_s"] + "_" + str(i) + ".fasta"
-            
-        for i in range(0, self.config_dict["GA_split_count_p1"]):
-            tag = self.file_dict["ga_split_p1"] + "_" + str(i)
-            self.file_dict[tag] = self.file_dict["ga_split_p1"] + "_" + str(i) + ".fasta"
-        
-        for i in range(0, self.config_dict["GA_split_count_p2"]):
-            tag = self.file_dict["ga_split_p2"] + "_" + str(i)
-            self.file_dict[tag] = self.file_dict["ga_split_p2"] + "_" + str(i) + ".fasta"
 
-
-        self.debug_stop_check(self.GA_split_label)
         
     def mp_GA_lib_check(self):
         print(dt.today(), "Running GA lib check")

@@ -240,6 +240,16 @@ RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.
 RUN wget https://compsysbio.org/metapro_hosting/mgm2.zip \
 && unzip mgm2.zip
 
+#------------------------------------------------------------
+# Install DeepEC
+RUN wget https://github.com/kaistsystemsbiology/DeepProZyme/archive/refs/tags/v_1_0.zip -O DeepEC.zip \
+&& unzip DeepEC.zip
+
+RUN pip install  --upgrade pip \
+&& pip install torch \
+&& pip install tqdm \
+&& pip install transformers
+
 ENV PATH="${PATH}:/pipeline_tools/SPAdes/bin"
 ENV PATH="${PATH}:/pipeline_tools/BWA"
 ENV PATH="${PATH}:/pipeline_tools/MetaGeneMark_linux_64"
@@ -253,6 +263,7 @@ ENV PATH="${PATH}:/pipeline_tools/adapterremoval"
 ENV PATH="${PATH}:/pipeline_tools/infernal/src"
 ENV PATH="${PATH}:/pipeline_tools/bowtie2"
 ENV PATH="${PATH}:/pipeline_tools/mgm2/src"
+ENV PATH="${PATH}:/pipeline_tools/DeepProZyme-v_1_0"
 
 #RUN apt-get update
 #RUN apt-get upgrade
