@@ -213,21 +213,21 @@ class mt_pipe_commands:
     def create_host_filter_command(self, marker):
         
         # host removal on unique singletons
-        bwa_hr_s = ">&2 echo BWA host remove on singletons | "
-        bwa_hr_s += self.config_dict["BWA"] + " mem -t "
-        bwa_hr_s += self.threads_str + " "
-        bwa_hr_s += self.config_dict["Host_db"] + " "
-        bwa_hr_s += self.file_dict["qf_u_s"] + " " 
-        bwa_hr_s += ">" + " "
-        bwa_hr_s += self.file_dict["no_host_s_sam"]
+        bt2_hr_s = ">&2 echo bt2 host remove on singletons | "
+        bt2_hr_s += self.config_dict["bt2"] + " mem -t "
+        bt2_hr_s += self.threads_str + " "
+        bt2_hr_s += self.config_dict["Host_db"] + " "
+        bt2_hr_s += self.file_dict["qf_u_s"] + " " 
+        bt2_hr_s += ">" + " "
+        bt2_hr_s += self.file_dict["no_host_s_sam"]
         
         #Tutorial-use only.  
-        bwa_hr_tut_s = ">&2 echo BWA host remove on singletons | "
-        bwa_hr_tut_s += self.config_dict["BWA"] + " mem -t "
-        bwa_hr_tut_s += self.threads_str + " "
-        bwa_hr_tut_s += self.config_dict["Host_db"] + " "
-        bwa_hr_tut_s += self.config_dict["single"] 
-        bwa_hr_tut_s += " > " + self.file_dict["no_host_s_sam"]
+        bt2_hr_tut_s = ">&2 echo bt2 host remove on singletons | "
+        bt2_hr_tut_s += self.config_dict["bt2"] + " mem -t "
+        bt2_hr_tut_s += self.threads_str + " "
+        bt2_hr_tut_s += self.config_dict["Host_db"] + " "
+        bt2_hr_tut_s += self.config_dict["single"] 
+        bt2_hr_tut_s += " > " + self.file_dict["no_host_s_sam"]
         
         # annoying type conversion pt 1
         samtools_hr_s_sam_to_bam = ">&2 echo convert singletons host reads | "
@@ -246,38 +246,38 @@ class mt_pipe_commands:
 
 
         
-        bwa_hr_paired = ">&2 echo bwa host-removal on paired | " 
-        bwa_hr_paired += self.config_dict["BWA"] + " "
-        bwa_hr_paired += "mem" + " "  + "-t" + " " + self.threads_str + " "
-        bwa_hr_paired += self.config_dict["Host_db"] + " "
-        bwa_hr_paired += self.file_dict["qf_u_p1"] + " "
-        bwa_hr_paired += self.file_dict["qf_u_p2"] + " "
-        bwa_hr_paired += ">" + " "
-        bwa_hr_paired += self.file_dict["no_host_p_sam"]
+        bt2_hr_paired = ">&2 echo bt2 host-removal on paired | " 
+        bt2_hr_paired += self.config_dict["bt2"] + " "
+        bt2_hr_paired += "mem" + " "  + "-t" + " " + self.threads_str + " "
+        bt2_hr_paired += self.config_dict["Host_db"] + " "
+        bt2_hr_paired += self.file_dict["qf_u_p1"] + " "
+        bt2_hr_paired += self.file_dict["qf_u_p2"] + " "
+        bt2_hr_paired += ">" + " "
+        bt2_hr_paired += self.file_dict["no_host_p_sam"]
         
         #Tutorial-use only
-        bwa_hr_tut_paired = ">&2 echo bwa host-removal on paired | " 
-        bwa_hr_tut_paired += self.config_dict["BWA"] + " "
-        bwa_hr_tut_paired += "mem" + " "  + "-t" + " " + self.threads_str + " "
-        bwa_hr_tut_paired += self.config_dict["Host_db"] + " "
-        bwa_hr_tut_paired += self.config_dict["pair_1"] + " "
-        bwa_hr_tut_paired += self.config_dict["pair_2"] + " "
-        bwa_hr_tut_paired += ">" + " "
-        bwa_hr_tut_paired += self.file_dict["no_host_p_sam"]
+        bt2_hr_tut_paired = ">&2 echo bt2 host-removal on paired | " 
+        bt2_hr_tut_paired += self.config_dict["bt2"] + " "
+        bt2_hr_tut_paired += "mem" + " "  + "-t" + " " + self.threads_str + " "
+        bt2_hr_tut_paired += self.config_dict["Host_db"] + " "
+        bt2_hr_tut_paired += self.config_dict["pair_1"] + " "
+        bt2_hr_tut_paired += self.config_dict["pair_2"] + " "
+        bt2_hr_tut_paired += ">" + " "
+        bt2_hr_tut_paired += self.file_dict["no_host_p_sam"]
         
         
-        bwa_hr_filter_paired = ">&2 echo BWA host-removal PP on paired | "
-        bwa_hr_filter_paired += self.config_dict["Python"] + " "
-        bwa_hr_filter_paired += self.config_dict["bwa_read_sorter"] + " "
-        bwa_hr_filter_paired += "paired" + " "
-        bwa_hr_filter_paired += self.config_dict["filter_stringency"] + " "
-        bwa_hr_filter_paired += self.file_dict["no_host_p_sam"] + " "
-        bwa_hr_filter_paired += self.file_dict["qf_u_p1"] + " "
-        bwa_hr_filter_paired += self.file_dict["qf_u_p2"] + " "
-        bwa_hr_filter_paired += self.file_dict["no_host_p1"] + " "
-        bwa_hr_filter_paired += self.file_dict["no_host_p2"] + " "
-        bwa_hr_filter_paired += self.file_dict["host_p1"] + " "
-        bwa_hr_filter_paired += self.file_dict["host_p2"]
+        bt2_hr_filter_paired = ">&2 echo bt2 host-removal PP on paired | "
+        bt2_hr_filter_paired += self.config_dict["Python"] + " "
+        bt2_hr_filter_paired += self.config_dict["bt2_read_sorter"] + " "
+        bt2_hr_filter_paired += "paired" + " "
+        bt2_hr_filter_paired += self.config_dict["filter_stringency"] + " "
+        bt2_hr_filter_paired += self.file_dict["no_host_p_sam"] + " "
+        bt2_hr_filter_paired += self.file_dict["qf_u_p1"] + " "
+        bt2_hr_filter_paired += self.file_dict["qf_u_p2"] + " "
+        bt2_hr_filter_paired += self.file_dict["no_host_p1"] + " "
+        bt2_hr_filter_paired += self.file_dict["no_host_p2"] + " "
+        bt2_hr_filter_paired += self.file_dict["host_p1"] + " "
+        bt2_hr_filter_paired += self.file_dict["host_p2"]
 
         
         make_marker = "touch " + marker
@@ -292,38 +292,38 @@ class mt_pipe_commands:
         if(self.tutorial_keyword is None):
             if self.read_mode == "single":
                 COMMANDS_host = [
-                    bwa_hr_s,
+                    bt2_hr_s,
                     samtools_hr_s_sam_to_bam,
                     samtools_no_host_s_bam_to_fastq,
                     samtools_host_s_bam_to_fastq + " && " + make_marker
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_host = [
-                    bwa_hr_s,
+                    bt2_hr_s,
                     samtools_hr_s_sam_to_bam,
                     samtools_no_host_s_bam_to_fastq,
                     samtools_host_s_bam_to_fastq,
-                    bwa_hr_paired,
-                    bwa_hr_filter_paired + " && " + make_marker
+                    bt2_hr_paired,
+                    bt2_hr_filter_paired + " && " + make_marker
 
                 ]
         else:
             print(dt.today(), "Host filter operating in tutorial-mode")
             if self.read_mode == "single":
                 COMMANDS_host = [
-                    bwa_hr_tut_s,
+                    bt2_hr_tut_s,
                     samtools_hr_s_sam_to_bam,
                     samtools_no_host_s_bam_to_fastq,
                     samtools_host_s_bam_to_fastq + " && " + make_marker
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_host = [
-                    bwa_hr_tut_s,
+                    bt2_hr_tut_s,
                     samtools_hr_s_sam_to_bam,
                     samtools_no_host_s_bam_to_fastq,
                     samtools_host_s_bam_to_fastq,
-                    bwa_hr_tut_paired,
-                    bwa_hr_filter_paired + " && " + make_marker
+                    bt2_hr_tut_paired,
+                    bt2_hr_filter_paired + " && " + make_marker
                 ]
 
                 
@@ -333,18 +333,18 @@ class mt_pipe_commands:
         # why do we leave all the interim files intact?
         # because science needs repeatable data, and the process needs to be able to start at any point
         
-        bwa_vr_s = ">&2 echo BWA vector oprhans | "
-        bwa_vr_s += self.config_dict["BWA"] + " mem -t " + self.threads_str + " "
-        bwa_vr_s += self.file_dict["vectors"] + " "
-        bwa_vr_s += self.file_dict["no_host_s"]
-        bwa_vr_s += " > " + self.file_dict["vec_s_sam"]
+        bt2_vr_s = ">&2 echo bt2 vector oprhans | "
+        bt2_vr_s += self.config_dict["bt2"] + " mem -t " + self.threads_str + " "
+        bt2_vr_s += self.file_dict["vectors"] + " "
+        bt2_vr_s += self.file_dict["no_host_s"]
+        bt2_vr_s += " > " + self.file_dict["vec_s_sam"]
         
         
-        bwa_vr_tut_s = ">&2 echo BWA vector oprhans TUTORIAL MODE | "
-        bwa_vr_tut_s += self.config_dict["BWA"] + " mem -t " + self.threads_str + " "
-        bwa_vr_tut_s += self.config_dict["vectors"] + " "
-        bwa_vr_tut_s += self.config_dict["single"]
-        bwa_vr_tut_s += " > " + self.file_dict["vec_s_sam"]
+        bt2_vr_tut_s = ">&2 echo bt2 vector oprhans TUTORIAL MODE | "
+        bt2_vr_tut_s += self.config_dict["bt2"] + " mem -t " + self.threads_str + " "
+        bt2_vr_tut_s += self.config_dict["vectors"] + " "
+        bt2_vr_tut_s += self.config_dict["single"]
+        bt2_vr_tut_s += " > " + self.file_dict["vec_s_sam"]
 
         samtools_no_vec_s_convert = ">&2 echo samtools vector oprhans pt 1 | "
         samtools_no_vec_s_convert += self.config_dict["samtools"] + " view -bS "
@@ -361,39 +361,39 @@ class mt_pipe_commands:
         samtools_vec_s_export += " -0 " + self.file_dict["vec_s"] + " "
         samtools_vec_s_export += self.file_dict["vec_s_bam"]
 
-        bwa_vr_paired = ">&2 echo bwa vector paired | "
-        bwa_vr_paired += self.config_dict["BWA"] + " mem -t " + self.threads_str + " "
-        bwa_vr_paired += self.config_dict["vectors"] + " "
-        bwa_vr_paired += self.file_dict["no_host_p1"] + " "
-        bwa_vr_paired += self.file_dict["no_host_p2"] + " "
-        bwa_vr_paired += " > " + self.file_dict["vec_p_sam"]
+        bt2_vr_paired = ">&2 echo bt2 vector paired | "
+        bt2_vr_paired += self.config_dict["bt2"] + " mem -t " + self.threads_str + " "
+        bt2_vr_paired += self.config_dict["vectors"] + " "
+        bt2_vr_paired += self.file_dict["no_host_p1"] + " "
+        bt2_vr_paired += self.file_dict["no_host_p2"] + " "
+        bt2_vr_paired += " > " + self.file_dict["vec_p_sam"]
 
-        bwa_vr_tut_paired = ">&2 echo bwa vector paired TUTORIAL MODE | "
-        bwa_vr_tut_paired += self.config_dict["BWA"] + " mem -t " + self.threads_str + " "
-        bwa_vr_tut_paired += self.config_dict["vectors"] + " "
-        bwa_vr_tut_paired += self.config_dict["pair_1"] + " "
-        bwa_vr_tut_paired += self.config_dict["pair_2"] + " "
-        bwa_vr_tut_paired += " > " + self.file_dict["vec_p_sam"]
+        bt2_vr_tut_paired = ">&2 echo bt2 vector paired TUTORIAL MODE | "
+        bt2_vr_tut_paired += self.config_dict["bt2"] + " mem -t " + self.threads_str + " "
+        bt2_vr_tut_paired += self.config_dict["vectors"] + " "
+        bt2_vr_tut_paired += self.config_dict["pair_1"] + " "
+        bt2_vr_tut_paired += self.config_dict["pair_2"] + " "
+        bt2_vr_tut_paired += " > " + self.file_dict["vec_p_sam"]
         
-        bwa_vr_filter_paired = ">&2 echo BWA vector filter on paired | "
-        bwa_vr_filter_paired += self.config_dict["Python"] + " "
-        bwa_vr_filter_paired += self.config_dict["bwa_read_sorter"] + " "
-        bwa_vr_filter_paired += "paired" + " "
-        bwa_vr_filter_paired += self.config_dict["filter_stringency"] + " "
-        bwa_vr_filter_paired += self.file_dict["vec_p_sam"] + " "
-        bwa_vr_filter_paired += self.file_dict["no_host_p1"] + " "
-        bwa_vr_filter_paired += self.file_dict["no_host_p2"] + " "
-        bwa_vr_filter_paired += self.file_dict["no_vec_p1"] + " "
-        bwa_vr_filter_paired += self.file_dict["no_vec_p2"] + " "
-        bwa_vr_filter_paired += self.file_dict["vec_p1"] + " "
-        bwa_vr_filter_paired += self.file_dict["vec_p2"]
+        bt2_vr_filter_paired = ">&2 echo bt2 vector filter on paired | "
+        bt2_vr_filter_paired += self.config_dict["Python"] + " "
+        bt2_vr_filter_paired += self.config_dict["bt2_read_sorter"] + " "
+        bt2_vr_filter_paired += "paired" + " "
+        bt2_vr_filter_paired += self.config_dict["filter_stringency"] + " "
+        bt2_vr_filter_paired += self.file_dict["vec_p_sam"] + " "
+        bt2_vr_filter_paired += self.file_dict["no_host_p1"] + " "
+        bt2_vr_filter_paired += self.file_dict["no_host_p2"] + " "
+        bt2_vr_filter_paired += self.file_dict["no_vec_p1"] + " "
+        bt2_vr_filter_paired += self.file_dict["no_vec_p2"] + " "
+        bt2_vr_filter_paired += self.file_dict["vec_p1"] + " "
+        bt2_vr_filter_paired += self.file_dict["vec_p2"]
 
         make_marker = "touch && " + marker_file
 
         if(self.tutorial_keyword == "vectors" or self.tutorial_keyword == "vector"):
             if self.read_mode == "single":
                 COMMANDS_vector = [
-                    bwa_vr_tut_s,
+                    bt2_vr_tut_s,
                     samtools_no_vec_s_convert,
                     samtools_no_vec_s_export,
                     samtools_vec_s_export + " && " + make_marker
@@ -401,29 +401,29 @@ class mt_pipe_commands:
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_vector = [
-                    bwa_vr_tut_s,
+                    bt2_vr_tut_s,
                     samtools_no_vec_s_convert,
                     samtools_no_vec_s_export,
                     samtools_vec_s_export,
-                    bwa_vr_tut_paired,
-                    bwa_vr_filter_paired + " && " + make_marker
+                    bt2_vr_tut_paired,
+                    bt2_vr_filter_paired + " && " + make_marker
                 ]
         else:    
             if self.read_mode == "single":
                 COMMANDS_vector = [
-                    bwa_vr_s,
+                    bt2_vr_s,
                     samtools_no_vec_s_convert,
                     samtools_no_vec_s_export,
                     samtools_vec_s_export + " && " + make_marker
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_vector = [
-                    bwa_vr_s,
+                    bt2_vr_s,
                     samtools_no_vec_s_convert,
                     samtools_no_vec_s_export,
                     samtools_vec_s_export,
-                    bwa_vr_paired,
-                    bwa_vr_filter_paired + " && " + make_marker
+                    bt2_vr_paired,
+                    bt2_vr_filter_paired + " && " + make_marker
                 ]    
 
         return COMMANDS_vector
@@ -698,6 +698,7 @@ class mt_pipe_commands:
        
         final_contigs       = self.file_dict["contigs_out_fa"]
         contig_map          = self.file_dict["contigs_map"]
+        contigs_idx         = self.file_dict["contigs_idx"]
         
         #-------------------------------------------------------
         #spades does too good of a job sometimes.  Disassemble it into genes.
@@ -712,24 +713,28 @@ class mt_pipe_commands:
         remove_whitespace += self.file_dict["contigs_split"] + " "
         remove_whitespace += final_contigs
         
-        #BWA-ing against the final contigs gives us a proper contig-segment -> read map. 
-        bwa_index = self.config_dict["BWA"] + " index -a bwtsw " + final_contigs
-        
+        #bt2-ing against the final contigs gives us a proper contig-segment -> read map. 
+        #bt2_index = self.config_dict["bt2"] + " index -a bwtsw " + final_contigs
+        #note: bt2 index MUST be fasta.  not fastq
+        bt2_index = self.config_dict["BT2_index"] + " " + final_contigs + " " + contigs_idx 
         
         # Build a report of what was consumed by contig transmutation (assemble/disassemble)
-        bwa_paired_contigs = ">&2 echo BWA pair contigs | "
-        bwa_paired_contigs += self.config_dict["BWA"] + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
-        bwa_paired_contigs += final_contigs + " "
-        bwa_paired_contigs += self.file_dict["repop_p1"] + " "
-        bwa_paired_contigs += self.file_dict["repop_p2"] + " "
-        bwa_paired_contigs += ">" + " " 
-        bwa_paired_contigs += self.file_dict["contigs_p_sam"]
+        bt2_paired_contigs = ">&2 echo bt2 pair contigs | "
+        #bt2_paired_contigs += self.config_dict["BT2"] + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
+        # --score-min L,0,-0.2 --mp 40,40 --rdg 10,10 --rfg 10,10 --np 60 --dpad 15 --gbar 4 -L 50 -i S,1,0.75
+        # Apr 29 2025: exec order to ditch the scores and go default due to translation conflicts
+         bt2_paired_contigs += self.config_dict["BT2"] 
+        bt2_paired_contigs += " -x " + contigs_idx + " "
+        bt2_paired_contigs += " -1 " + self.file_dict["repop_p1"] + " "
+        bt2_paired_contigs += self.file_dict["repop_p2"] + " " 
+        bt2_paired_contigs += "| samtools view > " + self.file_dict["contigs_p_sam"]
 
-        bwa_singletons_contigs = ">&2 echo BWA singleton contigs | "
-        bwa_singletons_contigs += self.config_dict["BWA"] + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
-        bwa_singletons_contigs += final_contigs + " "
-        bwa_singletons_contigs += self.file_dict["repop_s"]
-        bwa_singletons_contigs += " > " + self.file_dict["contigs_s_sam"]
+        bt2_singletons_contigs = ">&2 echo bt2 singleton contigs | "
+        #bt2_singletons_contigs += self.config_dict["bt2"] + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
+        bt2_singletons_contigs += self.config_dict["BT2"] +  " --score-min L,0,-0.2 --mp 40,40 --rdg 10,10 --rfg 10,10 --np 60 --dpad 15 --gbar 4 -L 50 -i S,1,0.75 "
+        bt2_singletons_contigs += final_contigs + " "
+        bt2_singletons_contigs += self.file_dict["repop_s"]
+        bt2_singletons_contigs += " > " + self.file_dict["contigs_s_sam"]
         
         make_contig_map = ">&2 echo Making contig map | " 
         make_contig_map += self.config_dict["Python"] + " "
@@ -762,8 +767,8 @@ class mt_pipe_commands:
                 spades_rename + " && " +
                 disassemble_contigs + " && " +
                 remove_whitespace + " && " +
-                bwa_index + " && " +
-                bwa_singletons_contigs + " && " +
+                bt2_index + " && " +
+                bt2_singletons_contigs + " && " +
                 make_contig_map + " && " +
                 flush_bad_contigs + " && " + 
                 make_marker
@@ -775,9 +780,9 @@ class mt_pipe_commands:
                 spades_rename + " && " +
                 disassemble_contigs + " && " +
                 remove_whitespace + " && " +
-                bwa_index + " && " +
-                bwa_paired_contigs + " && " +
-                bwa_singletons_contigs + " && " +
+                bt2_index + " && " +
+                bt2_paired_contigs + " && " +
+                bt2_singletons_contigs + " && " +
                 make_contig_map + " && " + 
                 flush_bad_contigs + " && " + 
                 make_marker
@@ -855,7 +860,7 @@ class mt_pipe_commands:
         assemble_lib += "all"
         
         #index_lib = "for i in $(ls " + final_folder + ");" + " "
-        #index_lib += "do " + self.config_dict["BWA"] + " index" + " "
+        #index_lib += "do " + self.config_dict["bt2"] + " index" + " "
         #index_lib += final_folder + "/$i; done" 
         
         make_marker = "touch" + " " + marker_file
@@ -872,23 +877,23 @@ class mt_pipe_commands:
         # aug 10, 2021: changed ref path to accomodate new split-chocophlan
         #feb 20, 2025: reiterating call-per-file.
         
-        bt2_job = self.config_dict["BWA"] + " mem -t " + self.threads_str + " "
+        bt2_job = self.config_dict["bt2"] + " mem -t " + self.threads_str + " "
         bt2_job += db_path + " "
         bt2_job += sample_file + " | "
         bt2_job += self.config_dict["samtools"] + " view "
         bt2_job += "> " + sam_out
         
-        #make_marker = ">&2 echo marking BWA job complete: " + file_tag + " | "
+        #make_marker = ">&2 echo marking bt2 job complete: " + file_tag + " | "
         make_marker = "touch" + " " + marker_file
     
-        COMMANDS_BWA = [
+        COMMANDS_bt2 = [
             bt2_job + " && " + make_marker
         ]
     
-        return COMMANDS_BWA
+        return COMMANDS_bt2
         
     
-    def create_BWA_pp_command_v2(self, stage_name, dependency_stage_name, ref_tag, ref_path, query_file, marker_file):
+    def create_bt2_pp_command_v2(self, stage_name, dependency_stage_name, ref_tag, ref_path, query_file, marker_file):
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
             
@@ -896,95 +901,95 @@ class mt_pipe_commands:
         #meant to be called on the split-file version.  PP script will not merge gene maps.
         subfolder       = os.path.join(self.output_path, stage_name)
         data_folder     = os.path.join(subfolder, "data")
-        bwa_folder      = os.path.join(data_folder, "1_bwa")
+        bt2_folder      = os.path.join(data_folder, "1_bt2")
         split_folder    = os.path.join(data_folder, "0_read_split")
-        pp_folder       = os.path.join(data_folder, "2_bwa_pp")
+        pp_folder       = os.path.join(data_folder, "2_bt2_pp")
         final_folder    = os.path.join(subfolder, "final_results")
         dep_loc         = os.path.join(self.output_path, dependency_stage_name, "final_results")
         jobs_folder     = os.path.join(data_folder, "jobs")
         
         self.make_folder(subfolder)
         self.make_folder(data_folder)
-        self.make_folder(bwa_folder)
+        self.make_folder(bt2_folder)
         self.make_folder(final_folder)
         self.make_folder(jobs_folder)
         self.make_folder(pp_folder)
         
         reads_in    = query_file
-        bwa_in      = os.path.join(bwa_folder, sample_root_name + "_" + ref_tag + ".sam")
+        bt2_in      = os.path.join(bt2_folder, sample_root_name + "_" + ref_tag + ".sam")
         reads_out = ""
         if(self.config_dict["GA_DB_mode"] == "multi"):
-            print(dt.today(), "BWA_pp running in split-mode")
+            print(dt.today(), "bt2_pp running in split-mode")
             reads_out   = os.path.join(pp_folder, sample_root_name + "_" + ref_tag + ".fasta")
         else:
-            print(dt.today(), "BWA_pp running in single-mode")
+            print(dt.today(), "bt2_pp running in single-mode")
             reads_out = os.path.join(final_folder, sample_root_name + "_" + ref_tag + ".fasta")
         
 
-        map_read_bwa = ">&2 echo " + str(dt.today()) + " GA BWA PP generic: " + sample_root_name + " | "
-        map_read_bwa += self.config_dict["Python"] + " "
-        map_read_bwa += self.config_dict["Map_reads_gene_BWA"] + " "
-        map_read_bwa += str(self.config_dict["BWA_cigar_cutoff"]) + " "
-        map_read_bwa += ref_path + " "
+        map_read_bt2 = ">&2 echo " + str(dt.today()) + " GA bt2 PP generic: " + sample_root_name + " | "
+        map_read_bt2 += self.config_dict["Python"] + " "
+        map_read_bt2 += self.config_dict["Map_reads_gene_bt2"] + " "
+        map_read_bt2 += str(self.config_dict["bt2_cigar_cutoff"]) + " "
+        map_read_bt2 += ref_path + " "
         if(self.sequence_contigs == "None"):
-            map_read_bwa += "None" + " "
+            map_read_bt2 += "None" + " "
         else:        
-            map_read_bwa += os.path.join(dep_loc, "contig_map.tsv") + " "  # IN
-        map_read_bwa += os.path.join(final_folder, sample_root_name + "_" + ref_tag + "_gene_map.tsv") + " "  # OUT
-        map_read_bwa += os.path.join(final_folder, sample_root_name + "_" + ref_tag + "_mapped_genes.fna") + " " #OUT
-        map_read_bwa += reads_in + " "
-        map_read_bwa += bwa_in + " "
-        map_read_bwa += reads_out
+            map_read_bt2 += os.path.join(dep_loc, "contig_map.tsv") + " "  # IN
+        map_read_bt2 += os.path.join(final_folder, sample_root_name + "_" + ref_tag + "_gene_map.tsv") + " "  # OUT
+        map_read_bt2 += os.path.join(final_folder, sample_root_name + "_" + ref_tag + "_mapped_genes.fna") + " " #OUT
+        map_read_bt2 += reads_in + " "
+        map_read_bt2 += bt2_in + " "
+        map_read_bt2 += reads_out
 
 
 
         
 
-        make_marker = ">&2 echo bwa pp complete: " + marker_file + " | " 
+        make_marker = ">&2 echo bt2 pp complete: " + marker_file + " | " 
         make_marker += "touch" + " " 
         make_marker += os.path.join(jobs_folder, marker_file)
 
 
-        COMMANDS_Annotate_BWA = [
-            map_read_bwa + " && " + make_marker
+        COMMANDS_Annotate_bt2 = [
+            map_read_bt2 + " && " + make_marker
         ]
 
-        return COMMANDS_Annotate_BWA
+        return COMMANDS_Annotate_bt2
 
 
 
-    def create_merge_BWA_fasta_command(self, stage_name, query_file, marker_file):
+    def create_merge_bt2_fasta_command(self, stage_name, query_file, marker_file):
         sample_root_name = os.path.basename(query_file)
         sample_root_name = os.path.splitext(sample_root_name)[0]
 
         subfolder       = os.path.join(self.output_path, stage_name)
         data_folder     = os.path.join(subfolder, "data")
-        bwa_folder      = os.path.join(data_folder, "1_bwa")
+        bt2_folder      = os.path.join(data_folder, "1_bt2")
         split_folder    = os.path.join(data_folder, "0_read_split")
-        pp_folder       = os.path.join(data_folder, "2_bwa_pp")
+        pp_folder       = os.path.join(data_folder, "2_bt2_pp")
         final_folder    = os.path.join(subfolder, "final_results")
         
         jobs_folder     = os.path.join(data_folder, "jobs")
         
         self.make_folder(subfolder)
         self.make_folder(data_folder)
-        self.make_folder(bwa_folder)
+        self.make_folder(bt2_folder)
         self.make_folder(final_folder)
         self.make_folder(jobs_folder)
         self.make_folder(pp_folder)
 
-        merge_bwa_fastas = ">&2 echo " + str(dt.today()) + " GA BWA merge leftover reads " + sample_root_name + " | "
-        merge_bwa_fastas += self.config_dict["Python"] + " "
-        merge_bwa_fastas += self.config_dict["GA_merge_fasta + " "
-        merge_bwa_fastas += pp_folder + " " 
-        merge_bwa_fastas += sample_root_name + " " 
-        merge_bwa_fastas += final_folder
+        merge_bt2_fastas = ">&2 echo " + str(dt.today()) + " GA bt2 merge leftover reads " + sample_root_name + " | "
+        merge_bt2_fastas += self.config_dict["Python"] + " "
+        merge_bt2_fastas += self.config_dict["GA_merge_fasta + " "
+        merge_bt2_fastas += pp_folder + " " 
+        merge_bt2_fastas += sample_root_name + " " 
+        merge_bt2_fastas += final_folder
 
-        make_marker = ">&2 echo merge BWA leftover fastas: " + marker_file + " | " 
+        make_marker = ">&2 echo merge bt2 leftover fastas: " + marker_file + " | " 
         make_marker += "touch" + " " 
         make_marker += os.path.join(jobs_folder, marker_file)
 
-        return [merge_bwa_fastas + " && " + make_marker]
+        return [merge_bt2_fastas + " && " + make_marker]
 
 
         
@@ -1076,7 +1081,7 @@ class mt_pipe_commands:
         data_folder     = os.path.join(subfolder, "data")
         final_folder    = os.path.join(subfolder, "final_results")
         dep_0_path      = os.path.join(self.output_path, dep_0_name, "final_results")   #assemble-contigs
-        dep_1_path      = os.path.join(self.output_path, dep_1_name, "final_results")   #bwa
+        dep_1_path      = os.path.join(self.output_path, dep_1_name, "final_results")   #bt2
         dep_2_path      = os.path.join(self.output_path, dep_2_name, "final_results")   #blat
         dep_3_path      = os.path.join(self.output_path, dep_3_name, "final_results")   #dmd
         jobs_folder     = os.path.join(data_folder, "jobs")

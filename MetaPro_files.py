@@ -169,6 +169,7 @@ class mpro_file_handler:
         
         self.file_dict["contigs_out_fa"] = os.path.join(self.dir_dict["contigs_export"], "contigs.fasta")
         self.file_dict["contigs_map"] = os.path.join(self.dir_dict["contigs_export"], "contigs_map.tsv")
+        self.file_dict["contigs_idx"] = os.path.join(self.dir_dict["contig_export"], "contigs_bt2_idx")
 
         self.file_dict["contigs_p_sam"] = os.path.join(self.dir_dict["contigs_bwa"], "contigs_p.sam")
         self.file_dict["contigs_s_sam"] = os.path.join(self.dir_dict["contigs_bwa"], "contigs_s.sam")

@@ -2,6 +2,9 @@
 #march 10, 2023:  install a threshold for reads.  There is noise in taxa.
 #only include taxa for which there is a 1%< occurence
 
+#apr 29, 2025: code now ignores wevote. uses only kraken2
+#wevote disabled
+
 import os
 import sys
 import time 
@@ -110,7 +113,9 @@ if __name__ == "__main__":
     unique_taxa = ""
     tally_dict = ""
     if(op_mode == "wevote"):
-        unique_taxa, tally_dict = import_wevote(taxa_file_path, exist_percent)
+        #unique_taxa, tally_dict = import_wevote(taxa_file_path, exist_percent)
+        print(dt.today(), "wevote mode disabled")
+        sys.exit()
     elif(op_mode == "k2"):
         unique_taxa, tally_dict = import_k2_report(taxa_file_path, exist_percent)
     taxa_class_dict = import_taxa_class_map(taxa_class_map_path)

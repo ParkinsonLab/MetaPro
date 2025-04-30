@@ -499,6 +499,7 @@ class mpro_config:
         self.config_dict["vsearch"]        = self.value_assignment("path", config, "Tools", "vsearch", os.path.join(tool_path, "vsearch/vsearch"))
         self.config_dict["BWA"]            = self.value_assignment("path", config, "Tools", "BWA", os.path.join(tool_path, "BWA/bwa"))
         self.config_dict["BT2"]             = self.value_assignment("path", config, "Tools", "BT2", os.path.join(tool_path, "bowtie2/bowtie2"))
+        self.config_dict["BT2_index"]       = self.value_assignment("path", config, "Tools", "BT2_index", os.path.join(tool_path, "bowtie2/bowtie2-build"))
         self.config_dict["samtools"]       = self.value_assignment("path", config, "Tools", "SAMTOOLS", os.path.join(tool_path, "samtools/samtools"))
         self.config_dict["BLAT"]           = self.value_assignment("path", config, "Tools", "BLAT", os.path.join(tool_path, "PBLAT/pblat"))
         self.config_dict["DMD"]        = self.value_assignment("path", config, "Tools", "DIAMOND", os.path.join(tool_path, "DIAMOND/diamond"))

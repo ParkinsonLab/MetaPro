@@ -5,7 +5,7 @@
 
 #note: only the class-level split has a size problem. everyone else is under 4.5GB
 
-
+#apr 29, 2025: this code is now useless
 
 import os
 import sys
