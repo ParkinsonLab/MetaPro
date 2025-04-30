@@ -872,14 +872,20 @@ class mt_pipe_commands:
 """        
 
 
-    def create_BT2_annotate_command_v2(self, db_path, sample_file, sam_out, marker_file):
+    def create_BT2_annotate_command_v2(self, db_path, read_1, read_2, sam_out, marker_file, op_mode):
         # meant to be called multiple times: query file is a split file
         # aug 10, 2021: changed ref path to accomodate new split-chocophlan
         #feb 20, 2025: reiterating call-per-file.
         
-        bt2_job = self.config_dict["bt2"] + " mem -t " + self.threads_str + " "
-        bt2_job += db_path + " "
-        bt2_job += sample_file + " | "
+        bt2_job = self.config_dict["BT2"] + " -p " + self.threads_str + " "
+        bt2_job += " -x " + db_path + " "
+        if(op_mode == "p"):
+            bt2_job += "-1 " + read_1 + " "
+            bt2_job += "-2" + read_2 + " | "
+
+        else:
+            bt2_job += "-U " + read_1 + " | "
+    
         bt2_job += self.config_dict["samtools"] + " view "
         bt2_job += "> " + sam_out
         

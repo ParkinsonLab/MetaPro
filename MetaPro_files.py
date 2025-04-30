@@ -178,7 +178,7 @@ class mpro_file_handler:
         self.file_dict["contigs_s"] = os.path.join(self.dir_dict["contigs_export"], "s.fastq")
         
         self.file_dict["ga_lib_list"] = os.path.join(self.dir_dict["GA_ps_data"], "lib_list.txt")
-        self.file_dict["ga_lib_reject"] = os.path.join(self.dir_dict["GA_ps_data"], "lib_reject.txt")
+        self.file_dict["ga_lib_status"] = os.path.join(self.dir_dict["GA_ps_data"], "lib_status.txt")
         self.file_dict["ga_ps_k2_report_c"] = os.path.join(self.dir_dict["GA_ps_k2"], "kraken2_report_c.txt")
         self.file_dict["ga_ps_k2_report_s"] = os.path.join(self.dir_dict["GA_ps_k2"], "kraken2_report_s.txt")
         self.file_dict["ga_ps_k2_report_p"] = os.path.join(self.dir_dict["GA_ps_k2"], "kraken2_report_p.txt")
@@ -188,3 +188,6 @@ class mpro_file_handler:
         self.file_dict["ga_split_s"] = os.path.join(self.dir_dict["GA_split"], "s")
         self.file_dict["ga_split_p1"] = os.path.join(self.dir_dict["GA_split"], "p1")
         self.file_dict["ga_split_p2"] = os.path.join(self.dir_dict["GA_split"], "p2")
+
+        #just the folder location
+        self.file_dict["ga_bt2_p_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "paired.sam")

@@ -98,116 +98,10 @@ class mpro_config:
                 print(dt.today(), "DMD index is ok")
 
         
-    #Mar 212, 2023: changed to be an external function because we now make custom DBs after a GA pre-scan
-    def check_bwa_valid(self, DNA_DB):
-        print(dt.today(), "BWA DB check:", DNA_DB)
-        if(os.path.exists(DNA_DB)):
-            if(os.path.isdir(DNA_DB)):
-                
-                file_list = os.listdir(DNA_DB)
-                
-                ok_flag = False
-                file_count = 0
-                for item in file_list:
-                    
-                    if(item.endswith(".fasta")):
-                        #print("CHECKING:", item)
-                        ext_0 = ".amb"
-                        ext_1 = ".ann"
-                        ext_2 = ".bwt"
-                        ext_3 = ".pac"
-                        ext_4 = ".sa"
-                        
-                        file_0 = os.path.join(DNA_DB, item + ext_0)
-                        file_1 = os.path.join(DNA_DB, item + ext_1)
-                        file_2 = os.path.join(DNA_DB, item + ext_2)
-                        file_3 = os.path.join(DNA_DB, item + ext_3)
-                        file_4 = os.path.join(DNA_DB, item + ext_4)
-                        
-                        ok_flag = self.check_file_valid(file_0)
-                        ok_flag = self.check_file_valid(file_1)
-                        ok_flag = self.check_file_valid(file_2)
-                        ok_flag = self.check_file_valid(file_3)
-                        ok_flag = self.check_file_valid(file_4)
-                        
-                        #print("OK FLAG:", ok_flag)
-                        file_count += 1
-                if(file_count == 0):
-                    print(dt.today(), "Error: no fasta files found. BWA only accepts .fasta extensions")
-                    sys.exit("empty BWA database")    
-                if(not ok_flag):
-                    sys.exit("BWA database has not been fully indexed. try reindexing the database")
-                else:
-                    print(dt.today(), "BWA database OK")
-                    self.GA_DB_mode = "multi"
-            else:
-                if(DNA_DB.endswith(".fasta")):
-                    ext_0 = ".amb"
-                    ext_1 = ".ann"
-                    ext_2 = ".bwt"
-                    ext_3 = ".pac"
-                    ext_4 = ".sa"
-                    
-                    file_0 = os.path.join(DNA_DB + ext_0)
-                    file_1 = os.path.join(DNA_DB + ext_1)
-                    file_2 = os.path.join(DNA_DB + ext_2)
-                    file_3 = os.path.join(DNA_DB + ext_3)
-                    file_4 = os.path.join(DNA_DB + ext_4)
-                    
-                    ok_flag = self.check_file_valid(file_0)
-                    ok_flag = self.check_file_valid(file_1)
-                    ok_flag = self.check_file_valid(file_2)
-                    ok_flag = self.check_file_valid(file_3)
-                    ok_flag = self.check_file_valid(file_4)
+    def check_BT2_valid(self):
+        return True
 
-                    if(not ok_flag):
-                        print("BWA Database FILE has not been fully indexed. Try reindexing the database")
-                        sys.exit()
-                    else:
-                        print(dt.today(), "BWA Database File OK")
-                        self.GA_DB_mode = "single"
-                else:
-                    sys.exit("Error: no fasta file found. BWA only accepts .fasta extensions")
-        else:
-            exit_string = str(dt.today()) + " " + "Error: path does not exist. "+ DNA_DB
-            sys.exit(exit_string)
-        
-            
-        #if it's a fastq or fasta
-        #if it's been indexed (all files present)
-
-    def check_blat_valid(self, DNA_DB):
-        #check that there's at least 1 fasta in the dict
-        #but truth-be-told, this doesn't do anything, since BWA will use the same DB
-        print(dt.today(), "BLAT DB check:", DNA_DB)
-        if(os.path.isdir(DNA_DB)):
-            file_list = os.listdir(DNA_DB)
-            ok_flag = False
-            file_count = 0
-            for item in file_list:
-                if(item.endswith(".fasta")):
-                    ok_flag = self.check_file_valid(os.path.join(DNA_DB, item))
-                    file_count += 1
-            if(file_count == 0):
-                print(dt.today(), "Error: no fasta file found.  BLAT accepts .fasta extensions only")
-                sys.exit()
-            if(ok_flag):
-                print(dt.today(), "BLAT database OK")
-                self.GA_DB_mode = "multi"
-            else:
-                sys.exit("Error with BLAT db. there's an empty fasta file")
-        else:
-            if(self.DNA_DB.endswith(".fasta")):
-                ok_flag = self.check_file_valid(DNA_DB)
-                if(ok_flag):
-                    print(dt.today(), "BLAT Database file OK")
-                    self.GA_DB_mode = "single"
-                else:
-                    sys.exit("Error with BLAT DB file. it's empty")
-            else:
-                print(dt.today(), "Error: no fasta file found.  BLAT accepts .fasta extensions only")
-                sys.exit()
-
+    
     def get_config_dict(self):
         return self.config_dict
 
@@ -480,11 +374,10 @@ class mpro_config:
 
         #-------------------------------------------------------
         # test DBs
-        self.config_dict["GA_DB_mode"] = "multi" #by default for the new DB changes.
+        self.config_dict["GA_DB_mode"] = "choco" #by default for the new DB changes.
+        self.config_dict["custom_ga_lib_list"] = self.value_assignment("path", "config", "Databases", "custom_ga_lib_list", "none")
         self.check_dmd_valid()
-        if(self.config_dict["GA_DB_mode"] == "custom"):
-            self.check_bwa_valid(self.config_dict["DNA_DB"])
-            #self.check_blat_valid(self.DNA_DB)
+        
         
         
 
@@ -565,7 +458,6 @@ class mpro_config:
         self.config_dict["bwa_read_sorter"]            = self.value_assignment("path", config, "code", "bwa_read_sorter", os.path.join(script_path, "bwa_read_sorter.py"))
         self.config_dict["ta_contig_name_convert"]     = self.value_assignment("path", config, "code", "ta_name_convert", os.path.join(script_path, "ta_contig_name_convert.py"))
         self.config_dict["GA_pre_scan_get_lib"]        = self.value_assignment("path", config, "code", "ga_pre_scan_get_lib", os.path.join(script_path, "ga_pre_scan_get_libs.py"))
-        self.config_dict["GA_pre_scan_assemble_lib"]   = self.value_assignment("path", config, "code", "ga_pre_scan_assemble_lib", os.path.join(script_path, "ga_pre_scan_assemble_libs.py"))
 
 
 

@@ -87,7 +87,7 @@ def import_taxa_class_map(taxa_class_map_path):
             taxa_class_dict[taxa] = class_taxa
     return taxa_class_dict
 
-def export_lines(lib_file_path, nodes_dict, class_item, yes_count, no_count):
+def export_lines(lib_file_path, nodes_dict, class_item, yes_count, no_count, file_only_flag = False):
     if("1236" in lib_file_path):
         print(lib_file_path)
     exist_flag = "no"
@@ -96,8 +96,12 @@ def export_lines(lib_file_path, nodes_dict, class_item, yes_count, no_count):
         yes_count += 1
     else:
         no_count += 1
-        
-    out_file.write(exist_flag +"|"+nodes_dict[class_item] + "|" +  class_item + ".fasta" + "|" + lib_file_path + "\n")
+
+    if(file_only_flag):
+        if(exist_flag == "yes"):
+            out_file.write(lib_file_path + "\n")
+    else:    
+        out_file.write(exist_flag +"|"+nodes_dict[class_item] + "|" +  class_item + ".fasta" + "|" + lib_file_path + "\n")
 
 
 
@@ -107,7 +111,7 @@ if __name__ == "__main__":
     taxa_class_map_path = sys.argv[3]
     nodes_file = sys.argv[4]
     export_lib_file = sys.argv[5]
-    reject_lib_file = sys.argv[6]       
+    lib_status_file = sys.argv[6]       
     lib_root_path = sys.argv[7]         #the stash of DB files 
     exist_percent = float(sys.argv[8])
     unique_taxa = ""
@@ -144,6 +148,31 @@ if __name__ == "__main__":
                     #bypasser for our specific split libs for these taxa
                     for i in range(0, 3):
                         lib_file_path = os.path.join(lib_root_path, class_item + "_" + str(i) + ".fasta")
+                        export_lines(lib_file_path, nodes_dict, class_item, yes_count, no_count, True)
+                        
+                elif(class_item == "91061"):
+                    #bypasser for our specific split libs for these taxa
+                    for i in range(0, 2):
+                        lib_file_path = os.path.join(lib_root_path, class_item + "_" + str(i) + ".fasta")
+                        export_lines(lib_file_path, nodes_dict, class_item, yes_count, no_count, True)
+                else:
+                    export_lines(lib_file_path, nodes_dict, class_item, yes_count, no_count, True)
+                        
+                
+                
+            except KeyError:
+                no_find_count += 1
+                #out_file.write("can't find" + "|" + class_item + ".fasta" + "\n")
+    
+    with open(lib_status_file, "w") as out_file:
+        for class_taxa_item in sorted([int(i) for i in class_set]):
+            try:
+                class_item = str(class_taxa_item)
+                lib_file_path = os.path.join(lib_root_path, class_item + ".fasta")
+                if(class_item == "1236" or class_item == "1760" or class_item == "28211"):
+                    #bypasser for our specific split libs for these taxa
+                    for i in range(0, 3):
+                        lib_file_path = os.path.join(lib_root_path, class_item + "_" + str(i) + ".fasta")
                         export_lines(lib_file_path, nodes_dict, class_item, yes_count, no_count)
                         
                 elif(class_item == "91061"):
@@ -153,14 +182,9 @@ if __name__ == "__main__":
                         export_lines(lib_file_path, nodes_dict, class_item, yes_count, no_count)
                 else:
                     export_lines(lib_file_path, nodes_dict, class_item, yes_count, no_count)
-                        
-                
-                
             except KeyError:
                 no_find_count += 1
                 out_file.write("can't find" + "|" + class_item + ".fasta" + "\n")
-    
-    with open(reject_lib_file, "w") as out_file:
         
         for reject_taxa_item in sorted([int(i) for i in reject_set]):
             reject_item = str(reject_taxa_item)

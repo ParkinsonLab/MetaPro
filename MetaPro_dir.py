@@ -92,9 +92,9 @@ class mpro_dir:
         contigs_label_default                           = "assemble_contigs"
         GA_pre_scan_label_default                       = "GA_pre_scan"
         GA_split_label_default                          = "GA_split"
-        GA_BWA_label_default                            = "GA_BWA"
-        GA_BWA_pp_label_default                         = "GA_BWA_pp"
-        GA_BWA_merge_label_default                      = "GA_BWA_merge"
+        GA_BT2_label_default                            = "GA_BT2"
+        GA_BT2_pp_label_default                         = "GA_BT2_pp"
+        GA_BT2_merge_label_default                      = "GA_BT2_merge"
         GA_BLAT_label_default                           = "GA_BLAT"
         GA_BLAT_cleanup_label_default                   = "GA_BLAT_cleanup"
         GA_BLAT_cat_label_default                       = "GA_BLAT_cat"
@@ -147,9 +147,9 @@ class mpro_dir:
         self.label_dict["contigs"]                 = self.value_assignment(config, "Labels", "contigs",                                     contigs_label_default)
         self.label_dict["GA_pre_scan"]                      = self.value_assignment(config, "Labels", "GA_pre_scan",                        GA_pre_scan_label_default)
         self.label_dict["GA_split"]                         = self.value_assignment(config, "Labels", "GA_split",                           GA_split_label_default)
-        self.label_dict["GA_BWA"]                           = self.value_assignment(config, "Labels", "GA_BWA",                             GA_BWA_label_default)
-        self.label_dict["GA_BWA_pp"]                        = self.value_assignment(config, "Labels", "GA_BWA_pp",                          GA_BWA_pp_label_default)
-        self.label_dict["GA_BWA_merge"]                     = self.value_assignment(config, "Labels", "GA_BWA_merge",                       GA_BWA_merge_label_default)
+        self.label_dict["GA_BT2"]                           = self.value_assignment(config, "Labels", "GA_BT2",                             GA_BT2_label_default)
+        self.label_dict["GA_BT2_pp"]                        = self.value_assignment(config, "Labels", "GA_BT2_pp",                          GA_BT2_pp_label_default)
+        self.label_dict["GA_BT2_merge"]                     = self.value_assignment(config, "Labels", "GA_BT2_merge",                       GA_BT2_merge_label_default)
         self.label_dict["GA_BLAT"]                          = self.value_assignment(config, "Labels", "GA_BLAT",                            GA_BLAT_label_default)
         self.label_dict["GA_BLAT_cleanup"]                  = self.value_assignment(config, "Labels", "GA_BLAT_cleanup",                    GA_BLAT_cleanup_label_default)
         self.label_dict["GA_BLAT_cat"]                      = self.value_assignment(config, "Labels", "GA_BLAT_cat",                        GA_BLAT_cat_label_default)
@@ -200,14 +200,14 @@ class mpro_dir:
 
         self.dir_dict["host"] = os.path.join(self.out_dir, self.label_dict["host"])
         self.dir_dict["host_data"] = os.path.join(self.dir_dict["host"], "data")
-        self.dir_dict["host_scan"] = os.path.join(self.dir_dict["host_data"], "0_bwa_scan")
+        self.dir_dict["host_scan"] = os.path.join(self.dir_dict["host_data"], "0_BT2_scan")
         self.dir_dict["host_export"] = os.path.join(self.dir_dict["host"], "export")
 
         self.dir_dict["host_list"] = ["host", "host_data", "host_scan", "host_export"]
 
         self.dir_dict["vec"] = os.path.join(self.out_dir, self.label_dict["vec"])
         self.dir_dict["vec_data"] = os.path.join(self.dir_dict["vec"], "data")
-        self.dir_dict["vec_scan"] = os.path.join(self.dir_dict["vec_data"], "0_bwa")
+        self.dir_dict["vec_scan"] = os.path.join(self.dir_dict["vec_data"], "0_BT2")
         self.dir_dict["vec_export"] = os.path.join(self.dir_dict["vec"], "export")
 
         self.dir_dict["vec_list"] = ["vec", "vec_data", "vec_scan", "vec_export"]
@@ -236,11 +236,11 @@ class mpro_dir:
         self.dir_dict["contigs_export"] = os.path.join(self.dir_dict["contigs"], "export")
         self.dir_dict["contigs_spades"] = os.path.join(self.dir_dict["contigs_data"], "0_spades")
         self.dir_dict["contigs_mgm"] = os.path.join(self.dir_dict["contigs_data"], "1_mgm")
-        self.dir_dict["contigs_bwa"] = os.path.join(self.dir_dict["contigs_data"], "2_bwa")
+        self.dir_dict["contigs_BT2"] = os.path.join(self.dir_dict["contigs_data"], "2_BT2")
         self.dir_dict["spades_transcripts"] = os.path.join(self.dir_dict["contigs_spades"], "transcripts.fasta")
         self.dir_dict["spades_done"] = os.path.join(self.dir_dict["contigs_spades"], "stage_7_terminate")
         
-        self.dir_dict["contigs_list"] = ["contigs", "contigs_data", "contigs_spades", "contigs_mgm", "contigs_bwa", "contigs_export"]
+        self.dir_dict["contigs_list"] = ["contigs", "contigs_data", "contigs_spades", "contigs_mgm", "contigs_BT2", "contigs_export"]
 
         self.dir_dict["GA_ps"] = os.path.join(self.out_dir, self.label_dict["GA_pre_scan"])
         self.dir_dict["GA_ps_data"] = os.path.join(self.dir_dict["GA_ps"], "data")
@@ -250,14 +250,14 @@ class mpro_dir:
 
         self.dir_dict["GA_split"] = os.path.join(self.out_dir, self.label_dict["GA_split"])
 
-        self.dir_dict["GA_BWA"] = os.path.join(self.out_dir, self.label_dict["GA_BWA"])
-        self.dir_dict["GA_BWA_data"] = os.path.join(self.dir_dict["GA_BWA"], "data")
-        self.dir_dict["GA_BWA_jobs"] = os.path.join(self.dir_dict["GA_BWA"], "jobs")
-        self.dir_dict["GA_BWA_split"] = os.path.join(self.dir_dict["GA_BWA_data"], "0_split")
-        self.dir_dict["GA_BWA_run"] = os.path.join(self.dir_dict["GA_BWA_data"], "1_BWA")
-        self.dir_dict["GA_BWA_pp"] = os.path.join(self.dir_dict["GA_BWA_data"], "2_pp")
-        self.dir_dict["GA_BWA_export"] = os.path.join(self.dir_dict["GA_BWA"], "export")
-        self.dir_dict["GA_BWA_list"] = ["GA_BWA", "GA_BWA_jobs", "GA_BWA_data", "GA_BWA_split", "GA_BWA_run", "GA_BWA_pp", "GA_BWA_export"]
+        self.dir_dict["GA_BT2"] = os.path.join(self.out_dir, self.label_dict["GA_BT2"])
+        self.dir_dict["GA_BT2_data"] = os.path.join(self.dir_dict["GA_BT2"], "data")
+        self.dir_dict["GA_BT2_jobs"] = os.path.join(self.dir_dict["GA_BT2"], "jobs")
+        self.dir_dict["GA_BT2_mkrs"] = os.path.join(self.dir_dict["GA_BT2"], "markers")
+        self.dir_dict["GA_BT2_run"] = os.path.join(self.dir_dict["GA_BT2_data"], "0_BT2")
+        self.dir_dict["GA_BT2_pp"] = os.path.join(self.dir_dict["GA_BT2_data"], "1_pp")
+        self.dir_dict["GA_BT2_export"] = os.path.join(self.dir_dict["GA_BT2"], "export")
+        self.dir_dict["GA_BT2_list"] = ["GA_BT2", "GA_BT2_jobs", "GA_BT2_data", "GA_BT2_split", "GA_BT2_run", "GA_BT2_pp", "GA_BT2_export"]
 
         self.dir_dict["GA_DMD"] = os.path.join(self.out_dir, self.label_dict["GA_DMD"])        
         self.dir_dict["GA_DMD_data"] = os.path.join(self.dir_dict["GA_DMD"], "data")

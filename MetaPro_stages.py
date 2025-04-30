@@ -53,10 +53,9 @@ class mp_stage:
         
 
         #time.sleep(10)
-        self.GA_DB_mode = self.config_dict["GA_DB_mode"]
-        self.segmented_chocophlan_flag = True
-        if(self.config_dict["DNA_DB"].endswith(".fasta")):
-            self.segmented_chocophlan_flag = False
+        
+        
+        
         self.config_dict["no_host"] = config_dict["no_host"]
         self.verbose_mode = config_dict["verbose_mode"]
         self.rRNA_chunks = int(self.config_dict["rRNA_chunksize"])
@@ -110,6 +109,8 @@ class mp_stage:
             
     def import_lib_names(self, names_file):
     #import the list of libs from GA_pre_scan
+    #lib list is also how custom DBs can enter.
+    #also checks for validity.
         files_list = []
         with open(names_file, "r") as names_in:
             for line in names_in:
@@ -119,14 +120,27 @@ class mp_stage:
                 #print("line:", cleaned_line)
                 src_path = cleaned_line.split("|")[3]
                 if(os.path.exists(src_path)):
-                
+                    index_sample = src_path + ".1.bt2"
+                    if(os.path.exists(index_sample)):
+                        files_list.append(src_path)
+                    else:
+                        print(dt.today(), "Ending pipe.  BT2 index is missing for:", src_path)
+                        sys.exit()
+    
                 #not complete. the exist path needs to point to the DNA_db folder
-                    files_list.append(src_path)
                     #print("src:", src_path)
                     #time.sleep(1)
                     
         
         return files_list
+    
+    def import_ga_lib_list(self, lib_file):
+        lib_list = list()
+        with open(lib_file, "r") as libs_in:
+            for line in libs_in:
+                lib_line = line.strip("\n")
+                lib_list.append(lib_line)
+        return lib_list
     
     def debug_stop_check(self, stop_signal):
         if(self.debug_stop_flag == stop_signal):
@@ -471,7 +485,7 @@ class mp_stage:
         if self.mp_util.check_bypass_log(self.output_folder_path, self.label_dict["GA_pre_scan"]):
             marker_path_list = []
             #----------------------------------------------------------------------
-            #kaiju on reads
+            #kraken2 on reads
             sections = ["s"]
             if self.config_dict["read_mode"] == "paired":
                 sections.extend(["p"])
@@ -521,19 +535,7 @@ class mp_stage:
                 print(dt.today(), "running:", marker_file)
             self.mp_util.wait_for_mp_store()
             
-            
-            marker_file = "ga_assemble_db"
-            marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
-            if(os.path.exists(marker_path)):
-                print(dt.today(), "skipping:", marker_file)
-            else:
-                marker_path_list.append(marker_path)
-                command_list = self.commands.create_GA_pre_scan_assemble_lib_command(marker_file)
-                self.mp_util.launch_and_create_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
-                print(dt.today(), "running:", marker_file)
-            self.mp_util.wait_for_mp_store()
-            
-            
+
             
             
             #---------------------------------------------------------
@@ -545,93 +547,63 @@ class mp_stage:
     
 
         
-    def mp_GA_lib_check(self):
-        print(dt.today(), "Running GA lib check")
-        
-        if(self.config_dict["DNA_DB_mode"] == "chocophlan"):
-            self.config_dict["DNA_DB"] = self.dir_dict["GA_ps_export"]
-        self.paths.check_bwa_valid(self.config_dict["DNA_DB"])
-        self.paths.check_blat_valid(self.config_dict["DNA_DB"])
-        
-    def mp_GA_BWA(self):
-        self.GA_BWA_start = time.time()
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BWA_label):
+    def mp_GA_BT2(self):
+        #GA BT2 reads are not split
+        self.GA_BT2_start = time.time()
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BT2_label):
             marker_path_list = []
             
             
-            if not self.mp_util.check_where_resume(self.GA_BWA_path, None, self.GA_split_path):
+            if not self.mp_util.check_where_resume(self.GA_BT2_path, None, self.GA_split_path):
             
                 #-------------------------------------------------------------------------
-                sections = ["s"]
-                if self.read_mode == "paired":
-                    sections.extend(["p1", "p2"])
-                if(self.contigs_present):
-                    sections.extend(["c"])
+                #no looping. just run s, p, and c manually
+                #import the lib list
+                #lib list should contain the full path
+                lib_list = list()
+                if(self.config_dict["GA_DB_mode"] != "choco"):
+                    if(self.config_dict["custom_ga_lib_list"] != "none"):
+                        lib_list = self.import_ga_lib_list(self.config_dict["custom_ga_lib_list"])
+                else:
+                    lib_list = self.import_ga_lib_list(self.file_dict["ga_lib_list"])
+
                 
-
-                for section in sections:
-                    for split_sample in os.listdir(os.path.join(self.GA_split_path, "final_results", section)):
-                        full_sample_path = os.path.join(os.path.join(self.GA_split_path, "final_results",section, split_sample))
-                        print("split sample:", full_sample_path)
-                        file_tag = os.path.basename(split_sample)
-                        file_tag = os.path.splitext(file_tag)[0]
-                        ref_path = self.GA_pre_scan_final_path #self.paths.DNA_DB
-                            
-                        command_list = ""
-                        if (ref_path.endswith(".fasta")):
-                            ref_tag = os.path.basename(ref_path)
-                            ref_tag = ref_tag.strip(".fasta")
+                for lib_entry in lib_list:
+                    lib_basename = os.path.basename(lib_entry)
+                    lib_tag = lib_basename
+                    if(lib_basename.endswith(".fasta")):
+                        lib_tag = lib_basename.strip(".fasta")
+                    
                         
-                            file_tag = file_tag + "_" + ref_tag
-                            job_name = "BWA" + "_" + file_tag
-                            marker_file = file_tag + "_bwa"
-                            marker_path = os.path.join(self.GA_BWA_jobs_folder, marker_file)
-                        #this checker assumes that BWA only exports a file when it's finished running
-                            if(os.path.exists(marker_path)):
-                                print(dt.today(), "skipping:", marker_file)
-                                continue
-                            else:
-                                marker_path_list.append(marker_path)
-                            
-                                #aug 10, 2021: new bigger chocophlan (from humann3) is in segments because we can't index it as a whole.  
-                                #if the DB is still an old version, the tag should just say "chocophlan".  otherwise, it will say the chocophlan chunk name
-                                
-                                command_list = self.commands.create_BWA_annotate_command_v2(self.GA_BWA_label, ref_path, ref_tag, full_sample_path, marker_file)
-                                #self.mp_util.launch_and_create_with_hold(self.BWA_mem_threshold, self.BWA_job_limit, self.BWA_job_delay, self.GA_BWA_label, job_name, self.commands, command_list)
-                                self.mp_util.launch_and_create_with_mem_footprint(self.BWA_mem_footprint, self.BWA_job_limit, self.GA_BWA_label, job_name, self.commands, command_list)
-                                
-                        else:
-                            split_db = os.listdir(ref_path)
-                            for db_segments in split_db:
-                                if(db_segments.endswith(".fasta")):
-                                    segment_ref_path = os.path.join(ref_path, db_segments)
-                                    ref_tag = db_segments.strip(".fasta")
-                                    segment_file_tag = file_tag + "_" + ref_tag
-                                    job_name = "BWA" + "_" + segment_file_tag
-                                    marker_file = segment_file_tag + "_bwa"
-                                    marker_path = os.path.join(self.GA_BWA_jobs_folder, marker_file)
-                                    
-                                    if(os.path.exists(marker_path)):
-                                        print(dt.today(), "skipping:", marker_file)
-                                        continue
-                                    else:
-                                        marker_path_list.append(marker_path)
-                                        command_list = self.commands.create_BWA_annotate_command_v2(self.GA_BWA_label, segment_ref_path, ref_tag, full_sample_path, marker_file)
-                                        #footprint doesn't apply to a single-file BWA DB
-                                        #self.mp_util.launch_and_create_with_hold(self.BWA_mem_threshold, self.BWA_job_limit, self.BWA_job_delay, self.GA_BWA_label, job_name, self.commands, command_list)
-                                        self.mp_util.launch_and_create_with_mem_footprint(self.BWA_mem_footprint, self.BWA_job_limit, self.GA_BWA_label, job_name, self.commands, command_list)
-                                        
 
-                print(dt.today(), "all BWA jobs have launched.  waiting for them to finish")            
+                    
+                    p_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_p_" + lib_tag + "_job.sh")
+                    p_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_p_" + lib_tag)
+                    if(os.path.exists(p_marker)):
+                        print(dt.today(), "skipping:", p_marker)
+                        continue
+                    else:
+                        marker_path_list.append(p_marker)
+                    
+                        #aug 10, 2021: new bigger chocophlan (from humann3) is in segments because we can't index it as a whole.  
+                        #if the DB is still an old version, the tag should just say "chocophlan".  otherwise, it will say the chocophlan chunk name
+                        
+                        command_list = self.commands.create_BT2_annotate_command_v2(lib_entry, self.file_dict["contigs_p1"], self.file_dict["contigs_p2"], self.file_dict["ga_bt2_p_sam"], p_marker, "p")
+                        #self.mp_util.launch_and_create_with_hold(self.BT2_mem_threshold, self.BT2_job_limit, self.BT2_job_delay, self.GA_BT2_label, job_name, self.commands, command_list)
+                        self.mp_util.launch_and_create_with_mem_footprint(self.BT2_mem_footprint, self.BT2_job_limit, self.GA_BT2_label, job_name, self.commands, command_list)
+                        
+                                    
+
+                print(dt.today(), "all BT2 jobs have launched.  waiting for them to finish")            
                 self.mp_util.wait_for_mp_store()
-                final_checklist = os.path.join(self.GA_BWA_path, "GA_BWA.txt")
+                final_checklist = os.path.join(self.GA_BT2_path, "GA_BT2.txt")
                 self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-                self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BWA_label)
+                self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BT2_label)
     
-        self.debug_stop_check(self.GA_BWA_label)
+        self.debug_stop_check(self.GA_BT2_label)
         
-    def mp_GA_BWA_pp(self):                
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BWA_pp_label):
+    def mp_GA_BT2_pp(self):                
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BT2_pp_label):
             marker_path_list = []
             sections = ["singletons"]
             if self.read_mode == "paired":
@@ -655,17 +627,17 @@ class mp_stage:
                         ref_tag = ref_tag.strip(".fasta")
                 
                     
-                        job_name = "BWA_pp" + "_" + file_tag + "_" + ref_tag
-                        marker_file = file_tag + "_" + ref_tag +  "_bwa_pp"
-                        marker_path = os.path.join(self.GA_BWA_jobs_folder, marker_file)
+                        job_name = "BT2_pp" + "_" + file_tag + "_" + ref_tag
+                        marker_file = file_tag + "_" + ref_tag +  "_BT2_pp"
+                        marker_path = os.path.join(self.GA_BT2_jobs_folder, marker_file)
                         
                         if(os.path.exists(marker_path)):
                             print(dt.today(), "skipping:", marker_file)
                             continue
                         else:
                             marker_path_list.append(marker_path)
-                            command_list = self.commands.create_BWA_pp_command_v2(self.GA_BWA_label, self.assemble_contigs_label, ref_tag, ref_path, full_sample_path, marker_file)
-                            self.mp_util.launch_and_create_with_hold(self.BWA_pp_mem_threshold, self.BWA_pp_job_limit, self.BWA_pp_job_delay, self.GA_BWA_label, job_name, self.commands, command_list)
+                            command_list = self.commands.create_BT2_pp_command_v2(self.GA_BT2_label, self.assemble_contigs_label, ref_tag, ref_path, full_sample_path, marker_file)
+                            self.mp_util.launch_and_create_with_hold(self.BT2_pp_mem_threshold, self.BT2_pp_job_limit, self.BT2_pp_job_delay, self.GA_BT2_label, job_name, self.commands, command_list)
                             
                     else:
                         #chocophlan in chunks
@@ -674,41 +646,41 @@ class mp_stage:
                             if(db_segments.endswith(".fasta")):
                                 segment_ref_path = os.path.join(ref_path, db_segments)
                                 ref_tag = db_segments.strip(".fasta")
-                                job_name = "BWA_pp" + "_" + file_tag + "_" + ref_tag
-                                marker_file = file_tag + "_" + ref_tag + "_bwa_pp"
-                                marker_path = os.path.join(self.GA_BWA_jobs_folder, marker_file)
+                                job_name = "BT2_pp" + "_" + file_tag + "_" + ref_tag
+                                marker_file = file_tag + "_" + ref_tag + "_BT2_pp"
+                                marker_path = os.path.join(self.GA_BT2_jobs_folder, marker_file)
                                 
                                 if(os.path.exists(marker_path)):
                                     print(dt.today(), "skipping:", marker_file)
                                     continue
                                 else:
                                     marker_path_list.append(marker_path)
-                                    command_list = self.commands.create_BWA_pp_command_v2(self.GA_BWA_label, self.assemble_contigs_label, ref_tag, segment_ref_path, full_sample_path, marker_file)
-                                    #print(dt.today(), "segmented BWA:", command_list)
+                                    command_list = self.commands.create_BT2_pp_command_v2(self.GA_BT2_label, self.assemble_contigs_label, ref_tag, segment_ref_path, full_sample_path, marker_file)
+                                    #print(dt.today(), "segmented BT2:", command_list)
                                     #time.sleep(2)
-                                    self.mp_util.launch_and_create_with_hold(self.BWA_pp_mem_threshold, self.BWA_pp_job_limit, self.BWA_pp_job_delay, self.GA_BWA_label, job_name, self.commands, command_list)
+                                    self.mp_util.launch_and_create_with_hold(self.BT2_pp_mem_threshold, self.BT2_pp_job_limit, self.BT2_pp_job_delay, self.GA_BT2_label, job_name, self.commands, command_list)
 
                             
-            print(dt.today(), "all BWA PP jobs submitted.  waiting for sync")            
+            print(dt.today(), "all BT2 PP jobs submitted.  waiting for sync")            
             self.mp_util.wait_for_mp_store()
-            marker_file = "BWA_copy_contig_map"
-            marker_path = os.path.join(self.GA_BWA_jobs_folder, marker_file)
+            marker_file = "BT2_copy_contig_map"
+            marker_path = os.path.join(self.GA_BT2_jobs_folder, marker_file)
             if(os.path.exists(marker_path)):
                 print(dt.today(), "skipping:", marker_file)
             else:   
                 marker_path_list.append(marker_path)
-                command_list = self.commands.create_BWA_copy_contig_map_command(self.GA_BWA_label, self.assemble_contigs_label, marker_file)
-                self.mp_util.launch_and_create_simple(self.GA_BWA_label, self.GA_BWA_label + "_copy_contig_map", self.commands, command_list)
+                command_list = self.commands.create_BT2_copy_contig_map_command(self.GA_BT2_label, self.assemble_contigs_label, marker_file)
+                self.mp_util.launch_and_create_simple(self.GA_BT2_label, self.GA_BT2_label + "_copy_contig_map", self.commands, command_list)
 
             
-            final_checklist = os.path.join(self.GA_BWA_path, "GA_BWA_pp.txt")
+            final_checklist = os.path.join(self.GA_BT2_path, "GA_BT2_pp.txt")
             self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BWA_pp_label)
+            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BT2_pp_label)
         
-        self.debug_stop_check("GA_BWA_pp")
+        self.debug_stop_check("GA_BT2_pp")
         
-    def mp_GA_BWA_merge(self):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BWA_merge_label):
+    def mp_GA_BT2_merge(self):
+        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BT2_merge_label):
             #merge 
             marker_path_list = []
             sections = ["singletons"]
@@ -726,32 +698,32 @@ class mp_stage:
                     ref_path = self.paths.DNA_DB
 
                     marker_file = file_tag + "_merge_fasta"
-                    marker_path = os.path.join(self.GA_BWA_jobs_folder, marker_file)
+                    marker_path = os.path.join(self.GA_BT2_jobs_folder, marker_file)
                     if(os.path.exists(marker_path)):
                         print(dt.today(), "skipping:", marker_file)
                         continue
                     else:
                         marker_path_list.append(marker_path)
-                        job_name = "BWA_fasta_merge_" + file_tag
-                        command_list = self.commands.create_merge_BWA_fasta_command(self.GA_BWA_label, full_sample_path, marker_file)
-                        self.mp_util.launch_and_create_with_hold(self.BWA_pp_mem_threshold, self.BWA_pp_job_limit, self.BWA_pp_job_delay, self.GA_BWA_label, job_name, self.commands, command_list)
+                        job_name = "BT2_fasta_merge_" + file_tag
+                        command_list = self.commands.create_merge_BT2_fasta_command(self.GA_BT2_label, full_sample_path, marker_file)
+                        self.mp_util.launch_and_create_with_hold(self.BT2_pp_mem_threshold, self.BT2_pp_job_limit, self.BT2_pp_job_delay, self.GA_BT2_label, job_name, self.commands, command_list)
 
-            print(dt.today(), "All BWA merge jobs have launched. waiting for sync")
+            print(dt.today(), "All BT2 merge jobs have launched. waiting for sync")
             self.mp_util.wait_for_mp_store()
-            final_checklist = os.path.join(self.GA_BWA_path, "GA_BWA_merge.txt")
+            final_checklist = os.path.join(self.GA_BT2_path, "GA_BT2_merge.txt")
             self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BWA_merge_label)
+            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BT2_merge_label)
             
      
-        self.cleanup_GA_BWA_start = time.time()
-        self.mp_util.delete_folder_simple(self.GA_BWA_jobs_folder)
-        self.mp_util.clean_or_compress(self.GA_BWA_path, self.keep_all, self.keep_GA_BWA)
+        self.cleanup_GA_BT2_start = time.time()
+        self.mp_util.delete_folder_simple(self.GA_BT2_jobs_folder)
+        self.mp_util.clean_or_compress(self.GA_BT2_path, self.keep_all, self.keep_GA_BT2)
         
-        self.cleanup_GA_BWA_end = time.time()
-        self.GA_BWA_end = time.time()
-        print("GA BWA:", '%1.1f' % (self.GA_BWA_end - self.GA_BWA_start - (self.cleanup_GA_BWA_end - self.cleanup_GA_BWA_start)), "s")
-        print("GA BWA cleanup:", '%1.1f' % (self.cleanup_GA_BWA_end - self.cleanup_GA_BWA_start), "s")
-        self.debug_stop_check("GA_BWA_merge")
+        self.cleanup_GA_BT2_end = time.time()
+        self.GA_BT2_end = time.time()
+        print("GA BT2:", '%1.1f' % (self.GA_BT2_end - self.GA_BT2_start - (self.cleanup_GA_BT2_end - self.cleanup_GA_BT2_start)), "s")
+        print("GA BT2 cleanup:", '%1.1f' % (self.cleanup_GA_BT2_end - self.cleanup_GA_BT2_start), "s")
+        self.debug_stop_check("GA_BT2_merge")
 
     
     def mp_GA_dmd(self):
@@ -837,7 +809,7 @@ class mp_stage:
             if(os.path.exists(marker_path_p) and os.path.exists(marker_path_m) and os.path.exists(marker_path_f)):
                 print(dt.today(), "skipping: GA final merge")
             else:
-                command_list = self.commands.create_GA_final_merge_command(self.GA_final_merge_label, self.assemble_contigs_label, self.GA_BWA_label, self.GA_BLAT_label, self.GA_DIAMOND_label,  marker_file)
+                command_list = self.commands.create_GA_final_merge_command(self.GA_final_merge_label, self.assemble_contigs_label, self.GA_BT2_label, self.GA_BLAT_label, self.GA_DIAMOND_label,  marker_file)
                 job_name = "GA_final_merge"
                 self.mp_util.subdivide_and_launch(self.GA_final_merge_job_delay, self.GA_final_merge_mem_threshold, self.GA_final_merge_job_limit, self.GA_final_merge_label, job_name, self.commands, command_list)
             
@@ -1267,8 +1239,8 @@ class mp_stage:
         print("repop cleanup:", '%1.1f' % (self.cleanup_repop_end - self.cleanup_repop_start), "s")
         print("assemble contigs:", '%1.1f' % (self.assemble_contigs_end - self.assemble_contigs_start - (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start)), "s")    
         print("assemble contigs cleanup:", '%1.1f' % (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start), "s")
-        print("GA BWA:", '%1.1f' % (self.GA_BWA_end - self.GA_BWA_start - (self.cleanup_GA_BWA_end - self.cleanup_GA_BWA_start)), "s")
-        print("GA BWA cleanup:", '%1.1f' % (self.cleanup_GA_BWA_end - self.cleanup_GA_BWA_start), "s")
+        print("GA BT2:", '%1.1f' % (self.GA_BT2_end - self.GA_BT2_start - (self.cleanup_GA_BT2_end - self.cleanup_GA_BT2_start)), "s")
+        print("GA BT2 cleanup:", '%1.1f' % (self.cleanup_GA_BT2_end - self.cleanup_GA_BT2_start), "s")
         print("GA BLAT:", '%1.1f' % (self.GA_BLAT_end - self.GA_BLAT_start - (self.cleanup_GA_BLAT_end - self.cleanup_GA_BLAT_start)), "s")
         print("GA BLAT cleanup:", '%1.1f' % (self.cleanup_GA_BLAT_end - self.cleanup_GA_BLAT_start), "s")
         print("GA DIAMOND:", '%1.1f' % (self.GA_DIAMOND_end - self.GA_DIAMOND_start - (self.cleanup_GA_DIAMOND_end - self.cleanup_GA_DIAMOND_start)), "s")
