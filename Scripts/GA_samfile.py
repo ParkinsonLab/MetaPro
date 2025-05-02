@@ -6,6 +6,8 @@
 #-> we do contigs now
 #mar 09, 2021:
 #we now handle a one-off case where contigs are skipped entirely (due to a weird niche use for xuejian's evonik chicken thing)
+#may 01, 2025: renamed to be something more generic. 
+#code needs to be updated to work in paired-mode.
 
 import os
 import os.path
@@ -278,16 +280,16 @@ def write_gene_map(DNA_DB, gene2read_file, gene2read_map, mapped_gene_file):
     
 if __name__ == "__main__":
     cigar_cut           = sys.argv[1]
-    DNA_DB              = sys.argv[2]       # INPUT: DNA db used for BWA alignement
+    DNA_DB              = sys.argv[2]       # INPUT: DNA db used for BT2 alignement
     contig2read_file    = sys.argv[3]       # INPUT: [contigID, #reads, readIDs ...]
     gene2read_out       = sys.argv[4]       # OUTPUT: [BWA-aligned geneID, length, #reads, readIDs ...]
     mapped_gene_file    = sys.argv[5]       # OUTPUT: genes mapped by BWA.
     
     reads_in            = sys.argv[6]   
-    bwa_in              = sys.argv[7]
+    sam_in              = sys.argv[7]
     reads_out           = sys.argv[8]
     
-    input_safety = check_file_safety(reads_in) and check_file_safety(bwa_in)
+    input_safety = check_file_safety(reads_in) and check_file_safety(sam_in)
     cigar_cutoff = int(cigar_cut)
     if(input_safety):
         contig2read_map = dict()
@@ -296,7 +298,7 @@ if __name__ == "__main__":
         
         #contig2read_map_uniq, contig_unique_reads = filter_common_contigs(contig2read_map, contig_reads)
         # tracking BWA-assigned:
-        unmapped_reads, mapped_reads, gene2read_map = gene_map(cigar_cutoff, bwa_in, contig2read_map)
+        unmapped_reads, mapped_reads, gene2read_map = gene_map(cigar_cutoff, sam_in, contig2read_map)
         
         write_gene_map(DNA_DB, gene2read_out, gene2read_map, mapped_gene_file)
         write_unmapped_reads(unmapped_reads, reads_in, reads_out)

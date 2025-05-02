@@ -847,31 +847,6 @@ class mt_pipe_commands:
         
         return [ga_get_lib + " && " + make_marker]
         
-"""        
-    def create_GA_pre_scan_assemble_lib_command(self, marker_file):
-    #nuked: no longer copying databases.  go off the list
-        
-        assemble_lib = ">&2 echo GA assemble libs | " 
-        assemble_lib += self.config_dict["Python"] + " " 
-        assemble_lib += self.config_dict["GA_pre_scan_assemble_lib"] + " "
-        assemble_lib += self.file_dict["ga_lib_list"] + " " 
-        assemble_lib += self.config_dict["source_taxa_DB"] +  " "
-        assemble_lib += self.dir_dict["GA_ps_export"] +  " " 
-        assemble_lib += "all"
-        
-        #index_lib = "for i in $(ls " + final_folder + ");" + " "
-        #index_lib += "do " + self.config_dict["bt2"] + " index" + " "
-        #index_lib += final_folder + "/$i; done" 
-        
-        make_marker = "touch" + " " + marker_file
-        
-        self.config_dict["DNA_DB"] = self.dir_dict["GA_ps_export"]
-        
-        #return [assemble_lib + " && " + index_lib + " && " + make_marker]
-        return [assemble_lib + " && " + make_marker]
-"""        
-
-
     def create_BT2_annotate_command_v2(self, db_path, read_1, read_2, sam_out, marker_file, op_mode):
         # meant to be called multiple times: query file is a split file
         # aug 10, 2021: changed ref path to accomodate new split-chocophlan
@@ -899,68 +874,31 @@ class mt_pipe_commands:
         return COMMANDS_bt2
         
     
-    def create_bt2_pp_command_v2(self, stage_name, dependency_stage_name, ref_tag, ref_path, query_file, marker_file):
-        sample_root_name = os.path.basename(query_file)
-        sample_root_name = os.path.splitext(sample_root_name)[0]
-            
-        
-        #meant to be called on the split-file version.  PP script will not merge gene maps.
-        subfolder       = os.path.join(self.output_path, stage_name)
-        data_folder     = os.path.join(subfolder, "data")
-        bt2_folder      = os.path.join(data_folder, "1_bt2")
-        split_folder    = os.path.join(data_folder, "0_read_split")
-        pp_folder       = os.path.join(data_folder, "2_bt2_pp")
-        final_folder    = os.path.join(subfolder, "final_results")
-        dep_loc         = os.path.join(self.output_path, dependency_stage_name, "final_results")
-        jobs_folder     = os.path.join(data_folder, "jobs")
-        
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(bt2_folder)
-        self.make_folder(final_folder)
-        self.make_folder(jobs_folder)
-        self.make_folder(pp_folder)
-        
-        reads_in    = query_file
-        bt2_in      = os.path.join(bt2_folder, sample_root_name + "_" + ref_tag + ".sam")
-        reads_out = ""
-        if(self.config_dict["GA_DB_mode"] == "multi"):
-            print(dt.today(), "bt2_pp running in split-mode")
-            reads_out   = os.path.join(pp_folder, sample_root_name + "_" + ref_tag + ".fasta")
-        else:
-            print(dt.today(), "bt2_pp running in single-mode")
-            reads_out = os.path.join(final_folder, sample_root_name + "_" + ref_tag + ".fasta")
-        
+    def create_bt2_pp_command_v2(self, ref_path, reads_in, reads_out, bt2_in, gene_map, mapped_genes, marker_file):
+        #may 01, 2025: simplified pp call.  
 
-        map_read_bt2 = ">&2 echo " + str(dt.today()) + " GA bt2 PP generic: " + sample_root_name + " | "
-        map_read_bt2 += self.config_dict["Python"] + " "
-        map_read_bt2 += self.config_dict["Map_reads_gene_bt2"] + " "
-        map_read_bt2 += str(self.config_dict["bt2_cigar_cutoff"]) + " "
-        map_read_bt2 += ref_path + " "
+        ga_bt2_pp = self.config_dict["Python"] + " "
+        ga_bt2_pp += self.config_dict["ga_bt2_pp"] + " "
+        ga_bt2_pp += str(self.config_dict["bt2_cigar_cutoff"]) + " "
+        ga_bt2_pp += ref_path + " "
         if(self.sequence_contigs == "None"):
-            map_read_bt2 += "None" + " "
+            ga_bt2_pp += "None" + " "
         else:        
-            map_read_bt2 += os.path.join(dep_loc, "contig_map.tsv") + " "  # IN
-        map_read_bt2 += os.path.join(final_folder, sample_root_name + "_" + ref_tag + "_gene_map.tsv") + " "  # OUT
-        map_read_bt2 += os.path.join(final_folder, sample_root_name + "_" + ref_tag + "_mapped_genes.fna") + " " #OUT
-        map_read_bt2 += reads_in + " "
-        map_read_bt2 += bt2_in + " "
-        map_read_bt2 += reads_out
+            ga_bt2_pp += self.file_dict["contigs_map"] + " "  # IN
+        ga_bt2_pp += gene_map + " "  # OUT
+        ga_bt2_pp += mapped_genes + " " #OUT
+        ga_bt2_pp += reads_in + " "
+        ga_bt2_pp += bt2_in + " "
+        ga_bt2_pp += reads_out
+
+        make_marker = "touch " + marker_file
 
 
-
-        
-
-        make_marker = ">&2 echo bt2 pp complete: " + marker_file + " | " 
-        make_marker += "touch" + " " 
-        make_marker += os.path.join(jobs_folder, marker_file)
-
-
-        COMMANDS_Annotate_bt2 = [
-            map_read_bt2 + " && " + make_marker
+        COMMANDS_bt2_pp = [
+            ga_bt2_pp + " && " + make_marker
         ]
 
-        return COMMANDS_Annotate_bt2
+        return COMMANDS_bt2_pp
 
 
 

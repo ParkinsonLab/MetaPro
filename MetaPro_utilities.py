@@ -30,6 +30,7 @@ import pandas as pd
 import shutil
 from datetime import datetime as dt
 import psutil as psu
+import subprocess as sp
 
 class mp_seq_handler:
     #internalized because we need the number of files generated + saves another file from being generated
@@ -359,19 +360,68 @@ class mp_util:
             print("doesn't exist: running")
             return False
 
-    def launch_and_create_simple(self, job_location, job_label, command_obj, commands):
+    def make_script(self, job_path, command_list):
+        # create the pbs job, and launch items
+        # job path: name and location of where to write the script.
+        # command list:  list of command statements for writing
+        # returns back the job ID given from sbatch
+
+        # docker mode: single cpu
+        # no ID, no sbatch.  just run the command
+        
+        shell_script_full_path = job_path
+
+        with open(shell_script_full_path, "w") as PBS_script_out:
+            for item in command_list:
+                PBS_script_out.write(item + "\n")
+            PBS_script_out.close()
+        #if not work_in_background:
+        output = ""
+        try:
+            sp.check_output(["sh", shell_script_full_path])#, stderr = sp.STDOUT)
+        except sp.CalledProcessError as e:
+            return_code = e.returncode
+            if return_code != 1:
+                raise
+                
+    def launch_only(self, command_list, command_list_length):
+        #just launch the job.  Don't make a script file.
+        #print(dt.today(), "inside launch_only:", len(command_list))
+        
+        if(command_list_length == 1):
+            #print("0th item:", command_list[0])
+            try:
+                os.system(command_list[0])
+            except sp.CalledProcessError as e:
+                return_code = e.returncode
+                if return_code != 1:
+                    raise
+            #else:
+            #    sys.exit("something bad happened")
+        else:
+        
+            for command_item in command_list:
+                try:
+                    os.system(command_item)
+                except sp.CalledProcessError as e:
+                    return_code = e.returncode
+                    if return_code != 1:
+                        raise
+
+
+    def run_subjob_simple(self, job_location, job_label, command_obj, commands):
         #just launches a job.  no multi-process.
         process = mp.Process(
-            target=command_obj.create_and_launch,
-            args=(job_location, job_label, commands)
+            target=self.make_script,
+            args=(job_location, commands)
         )
         process.start()
         process.join()
 
-    def launch_and_create_with_mp_store(self, job_location, job_label, command_obj, commands):
+    def run_subjob_with_mp_store(self, job_location, job_label, command_obj, commands):
         #just launches a job.  no multi-process.
         process = mp.Process(
-            target=command_obj.create_and_launch,
+            target=self.make_script,
             args=(job_location, job_label, commands)
         )
         process.start()
@@ -398,7 +448,7 @@ class mp_util:
                     if(self.mem_checker(mem_threshold)):
 
                         process = mp.Process(
-                            target=command_obj.create_and_launch,
+                            target=self.make_script,
                             args=(job_location, job_name, [item])
                         )
                         process.start()
@@ -437,7 +487,7 @@ class mp_util:
         time.sleep(job_delay)
         
 
-    def launch_and_create_with_hold(self, mem_threshold, job_limit, job_delay, job_location, job_name, command_obj, command):
+    def run_subjob_with_hold(self, mem_threshold, job_limit, job_delay, job_location, job_name, command_obj, command):
         #launch a job in launch-with-create mode
         job_submitted = False
         while(not job_submitted):
@@ -445,7 +495,7 @@ class mp_util:
             if(len(self.mp_store) < job_limit):
                 if(self.mem_checker(mem_threshold)):
                     process = mp.Process(
-                        target = command_obj.create_and_launch,
+                        target = self.make_script,
                         args = (job_location, job_name, command)
                     )
                     process.start()
@@ -460,7 +510,7 @@ class mp_util:
                 self.wait_for_mp_store()
         #final wait
         #self.wait_for_mp_store()
-    def launch_and_create_with_mem_footprint(self, mem_footprint, job_limit, job_location, job_name, command_obj, command):
+    def run_subjob_with_mem_footprint(self, mem_footprint, job_limit, job_location, job_name, command_obj, command):
         #launch a job in launch-with-create mode
         #this controller won't be optimized for the system. It's made to keep the node from exploding.
         job_submitted = False
@@ -470,7 +520,7 @@ class mp_util:
             if(len(self.mp_store) < job_limit):    
                 if(self.mem_footprint_checker(len(self.mp_store), mem_footprint)):
                     process = mp.Process(
-                        target = command_obj.create_and_launch,
+                        target = self.make_script,
                         args = (job_location, job_name, command)
                     )
                     process.start()
@@ -554,7 +604,7 @@ class mp_util:
         
         if self.check_bypass_log(self.output_folder_path, job_label):
             print(dt.today(), "NEW CHECK running:", job_label)
-            self.launch_and_create_simple(job_label, job_label, commands, command_list)
+            self.run_subjob_simple(job_label, job_label, commands, command_list)
             
             self.write_to_bypass_log(self.output_folder_path, job_label)
             #cleanup_job_start = time.time()

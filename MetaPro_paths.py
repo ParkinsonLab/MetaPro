@@ -220,15 +220,43 @@ class mpro_config:
         self.config_dict["pair_1"] = self.value_assignment("path", config, "Input", "pair_1", "None")
         self.config_dict["pair_2"] = self.value_assignment("path", config, "Input", "pair_2", "None")
         self.config_dict["contig"] = self.value_assignment("path", config, "Input", "contig", "None")
-
+        
+        self.config_dict["read_mode"] = "p"
         if(self.config_dict["pair_1"] != "None"):
             self.config_dict["pair_1"] = os.path.abspath(self.config_dict["pair_1"])
+            if(not os.path.exists(self.config_dict["pair_1"])):
+                print(dt.today(), "pair 1 not a valid file. exiting")
+                print(self.config_dict["pair_1"])
+                sys.exit()
+            
+
         if(self.config_dict["pair_2"] != "None"):
             self.config_dict["pair_2"] = os.path.abspath(self.config_dict["pair_2"])
+            if(not os.path.exists(self.config_dict["pair_2"])):
+                print(dt.today(), "pair 2 not a valid file. exiting")
+                print(self.config_dict["pair_2"])
+                sys.exit()
+            else:
+                print(dt.today(), "MetaPro operating in paired-mode")
+
         if(self.config_dict["single"] != "None"):
             self.config_dict["single"] = os.path.abspath(self.config_dict["single"])
+            if(not os.path.exists(self.config_dict["single"])):
+                print(dt.today(), "single not a valid file. exiting")
+                print(self.config_dict["single"])
+                sys.exit()
+            else:
+                self.config_dict["read_mode"] = "s"
+                print(dt.today(), "MetaPro operating in SINGLE-end mode")
         if(self.config_dict["contig"] != "None"):
             self.config_dict["contig"] = os.path.abspath(self.config_dict["contig"])
+            if(not os.path.exists(self.config_dict["contig"])):
+                print(dt.today(), "contig not a valid file. exiting")
+                print(self.config_dict["contig"])
+                sys.exit()
+            
+
+        
          
 
         self.config_dict["bypass_log"] = self.value_assignment("path", config, "Settings", "bypass_log", os.path.join(self.out_dir, "bypass_long.txt"))
@@ -427,7 +455,7 @@ class mpro_config:
         self.config_dict["Map_contig"]                 = self.value_assignment("path", config, "code", "map_contig", os.path.join(script_path, "assembly_make_contig_map.py"))
         self.config_dict["flush_bad_contigs"]          = self.value_assignment("path", config, "code", "flush_bad_contigs", os.path.join(script_path, "assembly_flush_bad_contigs.py"))
         self.config_dict["contig_duplicate_remover"]   = self.value_assignment("path", config, "code", "contig_duplicate_remover", os.path.join(script_path, "assembly_deduplicate.py"))
-        self.config_dict["Map_reads_gene_BWA"]         = self.value_assignment("path", config, "code", "ga_bwa_pp", os.path.join(script_path, "ga_BWA_generic_v2.py"))
+        self.config_dict["GA_BT2_pp"]                   = self.value_assignment("path", config, "code", "ga_bwa_pp", os.path.join(script_path, "GA_samfile.py"))
         self.config_dict["Map_reads_gene_BLAT"]        = self.value_assignment("path", config, "code", "ga_blat_pp", os.path.join(script_path, "ga_BLAT_generic_v3.py"))
         self.config_dict["Map_reads_prot_DMND"]        = self.value_assignment("path", config, "code", "ga_dmd_pp", os.path.join(script_path, "ga_Diamond_generic_v2.py"))
         self.config_dict["GA_final_merge"]             = self.value_assignment("path", config, "code", "ga_final_merge", os.path.join(script_path, "ga_Final_merge_v4.py"))
