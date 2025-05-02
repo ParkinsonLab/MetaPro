@@ -578,23 +578,30 @@ class mp_stage:
                     
                     if(self.config_dict["op_mode"] == "paired")
                     p_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_p_" + lib_tag + "_job.sh")
-                    p_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_p_" + lib_tag)
-                    if(os.path.exists(p_marker)):
-                        print(dt.today(), "skipping:", p_marker)
+                    p_mkr = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_p_" + lib_tag)
+                    if(os.path.exists(p_mkr)):
+                        print(dt.today(), "skipping:", p_mkr)
                         continue
                     else:
-                        marker_path_list.append(p_marker)
+                        marker_path_list.append(p_mkr)
                     
                         #aug 10, 2021: new bigger chocophlan (from humann3) is in segments because we can't index it as a whole.  
                         #if the DB is still an old version, the tag should just say "chocophlan".  otherwise, it will say the chocophlan chunk name
                         
-                        command_list = self.commands.create_BT2_annotate_command_v2(lib_entry, self.file_dict["contigs_p1"], self.file_dict["contigs_p2"], self.file_dict["ga_bt2_p_sam"], p_marker, "p")
+                        command_list = self.commands.create_GA_BT2_command(lib_entry, self.file_dict["contigs_p1"], self.file_dict["contigs_p2"], self.file_dict["ga_bt2_p_sam"], p_mkr, "p")
                         #self.mp_util.run_subjob_with_hold(self.BT2_mem_threshold, self.BT2_job_limit, self.BT2_job_delay, self.GA_BT2_label, job_name, self.commands, command_list)
                         self.mp_util.run_subjob_with_mem_footprint(self.BT2_mem_footprint, self.BT2_job_limit, self.GA_BT2_label, p_job, self.commands, command_list)
-                        
 
 
-                                    
+
+                    s_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_s_" + lib_tag + "_job.sh")
+                    s_mkr = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_s_" + lib_tag)
+                    if(os.path.exists(s_mkr)):
+                        continue
+                    else:
+                        marker_path_list.append(s_mkr)
+                        command_list = self.commands.create_GA_BT2_command(lib_entry, self.file_dict["contigs_s"], "none", self.file_dict["ga_bt2_s_sam"], s_mkr, "s")
+     
 
                 print(dt.today(), "all BT2 jobs have launched.  waiting for them to finish")            
                 self.mp_util.wait_for_mp_store()
@@ -634,52 +641,11 @@ class mp_stage:
                 elif(lib_basename.endswith(".fa")):
                     lib_tag = lib_basename.strip(".fa")
 
-            for section in sections:
-                for split_sample in os.listdir(os.path.join(self.GA_split_path, "final_results", section)):
-                    full_sample_path = os.path.join(os.path.join(self.GA_split_path, "final_results",section, split_sample))
-                    file_tag = os.path.basename(split_sample)
-                    file_tag = os.path.splitext(file_tag)[0]
-                    
-                    
-                    ref_path = self.paths.DNA_DB
-                    #chocophlan in many mutiple segments
-                    if (ref_path.endswith(".fasta")):
-                        ref_tag = os.path.basename(ref_path)
-                        ref_tag = ref_tag.strip(".fasta")
-                
-                    
-                        job_name = "BT2_pp" + "_" + file_tag + "_" + ref_tag
-                        marker_file = file_tag + "_" + ref_tag +  "_BT2_pp"
-                        marker_path = os.path.join(self.GA_BT2_jobs_folder, marker_file)
-                        
-                        if(os.path.exists(marker_path)):
-                            print(dt.today(), "skipping:", marker_file)
-                            continue
-                        else:
-                            marker_path_list.append(marker_path)
-                            command_list = self.commands.create_BT2_pp_command_v2(self.GA_BT2_label, self.assemble_contigs_label, ref_tag, ref_path, full_sample_path, marker_file)
-                            self.mp_util.run_subjob_with_hold(self.BT2_pp_mem_threshold, self.BT2_pp_job_limit, self.BT2_pp_job_delay, self.GA_BT2_label, job_name, self.commands, command_list)
-                            
-                    else:
-                        #chocophlan in chunks
-                        split_db = os.listdir(ref_path)
-                        for db_segments in split_db:
-                            if(db_segments.endswith(".fasta")):
-                                segment_ref_path = os.path.join(ref_path, db_segments)
-                                ref_tag = db_segments.strip(".fasta")
-                                job_name = "BT2_pp" + "_" + file_tag + "_" + ref_tag
-                                marker_file = file_tag + "_" + ref_tag + "_BT2_pp"
-                                marker_path = os.path.join(self.GA_BT2_jobs_folder, marker_file)
-                                
-                                if(os.path.exists(marker_path)):
-                                    print(dt.today(), "skipping:", marker_file)
-                                    continue
-                                else:
-                                    marker_path_list.append(marker_path)
-                                    command_list = self.commands.create_BT2_pp_command_v2(self.GA_BT2_label, self.assemble_contigs_label, ref_tag, segment_ref_path, full_sample_path, marker_file)
-                                    #print(dt.today(), "segmented BT2:", command_list)
-                                    #time.sleep(2)
-                                    self.mp_util.run_subjob_with_hold(self.BT2_pp_mem_threshold, self.BT2_pp_job_limit, self.BT2_pp_job_delay, self.GA_BT2_label, job_name, self.commands, command_list)
+
+                p_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_pp_p_" + lib_tag + "_job.sh")
+                p_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_pp_p_" + lib_tag)
+
+                command_list = self.commands.create_GA_BT2_pp_command(lib_entry, self.file_dict["GA_"])
 
                             
             print(dt.today(), "all BT2 PP jobs submitted.  waiting for sync")            

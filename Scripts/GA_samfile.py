@@ -7,7 +7,8 @@
 #mar 09, 2021:
 #we now handle a one-off case where contigs are skipped entirely (due to a weird niche use for xuejian's evonik chicken thing)
 #may 01, 2025: renamed to be something more generic. 
-#code needs to be updated to work in paired-mode.
+#code needs to be updated to work in paired-mode.  
+#May 2, 2025: it already does. just needs to export f + r reads.  but one map.
 
 import os
 import os.path
@@ -114,6 +115,8 @@ def filter_common_contigs(contig2read_map, contig_reads):
 
 def gene_map(cigar_cutoff, sam, contig2read_map):#, mapped_reads, gene2read_map, contig2read_map):#, contig2read_map_uniq):                                      # Set of unmapped contig/readIDs=
                                                         #  gene_map(BWA .sam file)
+    
+
     # tracking BWA-assigned & unassigned:
     query_details_dict = dict() #details about the match that we care about
     mapped = set()              #qualified mapped reads
@@ -138,6 +141,7 @@ def gene_map(cigar_cutoff, sam, contig2read_map):#, mapped_reads, gene2read_map,
                 continue                                #  go to the next query (restart for).
             line_parts = line.strip("\n").split("\t")    # Otherwise, split into tab-delimited fields and store:
             query = line_parts[0]                        #  queryID= contig/readID,
+            
             db_match = line_parts[2]                     #  geneID, and a
             flag = bin(int(line_parts[1]))[2:].zfill(11) #  flag---after conversion into 11-digit binary format
                                                         #  where each bit is a flag for a specific descriptor.
@@ -238,7 +242,7 @@ def write_unmapped_reads(unmapped_reads, reads_in, output_file):
         print(dt.today(), "no unmapped reads found.  skipping")
     else:
         read_seqs = SeqIO.index(reads_in, os.path.splitext(reads_in)[1][1:])
-        # WRITE OUTPUT: non-BWA-aligned contig/readIDs:
+        # WRITE OUTPUT: non-BT2-aligned contig/readIDs:
         # and seqs (.fasta):
         unmapped_seqs = []                               # Inintialize list of SeqRecords.
         for read in unmapped_reads:                     # Put corresponding SeqRecords for unmapped_reads
@@ -255,7 +259,7 @@ def write_unmapped_reads(unmapped_reads, reads_in, output_file):
         #prev_mapping_count= len(mapped_reads)
 
 
-def write_gene_map(DNA_DB, gene2read_file, gene2read_map, mapped_gene_file):
+def write_gene_map(DNA_DB, gene2read_file, gene2read_map, aligned_genes_out):
     # WRITE OUTPUT: write gene<->read mapfile of BWA-aligned:
     # [BWA-aligned geneID, length, #reads, readIDs ...]
     reads_count = 0
@@ -275,21 +279,28 @@ def write_gene_map(DNA_DB, gene2read_file, gene2read_map, mapped_gene_file):
                     out_map.write("\n")                     #  and a new line character.
     
     #WRITE THE ANNOTATED GENES OUT TO A FILE.  FOR DOWNSTREAM USE
-    with open(mapped_gene_file,"w") as outfile:
+    with open(aligned_genes_out,"w") as outfile:
         SeqIO.write(genes, outfile, "fasta") 
     
 if __name__ == "__main__":
     cigar_cut           = sys.argv[1]
     DNA_DB              = sys.argv[2]       # INPUT: DNA db used for BT2 alignement
     contig2read_file    = sys.argv[3]       # INPUT: [contigID, #reads, readIDs ...]
-    gene2read_out       = sys.argv[4]       # OUTPUT: [BWA-aligned geneID, length, #reads, readIDs ...]
-    mapped_gene_file    = sys.argv[5]       # OUTPUT: genes mapped by BWA.
+    gene_map_out       = sys.argv[4]       # OUTPUT: [BWA-aligned geneID, length, #reads, readIDs ...]
+    aligned_genes_out    = sys.argv[5]       # OUTPUT: genes mapped by BWA.
     
-    reads_in            = sys.argv[6]   
-    sam_in              = sys.argv[7]
-    reads_out           = sys.argv[8]
+    read1_in            = sys.argv[6]
+    read2_in            = sys.argv[7]   
+    sam_in              = sys.argv[8]
+    read1_out           = sys.argv[9]
+    read2_out           = sys.argv[10]
+    op_mode             = sys.argv[11]
     
-    input_safety = check_file_safety(reads_in) and check_file_safety(sam_in)
+    input_safety = check_file_safety(read1_in) and check_file_safety(sam_in)
+    if(op_mode == "p"):
+        input_safety = check_file_safety(read2_in)
+
+
     cigar_cutoff = int(cigar_cut)
     if(input_safety):
         contig2read_map = dict()
@@ -300,19 +311,25 @@ if __name__ == "__main__":
         # tracking BWA-assigned:
         unmapped_reads, mapped_reads, gene2read_map = gene_map(cigar_cutoff, sam_in, contig2read_map)
         
-        write_gene_map(DNA_DB, gene2read_out, gene2read_map, mapped_gene_file)
-        write_unmapped_reads(unmapped_reads, reads_in, reads_out)
-        
+        write_gene_map(DNA_DB, gene_map_out, gene2read_map, aligned_genes_out)
+        write_unmapped_reads(unmapped_reads, read1_in, read1_out)
+        if(op_mode == "p"):
+            write_unmapped_reads(unmapped_reads, read2_in, read2_out)
     else:
-        print(dt.today(), "input unsafe.  Either no reads, or BWA annotated nothing.  converting to fasta, then passing on")
-        if(check_file_safety(reads_in)):
-            if(reads_in.endswith(".fastq")):
-                reads_to_convert = SeqIO.parse(reads_in, "fastq")
-                SeqIO.write(reads_to_convert, reads_out, "fasta")
+        print(dt.today(), "input unsafe.  Either no reads, or BT2 annotated nothing.  converting to fasta, then passing on")
+        if(check_file_safety(read1_in)):
+            if(read1_in.endswith(".fastq")):
+                reads_to_convert = SeqIO.parse(read1_in, "fastq")
+                SeqIO.write(reads_to_convert, read1_out, "fasta")
             else:
-                copyfile(reads_in, reads_out)
+                copyfile(read1_in, read1_out)
             
-    
+            if(op_mode == "p"):
+                if(read2_in.endswith(".fastq")):
+                    reads_to_convert = SeqIO.parse(read2_in, "fastq")
+                    SeqIO.write(reads_to_convert, read2_out, "fasta")
+                else:
+                    copyfile(read1_in, read1_out)
     
     
     

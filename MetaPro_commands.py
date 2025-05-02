@@ -847,7 +847,7 @@ class mt_pipe_commands:
         
         return [ga_get_lib + " && " + make_marker]
         
-    def create_BT2_annotate_command_v2(self, db_path, read_1, read_2, sam_out, marker_file, op_mode):
+    def create_GA_BT2_command(self, db_path, read_1, read_2, sam_out, marker_file, op_mode):
         # meant to be called multiple times: query file is a split file
         # aug 10, 2021: changed ref path to accomodate new split-chocophlan
         #feb 20, 2025: reiterating call-per-file.
@@ -874,7 +874,7 @@ class mt_pipe_commands:
         return COMMANDS_bt2
         
     
-    def create_bt2_pp_command_v2(self, ref_path, reads_in, reads_out, bt2_in, gene_map, mapped_genes, marker_file):
+    def create_GA_BT2_pp_command(self, ref_path, reads_in, reads_out, bt2_in, gene_map, mapped_genes, marker_file):
         #may 01, 2025: simplified pp call.  
 
         ga_bt2_pp = self.config_dict["Python"] + " "
@@ -924,7 +924,7 @@ class mt_pipe_commands:
 
         merge_bt2_fastas = ">&2 echo " + str(dt.today()) + " GA bt2 merge leftover reads " + sample_root_name + " | "
         merge_bt2_fastas += self.config_dict["Python"] + " "
-        merge_bt2_fastas += self.config_dict["GA_merge_fasta + " "
+        merge_bt2_fastas += self.config_dict["GA_merge_fasta"] + " "
         merge_bt2_fastas += pp_folder + " " 
         merge_bt2_fastas += sample_root_name + " " 
         merge_bt2_fastas += final_folder
@@ -959,7 +959,7 @@ class mt_pipe_commands:
         diamond_annotate = ">&2 echo " + str(dt.today()) + " GA DIAMOND " + sample_root_name + " | "
         diamond_annotate += self.config_dict["DMD"]
         diamond_annotate += " blastx -p " + self.threads_str
-        diamond_annotate += " -d " + self.config_dict["Prot_DB
+        diamond_annotate += " -d " + self.config_dict["Prot_DB"]
         diamond_annotate += " -q " + query_file 
         diamond_annotate += " -o " + os.path.join(diamond_folder, sample_root_name + ".dmdout")
         diamond_annotate += " -f 6 -t " + temp_folder #section_temp_folder

@@ -189,5 +189,8 @@ class mpro_file_handler:
         self.file_dict["ga_split_p1"] = os.path.join(self.dir_dict["GA_split"], "p1")
         self.file_dict["ga_split_p2"] = os.path.join(self.dir_dict["GA_split"], "p2")
 
-        #just the folder location
-        self.file_dict["ga_bt2_p_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "paired.sam")
+        self.file_dict["ga_bt2_p_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "p.sam")
+        self.file_dict["ga_bt2_s_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "s.sam")
+        self.file_dict["ga_bt2_c_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "c.sam")
+
+
