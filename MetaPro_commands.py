@@ -248,12 +248,11 @@ class mt_pipe_commands:
         
         bt2_hr_paired = ">&2 echo bt2 host-removal on paired | " 
         bt2_hr_paired += self.config_dict["bt2"] + " "
-        bt2_hr_paired += "mem" + " "  + "-t" + " " + self.threads_str + " "
-        bt2_hr_paired += self.config_dict["Host_db"] + " "
-        bt2_hr_paired += self.file_dict["qf_u_p1"] + " "
-        bt2_hr_paired += self.file_dict["qf_u_p2"] + " "
-        bt2_hr_paired += ">" + " "
-        bt2_hr_paired += self.file_dict["no_host_p_sam"]
+        bt2_hr_paired += "-p " + self.threads_str + " "
+        bt2_hr_paired += "-x " + self.config_dict["Host_db"] + " "
+        bt2_hr_paired += "-1 " + self.file_dict["qf_u_p1"] + " "
+        bt2_hr_paired += "-2 " + self.file_dict["qf_u_p2"] + " "
+        bt2_hr_paired += "-S " + self.file_dict["no_host_p_sam"]
         
         #Tutorial-use only
         bt2_hr_tut_paired = ">&2 echo bt2 host-removal on paired | " 
@@ -334,17 +333,17 @@ class mt_pipe_commands:
         # because science needs repeatable data, and the process needs to be able to start at any point
         
         bt2_vr_s = ">&2 echo bt2 vector oprhans | "
-        bt2_vr_s += self.config_dict["bt2"] + " mem -t " + self.threads_str + " "
-        bt2_vr_s += self.file_dict["vectors"] + " "
-        bt2_vr_s += self.file_dict["no_host_s"]
-        bt2_vr_s += " > " + self.file_dict["vec_s_sam"]
+        bt2_vr_s += self.config_dict["bt2"] + " -p " + self.threads_str + " "
+        bt2_vr_s += "-x " + self.file_dict["vectors"] + " "
+        bt2_vr_s += "-U " + self.file_dict["no_host_s"] + " "
+        bt2_vr_s += "-S " + self.file_dict["vec_s_sam"]
         
         
         bt2_vr_tut_s = ">&2 echo bt2 vector oprhans TUTORIAL MODE | "
-        bt2_vr_tut_s += self.config_dict["bt2"] + " mem -t " + self.threads_str + " "
-        bt2_vr_tut_s += self.config_dict["vectors"] + " "
-        bt2_vr_tut_s += self.config_dict["single"]
-        bt2_vr_tut_s += " > " + self.file_dict["vec_s_sam"]
+        bt2_vr_tut_s += self.config_dict["bt2"] + " -p " + self.threads_str + " "
+        bt2_vr_tut_s += "-x " + self.config_dict["vectors"] + " "
+        bt2_vr_tut_s += "-U " + self.config_dict["single"] + " "
+        bt2_vr_tut_s += "-S " + self.file_dict["vec_s_sam"]
 
         samtools_no_vec_s_convert = ">&2 echo samtools vector oprhans pt 1 | "
         samtools_no_vec_s_convert += self.config_dict["samtools"] + " view -bS "
@@ -362,18 +361,18 @@ class mt_pipe_commands:
         samtools_vec_s_export += self.file_dict["vec_s_bam"]
 
         bt2_vr_paired = ">&2 echo bt2 vector paired | "
-        bt2_vr_paired += self.config_dict["bt2"] + " mem -t " + self.threads_str + " "
-        bt2_vr_paired += self.config_dict["vectors"] + " "
-        bt2_vr_paired += self.file_dict["no_host_p1"] + " "
-        bt2_vr_paired += self.file_dict["no_host_p2"] + " "
-        bt2_vr_paired += " > " + self.file_dict["vec_p_sam"]
+        bt2_vr_paired += self.config_dict["bt2"] + " -p " + self.threads_str + " "
+        bt2_vr_paired += " -x " + self.config_dict["vectors"] + " "
+        bt2_vr_paired += "-1 " + self.file_dict["no_host_p1"] + " "
+        bt2_vr_paired += "-2 " + self.file_dict["no_host_p2"] + " "
+        bt2_vr_paired += "-S " + self.file_dict["vec_p_sam"]
 
         bt2_vr_tut_paired = ">&2 echo bt2 vector paired TUTORIAL MODE | "
-        bt2_vr_tut_paired += self.config_dict["bt2"] + " mem -t " + self.threads_str + " "
-        bt2_vr_tut_paired += self.config_dict["vectors"] + " "
-        bt2_vr_tut_paired += self.config_dict["pair_1"] + " "
-        bt2_vr_tut_paired += self.config_dict["pair_2"] + " "
-        bt2_vr_tut_paired += " > " + self.file_dict["vec_p_sam"]
+        bt2_vr_tut_paired += self.config_dict["bt2"] + " -p " + self.threads_str + " "
+        bt2_vr_tut_paired += "-x " +self.config_dict["vectors"] + " "
+        bt2_vr_tut_paired += "-1 " + self.config_dict["pair_1"] + " "
+        bt2_vr_tut_paired += "-2 " + self.config_dict["pair_2"] + " "
+        bt2_vr_tut_paired += "-S " + self.file_dict["vec_p_sam"]
         
         bt2_vr_filter_paired = ">&2 echo bt2 vector filter on paired | "
         bt2_vr_filter_paired += self.config_dict["Python"] + " "
@@ -723,17 +722,17 @@ class mt_pipe_commands:
         #bt2_paired_contigs += self.config_dict["BT2"] + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
         # --score-min L,0,-0.2 --mp 40,40 --rdg 10,10 --rfg 10,10 --np 60 --dpad 15 --gbar 4 -L 50 -i S,1,0.75
         # Apr 29 2025: exec order to ditch the scores and go default due to translation conflicts
-         bt2_paired_contigs += self.config_dict["BT2"] 
+        bt2_paired_contigs += self.config_dict["BT2"] 
         bt2_paired_contigs += " -x " + contigs_idx + " "
         bt2_paired_contigs += " -1 " + self.file_dict["repop_p1"] + " "
-        bt2_paired_contigs += self.file_dict["repop_p2"] + " " 
+        bt2_paired_contigs += " -2 " + self.file_dict["repop_p2"] + " " 
         bt2_paired_contigs += "| samtools view > " + self.file_dict["contigs_p_sam"]
 
         bt2_singletons_contigs = ">&2 echo bt2 singleton contigs | "
         #bt2_singletons_contigs += self.config_dict["bt2"] + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
         bt2_singletons_contigs += self.config_dict["BT2"] +  " --score-min L,0,-0.2 --mp 40,40 --rdg 10,10 --rfg 10,10 --np 60 --dpad 15 --gbar 4 -L 50 -i S,1,0.75 "
-        bt2_singletons_contigs += final_contigs + " "
-        bt2_singletons_contigs += self.file_dict["repop_s"]
+        bt2_singletons_contigs += " -x " + contigs_idx + " "
+        bt2_singletons_contigs += " -U " + self.file_dict["repop_s"]
         bt2_singletons_contigs += " > " + self.file_dict["contigs_s_sam"]
         
         make_contig_map = ">&2 echo Making contig map | " 
@@ -992,11 +991,11 @@ class mt_pipe_commands:
 
         diamond_pp = ">&2 echo " + str(dt.today()) + " DIAMOND post process " + sample_root_name + " | "
         diamond_pp += self.config_dict["Python"] + " "
-        diamond_pp += self.config_dict["Map_reads_prot_DMND + " "
-        diamond_pp += str(self.config_dict["DMD"]_identity_cutoff) + " "
-        diamond_pp += str(self.config_dict["DMD"]_length_cutoff) + " "
-        diamond_pp += str(self.config_dict["DMD"]_score_cutoff) + " "
-        diamond_pp += self.config_dict["Prot_DB_reads + " "                # IN
+        diamond_pp += self.config_dict["Map_reads_prot_DMND"] + " "
+        diamond_pp += str(self.config_dict["DMD_identity_cutoff"]) + " "
+        diamond_pp += str(self.config_dict["DMD_length_cutoff"]) + " "
+        diamond_pp += str(self.config_dict["DMD_score_cutoff"]) + " "
+        diamond_pp += self.config_dict["Prot_DB_reads"] + " "                # IN
         if(self.sequence_contigs == "None"):
             diamond_pp += "None" + " "
         else:

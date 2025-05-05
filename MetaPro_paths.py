@@ -25,6 +25,7 @@ from datetime import datetime as dt
 import math
 import time
 from configparser import ConfigParser, ExtendedInterpolation
+import psutil as psu
 
 
         
@@ -98,12 +99,30 @@ class mpro_config:
                 print(dt.today(), "DMD index is ok")
 
         
-    def check_BT2_valid(self):
-        return True
+    def check_BT2_valid(self, bt2_id_path, index_name):
+        #just check if the bt2 indices exist. 
+        bt2_loc = os.path.abspath(sys.argv[1])
+        bt2_id_name = sys.argv[2]
 
+        file_list = os.listdir(bt2_loc)
+        for item in file_list:
+            full_path = os.path.join(bt2_loc, item)
+            if item.endswith(".bt2"):
+                split_name = item.split(".")
+                first_name = split_name[0]
+                number_part = str(split_name[1])
+                if(number_part != "1"):
+                    continue
+                if(first_name == bt2_id_name):
+                    if(os.path.getsize(full_path) > 0):
+                        return True
+
+        return False
     
     def get_config_dict(self):
         return self.config_dict
+    
+    
 
     def __init__ (self, config_path, output_folder):
         print("CHECKING CONFIG")
@@ -119,6 +138,10 @@ class mpro_config:
         else:
             print("no config found, defaulting")
             config = None
+
+        print(dt.today(), "checking onboard resources")
+        self.config_dict["max_cpu"] = int(psu.cpu_count())
+        self.config_dict["max_mem"] = int((psu.virtual_memory().total) * 0.8)
 
         self.config_dict = dict()
 
@@ -375,30 +398,30 @@ class mpro_config:
         # Note: default host is Mouse CDS
         
         #if config:
-        self.config_dict["vectors"]        = self.value_assignment("path", config, "Databases", "UniVec_Core", os.path.join(database_path, "univec_core/UniVec_Core.fasta")) 
-        self.config_dict["Adapter"]            = self.value_assignment("path", config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"))
-        self.config_dict["Host_db"]            = self.value_assignment("path", config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"))
-        self.config_dict["Rfam"]               = self.value_assignment("path", config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
-        self.config_dict["DNA_DB"]             = self.value_assignment("path", config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
-        self.config_dict["source_taxa_DB"]     = self.value_assignment("path", config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"))
-        self.config_dict["Prot_DB"]            = self.value_assignment("path", config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr"))
-        self.config_dict["Prot_DB_reads"]      = self.value_assignment("path", config, "Databases", "Prot_DB_reads", os.path.join(database_path, "nr/nr"))
-        self.config_dict["accession2taxid"]    = self.value_assignment("path", config, "Databases", "accession2taxid", os.path.join(database_path, "accession2taxid/accession2taxid"))
-        self.config_dict["nodes"]              = self.value_assignment("path", config, "Databases", "nodes", os.path.join(database_path, "WEVOTE_db", "nodes.dmp"))
-        self.config_dict["names"]              = self.value_assignment("path", config, "Databases", "names", os.path.join(database_path, "WEVOTE_db", "names.dmp"))
-        self.config_dict["Kaiju_db"]           = self.value_assignment("path", config, "Databases", "Kaiju_db", os.path.join(database_path, "kaiju_db/kaiju_db_nr.fmi"))
-        self.config_dict["Centrifuge_db"]      = self.value_assignment("path", config, "Databases", "Centrifuge_db", os.path.join(database_path, "centrifuge_db/nt"))
-        self.config_dict["SWISS_PROT"]         = self.value_assignment("path", config, "Databases", "SWISS_PROT", os.path.join(database_path, "swiss_prot_db/swiss_prot_db"))
-        self.config_dict["SWISS_PROT_map"]     = self.value_assignment("path", config, "Databases", "SWISS_PROT_map", os.path.join(database_path, "swiss_prot_db/SwissProt_EC_Mapping.tsv"))
-        self.config_dict["PriamDB"]            = self.value_assignment("path", config, "Databases", "PriamDB", os.path.join(database_path, "PRIAM_db/"))
-        self.config_dict["DetectDB"]           = self.value_assignment("path", config, "Databases", "DetectDB", os.path.join(database_path, "DETECTv2"))
-        self.config_dict["WEVOTEDB"]           = self.value_assignment("path", config, "Databases", "WEVOTEDB", os.path.join(database_path, "WEVOTE_db/"))
-        self.config_dict["EC_pathway"]         = self.value_assignment("path", config, "Databases", "EC_pathway", os.path.join(database_path, "EC_pathway.txt"))
-        self.config_dict["path_to_superpath"]  = self.value_assignment("path", config, "Databases", "path_to_superpath", os.path.join(custom_database_path, "pathway_to_superpathway.csv"))
-        self.config_dict["mgm_model"]          = self.value_assignment("path", config, "Databases", "MetaGeneMark_model", os.path.join(tool_path, "mgm/MetaGeneMark_v1.mod"))
-        self.config_dict["enzyme_db"]          = self.value_assignment("path", config, "Databases", "enzyme_db", os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt"))
-        self.config_dict["taxid_tree"]         = self.value_assignment("path", config, "Databases", "taxid_tree", os.path.join(custom_database_path, "taxid_trees", "family_tree.tsv"))
-        self.config_dict["kraken2_db"]         = self.value_assignment("path", config, "Databases", "kraken2_db", os.path.join(custom_database_path, "kraken2_db"))
+        self.config_dict["vectors"]             = self.value_assignment("path", config, "Databases", "univec", os.path.join(database_path, "univec/univec")) 
+        self.config_dict["Adapter"]             = self.value_assignment("path", config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"))
+        self.config_dict["Host_db"]             = self.value_assignment("path", config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"))
+        self.config_dict["Rfam"]                = self.value_assignment("path", config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
+        self.config_dict["DNA_DB"]              = self.value_assignment("path", config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
+        self.config_dict["source_taxa_DB"]      = self.value_assignment("path", config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"))
+        self.config_dict["Prot_DB"]             = self.value_assignment("path", config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr"))
+        self.config_dict["Prot_DB_reads"]       = self.value_assignment("path", config, "Databases", "Prot_DB_reads", os.path.join(database_path, "nr/nr"))
+        self.config_dict["accession2taxid"]     = self.value_assignment("path", config, "Databases", "accession2taxid", os.path.join(database_path, "accession2taxid/accession2taxid"))
+        self.config_dict["nodes"]               = self.value_assignment("path", config, "Databases", "nodes", os.path.join(database_path, "WEVOTE_db", "nodes.dmp"))
+        self.config_dict["names"]               = self.value_assignment("path", config, "Databases", "names", os.path.join(database_path, "WEVOTE_db", "names.dmp"))
+        self.config_dict["Kaiju_db"]            = self.value_assignment("path", config, "Databases", "Kaiju_db", os.path.join(database_path, "kaiju_db/kaiju_db_nr.fmi"))
+        self.config_dict["Centrifuge_db"]       = self.value_assignment("path", config, "Databases", "Centrifuge_db", os.path.join(database_path, "centrifuge_db/nt"))
+        self.config_dict["SWISS_PROT"]          = self.value_assignment("path", config, "Databases", "SWISS_PROT", os.path.join(database_path, "swiss_prot_db/swiss_prot_db"))
+        self.config_dict["SWISS_PROT_map"]      = self.value_assignment("path", config, "Databases", "SWISS_PROT_map", os.path.join(database_path, "swiss_prot_db/SwissProt_EC_Mapping.tsv"))
+        self.config_dict["PriamDB"]             = self.value_assignment("path", config, "Databases", "PriamDB", os.path.join(database_path, "PRIAM_db/"))
+        self.config_dict["DetectDB"]            = self.value_assignment("path", config, "Databases", "DetectDB", os.path.join(database_path, "DETECTv2"))
+        self.config_dict["WEVOTEDB"]            = self.value_assignment("path", config, "Databases", "WEVOTEDB", os.path.join(database_path, "WEVOTE_db/"))
+        self.config_dict["EC_pathway"]          = self.value_assignment("path", config, "Databases", "EC_pathway", os.path.join(database_path, "EC_pathway.txt"))
+        self.config_dict["path_to_superpath"]   = self.value_assignment("path", config, "Databases", "path_to_superpath", os.path.join(custom_database_path, "pathway_to_superpathway.csv"))
+        self.config_dict["mgm_model"]           = self.value_assignment("path", config, "Databases", "MetaGeneMark_model", os.path.join(tool_path, "mgm/MetaGeneMark_v1.mod"))
+        self.config_dict["enzyme_db"]           = self.value_assignment("path", config, "Databases", "enzyme_db", os.path.join(custom_database_path, "FREQ_EC_pairs_3_mai_2020.txt"))
+        self.config_dict["taxid_tree"]          = self.value_assignment("path", config, "Databases", "taxid_tree", os.path.join(custom_database_path, "taxid_trees", "family_tree.tsv"))
+        self.config_dict["kraken2_db"]          = self.value_assignment("path", config, "Databases", "kraken2_db", os.path.join(custom_database_path, "kraken2_db"))
 
         #-------------------------------------------------------
         # test DBs
@@ -418,7 +441,6 @@ class mpro_config:
         self.config_dict["cdhit_dup"]      = self.value_assignment("path", config, "Tools", "cdhit_dup",  os.path.join(tool_path, "cdhit_dup/cd-hit-dup"))
         self.config_dict["AdapterRemoval"] = self.value_assignment("path", config, "Tools", "AdapterRemoval", os.path.join(tool_path, "adapterremoval/AdapterRemoval"))
         self.config_dict["vsearch"]        = self.value_assignment("path", config, "Tools", "vsearch", os.path.join(tool_path, "vsearch/vsearch"))
-        self.config_dict["BWA"]            = self.value_assignment("path", config, "Tools", "BWA", os.path.join(tool_path, "BWA/bwa"))
         self.config_dict["BT2"]             = self.value_assignment("path", config, "Tools", "BT2", os.path.join(tool_path, "bowtie2/bowtie2"))
         self.config_dict["BT2_index"]       = self.value_assignment("path", config, "Tools", "BT2_index", os.path.join(tool_path, "bowtie2/bowtie2-build"))
         self.config_dict["samtools"]       = self.value_assignment("path", config, "Tools", "SAMTOOLS", os.path.join(tool_path, "samtools/samtools"))
@@ -429,12 +451,7 @@ class mpro_config:
         self.config_dict["Makeblastdb"]    = self.value_assignment("path", config, "Tools", "Makeblastdb", os.path.join(tool_path, "BLAST_p/makeblastdb"))
         self.config_dict["Barrnap"]        = self.value_assignment("path", config, "Tools", "Barrnap", os.path.join(tool_path, "Barrnap/bin/barrnap"))
         self.config_dict["Infernal"]       = self.value_assignment("path", config, "Tools", "Infernal", os.path.join(tool_path, "infernal/cmsearch"))
-        self.config_dict["Kaiju"]          = self.value_assignment("path", config, "Tools", "Kaiju", os.path.join(tool_path, "kaiju/kaiju"))
-        self.config_dict["Centrifuge"]     = self.value_assignment("path", config, "Tools", "Centrifuge", os.path.join(tool_path, "centrifuge/centrifuge"))
-        self.config_dict["Priam"]          = self.value_assignment("path", config, "Tools", "Priam", os.path.join(tool_path, "PRIAM_search/PRIAM_search.jar"))
-        self.config_dict["Detect"]         = self.value_assignment("path", config, "Tools", "Detect", os.path.join(script_path, "Detect_2.2.10.py"))
         self.config_dict["BLAST_dir"]      = self.value_assignment("path", config, "Tools", "BLAST_dir", os.path.join(tool_path, "BLAST_p"))
-        self.config_dict["WEVOTE"]         = self.value_assignment("path", config, "Tools", "WEVOTE", os.path.join(tool_path, "WEVOTE/WEVOTE"))
         self.config_dict["Spades"]         = self.value_assignment("path", config, "Tools", "Spades", os.path.join(tool_path, "SPAdes/bin/spades.py"))
         self.config_dict["MetaGeneMark"]   = self.value_assignment("path", config, "Tools", "MetaGeneMark", os.path.join(tool_path, "mgm/gmhmmp"))
         self.config_dict["kraken2"]        = self.value_assignment("path", config, "Tools", "kraken2", os.path.join(tool_path, "kraken2/kraken2"))
