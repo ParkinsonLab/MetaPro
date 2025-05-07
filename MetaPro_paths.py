@@ -140,10 +140,12 @@ class mpro_config:
             config = None
 
         print(dt.today(), "checking onboard resources")
+        self.config_dict = dict()
+        
         self.config_dict["max_cpu"] = int(psu.cpu_count())
         self.config_dict["max_mem"] = int((psu.virtual_memory().total) * 0.8)
 
-        self.config_dict = dict()
+        
 
         script_path             = "/pipeline/Scripts"
         tool_path               = "/pipeline_tools/"

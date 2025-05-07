@@ -576,9 +576,9 @@ class mp_stage:
                     elif(lib_basename.endswith(".fa")):
                         lib_tag = lib_basename.strip(".fa")
                     
-                    if(self.config_dict["op_mode"] == "paired")
-                    p_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_p_" + lib_tag + "_job.sh")
-                    p_mkr = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_p_" + lib_tag)
+                    if(self.config_dict["op_mode"] == "paired"):
+                        p_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_p_" + lib_tag + "_job.sh")
+                        p_mkr = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_p_" + lib_tag)
                     if(os.path.exists(p_mkr)):
                         print(dt.today(), "skipping:", p_mkr)
                         continue

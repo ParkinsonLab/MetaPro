@@ -1035,21 +1035,21 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
         
         final_merge_fastq = self.config_dict["Python"] + " "
-        final_merge_fastq += self.config_dict["GA_final_merge_fasta + " "
+        final_merge_fastq += self.config_dict["GA_final_merge_fasta"] + " "
         final_merge_fastq += dep_0_path + " "
         final_merge_fastq += dep_3_path + " "
         final_merge_fastq += self.read_mode + " "
         final_merge_fastq += final_folder
         
         final_merge_proteins = self.config_dict["Python"] + " "
-        final_merge_proteins += self.config_dict["GA_final_merge_proteins + " "
+        final_merge_proteins += self.config_dict["GA_final_merge_proteins"] + " "
         final_merge_proteins += dep_1_path + " "
         final_merge_proteins += dep_2_path + " "
         final_merge_proteins += dep_3_path + " "
         final_merge_proteins += final_folder
         
         final_merge_maps = self.config_dict["Python"] + " "
-        final_merge_maps += self.config_dict["GA_final_merge_maps + " "
+        final_merge_maps += self.config_dict["GA_final_merge_maps"] + " "
         final_merge_maps += dep_1_path + " "
         final_merge_maps += dep_2_path + " "
         final_merge_maps += dep_3_path + " "
@@ -1093,9 +1093,9 @@ class mt_pipe_commands:
 
         if(operating_mode == "contigs"):
             kraken2_c = ">&2 echo Kraken2 on contigs | "
-            kraken2_c += self.config_dict["kraken2 + " "
-            kraken2_c += "--db " + self.config_dict["kraken2_db + " "
-            kraken2_c += "--threads " + str(self.config_dict["num_threads) + " "
+            kraken2_c += self.config_dict["kraken2"] + " "
+            kraken2_c += "--db " + self.config_dict["kraken2_db"] + " "
+            kraken2_c += "--threads " + str(self.config_dict["num_threads"]) + " "
             kraken2_c += os.path.join(assemble_contigs_folder, "contigs.fasta") + " "
             kraken2_c += "--output " + os.path.join(kraken2_folder, "kraken2_c_report.txt")
             
@@ -1105,9 +1105,9 @@ class mt_pipe_commands:
             
         elif(operating_mode == "singletons"):
             kraken2_s = ">&2 echo Kraken2 on singletons | "
-            kraken2_s += self.config_dict["kraken2 + " "
-            kraken2_s += "--db " + self.config_dict["kraken2_db + " "
-            kraken2_s += "--threads " + str(self.config_dict["num_threads) + " "
+            kraken2_s += self.config_dict["kraken2"] + " "
+            kraken2_s += "--db " + self.config_dict["kraken2_db"] + " "
+            kraken2_s += "--threads " + str(self.config_dict["num_threads"]) + " "
             kraken2_s += os.path.join(assemble_contigs_folder, "singletons.fastq") + " " 
             kraken2_s += "--output " + os.path.join(kraken2_folder, "kraken2_s_report.txt")
             
@@ -1117,9 +1117,9 @@ class mt_pipe_commands:
             
         elif(operating_mode == "paired"):
             kraken2_p = ">&2 echo Kraken2 on paired | " 
-            kraken2_p += self.config_dict["kraken2 + " "
-            kraken2_p += "--db " + self.config_dict["kraken2_db +  " "
-            kraken2_p += "--threads " + str(self.config_dict["num_threads) + " "
+            kraken2_p += self.config_dict["kraken2"] + " "
+            kraken2_p += "--db " + self.config_dict["kraken2_db"] +  " "
+            kraken2_p += "--threads " + str(self.config_dict["num_threads"]) + " "
             kraken2_p += "--paired " + os.path.join(assemble_contigs_folder, "pair_1.fastq") + " " + os.path.join(assemble_contigs_folder, "pair_2.fastq") + " "
             kraken2_p += "--output " + os.path.join(kraken2_folder, "kraken2_p_report.txt")
             
@@ -1169,7 +1169,7 @@ class mt_pipe_commands:
         
         if(operating_mode == "contigs"):
             patch_contig_name = self.config_dict["Python"] + " "
-            patch_contig_name += self.config_dict["ta_contig_name_convert + " "
+            patch_contig_name += self.config_dict["ta_contig_name_convert"] + " "
             if(self.tutorial_keyword == "TA"):
                 patch_contig_name += self.sequence_contigs + " "
             else:
@@ -1177,8 +1177,8 @@ class mt_pipe_commands:
             patch_contig_name += os.path.join(centrifuge_folder, "contigs_renamed.fasta")
         
             centrifuge_on_contigs = ">&2 echo centrifuge on contigs | "
-            centrifuge_on_contigs += self.config_dict["Centrifuge
-            centrifuge_on_contigs += " -f -x " + self.config_dict["Centrifuge_db
+            centrifuge_on_contigs += self.config_dict["Centrifuge"]
+            centrifuge_on_contigs += " -f -x " + self.config_dict["Centrifuge_db"]
             centrifuge_on_contigs += " -U " + os.path.join(centrifuge_folder, "contigs_renamed.fasta")
             centrifuge_on_contigs += " --exclude-taxids 2759 -k 1 --tab-fmt-cols " + "score,readID,taxID"
             centrifuge_on_contigs += " --phred" + self.Qual_str
@@ -1187,7 +1187,7 @@ class mt_pipe_commands:
             centrifuge_on_contigs += " --report-file " + os.path.join(centrifuge_folder, "raw_contigs.txt")
             
             back_convert_report = self.config_dict["Python"] + " "
-            back_convert_report += self.config_dict["ta_contig_name_convert + " "
+            back_convert_report += self.config_dict["ta_contig_name_convert"] + " "
             back_convert_report += os.path.join(centrifuge_folder, "raw_contigs.tsv") + " "
             back_convert_report += os.path.join(centrifuge_folder, "contigs.tsv")
             
@@ -1199,8 +1199,8 @@ class mt_pipe_commands:
             
         elif(operating_mode == "reads"):
             centrifuge_on_reads = ">&2 echo centrifuge on reads | "
-            centrifuge_on_reads += self.config_dict["Centrifuge
-            centrifuge_on_reads += " -x " + self.config_dict["Centrifuge_db
+            centrifuge_on_reads += self.config_dict["Centrifuge"]
+            centrifuge_on_reads += " -x " + self.config_dict["Centrifuge_db"]
             
             if(self.tutorial_keyword == "TA"):
                 if(singletons_extension == ".fa" or singletons_extension == ".fasta"):
@@ -1229,8 +1229,8 @@ class mt_pipe_commands:
         elif(operating_mode == "rRNA"):
         
             centrifuge_on_rRNA = ">&2 echo centrifuge on rRNA | "
-            centrifuge_on_rRNA += self.config_dict["Centrifuge
-            centrifuge_on_rRNA += " -x " + self.config_dict["Centrifuge_db
+            centrifuge_on_rRNA += self.config_dict["Centrifuge"]
+            centrifuge_on_rRNA += " -x " + self.config_dict["Centrifuge_db"]
             centrifuge_on_rRNA += " -U " + os.path.join(rRNA_folder, "singletons_other.fastq")
             if self.read_mode == "paired":
                 centrifuge_on_rRNA += " -1 " + os.path.join(rRNA_folder, "pair_1_other.fastq")
@@ -1284,9 +1284,9 @@ class mt_pipe_commands:
 
         get_taxa_from_gene = ">&2 echo get taxa from gene | "
         get_taxa_from_gene += self.config_dict["Python"] + " "
-        get_taxa_from_gene += self.config_dict["Annotated_taxid + " "  # SLOW STEP
+        get_taxa_from_gene += self.config_dict["Annotated_taxid"] + " "  # SLOW STEP
         get_taxa_from_gene += os.path.join(final_merge_folder, "gene_map.tsv") + " "
-        get_taxa_from_gene += self.config_dict["accession2taxid + " "
+        get_taxa_from_gene += self.config_dict["accession2taxid"] + " "
         get_taxa_from_gene += os.path.join(ga_taxa_folder, "ga_taxon.tsv")
         
         make_marker = "touch" + " "
@@ -1313,7 +1313,7 @@ class mt_pipe_commands:
         
         wevote_combine = ">&2 echo combining classification outputs for wevote | "
         wevote_combine += self.config_dict["Python"] + " "
-        wevote_combine += self.config_dict["Classification_combine + " "
+        wevote_combine += self.config_dict["Classification_combine"] + " "
         wevote_combine += os.path.join(assemble_contigs_folder, "contig_map.tsv")
         wevote_combine += " " + os.path.join(wevote_folder, "wevote_input.csv") + " "
         wevote_combine += "none" + " "
@@ -1323,9 +1323,9 @@ class mt_pipe_commands:
         wevote_combine += os.path.join(centrifuge_folder, "merged_centrifuge.tsv")  
 
         wevote_call = ">&2 echo Running WEVOTE | "
-        wevote_call += self.config_dict["WEVOTE
+        wevote_call += self.config_dict["WEVOTE"]
         wevote_call += " -i " + os.path.join(wevote_folder, "wevote_input.csv")
-        wevote_call += " -d " + self.config_dict["WEVOTEDB
+        wevote_call += " -d " + self.config_dict["WEVOTEDB"]
         wevote_call += " -p " + os.path.join(wevote_folder, "wevote")
         wevote_call += " -n " + self.threads_str
         wevote_call += " -k " + "2"
@@ -1334,7 +1334,7 @@ class mt_pipe_commands:
         
         wevote_collect = ">&2 echo gathering WEVOTE results | "
         wevote_collect += self.config_dict["Python"] + " "
-        wevote_collect += self.config_dict["Wevote_parser + " "
+        wevote_collect += self.config_dict["Wevote_parser"] + " "
         wevote_collect += os.path.join(wevote_folder, "wevote_WEVOTE_Details.txt") + " "
         wevote_collect += os.path.join(wevote_folder, "taxonomic_classifications.tsv")
         
@@ -1366,7 +1366,7 @@ class mt_pipe_commands:
 
         wevote_combine = ">&2 echo combining classification outputs for wevote | "
         wevote_combine += self.config_dict["Python"] + " "
-        wevote_combine += self.config_dict["Classification_combine + " "
+        wevote_combine += self.config_dict["Classification_combine"] + " "
         wevote_combine += os.path.join(assemble_contigs_folder, "contig_map.tsv")
         wevote_combine += " " + os.path.join(wevote_folder, "wevote_ensemble.csv") + " "
         wevote_combine += os.path.join(ga_taxa_folder, "ga_taxon.tsv") + " "
@@ -1376,9 +1376,9 @@ class mt_pipe_commands:
         wevote_combine += os.path.join(centrifuge_folder, "merged_centrifuge.tsv")        
 
         wevote_call = ">&2 echo Running WEVOTE | "
-        wevote_call += self.config_dict["WEVOTE
+        wevote_call += self.config_dict["WEVOTE"]
         wevote_call += " -i " + os.path.join(wevote_folder, "wevote_ensemble.csv")
-        wevote_call += " -d " + self.config_dict["WEVOTEDB
+        wevote_call += " -d " + self.config_dict["WEVOTEDB"]
         wevote_call += " -p " + os.path.join(wevote_folder, "wevote")
         wevote_call += " -n " + self.threads_str
         wevote_call += " -k " + "2"
@@ -1387,16 +1387,16 @@ class mt_pipe_commands:
         
         wevote_collect = ">&2 echo gathering WEVOTE results | "
         wevote_collect += self.config_dict["Python"] + " "
-        wevote_collect += self.config_dict["Wevote_parser + " "
+        wevote_collect += self.config_dict["Wevote_parser"] + " "
         wevote_collect += os.path.join(wevote_folder, "wevote_WEVOTE_Details.txt") + " "
         wevote_collect += os.path.join(final_folder, "taxonomic_classifications.tsv")
         
         constrain = ">&2 echo Constraining the Taxonomic Annotation | " 
-        constrain += self.config_dict["Python"] + " " + self.config_dict["Constrain_classification + " "
-        constrain += self.config_dict["target_rank + " "
+        constrain += self.config_dict["Python"] + " " + self.config_dict["Constrain_classification"] + " "
+        constrain += self.config_dict["target_rank"] + " "
         constrain += os.path.join(final_folder, "taxonomic_classifications.tsv") + " "
-        constrain += self.config_dict["nodes + " "
-        constrain += self.config_dict["names + " "
+        constrain += self.config_dict["nodes"] + " "
+        constrain += self.config_dict["names"] + " "
         constrain += os.path.join(final_folder, "constrain_classification.tsv")
         
         make_marker = "touch" + " "
@@ -1421,17 +1421,17 @@ class mt_pipe_commands:
         
         detect_protein = ">&2 echo running detect on split file | "
         detect_protein += self.config_dict["Python"] + " "
-        detect_protein += self.config_dict["Detect + " "
+        detect_protein += self.config_dict["Detect"] + " "
         detect_protein += os.path.join(final_merge_folder,"all_proteins.faa")
         detect_protein += " --output_file " + os.path.join(detect_folder, "proteins.detect")
         detect_protein += " --fbeta " + os.path.join(detect_folder, "proteins.fbeta")
-        detect_protein += " --db " + self.config_dict["DetectDB
-        detect_protein += " --blastp " + self.config_dict["Blastp
-        detect_protein += " --needle " + self.config_dict["Needle
+        detect_protein += " --db " + self.config_dict["DetectDB"]
+        detect_protein += " --blastp " + self.config_dict["Blastp"]
+        detect_protein += " --needle " + self.config_dict["Needle"]
         detect_protein += " --dump_dir " + detect_folder 
-        detect_protein += " --n_count" + " " + str(self.config_dict["DETECT_job_limit)
-        detect_protein += " --mem_limit" + " " + str(self.config_dict["DETECT_mem_threshold) 
-        detect_protein += " --job_delay" + " " + str(self.config_dict["DETECT_job_delay)
+        detect_protein += " --n_count" + " " + str(self.config_dict["DETECT_job_limit"])
+        detect_protein += " --mem_limit" + " " + str(self.config_dict["DETECT_mem_threshold"]) 
+        detect_protein += " --job_delay" + " " + str(self.config_dict["DETECT_job_delay"])
         detect_protein += " >> " + os.path.join(detect_folder, "detect_out.txt") + " 2>&1"
 
         make_marker = "touch" + " "
@@ -1456,18 +1456,18 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
 
         split_command = self.config_dict["Python"] + " "
-        split_command += self.config_dict["File_splitter + " "
+        split_command += self.config_dict["File_splitter"] + " "
         split_command += os.path.join(final_merge_folder, "all_proteins.faa") + " "
         split_command += os.path.join(split_folder, "protein_split") + " "
-        split_command += str(self.config_dict["EC_chunksize)
+        split_command += str(self.config_dict["EC_chunksize"])
         
         make_marker = "touch" + " "
         make_marker += os.path.join(jobs_folder, marker_file)
         
 
         return [split_command + " && " + make_marker]
-"""       
-"""
+
+
     def create_EC_PRIAM_command(self, current_stage_name, ga_final_merge_stage, marker_file):
         #april 06, 2021: This one's a little tricky.  PRIAM has a user-prompt (and no args) to auto-resume.  
         #We must feed it the bash "Yes" in order to activate it.  So, mind the mess
@@ -1486,15 +1486,15 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
         
         
-        PRIAM_command += self.config_dict["Java + " "
-        PRIAM_command += self.config_dict["Priam
+        PRIAM_command += self.config_dict["Java"] + " "
+        PRIAM_command += self.config_dict["Priam"]
         PRIAM_command += " -n " + "proteins_priam" + " "
         PRIAM_command += " -i " + os.path.join(final_merge_folder, "all_proteins.faa")
-        PRIAM_command += " -p " + self.config_dict["PriamDB
+        PRIAM_command += " -p " + self.config_dict["PriamDB"]
         PRIAM_command += " -o " + PRIAM_folder
         PRIAM_command += " --np " + self.threads_str
         PRIAM_command += " --bh --cc --cg --bp --bd "
-        PRIAM_command += self.config_dict["BLAST_dir
+        PRIAM_command += self.config_dict["BLAST_dir"]
         
         make_marker = "touch" + " "
         make_marker += os.path.join(jobs_folder, marker_file)
@@ -1525,15 +1525,15 @@ class mt_pipe_commands:
         self.make_folder(jobs_folder)
         
         
-        PRIAM_command += self.config_dict["Java + " "
-        PRIAM_command += self.config_dict["Priam
+        PRIAM_command += self.config_dict["Java"] + " "
+        PRIAM_command += self.config_dict["Priam"]
         PRIAM_command += " -n " + "split_" + str(id) 
         PRIAM_command += " -i " + split_file
-        PRIAM_command += " -p " + self.config_dict["PriamDB
+        PRIAM_command += " -p " + self.config_dict["PriamDB"]
         PRIAM_command += " -o " + priam_out_folder
         PRIAM_command += " --np " + self.threads_str
         PRIAM_command += " --bh --cc --bp --bd "
-        PRIAM_command += self.config_dict["BLAST_dir
+        PRIAM_command += self.config_dict["BLAST_dir"]
         
         make_marker = "touch" + " "
         make_marker += os.path.join(jobs_folder, marker_file)
@@ -1572,7 +1572,7 @@ class mt_pipe_commands:
         diamond_ea_command += self.config_dict["DMD"] + " blastp"
         diamond_ea_command += " -p " + self.threads_str
         diamond_ea_command += " --query " + os.path.join(final_merge_folder, "all_proteins.faa")
-        diamond_ea_command += " --db " + self.config_dict["SWISS_PROT
+        diamond_ea_command += " --db " + self.config_dict["SWISS_PROT"]
         diamond_ea_command += " --outfmt " + "6 qseqid sseqid length qstart qend sstart send evalue bitscore qcovhsp slen pident"
         diamond_ea_command += " --out " + os.path.join(diamond_ea_folder, "proteins.blastout")
         diamond_ea_command += " --evalue 0.0000000001"
@@ -1604,13 +1604,13 @@ class mt_pipe_commands:
 
         postprocess_command = ">&2 echo combining enzyme annotation output | "
         postprocess_command += self.config_dict["Python"] + " "
-        postprocess_command += self.config_dict["EC_Annotation_Post + " "
+        postprocess_command += self.config_dict["EC_Annotation_Post"] + " "
         postprocess_command += os.path.join(detect_folder, "proteins.fbeta") + " "
         postprocess_command += os.path.join(PRIAM_folder, "all_sequenceECs.txt") + " "
         postprocess_command += os.path.join(diamond_ea_folder, "proteins.blastout") + " "
-        postprocess_command += self.config_dict["SWISS_PROT_map + " "
+        postprocess_command += self.config_dict["SWISS_PROT_map"] + " "
         postprocess_command += os.path.join(final_merge_folder, "gene_map.tsv") + " "
-        postprocess_command += self.config_dict["enzyme_db + " "
+        postprocess_command += self.config_dict["enzyme_db"] + " "
         postprocess_command += os.path.join(final_folder, "proteins.ECs_All") + " "
         postprocess_command += os.path.join(final_folder, "lq_proteins.ECs_All")
         
@@ -1663,15 +1663,15 @@ class mt_pipe_commands:
         
         network_generation = ">&2 echo Generating RPKM and Cytoscape network | "
         network_generation += self.config_dict["Python"] + " "
-        network_generation += self.config_dict["RPKM + " "
-        network_generation += str(self.config_dict["RPKM_cutoff) + " "
+        network_generation += self.config_dict["RPKM"] + " "
+        network_generation += str(self.config_dict["RPKM_cutoff"]) + " "
         network_generation += "None" + " "
-        network_generation += self.config_dict["nodes + " "
-        network_generation += self.config_dict["names + " "
+        network_generation += self.config_dict["nodes"] + " "
+        network_generation += self.config_dict["names"] + " "
         network_generation += gene_map_location + " "
         network_generation += os.path.join(ta_folder, "taxonomic_classifications.tsv") + " "
         network_generation += os.path.join(ea_folder, "proteins.ECs_All") + " "
-        network_generation += self.config_dict["show_unclassified + " "
+        network_generation += self.config_dict["show_unclassified"] + " "
         network_generation += os.path.join(final_folder, "RPKM_table.tsv") + " "
         network_generation += os.path.join(final_folder, "Cytoscape_network.tsv") + " "
         
@@ -1679,7 +1679,7 @@ class mt_pipe_commands:
         
         flatten_rpkm = ">&2 echo Reformat RPKM for EC heatmap | "
         flatten_rpkm += self.config_dict["Python"] + " "
-        flatten_rpkm += self.config_dict["format_RPKM + " "
+        flatten_rpkm += self.config_dict["format_RPKM"] + " "
         flatten_rpkm += os.path.join(final_folder, "RPKM_table.tsv") + " "
         flatten_rpkm += os.path.join(final_folder, "EC_heatmap_RPKM.tsv")
         
@@ -1706,7 +1706,7 @@ class mt_pipe_commands:
         
         get_unique_host_reads_singletons = ">&2 echo get singleton host reads for stats | "
         get_unique_host_reads_singletons += self.config_dict["Python"] + " "
-        get_unique_host_reads_singletons += self.config_dict["get_unique_host_reads + " "
+        get_unique_host_reads_singletons += self.config_dict["get_unique_host_reads"] + " "
         get_unique_host_reads_singletons += os.path.join(host_folder, "singletons.fastq") + " "
         get_unique_host_reads_singletons += os.path.join(quality_folder, "singletons.fastq") + " "
         get_unique_host_reads_singletons += os.path.join(unique_hosts_folder, "singletons_hosts.fastq")
@@ -1746,7 +1746,7 @@ class mt_pipe_commands:
         
         get_unique_host_reads_pair_1 = ">&2 echo get pair 1 host reads for stats | " 
         get_unique_host_reads_pair_1 += self.config_dict["Python"] + " "
-        get_unique_host_reads_pair_1 += self.config_dict["get_unique_host_reads + " "
+        get_unique_host_reads_pair_1 += self.config_dict["get_unique_host_reads"] + " "
         get_unique_host_reads_pair_1 += os.path.join(host_folder, "pair_1.fastq") + " "
         get_unique_host_reads_pair_1 += os.path.join(quality_folder, "pair_1.fastq") + " "
         get_unique_host_reads_pair_1 += os.path.join(unique_hosts_folder, "pair_1_hosts.fastq")
@@ -1780,7 +1780,7 @@ class mt_pipe_commands:
         
         get_unique_host_reads_pair_2 = ">&2 echo get pair 2 host reads for stats | " 
         get_unique_host_reads_pair_2 += self.config_dict["Python"] + " "
-        get_unique_host_reads_pair_2 += self.config_dict["get_unique_host_reads + " "
+        get_unique_host_reads_pair_2 += self.config_dict["get_unique_host_reads"] + " "
         get_unique_host_reads_pair_2 += os.path.join(host_folder, "pair_2.fastq") + " "
         get_unique_host_reads_pair_2 += os.path.join(quality_folder, "pair_2.fastq") + " "
         get_unique_host_reads_pair_2 += os.path.join(unique_hosts_folder, "pair_2_hosts.fastq")
@@ -1815,7 +1815,7 @@ class mt_pipe_commands:
         
         get_unique_vectors_reads_singletons = ">&2 echo get singleton vectors reads for stats | "
         get_unique_vectors_reads_singletons += self.config_dict["Python"] + " "
-        get_unique_vectors_reads_singletons += self.config_dict["get_unique_host_reads + " "
+        get_unique_vectors_reads_singletons += self.config_dict["get_unique_host_reads"] + " "
             
         
         if(self.no_host_flag):
@@ -1863,7 +1863,7 @@ class mt_pipe_commands:
         
         get_unique_vectors_reads_pair_1 = ">&2 echo get pair 1 vector reads for stats | " 
         get_unique_vectors_reads_pair_1 += self.config_dict["Python"] + " "
-        get_unique_vectors_reads_pair_1 += self.config_dict["get_unique_host_reads + " "
+        get_unique_vectors_reads_pair_1 += self.config_dict["get_unique_host_reads"] + " "
         
         if(self.no_host_flag):
             get_unique_vectors_reads_pair_1 += os.path.join(vectors_folder, "pair_1.fastq") + " "
@@ -1905,7 +1905,7 @@ class mt_pipe_commands:
         
         get_unique_vectors_reads_pair_2 = ">&2 echo get pair 2 vector reads for stats | " 
         get_unique_vectors_reads_pair_2 += self.config_dict["Python"] + " "
-        get_unique_vectors_reads_pair_2 += self.config_dict["get_unique_host_reads + " "
+        get_unique_vectors_reads_pair_2 += self.config_dict["get_unique_host_reads"] + " "
         
         if(self.no_host_flag):
             get_unique_vectors_reads_pair_2 += os.path.join(vectors_folder, "pair_2.fastq") + " "
@@ -1942,7 +1942,7 @@ class mt_pipe_commands:
         
         per_read_scores = ">&2 echo collecting per-read quality | " 
         per_read_scores += self.config_dict["Python"] + " "
-        per_read_scores += self.config_dict["read_quality_metrics + " "
+        per_read_scores += self.config_dict["read_quality_metrics"] + " "
         if(self.read_mode == "single"):
             per_read_scores += "single" + " "
             per_read_scores += self.config_dict["single"] + " "
@@ -1990,7 +1990,7 @@ class mt_pipe_commands:
         
         contig_stats = ">&2 echo " + str(dt.today()) + " collecting contig stats | " 
         contig_stats += self.config_dict["Python"] + " "
-        contig_stats += self.config_dict["contig_stats + " "
+        contig_stats += self.config_dict["contig_stats"] + " "
         contig_stats += os.path.join(contig_folder, "contigs.fasta") + " "
         contig_stats += os.path.join(final_folder, "contig_stats.txt")
         
@@ -2008,10 +2008,10 @@ class mt_pipe_commands:
         
         EC_heatmap = ">&2 echo " + str(dt.today()) + " forming EC heatmap | "
         EC_heatmap += self.config_dict["Python"] + " "
-        EC_heatmap += self.config_dict["ec_heatmap + " "
-        EC_heatmap += self.config_dict["EC_pathway + " "
+        EC_heatmap += self.config_dict["ec_heatmap"] + " "
+        EC_heatmap += self.config_dict["EC_pathway"] + " "
         EC_heatmap += os.path.join(final_folder, "EC_heatmap_RPKM.tsv") + " "
-        EC_heatmap += self.config_dict["path_to_superpath + " "
+        EC_heatmap += self.config_dict["path_to_superpath"] + " "
         EC_heatmap += final_folder
         
         return [EC_heatmap]
@@ -2039,7 +2039,7 @@ class mt_pipe_commands:
         
         read_counts = ">&2 echo " + str(dt.today()) + " generating read count table | "
         read_counts += self.config_dict["Python"] + " "
-        read_counts += self.config_dict["read_count + " "
+        read_counts += self.config_dict["read_count"] + " "
         if self.read_mode == "single":
             read_counts += self.config_dict["single"] + " "
             
@@ -2068,9 +2068,8 @@ class mt_pipe_commands:
         
         taxa_groupby = ">&2 echo making Taxa summary | " 
         taxa_groupby += self.config_dict["Python"] + " "
-        taxa_groupby += self.config_dict["taxa_table + " "
+        taxa_groupby += self.config_dict["taxa_table"] + " "
         taxa_groupby += os.path.join(final_folder, "taxa_classifications.tsv") + " "
         taxa_groupby += os.path.join(final_folder, "taxa_summary.tsv")
         
         return [taxa_groupby]
-"""

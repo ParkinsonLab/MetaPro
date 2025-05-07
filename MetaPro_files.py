@@ -107,9 +107,7 @@ class mpro_file_handler:
         ]
 
         
-        self.file_dict["rRNA_s_fa"] = os.path.join(self.dir_dict["rRNA_convert"], "s.fasta")
-        self.file_dict["rRNA_p1_fa"] = os.path.join(self.dir_dict["rRNA_convert"], "p1.fasta")
-        self.file_dict["rRNA_p2_fa"] = os.path.join(self.dir_dict["rRNA_convert"], "p2.fasta")
+
         
         self.file_dict["rRNA_bnap_s"] = os.path.join(self.dir_dict["rRNA_bnap"], "s")
         self.file_dict["rRNA_bnap_p1"] = os.path.join(self.dir_dict["rRNA_bnap"], "p1")
@@ -169,10 +167,10 @@ class mpro_file_handler:
         
         self.file_dict["contigs_out_fa"] = os.path.join(self.dir_dict["contigs_export"], "contigs.fasta")
         self.file_dict["contigs_map"] = os.path.join(self.dir_dict["contigs_export"], "contigs_map.tsv")
-        self.file_dict["contigs_idx"] = os.path.join(self.dir_dict["contig_export"], "contigs_bt2_idx")
+        self.file_dict["contigs_idx"] = os.path.join(self.dir_dict["contigs_export"], "contigs_bt2_idx")
 
-        self.file_dict["contigs_p_sam"] = os.path.join(self.dir_dict["contigs_bwa"], "contigs_p.sam")
-        self.file_dict["contigs_s_sam"] = os.path.join(self.dir_dict["contigs_bwa"], "contigs_s.sam")
+        self.file_dict["contigs_p_sam"] = os.path.join(self.dir_dict["contigs_BT2"], "contigs_p.sam")
+        self.file_dict["contigs_s_sam"] = os.path.join(self.dir_dict["contigs_BT2"], "contigs_s.sam")
         self.file_dict["contigs_p1"] = os.path.join(self.dir_dict["contigs_export"], "p1.fastq")
         self.file_dict["contigs_p2"] = os.path.join(self.dir_dict["contigs_export"], "p2.fastq")
         self.file_dict["contigs_s"] = os.path.join(self.dir_dict["contigs_export"], "s.fastq")
