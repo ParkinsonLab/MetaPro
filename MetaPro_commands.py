@@ -210,74 +210,93 @@ class mt_pipe_commands:
 
         return COMMANDS_qual
 
-    def create_host_filter_command(self, marker):
+    def create_host_filter_command(self, host_id_list, host_count, marker):
+        #may 09, 2025: removing python scripts. samtools can just do it all.
+        cur_host = host_id_list[host_count]
         
+        
+        host_seq_1 = self.file_dict[cur_host + "_host_p1"]
+        host_seq_2 = self.file_dict[cur_host + "_host_p2"]
+        host_seq_s = self.file_dict[cur_host + "_host_s"]
+        out_seq_s = self.file_dict[cur_host + "_no_host_s"]
+        p_orphans = self.file_dict[cur_host + "_no_host_orphans"]
+        p_unmapped = self.file_dict[cur_host + "_no_host_unmapped"]
+        out_seq_1 = self.file_dict[cur_host + "_no_host_p1"]
+        out_seq_2 = self.file_dict[cur_host + "_no_host_p2"]
+        no_host_sam_s = self.file_dict[cur_host + "_no_host_s.sam"]
+        no_host_bam_s = self.file_dict[cur_host + "_no_host_s_bam"]
+        no_host_sam_p = self.file_dict[cur_host + "_no_host_p_sam"]
+        in_seq_1 = "none"
+        in_seq_2 = "none"
+        in_seq_s = "none"
+        if(host_count == 0):
+            in_seq_1 = self.file_dict["qf_u_p1"]
+            in_seq_2 = self.file_dict["qf_u_p2"]
+            in_seq_s = self.file_dict["qf_u_s"]
+            
+        else:
+            prev_host = host_id_list[host_count - 1]
+            in_seq_1 = self.file_dict[prev_host + "_no_host_p1"]
+            in_seq_2 = self.file_dict[prev_host + "_no_host_p2"]
+            in_seq_s = self.file_dict[prev_host + "_no_host_s"]
+            
+        if(host_count == (len(host_id_list) -1)):
+            out_seq_1 = self.file_dict["final_no_host_p1"]
+            out_seq_2 = self.file_dict["final_no_host_p2"]
+            out_seq_s = self.file_dict["final_no_host_s"]
+            
         # host removal on unique singletons
         bt2_hr_s = ">&2 echo bt2 host remove on singletons | "
-        bt2_hr_s += self.config_dict["bt2"] + " mem -t "
+        bt2_hr_s += self.config_dict["bt2"] + " -p "
         bt2_hr_s += self.threads_str + " "
-        bt2_hr_s += self.config_dict["Host_db"] + " "
-        bt2_hr_s += self.file_dict["qf_u_s"] + " " 
-        bt2_hr_s += ">" + " "
-        bt2_hr_s += self.file_dict["no_host_s_sam"]
+        bt2_hr_s += "-x " + os.path.join(self.config_dict["Host_db"], host_id) + " "
+        bt2_hr_s += "-U " + in_seq_s + " " 
+        bt2_hr_s += "-S " + no_host_sam_s
         
-        #Tutorial-use only.  
-        bt2_hr_tut_s = ">&2 echo bt2 host remove on singletons | "
-        bt2_hr_tut_s += self.config_dict["bt2"] + " mem -t "
-        bt2_hr_tut_s += self.threads_str + " "
-        bt2_hr_tut_s += self.config_dict["Host_db"] + " "
-        bt2_hr_tut_s += self.config_dict["single"] 
-        bt2_hr_tut_s += " > " + self.file_dict["no_host_s_sam"]
+        sam_no_host_s = self.config_dict["samtools"] + " view -f 4 "
+        sam_no_host_s += no_host_sam_s + " | "
+        sam_no_host_s += self.config_dict["samtools"] + " fastq - > "
+        sam_no_host_s += out_seq_s
         
-        # annoying type conversion pt 1
-        samtools_hr_s_sam_to_bam = ">&2 echo convert singletons host reads | "
-        samtools_hr_s_sam_to_bam += self.config_dict["samtools"]
-        samtools_hr_ns_sam_to_bam += " view -bS " + self.file_dict["no_host_s_sam"]
-        samtools_hr_s_sam_to_bam += " > " + self.file_dict["no_host_s_bam"]
-        # annoying type conversion pt 2
-        samtools_no_host_s_bam_to_fastq = self.config_dict["samtools"] + " fastq -n -f 4" + " -0 "
-        samtools_no_host_s_bam_to_fastq +=  + " "
-        samtools_no_host_s_bam_to_fastq += self.file_dict["no_host_s_bam"]
+        sam_host_s = self.config_dict["samtools"] + " view -F 4 "
+        sam_host_s += no_host_sam_s + " | " 
+        sam_host_s += self.config_dict["samtools"] + " fastq - > "
+        sam_host_s += host_seq_s
+     
 
-        # apparently, we're to keep the host separation
-        samtools_host_s_bam_to_fastq = self.config_dict["samtools"] + " fastq -n -F 4" + " -0 "
-        samtools_host_s_bam_to_fastq +=  + " "
-        samtools_host_s_bam_to_fastq += self.file_dict["no_host_s_bam"]
-
-
-        
         bt2_hr_paired = ">&2 echo bt2 host-removal on paired | " 
         bt2_hr_paired += self.config_dict["bt2"] + " "
         bt2_hr_paired += "-p " + self.threads_str + " "
-        bt2_hr_paired += "-x " + self.config_dict["Host_db"] + " "
-        bt2_hr_paired += "-1 " + self.file_dict["qf_u_p1"] + " "
-        bt2_hr_paired += "-2 " + self.file_dict["qf_u_p2"] + " "
-        bt2_hr_paired += "-S " + self.file_dict["no_host_p_sam"]
-        
-        #Tutorial-use only
-        bt2_hr_tut_paired = ">&2 echo bt2 host-removal on paired | " 
-        bt2_hr_tut_paired += self.config_dict["bt2"] + " "
-        bt2_hr_tut_paired += "mem" + " "  + "-t" + " " + self.threads_str + " "
-        bt2_hr_tut_paired += self.config_dict["Host_db"] + " "
-        bt2_hr_tut_paired += self.config_dict["pair_1"] + " "
-        bt2_hr_tut_paired += self.config_dict["pair_2"] + " "
-        bt2_hr_tut_paired += ">" + " "
-        bt2_hr_tut_paired += self.file_dict["no_host_p_sam"]
+        bt2_hr_paired += "-x " + os.path.join(self.config_dict["Host_db"], host_id) + " "
+        bt2_hr_paired += "-1 " + in_seq_1 + " "
+        bt2_hr_paired += "-2 " + in_seq_2 + " "
+        bt2_hr_paired += "-S " + no_host_sam_p
         
         
-        bt2_hr_filter_paired = ">&2 echo bt2 host-removal PP on paired | "
-        bt2_hr_filter_paired += self.config_dict["Python"] + " "
-        bt2_hr_filter_paired += self.config_dict["bt2_read_sorter"] + " "
-        bt2_hr_filter_paired += "paired" + " "
-        bt2_hr_filter_paired += self.config_dict["filter_stringency"] + " "
-        bt2_hr_filter_paired += self.file_dict["no_host_p_sam"] + " "
-        bt2_hr_filter_paired += self.file_dict["qf_u_p1"] + " "
-        bt2_hr_filter_paired += self.file_dict["qf_u_p2"] + " "
-        bt2_hr_filter_paired += self.file_dict["no_host_p1"] + " "
-        bt2_hr_filter_paired += self.file_dict["no_host_p2"] + " "
-        bt2_hr_filter_paired += self.file_dict["host_p1"] + " "
-        bt2_hr_filter_paired += self.file_dict["host_p2"]
-
+        sam_no_host_p = self.config_dict["samtools"] + " view "
+        if(self.config_dict["filter_stringency"] == "high"):
+            #read and mate unmapped.  12
+            sam_no_host_p += "-f 12 " 
+        else:
+            sam_no_host_p += "-f 4 " 
+        sam_no_host_p += no_host_sam_p + " | "
+        sam_no_host_p += self.config_dict["samtools"] + " fastq - "
+        sam_no_host_p += "-1 " + out_seq_1 + " "
+        sam_no_host_p += "-2 " + out_seq_2 + " "
+        sam_no_host_p += "-s " + 
+        
+        sam_host_p = self.config_dict["samtools"] + " view "
+        if(self.config_dict["filter_stringency"] == "high"):
+            sam_host_p += "-F 12 " 
+        else:
+            sam_host_p += "-F 4 "
+        sam_host_p += no_host_sam_p + " | "
+        sam_host_p += self.config_dict["samtools"] + " fastq - "
+        sam_host_p += "-1 " + host_seq_1 + " "
+        sam_host_p += "-2 " + host_seq_2 + " "
+        
+        
+     
         
         make_marker = "touch " + marker
 

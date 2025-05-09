@@ -11,13 +11,14 @@ class mpro_dir:
         if(not os.path.exists(path)):
             os.makedirs(path)
 
-    def value_assignment(self, config, config_section, var_name, default):
+    def value_assignment(self, filetype, config, config_section, var_name, default):
         value = ""
         #print("CONFIG:", config)
         if config:
             if(config_section in config):
                 if(var_name in config[config_section]):
                     value = config[config_section][var_name]
+                    value = value.strip("\n")
                     if('"' in value):
                         value = value.strip('"')
                         #print("quotes cleaned")
@@ -26,9 +27,9 @@ class mpro_dir:
                     print(var_name, "found! using:", value)
                     if(value == "0"):
                         print(var_name, "zero-setting detected: using default")
-                    else:
-                        print(var_name, "no inner section found. using default", default)
-                        value = default
+                else:
+                    print(var_name, "no inner section found. using default", default)
+                    value = default
             else:
                 print("section:", config_section, "not found. using default for[", var_name, "]:", default)
                 value = default
@@ -36,7 +37,31 @@ class mpro_dir:
             print("no config, using default:", default)
             value = default
 
+
+        if((filetype == "str") or (filetype == "path")):
+            value = str(value)
+        elif(filetype == "list"):
+            
+            value = value.strip(" ")
+            list_str = sorted(value.split(","))
+            value_list = list()
+            for item in list_str:
+                value_list.append(item)
+                return value_list
+        
+        elif(filetype == "int"):
+            value = int(value)
+
+        elif((filetype == "float") or (filetype == "flt")):
+            value = float(value)
+
         return value
+        
+        
+        
+        
+        
+        
     
     def get_label_dict(self):
         return self.label_dict
@@ -130,59 +155,59 @@ class mpro_dir:
         output_read_count_label_default                 = "output_read_count"
         
 
-        self.label_dict["qf"]                   = self.value_assignment(config, "Labels", "qf",                     qf_label_default)
-        self.label_dict["host"]                      = self.value_assignment(config, "Labels", "host_filter",                        host_filter_label_default)
-        self.label_dict["vec"]                    = self.value_assignment(config, "Labels", "vector_filter",                      vector_filter_label_default)
-        self.label_dict["rRNA"]                      = self.value_assignment(config, "Labels", "rRNA_filter",                        rRNA_filter_label_default)
-        self.label_dict["rRNA_split"]                = self.value_assignment(config, "Labels", "rRNA_filter_split",                  rRNA_filter_split_label_default)   
-        self.label_dict["rRNA_convert"]              = self.value_assignment(config, "Labels", "rRNA_filter_convert",                rRNA_filter_convert_label_default)
-        self.label_dict["rRNA_bnap"]              = self.value_assignment(config, "Labels", "rRNA_filter_bnap",                rRNA_filter_bnap_label_default)
-        self.label_dict["rRNA_bnap_merge"]        = self.value_assignment(config, "Labels", "rRNA_filter_bnap_merge",          rRNA_filter_bnap_merge_label_default)
-        self.label_dict["rRNA_bnap_pp"]           = self.value_assignment(config, "Labels", "rRNA_filter_bnap_pp",             rRNA_filter_bnap_pp_label_default)
-        self.label_dict["rRNA_infernal"]             = self.value_assignment(config, "Labels", "rRNA_filter_infernal",               rRNA_filter_infernal_label_default)
-        self.label_dict["rRNA_infernal_prep"]        = self.value_assignment(config, "Labels", "rRNA_filter_infernal_prep",          rRNA_filter_infernal_prep_label_default)
-        self.label_dict["rRNA_splitter"]             = self.value_assignment(config, "Labels", "rRNA_filter_splitter",               rRNA_filter_splitter_label_default)
-        self.label_dict["rRNA_post"]                 = self.value_assignment(config, "Labels", "rRNA_filter_post",                   rRNA_filter_post_label_default)
-        self.label_dict["repop"]                            = self.value_assignment(config, "Labels", "repop",                              repop_label_default)
-        self.label_dict["contigs"]                 = self.value_assignment(config, "Labels", "contigs",                                     contigs_label_default)
-        self.label_dict["GA_pre_scan"]                      = self.value_assignment(config, "Labels", "GA_pre_scan",                        GA_pre_scan_label_default)
-        self.label_dict["GA_split"]                         = self.value_assignment(config, "Labels", "GA_split",                           GA_split_label_default)
-        self.label_dict["GA_BT2"]                           = self.value_assignment(config, "Labels", "GA_BT2",                             GA_BT2_label_default)
-        self.label_dict["GA_BT2_pp"]                        = self.value_assignment(config, "Labels", "GA_BT2_pp",                          GA_BT2_pp_label_default)
-        self.label_dict["GA_BT2_merge"]                     = self.value_assignment(config, "Labels", "GA_BT2_merge",                       GA_BT2_merge_label_default)
-        self.label_dict["GA_BLAT"]                          = self.value_assignment(config, "Labels", "GA_BLAT",                            GA_BLAT_label_default)
-        self.label_dict["GA_BLAT_cleanup"]                  = self.value_assignment(config, "Labels", "GA_BLAT_cleanup",                    GA_BLAT_cleanup_label_default)
-        self.label_dict["GA_BLAT_cat"]                      = self.value_assignment(config, "Labels", "GA_BLAT_cat",                        GA_BLAT_cat_label_default)
-        self.label_dict["GA_BLAT_pp"]                       = self.value_assignment(config, "Labels", "GA_BLAT_pp",                         GA_BLAT_pp_label_default)
-        self.label_dict["GA_BLAT_merge"]                    = self.value_assignment(config, "Labels", "GA_BLAT_merge",                      GA_BLAT_merge_label_default)
-        self.label_dict["GA_DMD"]                       = self.value_assignment(config, "Labels", "GA_DIAMOND",                         GA_DIAMOND_label_default)
-        self.label_dict["GA_DMD_pp"]                    = self.value_assignment(config, "Labels", "GA_DIAMOND_pp",                      GA_DIAMOND_pp_label_default)
-        self.label_dict["GA_final_merge"]                   = self.value_assignment(config, "Labels", "GA_final_merge",                     GA_final_merge_label_default)
-        self.label_dict["TA"]                               = self.value_assignment(config, "Labels", "TA",                                 taxon_annotation_label_default)
-        self.label_dict["EC"]                               = self.value_assignment(config, "Labels", "EC",                                 ec_annotation_label_default)
-        self.label_dict["EC_detect"]                        = self.value_assignment(config, "Labels", "EC_detect",                          ec_annotation_detect_label_default)
-        self.label_dict["EC_priam"]                         = self.value_assignment(config, "Labels", "EC_priam",                           ec_annotation_priam_label_default)
-        self.label_dict["EC_priam_split"]                   = self.value_assignment(config, "Labels", "EC_priam_split",                     ec_annotation_priam_split_label_default)
-        self.label_dict["EC_priam_cat"]                     = self.value_assignment(config, "Labels", "EC_priam_cat",                       ec_annotation_priam_cat_label_default)
-        self.label_dict["EC_DIAMOND"]                       = self.value_assignment(config, "Labels", "EC_DIAMOND",                         ec_annotation_DIAMOND_label_default)
-        self.label_dict["EC_pp"]                            = self.value_assignment(config, "Labels", "EC_pp",                              ec_annotation_pp_label_default)
-        self.label_dict["out"]                           = self.value_assignment(config, "Labels", "outputs",                            output_label_default)
-        self.label_dict["out_copy_gene_map"]             = self.value_assignment(config, "Labels", "output_copy_gene_map",               output_copy_gene_map_label_default)
-        self.label_dict["out_clean_ec"]                  = self.value_assignment(config, "Labels", "output_clean_ec",                    output_clean_EC_label_default)
-        self.label_dict["out_copy_taxa"]                 = self.value_assignment(config, "Labels", "output_copy_taxa",                   output_copy_taxa_label_default)
-        self.label_dict["out_network_generation"]        = self.value_assignment(config, "Labels", "output_network_generation",          output_network_gen_label_default)
-        self.label_dict["out_unique_hosts_singletons"]   = self.value_assignment(config, "Labels", "output_unique_hosts_singletons",     output_unique_hosts_singletons_label_default)
-        self.label_dict["out_unique_hosts_pair_1"]       = self.value_assignment(config, "Labels", "output_unique_hosts_pair_1",         output_unique_hosts_pair_1_label_default)
-        self.label_dict["out_unique_hosts_pair_2"]       = self.value_assignment(config, "Labels", "output_unique_hosts_pair_2",         output_unique_hosts_pair_2_label_default)
-        self.label_dict["out_unique_vectors_singletons"] = self.value_assignment(config, "Labels", "output_unique_vectors_singletons",   output_unique_vectors_singletons_label_default)
-        self.label_dict["out_unique_vectors_pair_1"]     = self.value_assignment(config, "Labels", "output_unique_vectors_pair_1",       output_unique_vectors_pair_1_label_default)
-        self.label_dict["out_unique_vectors_pair_2"]     = self.value_assignment(config, "Labels", "output_unique_vectors_pair_2",       output_unique_vectors_pair_2_label_default)
-        self.label_dict["out_combine_hosts"]             = self.value_assignment(config, "Labels", "output_combine_hosts",               output_combine_hosts_label_default)
-        self.label_dict["out_per_read_scores"]           = self.value_assignment(config, "Labels", "output_per_read_scores",             output_per_read_scores_label_default)
-        self.label_dict["out_contig_stats"]              = self.value_assignment(config, "Labels", "output_contig_stats",                output_contig_stats_label_default)
-        self.label_dict["out_ec_heatmap"]                = self.value_assignment(config, "Labels", "output_ec_heatmap",                  output_ec_heatmap_label_default)
-        self.label_dict["out_taxa_groupby"]              = self.value_assignment(config, "Labels", "output_taxa_groupby",                output_taxa_groupby_label_default)
-        self.label_dict["out_read_count"]                = self.value_assignment(config, "Labels", "output_read_count",                  output_read_count_label_default)
+        self.label_dict["qf"]                   = self.value_assignment("str", config, "Labels", "qf",                     qf_label_default)
+        self.label_dict["host"]                      = self.value_assignment("list", config, "Labels", "host_filter",                        host_filter_label_default)
+        self.label_dict["vec"]                    = self.value_assignment("str", config, "Labels", "vector_filter",                      vector_filter_label_default)
+        self.label_dict["rRNA"]                      = self.value_assignment("str", config, "Labels", "rRNA_filter",                        rRNA_filter_label_default)
+        self.label_dict["rRNA_split"]                = self.value_assignment("str", config, "Labels", "rRNA_filter_split",                  rRNA_filter_split_label_default)   
+        self.label_dict["rRNA_convert"]              = self.value_assignment("str", config, "Labels", "rRNA_filter_convert",                rRNA_filter_convert_label_default)
+        self.label_dict["rRNA_bnap"]              = self.value_assignment("str", config, "Labels", "rRNA_filter_bnap",                rRNA_filter_bnap_label_default)
+        self.label_dict["rRNA_bnap_merge"]        = self.value_assignment("str", config, "Labels", "rRNA_filter_bnap_merge",          rRNA_filter_bnap_merge_label_default)
+        self.label_dict["rRNA_bnap_pp"]           = self.value_assignment("str", config, "Labels", "rRNA_filter_bnap_pp",             rRNA_filter_bnap_pp_label_default)
+        self.label_dict["rRNA_infernal"]             = self.value_assignment("str", config, "Labels", "rRNA_filter_infernal",               rRNA_filter_infernal_label_default)
+        self.label_dict["rRNA_infernal_prep"]        = self.value_assignment("str", config, "Labels", "rRNA_filter_infernal_prep",          rRNA_filter_infernal_prep_label_default)
+        self.label_dict["rRNA_splitter"]             = self.value_assignment("str", config, "Labels", "rRNA_filter_splitter",               rRNA_filter_splitter_label_default)
+        self.label_dict["rRNA_post"]                 = self.value_assignment("str", config, "Labels", "rRNA_filter_post",                   rRNA_filter_post_label_default)
+        self.label_dict["repop"]                            = self.value_assignment("str", config, "Labels", "repop",                              repop_label_default)
+        self.label_dict["contigs"]                 = self.value_assignment("str", config, "Labels", "contigs",                                     contigs_label_default)
+        self.label_dict["GA_pre_scan"]                      = self.value_assignment("str", config, "Labels", "GA_pre_scan",                        GA_pre_scan_label_default)
+        self.label_dict["GA_split"]                         = self.value_assignment("str", config, "Labels", "GA_split",                           GA_split_label_default)
+        self.label_dict["GA_BT2"]                           = self.value_assignment("str", config, "Labels", "GA_BT2",                             GA_BT2_label_default)
+        self.label_dict["GA_BT2_pp"]                        = self.value_assignment("str", config, "Labels", "GA_BT2_pp",                          GA_BT2_pp_label_default)
+        self.label_dict["GA_BT2_merge"]                     = self.value_assignment("str", config, "Labels", "GA_BT2_merge",                       GA_BT2_merge_label_default)
+        self.label_dict["GA_BLAT"]                          = self.value_assignment("str", config, "Labels", "GA_BLAT",                            GA_BLAT_label_default)
+        self.label_dict["GA_BLAT_cleanup"]                  = self.value_assignment("str", config, "Labels", "GA_BLAT_cleanup",                    GA_BLAT_cleanup_label_default)
+        self.label_dict["GA_BLAT_cat"]                      = self.value_assignment("str", config, "Labels", "GA_BLAT_cat",                        GA_BLAT_cat_label_default)
+        self.label_dict["GA_BLAT_pp"]                       = self.value_assignment("str", config, "Labels", "GA_BLAT_pp",                         GA_BLAT_pp_label_default)
+        self.label_dict["GA_BLAT_merge"]                    = self.value_assignment("str", config, "Labels", "GA_BLAT_merge",                      GA_BLAT_merge_label_default)
+        self.label_dict["GA_DMD"]                       = self.value_assignment("str", config, "Labels", "GA_DIAMOND",                         GA_DIAMOND_label_default)
+        self.label_dict["GA_DMD_pp"]                    = self.value_assignment("str", config, "Labels", "GA_DIAMOND_pp",                      GA_DIAMOND_pp_label_default)
+        self.label_dict["GA_final_merge"]                   = self.value_assignment("str", config, "Labels", "GA_final_merge",                     GA_final_merge_label_default)
+        self.label_dict["TA"]                               = self.value_assignment("str", config, "Labels", "TA",                                 taxon_annotation_label_default)
+        self.label_dict["EC"]                               = self.value_assignment("str", config, "Labels", "EC",                                 ec_annotation_label_default)
+        self.label_dict["EC_detect"]                        = self.value_assignment("str", config, "Labels", "EC_detect",                          ec_annotation_detect_label_default)
+        self.label_dict["EC_priam"]                         = self.value_assignment("str", config, "Labels", "EC_priam",                           ec_annotation_priam_label_default)
+        self.label_dict["EC_priam_split"]                   = self.value_assignment("str", config, "Labels", "EC_priam_split",                     ec_annotation_priam_split_label_default)
+        self.label_dict["EC_priam_cat"]                     = self.value_assignment("str", config, "Labels", "EC_priam_cat",                       ec_annotation_priam_cat_label_default)
+        self.label_dict["EC_DIAMOND"]                       = self.value_assignment("str", config, "Labels", "EC_DIAMOND",                         ec_annotation_DIAMOND_label_default)
+        self.label_dict["EC_pp"]                            = self.value_assignment("str", config, "Labels", "EC_pp",                              ec_annotation_pp_label_default)
+        self.label_dict["out"]                           = self.value_assignment("str", config, "Labels", "outputs",                            output_label_default)
+        self.label_dict["out_copy_gene_map"]             = self.value_assignment("str", config, "Labels", "output_copy_gene_map",               output_copy_gene_map_label_default)
+        self.label_dict["out_clean_ec"]                  = self.value_assignment("str", config, "Labels", "output_clean_ec",                    output_clean_EC_label_default)
+        self.label_dict["out_copy_taxa"]                 = self.value_assignment("str", config, "Labels", "output_copy_taxa",                   output_copy_taxa_label_default)
+        self.label_dict["out_network_generation"]        = self.value_assignment("str", config, "Labels", "output_network_generation",          output_network_gen_label_default)
+        self.label_dict["out_unique_hosts_singletons"]   = self.value_assignment("str", config, "Labels", "output_unique_hosts_singletons",     output_unique_hosts_singletons_label_default)
+        self.label_dict["out_unique_hosts_pair_1"]       = self.value_assignment("str", config, "Labels", "output_unique_hosts_pair_1",         output_unique_hosts_pair_1_label_default)
+        self.label_dict["out_unique_hosts_pair_2"]       = self.value_assignment("str", config, "Labels", "output_unique_hosts_pair_2",         output_unique_hosts_pair_2_label_default)
+        self.label_dict["out_unique_vectors_singletons"] = self.value_assignment("str", config, "Labels", "output_unique_vectors_singletons",   output_unique_vectors_singletons_label_default)
+        self.label_dict["out_unique_vectors_pair_1"]     = self.value_assignment("str", config, "Labels", "output_unique_vectors_pair_1",       output_unique_vectors_pair_1_label_default)
+        self.label_dict["out_unique_vectors_pair_2"]     = self.value_assignment("str", config, "Labels", "output_unique_vectors_pair_2",       output_unique_vectors_pair_2_label_default)
+        self.label_dict["out_combine_hosts"]             = self.value_assignment("str", config, "Labels", "output_combine_hosts",               output_combine_hosts_label_default)
+        self.label_dict["out_per_read_scores"]           = self.value_assignment("str", config, "Labels", "output_per_read_scores",             output_per_read_scores_label_default)
+        self.label_dict["out_contig_stats"]              = self.value_assignment("str", config, "Labels", "output_contig_stats",                output_contig_stats_label_default)
+        self.label_dict["out_ec_heatmap"]                = self.value_assignment("str", config, "Labels", "output_ec_heatmap",                  output_ec_heatmap_label_default)
+        self.label_dict["out_taxa_groupby"]              = self.value_assignment("str", config, "Labels", "output_taxa_groupby",                output_taxa_groupby_label_default)
+        self.label_dict["out_read_count"]                = self.value_assignment("str", config, "Labels", "output_read_count",                  output_read_count_label_default)
         
         
         self.dir_dict["qf"] = os.path.join(self.out_dir, self.label_dict["qf"])
@@ -197,13 +222,15 @@ class mpro_dir:
         self.dir_dict["qf_export"] = os.path.join(self.dir_dict["qf"], "export")
 
         self.dir_dict["qf_list"] = ["qf", "qf_data", "qf_sort", "qf_adapt", "qf_tags", "qf_merge", "qf_filter", "qf_orphan", "qf_dup", "qf_export"]
+        
+        self.dir_dict["main_host"] = os.path.join(self.out_dir, "host")
+        for item in self.label_dict["host"]:
+            self.dir_dict[item + "_host"] = os.path.join(self.dir_dict["main_host"], item)
+            self.dir_dict[item + "_host_data"] = os.path.join(self.dir_dict[item + "_host"], "data")
+            self.dir_dict[item +"_host_scan"] = os.path.join(self.dir_dict[item + "_host_data"], "0_BT2_scan")
+            self.dir_dict[item + "_host_export"] = os.path.join(self.dir_dict[item + "_host"], "export")
 
-        self.dir_dict["host"] = os.path.join(self.out_dir, self.label_dict["host"])
-        self.dir_dict["host_data"] = os.path.join(self.dir_dict["host"], "data")
-        self.dir_dict["host_scan"] = os.path.join(self.dir_dict["host_data"], "0_BT2_scan")
-        self.dir_dict["host_export"] = os.path.join(self.dir_dict["host"], "export")
-
-        self.dir_dict["host_list"] = ["host", "host_data", "host_scan", "host_export"]
+            self.dir_dict[item + "_host_list"] = [item + "_host", item + "_host_data", item + "_host_scan", item + "_host_export"]
 
         self.dir_dict["vec"] = os.path.join(self.out_dir, self.label_dict["vec"])
         self.dir_dict["vec_data"] = os.path.join(self.dir_dict["vec"], "data")

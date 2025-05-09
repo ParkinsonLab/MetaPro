@@ -164,11 +164,13 @@ class mp_stage:
         if not self.config_dict["no_host"]:
             if(self.marker_control.check_marker(self.marker_dict["host"])):
                 self.time_control.measure_time("host", "start")
-                for item in self.dir_dict["host_list"]:
-                    self.dir_control.make_dirs(self.dir_dict[item])
-                command_list = self.commands.create_host_filter_command(self.marker_dict["host"])
-                self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
-                self.time_control.measure_time("host", "end")
+                for host_id in self.config_dict["host_id"]:
+                    for item in self.dir_dict[host_id + "_host_list"]:
+                        self.dir_control.make_dirs(self.dir_dict[item])
+                        
+                    command_list = self.commands.create_host_filter_command(self.marker_dict["host"])
+                    self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
+                    self.time_control.measure_time("host", "end")
 
                 self.debug_stop_check(self.host_filter_label)
 

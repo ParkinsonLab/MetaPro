@@ -38,6 +38,7 @@ class mpro_config:
             if(config_section in config):
                 if(var_name in config[config_section]):
                     value = config[config_section][var_name]
+                    value = value.strip("\n")
                     if('"' in value):
                         value = value.strip('"')
                         #print("quotes cleaned")
@@ -59,6 +60,14 @@ class mpro_config:
 
         if((filetype == "str") or (filetype == "path")):
             value = str(value)
+        elif(filetype == "list"):
+            
+            value = value.strip(" ")
+            list_str = value.split(",")
+            value_list = list()
+            for item in list_str:
+                value_list.append(item)
+                return value_list
         
         elif(filetype == "int"):
             value = int(value)
@@ -379,7 +388,7 @@ class mpro_config:
         self.config_dict["keep_TA"]                    = self.value_assignment("str", config, "Settings", "keep_TA", keep_TA_default)
         self.config_dict["keep_EC"]                    = self.value_assignment("str", config, "Settings", "keep_EC", keep_EC_default)
         self.config_dict["keep_outputs"]               = self.value_assignment("str", config, "Settings", "keep_outputs", keep_outputs_default)
-        
+        self.config_dict["hosts"] = self.value_assignment("
 
         
         

@@ -286,10 +286,15 @@ if __name__ == "__main__":
     #Check DB integrity
     if(config_dict["no_host"] is True):
         print(dt.today(), "pre-flight check: host-DB indexing")
-        config_obj.check_bwa_valid(config_dict["Host_db"])
-
+        host_list = config_dict["host_list"]
+        for item in host_list:
+            pass_flag = config_obj.check_BT2_valid(config_dict["Host_db"], item)
+            if(not pass_flag):
+                print(dt.today(), "MetaPro shutting down.  missing host index:", item)
+                print(dt.today(), "can't find Bowtie2 index:", item, "in:", config_dict["Host_db"])
+                sys.exit()
     #Check vector lib integrity
-    config_obj.check_bwa_valid(config_dict["vectors"])
+    config_obj.check_BT2_valid(config_dict["vectors"], "vectors")
 
     #if (tutorial_mode != "none"):
     #    print("working in tutorial mode:", tutorial_mode)
