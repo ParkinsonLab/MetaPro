@@ -218,13 +218,15 @@ class mt_pipe_commands:
         host_seq_1 = self.file_dict[cur_host + "_host_p1"]
         host_seq_2 = self.file_dict[cur_host + "_host_p2"]
         host_seq_s = self.file_dict[cur_host + "_host_s"]
+        host_seq_o = self.file_dict[cur_host + "_host_o"]
+        host_seq_u = self.file_dict[cur_host + "_host_u"]
         out_seq_s = self.file_dict[cur_host + "_no_host_s"]
-        p_orphans = self.file_dict[cur_host + "_no_host_orphans"]
-        p_unmapped = self.file_dict[cur_host + "_no_host_unmapped"]
+        out_seq_o = self.file_dict[cur_host + "_no_host_o"]
+        out_seq_u = self.file_dict[cur_host + "_no_host_u"]
         out_seq_1 = self.file_dict[cur_host + "_no_host_p1"]
         out_seq_2 = self.file_dict[cur_host + "_no_host_p2"]
         no_host_sam_s = self.file_dict[cur_host + "_no_host_s.sam"]
-        no_host_bam_s = self.file_dict[cur_host + "_no_host_s_bam"]
+        
         no_host_sam_p = self.file_dict[cur_host + "_no_host_p_sam"]
         in_seq_1 = "none"
         in_seq_2 = "none"
@@ -249,7 +251,7 @@ class mt_pipe_commands:
         bt2_hr_s = ">&2 echo bt2 host remove on singletons | "
         bt2_hr_s += self.config_dict["bt2"] + " -p "
         bt2_hr_s += self.threads_str + " "
-        bt2_hr_s += "-x " + os.path.join(self.config_dict["Host_db"], host_id) + " "
+        bt2_hr_s += "-x " + os.path.join(self.config_dict["Host_db"], cur_host) + " "
         bt2_hr_s += "-U " + in_seq_s + " " 
         bt2_hr_s += "-S " + no_host_sam_s
         
@@ -267,7 +269,7 @@ class mt_pipe_commands:
         bt2_hr_paired = ">&2 echo bt2 host-removal on paired | " 
         bt2_hr_paired += self.config_dict["bt2"] + " "
         bt2_hr_paired += "-p " + self.threads_str + " "
-        bt2_hr_paired += "-x " + os.path.join(self.config_dict["Host_db"], host_id) + " "
+        bt2_hr_paired += "-x " + os.path.join(self.config_dict["Host_db"], cur_host) + " "
         bt2_hr_paired += "-1 " + in_seq_1 + " "
         bt2_hr_paired += "-2 " + in_seq_2 + " "
         bt2_hr_paired += "-S " + no_host_sam_p
@@ -283,7 +285,8 @@ class mt_pipe_commands:
         sam_no_host_p += self.config_dict["samtools"] + " fastq - "
         sam_no_host_p += "-1 " + out_seq_1 + " "
         sam_no_host_p += "-2 " + out_seq_2 + " "
-        sam_no_host_p += "-s " + 
+        sam_no_host_p += "-s " + out_seq_s + " "
+        sam_no_host_p += "-0 " + out_seq_u
         
         sam_host_p = self.config_dict["samtools"] + " view "
         if(self.config_dict["filter_stringency"] == "high"):
@@ -294,8 +297,18 @@ class mt_pipe_commands:
         sam_host_p += self.config_dict["samtools"] + " fastq - "
         sam_host_p += "-1 " + host_seq_1 + " "
         sam_host_p += "-2 " + host_seq_2 + " "
+        sam_host_p += "-s " + host_seq_o + " "
+        sam_host_p += "-0 " + host_seq_u
         
-        
+        cat_no_host_p = "cat "
+        cat_no_host_p += out_seq_u + " "
+        cat_no_host_p += out_seq_o + " "
+        cat_no_host_p += out_seq_s + " > " + out_seq_s
+
+        cat_host_p = "cat "
+        cat_host_p += host_seq_o + " " 
+        cat_host_p += host_seq_u + " "
+        cat_host_p += host_seq_s + " > " + host_seq_s
      
         
         make_marker = "touch " + marker

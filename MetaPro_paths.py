@@ -110,8 +110,8 @@ class mpro_config:
         
     def check_BT2_valid(self, bt2_id_path, index_name):
         #just check if the bt2 indices exist. 
-        bt2_loc = os.path.abspath(sys.argv[1])
-        bt2_id_name = sys.argv[2]
+        bt2_loc = os.path.abspath(bt2_id_path)
+        bt2_id_name = index_name
 
         file_list = os.listdir(bt2_loc)
         for item in file_list:
@@ -388,7 +388,7 @@ class mpro_config:
         self.config_dict["keep_TA"]                    = self.value_assignment("str", config, "Settings", "keep_TA", keep_TA_default)
         self.config_dict["keep_EC"]                    = self.value_assignment("str", config, "Settings", "keep_EC", keep_EC_default)
         self.config_dict["keep_outputs"]               = self.value_assignment("str", config, "Settings", "keep_outputs", keep_outputs_default)
-        self.config_dict["hosts"] = self.value_assignment("
+        
 
         
         
@@ -409,9 +409,11 @@ class mpro_config:
         # Note: default host is Mouse CDS
         
         #if config:
-        self.config_dict["vectors"]             = self.value_assignment("path", config, "Databases", "univec", os.path.join(database_path, "univec/univec")) 
+        self.config_dict["vector_db"]             = self.value_assignment("path", config, "Databases", "vector_db", os.path.join(database_path, "univec"))
+        self.config_dict["vector_ID"]          = self.value_assignment("str", config, "Databases", "vector_IDs","univec") 
         self.config_dict["Adapter"]             = self.value_assignment("path", config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"))
-        self.config_dict["Host_db"]             = self.value_assignment("path", config, "Databases", "Host",  os.path.join(database_path, "Mouse_cds/Mouse_cds.fasta"))
+        self.config_dict["Host_db"]             = self.value_assignment("path", config, "Databases", "Host_db",  os.path.join(database_path, "Mouse_cds"))
+        self.config_dict["host_IDs"]            = self.value_assignment("list",  config, "Databases", "Host_IDs", "none")
         self.config_dict["Rfam"]                = self.value_assignment("path", config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
         self.config_dict["DNA_DB"]              = self.value_assignment("path", config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
         self.config_dict["source_taxa_DB"]      = self.value_assignment("path", config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"))

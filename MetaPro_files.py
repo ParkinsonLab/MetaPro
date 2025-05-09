@@ -77,20 +77,29 @@ class mpro_file_handler:
             "qf_merge_s", "qf_merge_s2", "qf_merge_p1", "qf_merge_p2"                                           
         ]
 
+        for item in self.config_dict["host_IDs"]:
+            if(item == "none"):
+                break
+            else:
+                self.file_dict[item + "_host_p1"] = os.path.join(self.dir_dict[item + "_host_export"], "p1_host.fastq")
+                self.file_dict[item + "_host_p2"] = os.path.join(self.dir_dict[item + "_host_export"], "p2_host.fastq")
+                self.file_dict[item + "_host_s"] = os.path.join(self.dir_dict[item + "_host_export"], "s_host.fastq")
+                self.file_dict[item + "_host_o"] = os.path.join(self.dir_dict[item + "_host_export"], "o_host.fastq")
+                self.file_dict[item + "_host_u"] = os.path.join(self.dir_dict[item + "_host_export"], "u_host.fastq")
+                self.file_dict[item + "_no_host_p1"] = os.path.join(self.dir_dict[item + "_host_export"], "p1_no_host.fastq")
+                self.file_dict[item + "_no_host_p2"] = os.path.join(self.dir_dict[item + "_host_export"], "p2_no_host.fastq")
+                self.file_dict[item + "_no_host_s"] = os.path.join(self.dir_dict[item + "_host_export"], "s_no_host.fastq")
+                self.file_dict[item + "_no_host_o"] = os.path.join(self.dir_dict[item + "_host_export"], "o_no_host.fastq")
+                self.file_dict[item + "_no_host_u"] = os.path.join(self.dir_dict[item + "_host_export"], "u_no_host.fastq")
+                self.file_dict[item + "_no_host_s_sam"] = os.path.join(self.dir_dict[item + "_host_scan"], "s_no_host.sam")
+                self.file_dict[item + "_no_host_p_sam"] = os.path.join(self.dir_dict[item + "_host_scan"], "p_no_host.sam")
+                
 
-        self.file_dict["no_host_s_sam"] = os.path.join(self.dir_dict["host_scan"], "s_no_host.sam")
-        self.file_dict["no_host_s_bam"] = os.path.join(self.dir_dict["host_scan"], "s_no_host.bam")
-        self.file_dict["no_host_s"] = os.path.join(self.dir_dict["host_export"], "s_no_host.fastq")
-        self.file_dict["host_s"] = os.path.join(self.dir_dict["host_export"], "s_host_only.fastq")
-        self.file_dict["no_host_p_sam"] = os.path.join(self.dir_dict["host_scan"], "p_no_host.sam")
-        self.file_dict["no_host_p1"] = os.path.join(self.dir_dict["host_export"], "p1_no_host.fastq")
-        self.file_dict["no_host_p2"] = os.path.join(self.dir_dict["host_export"], "p2_no_host.fastq")
-        self.file_dict["host_p1"] = os.path.join(self.dir_dict["host_export"], "p1_host.fastq")
-        self.file_dict["host_p2"] = os.path.join(self.dir_dict["host_export"], "p2_host.fastq")
-
-        self.file_dict["host_clean_list"] = [
-            "no_host_s_sam", "no_host_s_bam", "no_host_p_sam"
-        ]
+            self.file_dict[item + "_host_clean_list"] = [
+                item + "_host_p1", item + "_host_p2", item + "_host_s", item + "_host_o", item + "_host_u",
+                item + "_no_host_p1", item + "_no_host_p2", item + "_no_host_s", item + "_no_host_o", item + "_no_host_u",
+                item + "_no_host_s_sam", item + "_no_host_p_sam" 
+            ]
         
         self.file_dict["vec_s_sam"] = os.path.join(self.dir_dict["vec_scan"], "s_no_vec.sam")
         self.file_dict["vec_s_bam"] = os.path.join(self.dir_dict["vec_scan"], "s_no_vec.bam")

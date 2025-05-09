@@ -49,7 +49,7 @@ class mp_stage:
         self.file_control = file_control
         self.file_dict = self.file_control.get_file_dict() #recall python passes by reference.
         self.time_control = time_control
-        self.seq_handler = mpu.mp_seq_handler(self.config_dict, self.dir_dict, self.file_dict)
+        self.seq_handler = mpu.mp_seq_handler()
         
 
         #time.sleep(10)
@@ -62,10 +62,10 @@ class mp_stage:
         self.EC_chunksize = int(self.config_dict["EC_chunksize"])
         self.GA_chunksize = int(self.config_dict["GA_chunksize"])
         #self.config_path = config_path
-        self.pair_1_path = config_dict["pair_1"]
-        self.pair_2_path = config_dict["pair_2"]
-        self.single_path = config_dict["single"]
-        self.contig_path = config_dict["contig"] #_path  #tutorial/single-shot use
+        self.pair_1_path = self.config_dict["pair_1"]
+        self.pair_2_path = self.config_dict["pair_2"]
+        self.single_path = self.config_dict["single"]
+        self.contig_path = self.config_dict["contig"] #_path  #tutorial/single-shot use
         self.quality_encoding = ""
         self.read_mode = self.config_dict["read_mode"]
         if (self.single_path != "None"):
@@ -164,11 +164,16 @@ class mp_stage:
         if not self.config_dict["no_host"]:
             if(self.marker_control.check_marker(self.marker_dict["host"])):
                 self.time_control.measure_time("host", "start")
-                for host_id in self.config_dict["host_id"]:
-                    for item in self.dir_dict[host_id + "_host_list"]:
+                host_count = 0
+                for host_id in self.config_dict["host_IDs"]:
+                    if(host_id == "none"):
+                        print(dt.today(), "no host specified. skipping")
+                        break
+                    
+                    for item in self.dir_dict[host_id + "_dir_list"]:
                         self.dir_control.make_dirs(self.dir_dict[item])
-                        
-                    command_list = self.commands.create_host_filter_command(self.marker_dict["host"])
+                    host_mkr = self.marker_dict[item + "_host"]
+                    command_list = self.commands.create_host_filter_command(self.config_dict["host_IDs"], host_count, host_mkr)
                     self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
                     self.time_control.measure_time("host", "end")
 

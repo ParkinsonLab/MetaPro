@@ -230,7 +230,7 @@ class mpro_dir:
             self.dir_dict[item +"_host_scan"] = os.path.join(self.dir_dict[item + "_host_data"], "0_BT2_scan")
             self.dir_dict[item + "_host_export"] = os.path.join(self.dir_dict[item + "_host"], "export")
 
-            self.dir_dict[item + "_host_list"] = [item + "_host", item + "_host_data", item + "_host_scan", item + "_host_export"]
+            self.dir_dict[item + "_dir_list"] = ["main_host", item + "_host", item + "_host_data", item + "_host_scan", item + "_host_export"]
 
         self.dir_dict["vec"] = os.path.join(self.out_dir, self.label_dict["vec"])
         self.dir_dict["vec_data"] = os.path.join(self.dir_dict["vec"], "data")

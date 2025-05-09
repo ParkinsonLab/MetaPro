@@ -294,7 +294,7 @@ if __name__ == "__main__":
                 print(dt.today(), "can't find Bowtie2 index:", item, "in:", config_dict["Host_db"])
                 sys.exit()
     #Check vector lib integrity
-    config_obj.check_BT2_valid(config_dict["vectors"], "vectors")
+    config_obj.check_BT2_valid(config_dict["vector_db"], "vectors")
 
     #if (tutorial_mode != "none"):
     #    print("working in tutorial mode:", tutorial_mode)
