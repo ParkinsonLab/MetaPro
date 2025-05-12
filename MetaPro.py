@@ -45,7 +45,9 @@ def debug_stop_check(self, stop_flag, signal):
 def main(config_dict, dir_obj, time_obj, file_obj):
 
     
-    metapro_stage_obj = mps.mp_stage(config_dict, dir_obj, time_obj, file_obj) #obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
+    metapro_stage_obj = mps.mp_stage(config_dict, dir_obj, time_obj, file_obj) 
+    
+    #obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
 
     # This is the format we use to launch each stage of the pipeline.
     # We start a multiprocess that starts a subprocess.
@@ -216,14 +218,15 @@ if __name__ == "__main__":
     tutorial_mode   = args.tutorial if args.tutorial else "None"
 
 
-    if(config_file is "None"):
+    if(config_file == "None"):
         print(dt.today(), "METAPRO needs a config.  exiting")
         sys.exit()
 
     if(not os.path.isabs(config_file)):
         config_file = os.path.abspath(config_file)
         print("full path:", config_file)
-
+    output_folder = os.path.abspath(output_folder)
+    print("Outputing to:", output_folder)
     config_obj = mpp.mpro_config(config_file, output_folder)
     dir_obj = mpd.mpro_dir(config_file, output_folder)
     

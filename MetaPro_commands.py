@@ -134,7 +134,7 @@ class mt_pipe_commands:
             vsearch_filter_0 += " --fastq_filter " + self.file_dict["qf_tags_s"]
         elif self.read_mode == "paired":
             vsearch_filter_0 += " --fastq_filter " + self.file_dict["qf_merge_s2"]
-        vsearch_filter_0 += " --fastq_ascii " + self.Qual_str
+        vsearch_filter_0 += " --fastq_ascii " + self.config_dict["q_enc"]
         vsearch_filter_0 += " --fastq_maxee " + "2.0"
         vsearch_filter_0 += " --fastqout " + self.file_dict["qf_hq_s"]
 
@@ -142,14 +142,14 @@ class mt_pipe_commands:
         vsearch_filter_1 = ">&2 echo low-quality filter on pair 1 | "
         vsearch_filter_1 += self.config_dict["vsearch"]
         vsearch_filter_1 += " --fastq_filter " + self.file_dict["qf_merge_p1"]
-        vsearch_filter_1 += " --fastq_ascii " + self.Qual_str
+        vsearch_filter_1 += " --fastq_ascii " + self.config_dict["q_enc"]
         vsearch_filter_1 += " --fastq_maxee " + "2.0"
         vsearch_filter_1 += " --fastqout " + self.file_dict["qf_hq_p1"]
 
         vsearch_filter_2 = ">&2 echo low-quality filter on pair 2 | "
         vsearch_filter_2 += self.config_dict["vsearch"]
         vsearch_filter_2 += " --fastq_filter " + self.file_dict["qf_merge_p2"]
-        vsearch_filter_2 += " --fastq_ascii " + self.Qual_str
+        vsearch_filter_2 += " --fastq_ascii " + self.config_dict["q_enc"]
         vsearch_filter_2 += " --fastq_maxee " + "2.0"
         vsearch_filter_2 += " --fastqout " + self.file_dict["qf_hq_p2"]
 
@@ -1213,7 +1213,7 @@ class mt_pipe_commands:
             centrifuge_on_contigs += " -f -x " + self.config_dict["Centrifuge_db"]
             centrifuge_on_contigs += " -U " + os.path.join(centrifuge_folder, "contigs_renamed.fasta")
             centrifuge_on_contigs += " --exclude-taxids 2759 -k 1 --tab-fmt-cols " + "score,readID,taxID"
-            centrifuge_on_contigs += " --phred" + self.Qual_str
+            centrifuge_on_contigs += " --phred" + self.config_dict["q_enc"]
             centrifuge_on_contigs += " -p 6"
             centrifuge_on_contigs += " -S " + os.path.join(centrifuge_folder, "raw_contigs.tsv")
             centrifuge_on_contigs += " --report-file " + os.path.join(centrifuge_folder, "raw_contigs.txt")
@@ -1248,7 +1248,7 @@ class mt_pipe_commands:
                     centrifuge_on_reads += " -1 " + os.path.join(assemble_contigs_folder, "pair_1.fastq")
                     centrifuge_on_reads += " -2 " + os.path.join(assemble_contigs_folder, "pair_2.fastq")
             centrifuge_on_reads += " --exclude-taxids 2759 -k 1 --tab-fmt-cols " + "score,readID,taxID"
-            centrifuge_on_reads += " --phred" + self.Qual_str
+            centrifuge_on_reads += " --phred" + self.config_dict["q_enc"]
             centrifuge_on_reads += " -p 6"
             centrifuge_on_reads += " -S " + os.path.join(centrifuge_folder, "reads.tsv")
             centrifuge_on_reads += " --report-file " + os.path.join(centrifuge_folder, "reads.txt")
@@ -1268,7 +1268,7 @@ class mt_pipe_commands:
                 centrifuge_on_rRNA += " -1 " + os.path.join(rRNA_folder, "pair_1_other.fastq")
                 centrifuge_on_rRNA += " -2 " + os.path.join(rRNA_folder, "pair_2_other.fastq")
             centrifuge_on_rRNA += " --exclude-taxids 2759 -k 1 --tab-fmt-cols " + "score,readID,taxID"
-            centrifuge_on_rRNA += " --phred" + self.Qual_str
+            centrifuge_on_rRNA += " --phred" + self.config_dict["q_enc"]
             centrifuge_on_rRNA += " -p 6"
             centrifuge_on_rRNA += " -S " + os.path.join(final_folder, "other.tsv")
             centrifuge_on_rRNA += " --report-file " + os.path.join(final_folder, "other.txt")

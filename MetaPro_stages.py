@@ -149,13 +149,13 @@ class mp_stage:
     # main calls
     def mp_quality_filter(self):
         if(self.marker_control.check_marker(self.marker_dict["qf"])):
-            self.time_control.measure_time("qc", "start")
-            for item in self.dir_dict["qc_list"]:
+            self.time_control.measure_time("qf", "start")
+            for item in self.dir_dict["qf_list"]:
                 self.dir_control.make_dirs(self.dir_dict[item])
 
             command_list = self.commands.create_quality_control_command(self.marker_dict["qf"])
-            self.mp_util.launch_stage_simple(self.label_dict["qc"], self.dir_dict["qc"], self.commands, command_list, self.keep_all, self.keep_quality)
-            self.time_control.measure_time("qc", "end")
+            self.mp_util.launch_stage_simple(self.label_dict["qf"], self.dir_dict["qf"], self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_quality"])
+            self.time_control.measure_time("qf", "end")
             
             self.debug_stop_check(self.quality_filter_label)
             
@@ -174,7 +174,7 @@ class mp_stage:
                         self.dir_control.make_dirs(self.dir_dict[item])
                     host_mkr = self.marker_dict[item + "_host"]
                     command_list = self.commands.create_host_filter_command(self.config_dict["host_IDs"], host_count, host_mkr)
-                    self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.keep_all, self.keep_host)
+                    self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_host"])
                     self.time_control.measure_time("host", "end")
 
                 self.debug_stop_check(self.host_filter_label)
@@ -186,13 +186,13 @@ class mp_stage:
                 #get dep args from quality filter
                 #if not check_where_resume(vector_path, None, self.quality_path):
                 command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.quality_filter_label)
-                self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.keep_all, self.keep_vector)
+                self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_vector"])
 
             else:
                 #get the dep args from host filter
                 #if not check_where_resume(vector_path, None, self.host_path):
                 command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.host_filter_label)
-                self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.keep_all, self.keep_vector)
+                self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_vector"])
                 
             self.vector_end = time.time()
             print("vector filter:", '%1.1f' % (self.vector_end - self.vector_start - (self.cleanup_vector_end - self.cleanup_vector_start)), "s")
@@ -462,7 +462,7 @@ class mp_stage:
                 self.mp_util.write_to_bypass_log(self.output_folder_path, self.assemble_contigs_label)
             
             self.cleanup_assemble_contigs_start = time.time()
-            self.mp_util.clean_or_compress(self.assemble_contigs_path, self.keep_all, self.keep_assemble_contigs)
+            self.mp_util.clean_or_compress(self.assemble_contigs_path, self.config_dict["keep_all"], self.config_dict["keep_assemble_contigs"])
             self.cleanup_assemble_contigs_end = time.time()
         
         else:
@@ -711,7 +711,7 @@ class mp_stage:
      
         self.cleanup_GA_BT2_start = time.time()
         self.mp_util.delete_folder_simple(self.GA_BT2_jobs_folder)
-        self.mp_util.clean_or_compress(self.GA_BT2_path, self.keep_all, self.keep_GA_BT2)
+        self.mp_util.clean_or_compress(self.GA_BT2_path, self.config_dict["keep_all"], self.keep_GA_BT2)
         
         self.cleanup_GA_BT2_end = time.time()
         self.GA_BT2_end = time.time()
@@ -785,7 +785,7 @@ class mp_stage:
         
             self.cleanup_GA_DIAMOND_start = time.time()
             self.mp_util.delete_folder_simple(self.GA_DIAMOND_jobs_folder)
-            self.mp_util.clean_or_compress(self.GA_DIAMOND_path, self.keep_all, self.keep_GA_DIAMOND)
+            self.mp_util.clean_or_compress(self.GA_DIAMOND_path, self.config_dict["keep_all"], self.keep_GA_DIAMOND)
             self.cleanup_GA_DIAMOND_end = time.time()
         self.GA_DIAMOND_end = time.time()
         print("GA DIAMOND:", '%1.1f' % (self.GA_DIAMOND_end - self.GA_DIAMOND_start - (self.cleanup_GA_DIAMOND_end - self.cleanup_GA_DIAMOND_start)), "s")
@@ -818,7 +818,7 @@ class mp_stage:
                 
         self.GA_final_merge_end = time.time()
         print("GA final merge:", '%1.1f' % (self.GA_final_merge_end - self.GA_final_merge_start), "s")
-        self.mp_util.clean_or_compress(self.ga_final_merge_path, self.keep_all, self.keep_GA_final)
+        self.mp_util.clean_or_compress(self.ga_final_merge_path, self.config_dict["keep_all"], self.keep_GA_final)
         
         self.debug_stop_check(self.GA_final_merge_label)
 
@@ -932,7 +932,7 @@ class mp_stage:
                 self.mp_util.write_to_bypass_log(self.output_folder_path, self.ta_label)
                 
         self.cleanup_TA_start = time.time()
-        self.mp_util.clean_or_compress(self.TA_path, self.keep_all, self.keep_TA)
+        self.mp_util.clean_or_compress(self.TA_path, self.config_dict["keep_all"], self.keep_TA)
         self.cleanup_TA_end = time.time()
         self.TA_end = time.time()
         print("TA:", '%1.1f' % (self.TA_end - self.TA_start - (self.cleanup_TA_end - self.cleanup_TA_start)), "s")
@@ -1077,7 +1077,7 @@ class mp_stage:
                 self.mp_util.write_to_bypass_log(self.output_folder_path, self.ec_pp_label)
         
         self.cleanup_EC_start = time.time()
-        self.mp_util.clean_or_compress(self.ec_path, self.keep_all, self.keep_EC)
+        self.mp_util.clean_or_compress(self.ec_path, self.config_dict["keep_all"], self.keep_EC)
         self.cleanup_EC_end = time.time()
         self.EC_post_end = time.time()
             
@@ -1206,7 +1206,7 @@ class mp_stage:
 
             
         self.cleanup_cytoscape_start = time.time()
-        self.mp_util.clean_or_compress(self.network_path, self.keep_all, self.keep_outputs)
+        self.mp_util.clean_or_compress(self.network_path, self.config_dict["keep_all"], self.keep_outputs)
         self.cleanup_cytoscape_end = time.time()
             
             

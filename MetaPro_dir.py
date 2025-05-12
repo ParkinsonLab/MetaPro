@@ -221,7 +221,7 @@ class mpro_dir:
         self.dir_dict["qf_dup"] = os.path.join(self.dir_dict["qf_data"], "6_dup")
         self.dir_dict["qf_export"] = os.path.join(self.dir_dict["qf"], "export")
 
-        self.dir_dict["qf_list"] = ["qf", "qf_data", "qf_sort", "qf_adapt", "qf_tags", "qf_merge", "qf_filter", "qf_orphan", "qf_dup", "qf_export"]
+        self.dir_dict["qf_list"] = ["qf", "qf_data", "qf_sort", "qf_adapt", "qf_tags", "qf_merge", "qf_hq", "qf_orphan", "qf_dup", "qf_export"]
         
         self.dir_dict["main_host"] = os.path.join(self.out_dir, "host")
         for item in self.label_dict["host"]:

@@ -31,11 +31,64 @@ import shutil
 from datetime import datetime as dt
 import psutil as psu
 import subprocess as sp
+import numpy as np
+import re
 
 class mp_seq_handler:
     #internalized because we need the number of files generated + saves another file from being generated
     def __init__(self):
         self.file_count = 0
+
+
+    
+
+
+    def fasta_to_dataframe_simple(fasta_file):
+        # Read the file content
+        with open(fasta_file, 'r') as file:
+            content = file.read()
+        
+        # Use regex to find all entries, capturing just the identifier and sequence
+        pattern = r'>([^\s]+)[^\n]*\n([^>]+)'
+        
+        # Find all matches
+        matches = re.findall(pattern, content + '>')
+        
+        # Convert matches to DataFrame
+        df = pd.DataFrame(matches, columns=['identifier', 'sequence'])
+        
+        # Clean up the sequences
+        df['sequence'] = df['sequence'].str.replace('\n', '')
+        
+        return df
+
+    def fastq_to_dataframe_efficient(self, fastq_file):
+        # Read all lines at once
+        with open(fastq_file, 'r') as file:
+            lines = file.readlines()
+        
+        # Convert to numpy array for efficient slicing
+        lines_array = np.array([line.strip() for line in lines])
+        
+        # Calculate total number of entries
+        num_entries = len(lines_array) // 4
+        
+        # Extract components using vectorized operations
+        identifiers = lines_array[0::4]  # Every 4th line starting from 0
+        sequences = lines_array[1::4]    # Every 4th line starting from 1
+        quality_scores = lines_array[3::4]  # Every 4th line starting from 3
+        
+        # Remove the @ prefix from identifiers
+        identifiers = np.char.replace(identifiers.astype(str), '@', '', count=1)
+        
+        # Create DataFrame
+        df = pd.DataFrame({
+            'ID': identifiers,
+            'seq': sequences,
+            'qual': quality_scores
+        })
+        
+        return df    
         
     def fastq_to_fasta(fastq_file, fasta_file):
         with open(fastq_file) as fin, open(fasta_file, 'w') as fout:
@@ -52,9 +105,7 @@ class mp_seq_handler:
         print(dt.today(), "FASTQ file name in:", file_name_in)
         #FASTQ has 4 lines per entry.
         
-        fastq_df = pd.read_csv(file_name_in, header=None, names=[None], sep="\n", skip_blank_lines = False, quoting=3)
-        fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
-        fastq_df.rename(columns = {0:"ID", 1:"seq", 2:"junk", 3:"qual"}, inplace = True)
+        fastq_df = self.fastq_to_dataframe_efficient(file_name_in)
 
         print(fastq_df)
         #At this point, we've already got the number of reads.
@@ -112,9 +163,9 @@ class mp_seq_handler:
         return (file_count)
     
 
-    def split_fasta(file_name_in, file_name_out, chunks):#split_count = 4):
+    def split_fasta(self, file_name_in, file_name_out, chunks):#split_count = 4):
         #modded to take in fixed chunks
-        fasta_df = pd.read_csv(file_name_in, error_bad_lines=False, header=None, sep="\n")  # import the fasta
+        fasta_df = self.fasta_to_dataframe_pandas(file_name_in)
         fasta_df.columns = ["row"]
         #There's apparently a possibility for NaNs to be introduced in the raw fasta.  We have to strip it before we process (from DIAMOND proteins.faa)
         fasta_df.dropna(inplace=True)
@@ -129,7 +180,7 @@ class mp_seq_handler:
         temp_columns = fasta_df.index  # save the index names for later
         fasta_df = fasta_df.pivot(values='data', columns='names')  # pivot
         fasta_df = fasta_df.T  # transpose
-        fasta_df["sequence"] = fasta_df[fasta_df.columns[:]].apply(lambda x: "".join(x.dropna()), axis=1)  # consolidate all cols into a single sequence
+        fasta_df["seq"] = fasta_df[fasta_df.columns[:]].apply(lambda x: "".join(x.dropna()), axis=1)  # consolidate all cols into a single sequence
         fasta_df.drop(temp_columns, axis=1, inplace=True)
         # At this point, we've already got the number of reads.
         #chunks = m.ceil(len(fasta_df) / split_count)  # how many sequences each split file will have
@@ -167,6 +218,7 @@ class mp_util:
         self.output_folder_path = dir_dict["main"]
         #self.paths = config_obj
         self.bypass_log_name = config_dict["bypass_log_name"]
+        self.mpsh = mp_seq_handler()
 
     def mem_checker(self, threshold):
         #threshold is a percentage for available memory.  
@@ -281,13 +333,12 @@ class mp_util:
                 break
         return encoding
 
-    def determine_encoding(self, fastq):
+    def determine_encoding(self, fastq_path):
         #import the first 10k lines, then check the quality scores.
         #if the quality score symbols are below 76, it's phred33.  
-        fastq_df = pd.read_csv(fastq, header=None, names=[None], sep="\n", skip_blank_lines = False, quoting=3, nrows=40000)
-        fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
-        fastq_df.columns = ["ID", "seq", "junk", "quality"]
-        quality_encoding = fastq_df["quality"].apply(lambda x: self.check_code(x)).mean() #condense into a single number.
+        print("using:", [fastq_path])
+        fastq_df = self.mpsh.fastq_to_dataframe_efficient(fastq_path)
+        quality_encoding = fastq_df["qual"].apply(lambda x: self.check_code(x)).mean() #condense into a single number.
         if(quality_encoding == 64): #all must be 64 or else it's 33
             quality_encoding = 64
         else:
