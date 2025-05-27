@@ -19,15 +19,15 @@ class mpro_marker:
             
 
     def place_marker(self, tag):
-        if(not os.path.exist(self.marker_dict[tag])):
-            marker = open(self.marker_dict[tag])
-            marker.close()
+        if(not os.path.exists(self.marker_dict[tag])):
+            with open(self.marker_dict[tag], "w") as marker:
+                pass
         with open(self.bypass_log, "a") as log:
             log.write(self.m_name[tag] + "\n")
 
     def check_marker(self, tag):
         print(dt.today(), "checking:", tag)
-        if(os.path.exists(tag)):
+        if(os.path.exists(self.marker_dict[tag])):
             return False
         else:
             return True

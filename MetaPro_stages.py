@@ -26,7 +26,8 @@ class mp_stage:
     def __init__ (self, config_dict, dir_control, time_control, file_control): #config_obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode_string = None):
         #make our util obj
         #refresher: self -> instance var.  not self: class var (shared among class obj instances)
-        
+        print("in stage:", config_dict["pair_1"])
+        time.sleep(3)
         #---------------------------------------------------------
         #Operational flags and state-recorders
         self.dir_control = dir_control
@@ -66,17 +67,12 @@ class mp_stage:
         self.pair_2_path = self.config_dict["pair_2"]
         self.single_path = self.config_dict["single"]
         self.contig_path = self.config_dict["contig"] #_path  #tutorial/single-shot use
-        self.quality_encoding = ""
+        
         self.read_mode = self.config_dict["read_mode"]
-        if (self.single_path != "None"):
-            self.config_dict["q_enc"] = self.mp_util.determine_encoding(self.single_path)
-            print("ENCODING USED:", self.config_dict["q_enc"])
-        else:
-            self.config_dict["q_enc"] = self.mp_util.determine_encoding(self.pair_1_path)
-            print("ENCODING USED:", self.config_dict["q_enc"])
         
         
-        #self.debug_stop_flag = self.paths.debug_stop_flag
+        
+        self.debug_stop_flag = self.config_dict["debug_stop_flag"]
         
         mp_store = []  # stores the multiprocessing processes
 
@@ -140,7 +136,7 @@ class mp_stage:
     
     def debug_stop_check(self, stop_signal):
         if(self.debug_stop_flag == stop_signal):
-            exit_string = "stoppped after: " + stop_signal
+            exit_string = "stopped after: " + stop_signal
             sys.exit(exit_string)
         else:
             print(dt.today(), "continuing from:", stop_signal)
@@ -148,56 +144,90 @@ class mp_stage:
     #--------------------------------------------------------------------------------------------------------------
     # main calls
     def mp_quality_filter(self):
-        if(self.marker_control.check_marker(self.marker_dict["qf"])):
+        if(self.marker_control.check_marker("qf")):
+            print(dt.today(), "running QF")
+            if(self.config_dict["q_enc"] == "None"):
+                if (self.single_path != "None"):
+                    self.config_dict["q_enc"] = self.mp_util.determine_encoding(self.single_path)
+                    print("ENCODING USED:", self.config_dict["q_enc"])
+                else:
+                    self.config_dict["q_enc"] = self.mp_util.determine_encoding(self.pair_1_path)
+                    print("ENCODING USED:", self.config_dict["q_enc"])
+            else:
+                print(dt.today(), "skipping encode-finding. using config preset:", self.config_dict["q_enc"])
+
             self.time_control.measure_time("qf", "start")
             for item in self.dir_dict["qf_list"]:
                 self.dir_control.make_dirs(self.dir_dict[item])
 
-            command_list = self.commands.create_quality_control_command(self.marker_dict["qf"])
-            self.mp_util.launch_stage_simple(self.label_dict["qf"], self.dir_dict["qf"], self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_quality"])
+            command_list = self.commands.create_quality_control_command(self.marker_dict["qf"], self.config_dict["q_enc"])
+            self.mp_util.launch_stage_simple(self.file_dict["qf_job"], self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_quality"])
             self.time_control.measure_time("qf", "end")
-            
-            self.debug_stop_check(self.quality_filter_label)
+            self.marker_control.place_marker("qf")
+            self.debug_stop_check(self.label_dict["qf"])
+        else:
+            print(dt.today(), "skipping: QF")
             
 
     def mp_host_filter(self):
         if not self.config_dict["no_host"]:
-            if(self.marker_control.check_marker(self.marker_dict["host"])):
-                self.time_control.measure_time("host", "start")
-                host_count = 0
+            print("host id list:", self.config_dict["host_IDs"])
+            if("none" in self.config_dict["host_IDs"]):
+                print(dt.today(), "no hosts specified. bypassing")
+            
+            else:
+                print(dt.today(), "host elements detected")
                 for host_id in self.config_dict["host_IDs"]:
-                    if(host_id == "none"):
-                        print(dt.today(), "no host specified. skipping")
+                    if((host_id != "none") or (host_id != "None")):
+                        print(dt.today(), "using Host ID:", host_id)
+                        print(dt.today(), "checking for marker:", host_id + "_host")
+                        if(self.marker_control.check_marker(host_id + "_host")):
+                            for item in self.dir_dict[host_id + "_dir_list"]:
+                                self.dir_control.make_dirs[item]
+                            print(dt.today(), "running:", host_id + "_host")
+                            self.time_control.measure_time("host", "start")
+                            host_count = 0
+                            if(host_id == "none"):
+                                print(dt.today(), "no host specified. skipping")
+                                break
+                            
+                            for item in self.dir_dict[host_id + "_dir_list"]:
+                                self.dir_control.make_dirs(self.dir_dict[item])
+                            host_mkr = self.marker_dict[item + "_host"]
+                            command_list = self.commands.create_host_filter_command(self.config_dict["host_IDs"], host_count, host_mkr)
+                            self.mp_util.launch_stage_simple(self.host_filter_label, self.dir_dict["host"], self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_host"])
+                            self.time_control.measure_time("host", "end")
+                            self.marker_control.place_marker(self.marker_dict[host_id + "_host"])
+                        else:
+                            print(dt.today(), "skipping:", host_id + "_host")
+                    else:
+                        print(dt.today(), "no hosts to filter")
                         break
-                    
-                    for item in self.dir_dict[host_id + "_dir_list"]:
-                        self.dir_control.make_dirs(self.dir_dict[item])
-                    host_mkr = self.marker_dict[item + "_host"]
-                    command_list = self.commands.create_host_filter_command(self.config_dict["host_IDs"], host_count, host_mkr)
-                    self.mp_util.launch_stage_simple(self.host_filter_label, self.host_path, self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_host"])
-                    self.time_control.measure_time("host", "end")
+            
+                self.debug_stop_check(self.label_dict[host_id + "_host"])
 
-                self.debug_stop_check(self.host_filter_label)
+                
 
     def mp_vector_filter(self):
         self.vector_start = time.time()
-        if(self.marker_control.check_marker(self.marker_dict["vec"])):
-            if self.config_dict["no_host"]:
+        if(self.marker_control.check_marker("vec")):
+            #if self.config_dict["no_host"]:
                 #get dep args from quality filter
                 #if not check_where_resume(vector_path, None, self.quality_path):
-                command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.quality_filter_label)
-                self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_vector"])
+            final_host = self.config_dict["host_IDs"][-1]
+            print("using final host:", final_host)
 
-            else:
-                #get the dep args from host filter
-                #if not check_where_resume(vector_path, None, self.host_path):
-                command_list = self.commands.create_vector_filter_command(self.vector_filter_label, self.host_filter_label)
-                self.cleanup_vector_start, self.cleanup_vector_end = self.mp_util.launch_stage_simple(self.vector_filter_label, self.vector_path, self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_vector"])
+            for item in self.dir_dict["vec_list"]:
+                print("making:", item, self.dir_dict[item])
+                self.dir_control.make_dirs(self.dir_dict[item])
                 
+
+            command_list = self.commands.create_vector_filter_command(self.marker_dict["vec"], final_host)
+            self.mp_util.launch_stage_simple(self.file_dict["vec_job"], self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_vector"])
+
+        
             self.vector_end = time.time()
-            print("vector filter:", '%1.1f' % (self.vector_end - self.vector_start - (self.cleanup_vector_end - self.cleanup_vector_start)), "s")
-            print("vector filter cleanup:", '%1.1f' % (self.cleanup_vector_end - self.cleanup_vector_start), "s")
-            self.debug_stop_check(self.vector_filter_label)
+            self.debug_stop_check(self.label_dict["vec"])
 
     def mp_rRNA_filter(self):
         #don't split bnap.
@@ -689,7 +719,7 @@ class mp_stage:
                     print("split sample:", full_sample_path)
                     file_tag = os.path.basename(split_sample)
                     file_tag = os.path.splitext(file_tag)[0]
-                    ref_path = self.paths.DNA_DB
+                    ref_path = self.config_dict["DNA_DB"]
 
                     marker_file = file_tag + "_merge_fasta"
                     marker_path = os.path.join(self.GA_BT2_jobs_folder, marker_file)
@@ -756,7 +786,7 @@ class mp_stage:
     def mp_GA_dmd_pp(self):        
         #if not check_where_resume(GA_DIAMOND_path, None, self.GA_DIAMOND_tool_output_path, file_check_bypass = True):
         if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_DIAMOND_pp_label):
-            #print(dt.today(), "DIAMOND PP threads used:", self.paths.num_threads/2)
+            #print(dt.today(), "DIAMOND PP threads used:", self.config_dict["num_threads/2)
             marker_path_list = []
             for split_sample in os.listdir(os.path.join(self.GA_BLAT_path, "final_results")):
                 if(split_sample.endswith(".fasta")):
@@ -1116,36 +1146,36 @@ class mp_stage:
                 print(dt.today(), "repopulating hosts for output")
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_singletons_label):
                     job_name = self.output_unique_hosts_singletons_label
-                    command_list = self.commands.create_output_unique_hosts_singletons_command(self.output_label, self.quality_filter_label, self.host_filter_label)
+                    command_list = self.commands.create_output_unique_hosts_singletons_command(self.output_label, self.label_dict["qf"], self.host_filter_label)
                     self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
                 
                 if(self.read_mode == "p"):
                     if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_pair_1_label):
                         job_name = self.output_unique_hosts_pair_1_label
-                        command_list = self.commands.create_output_unique_hosts_pair_1_command(self.output_label, self.quality_filter_label, self.host_filter_label)
+                        command_list = self.commands.create_output_unique_hosts_pair_1_command(self.output_label, self.label_dict["qf"], self.host_filter_label)
                         self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
                         
                     if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_pair_2_label):
                         job_name = self.output_unique_hosts_pair_2_label
-                        command_list = self.commands.create_output_unique_hosts_pair_2_command(self.output_label, self.quality_filter_label, self.host_filter_label)
+                        command_list = self.commands.create_output_unique_hosts_pair_2_command(self.output_label, self.label_dict["qf"], self.host_filter_label)
                         self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
                         
                         
             #repop vectors
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_vectors_singletons_label):
                 job_name = self.output_unique_vectors_singletons_label
-                command_list = self.commands.create_output_unique_vectors_singletons_command(self.output_label, self.quality_filter_label, self.host_filter_label, self.vector_filter_label)
+                command_list = self.commands.create_output_unique_vectors_singletons_command(self.output_label, self.label_dict["qf"], self.host_filter_label, self.label_dict["vec"])
                 self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
             
             if(self.read_mode == "p"):
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_vectors_pair_1_label):
                     job_name = self.output_unique_vectors_pair_1_label
-                    command_list = self.commands.create_output_unique_vectors_pair_1_command(self.output_label, self.quality_filter_label, self.host_filter_label, self.vector_filter_label)
+                    command_list = self.commands.create_output_unique_vectors_pair_1_command(self.output_label, self.label_dict["qf"], self.host_filter_label, self.label_dict["vec"])
                     self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
                     
                 if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_vectors_pair_2_label):
                     job_name = self.output_unique_vectors_pair_2_label
-                    command_list = self.commands.create_output_unique_vectors_pair_2_command(self.output_label, self.quality_filter_label, self.host_filter_label, self.vector_filter_label)
+                    command_list = self.commands.create_output_unique_vectors_pair_2_command(self.output_label, self.label_dict["qf"], self.host_filter_label, self.label_dict["vec"])
                     self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
                     
             print(dt.today(), "output report phase 1 launched.  waiting for sync")
@@ -1184,13 +1214,13 @@ class mp_stage:
             #Phase 3
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_read_count_label):
                 job_name = self.output_read_count_label
-                command_list = self.commands.create_output_read_count_command(self.output_label, self.quality_filter_label, self.repop_job_label, self.GA_final_merge_label, self.ec_label)
+                command_list = self.commands.create_output_read_count_command(self.output_label, self.label_dict["qf"], self.repop_job_label, self.GA_final_merge_label, self.ec_label)
                 self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
                                 
 
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_per_read_scores_label):
                 job_name = self.output_per_read_scores_label
-                command_list = self.commands.create_output_per_read_scores_command(self.output_label, self.quality_filter_label)
+                command_list = self.commands.create_output_per_read_scores_command(self.output_label, self.label_dict["qf"])
                 self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
                 
             if self.mp_util.check_bypass_log(self.output_folder_path, self.output_ec_heatmap_label):

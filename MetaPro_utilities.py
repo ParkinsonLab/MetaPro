@@ -460,7 +460,7 @@ class mp_util:
                         raise
 
 
-    def run_subjob_simple(self, job_location, job_label, command_obj, commands):
+    def run_subjob_simple(self, job_location, command_obj, commands):
         #just launches a job.  no multi-process.
         process = mp.Process(
             target=self.make_script,
@@ -647,15 +647,16 @@ class mp_util:
             self.delete_folder(analysis_path)
 
 
-    def launch_stage_simple(self, job_label, job_path, commands, command_list, keep_all, keep_job):
+    def launch_stage_simple(self, job_path, commands, command_list, keep_all, keep_job):
         #wrapper for simple job launches (quality, host)
         #cleanup_job_start = 0
         #cleanup_job_end = 0
         print("job path:", job_path)
-        
+        job_label = os.path.basename(job_path)
+
         if self.check_bypass_log(self.output_folder_path, job_label):
             print(dt.today(), "NEW CHECK running:", job_label)
-            self.run_subjob_simple(job_label, job_label, commands, command_list)
+            self.run_subjob_simple(job_path, commands, command_list)
             
             self.write_to_bypass_log(self.output_folder_path, job_label)
             #cleanup_job_start = time.time()

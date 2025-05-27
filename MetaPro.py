@@ -43,8 +43,9 @@ def debug_stop_check(self, stop_flag, signal):
 
 
 def main(config_dict, dir_obj, time_obj, file_obj):
-
-    
+    print("in main:", config_dict["pair_1"])
+    print("in main:", config_dict["single"]) 
+     
     metapro_stage_obj = mps.mp_stage(config_dict, dir_obj, time_obj, file_obj) 
     
     #obj, pair_1_path, pair_2_path, single_path, contig_path, output_folder_path, args_pack, tutorial_mode)
@@ -200,7 +201,7 @@ if __name__ == "__main__":
     parser.add_argument("-2", "--pair2",    type=str,   help="Path to the file containing the reverse paired-end reads in fastq format")
     parser.add_argument("-s", "--single",   type=str,   help="Path to the file containing the single-end reads in fastq format")
     parser.add_argument("-con", "--contig",   type=str,   help="Tutorial use only: Path to the file containing the contig reads in fastq format")
-    parser.add_argument("-o", "--output_folder", type=str, required=True, help="Path of the folder for the output of the pipeline")
+    parser.add_argument("-o", "--output_folder", type=str, help="Path of the folder for the output of the pipeline")
     parser.add_argument("--nhost", "--no-host", action='store_true', help="Skip the host read removal step of the pipeline")
     parser.add_argument("--verbose_mode", type=str, help = "Decide how to handle the interim files, Compress them, or leave them alone.  Values are: keep, compress, quiet")
     parser.add_argument("--tutorial", type = str, help = "tutorial operating mode for MetaPro")
@@ -212,7 +213,7 @@ if __name__ == "__main__":
     pair_1          = args.pair1 if args.pair1 else "None"
     pair_2          = args.pair2 if args.pair2 else "None"
     single          = args.single if args.single else "None"
-    output_folder   = args.output_folder if args.output_folder else output_folder_default
+    output_folder   = args.output_folder if args.output_folder else "None"
     no_host         = args.nhost if args.nhost else False
     verbose_mode    = args.verbose_mode if args.verbose_mode else "quiet"
     tutorial_mode   = args.tutorial if args.tutorial else "None"
@@ -222,23 +223,23 @@ if __name__ == "__main__":
         print(dt.today(), "METAPRO needs a config.  exiting")
         sys.exit()
 
+
     if(not os.path.isabs(config_file)):
         config_file = os.path.abspath(config_file)
         print("full path:", config_file)
     output_folder = os.path.abspath(output_folder)
     print("Outputing to:", output_folder)
-    config_obj = mpp.mpro_config(config_file, output_folder)
-    dir_obj = mpd.mpro_dir(config_file, output_folder)
+    config_obj = mpp.mpro_config(config_file)
+    config_dict = config_obj.get_config_dict()
+    dir_obj = mpd.mpro_dir(config_file, config_dict)
     
     time_obj = mpt.mpro_timing()
 
 
-    config_dict = config_obj.get_config_dict()
+    
     dir_dict = dir_obj.get_dir_dict()
     label_dict = dir_obj.get_label_dict()
-    file_obj = mpf.mpro_file_handler(config_dict, dir_dict)
     
-    file_dict = file_obj.get_file_dict()
 
     config_dict["no_host"] = no_host
     config_dict["verbose_mode"] = verbose_mode
@@ -276,7 +277,7 @@ if __name__ == "__main__":
             else:
                 config_dict["read_mode"] = "paired"
 
-
+    
 
     if not (os.path.exists(output_folder)):
         print("output folder does not exist.  Now building directory.")
@@ -298,6 +299,9 @@ if __name__ == "__main__":
                 sys.exit()
     #Check vector lib integrity
     config_obj.check_BT2_valid(config_dict["vector_db"], "vectors")
+
+    file_obj = mpf.mpro_file_handler(config_dict, dir_dict)
+    file_dict = file_obj.get_file_dict()
 
     #if (tutorial_mode != "none"):
     #    print("working in tutorial mode:", tutorial_mode)

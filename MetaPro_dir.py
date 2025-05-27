@@ -10,6 +10,9 @@ class mpro_dir:
     def make_dirs(self, path):
         if(not os.path.exists(path)):
             os.makedirs(path)
+        else:
+            if(not os.path.isdir(path)):
+                os.makedirs(path)
 
     def value_assignment(self, filetype, config, config_section, var_name, default):
         value = ""
@@ -69,21 +72,16 @@ class mpro_dir:
     def get_dir_dict(self):
         return self.dir_dict
 
-    def __init__ (self, config_path, output_folder):
+    def __init__ (self, config_path, config_dict):
         
-        self.out_dir = output_folder
-        if not(os.path.isabs(self.out_dir)):
-            self.out_dir = os.path.abspath(self.out_dir)
-            print(dt.today(), "output destination:", self.out_dir)
-
-
-
-        print("dir obj CHECKING CONFIG")
+        self.config_dict = config_dict
+        self.out_dir = self.config_dict["out_dir"]
         self.config_path = config_path
+        
+        self.label_dict = dict()
+        self.dir_dict = dict()
+        self.dir_dict["main"] = self.out_dir
 
-        if(not os.path.isabs(self.config_path)):
-            self.config_path = os.path.join(os.path.dirname(__file__), self.config_path)
-        #print("full path:", self.config_path)
 
         if os.path.exists(self.config_path):
             config = ConfigParser() #change this to ex
@@ -93,9 +91,6 @@ class mpro_dir:
             print("no config found, defaulting")
             config = None
 
-        self.label_dict = dict()
-        self.dir_dict = dict()
-        self.dir_dict["main"] = self.out_dir
         #--------------------------------------------------------------------------------------------
         # Labels.  
         # why? to change them during integration + new feature testing

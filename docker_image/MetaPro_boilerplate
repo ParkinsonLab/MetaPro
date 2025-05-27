@@ -250,6 +250,8 @@ RUN pip install  --upgrade pip \
 && pip install tqdm \
 && pip install transformers
 
+RUN pip install cutadapt
+
 ENV PATH="${PATH}:/pipeline_tools/SPAdes/bin"
 ENV PATH="${PATH}:/pipeline_tools/BWA"
 ENV PATH="${PATH}:/pipeline_tools/MetaGeneMark_linux_64"
@@ -264,6 +266,11 @@ ENV PATH="${PATH}:/pipeline_tools/infernal/src"
 ENV PATH="${PATH}:/pipeline_tools/bowtie2"
 ENV PATH="${PATH}:/pipeline_tools/mgm2/src"
 ENV PATH="${PATH}:/pipeline_tools/DeepProZyme-v_1_0"
+ENV PATH="${PATH}:/pipeline_tools/BLAST_p"
+
+
+WORKDIR /
+CMD ["bash"]
 
 #RUN apt-get update
 #RUN apt-get upgrade

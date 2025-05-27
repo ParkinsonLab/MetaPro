@@ -39,6 +39,8 @@ class mpro_file_handler:
         return self.file_dict
 
     def __init__(self, config_dict, dir_dict):
+        print("in file:", config_dict["pair_1"])
+        time.sleep(3)
         self.dir_dict = dir_dict
         self.config_dict = config_dict
         self.file_dict = dict()
@@ -76,7 +78,7 @@ class mpro_file_handler:
             "qf_tags_s", "qf_tags_p1", "qf_tags_p2",
             "qf_merge_s", "qf_merge_s2", "qf_merge_p1", "qf_merge_p2"                                           
         ]
-
+        self.file_dict["qf_job"] = os.path.join(self.dir_dict["qf"], "qf_job.sh")
         for item in self.config_dict["host_IDs"]:
             if(item == "none"):
                 break
@@ -115,7 +117,7 @@ class mpro_file_handler:
             "vec_s_sam", "vec_s_bam", "vec_p_sam"
         ]
 
-        
+        self.file_dict["vec_job"] = os.path.join(self.dir_dict["vec"], "vector_job.sh")    
 
         
         self.file_dict["rRNA_bnap_s"] = os.path.join(self.dir_dict["rRNA_bnap"], "s")
@@ -199,5 +201,7 @@ class mpro_file_handler:
         self.file_dict["ga_bt2_p_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "p.sam")
         self.file_dict["ga_bt2_s_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "s.sam")
         self.file_dict["ga_bt2_c_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "c.sam")
+
+    
 
 

@@ -63,10 +63,13 @@ class mpro_config:
         elif(filetype == "list"):
             
             value = value.strip(" ")
+            value = value.strip("\"")
             list_str = value.split(",")
             value_list = list()
             for item in list_str:
+                print("host id entry type:", type(item))
                 value_list.append(item)
+                print("added to list:", value_list)
                 return value_list
         
         elif(filetype == "int"):
@@ -133,7 +136,7 @@ class mpro_config:
     
     
 
-    def __init__ (self, config_path, output_folder):
+    def __init__ (self, config_path):
         print("CHECKING CONFIG")
         self.config_path = config_path
         if(not os.path.isabs(self.config_path)):
@@ -161,8 +164,10 @@ class mpro_config:
         database_path           = self.value_assignment("path", config, "Databases", "database_path", "None")
         
         custom_database_path    = "/pipeline/custom_databases/"
-
-        self.out_dir = output_folder
+        output_folder_default = "metapro_" + dt.today().strftime("%m%d%Y_%H%M%S")
+        output_path_default = os.path.join(os.getcwd(), output_folder_default)
+        self.config_dict["out_dir"] = self.value_assignment("path", config, "Input", "out_dir",output_path_default)
+        self.out_dir = self.config_dict["out_dir"]
         if not(os.path.isabs(self.out_dir)):
             self.out_dir = os.path.abspath(self.out_dir)
             print(dt.today(), "output destination:", self.out_dir)
@@ -306,6 +311,7 @@ class mpro_config:
             self.config_dict["num_threads"] = 1
         self.config_dict["taxa_exist_cutoff"]           = self.value_assignment("float", config, "Settings", "taxa_existence_cutoff", 0.1)
         self.config_dict["DNA_DB_mode"]                 = self.value_assignment("str", config, "Settings", "DNA_DB_mode", "chocophlan") #used to indicate custom DB, or our grouped library
+        self.config_dict["q_enc"]                       = self.value_assignment("str", config, "Settings", "fastq_encoding", "None")
         #other setting is "custom"
         
         
@@ -451,23 +457,21 @@ class mpro_config:
         #if config:
         self.config_dict["Python"]         = self.value_assignment("path", config, "Tools", "Python", "python3")
         self.config_dict["Java"]           = self.value_assignment("path", config, "Tools", "Java", "java -jar")
-        self.config_dict["cdhit_dup"]      = self.value_assignment("path", config, "Tools", "cdhit_dup",  os.path.join(tool_path, "cdhit_dup/cd-hit-dup"))
+        self.config_dict["cdhit_dup"]      = self.value_assignment("path", config, "Tools", "cdhit_dup",  "cd-hit-dup")
         self.config_dict["AdapterRemoval"] = self.value_assignment("path", config, "Tools", "AdapterRemoval", os.path.join(tool_path, "adapterremoval/AdapterRemoval"))
-        self.config_dict["vsearch"]        = self.value_assignment("path", config, "Tools", "vsearch", os.path.join(tool_path, "vsearch/vsearch"))
-        self.config_dict["BT2"]             = self.value_assignment("path", config, "Tools", "BT2", os.path.join(tool_path, "bowtie2/bowtie2"))
-        self.config_dict["BT2_index"]       = self.value_assignment("path", config, "Tools", "BT2_index", os.path.join(tool_path, "bowtie2/bowtie2-build"))
-        self.config_dict["samtools"]       = self.value_assignment("path", config, "Tools", "SAMTOOLS", os.path.join(tool_path, "samtools/samtools"))
-        self.config_dict["BLAT"]           = self.value_assignment("path", config, "Tools", "BLAT", os.path.join(tool_path, "PBLAT/pblat"))
-        self.config_dict["DMD"]        = self.value_assignment("path", config, "Tools", "DIAMOND", os.path.join(tool_path, "DIAMOND/diamond"))
-        self.config_dict["Blastp"]         = self.value_assignment("path", config, "Tools", "Blastp", os.path.join(tool_path, "BLAST_p/blastp"))
-        self.config_dict["Needle"]         = self.value_assignment("path", config, "Tools", "Needle", os.path.join(tool_path, "EMBOSS-6.6.0/emboss/stretcher"))
-        self.config_dict["Makeblastdb"]    = self.value_assignment("path", config, "Tools", "Makeblastdb", os.path.join(tool_path, "BLAST_p/makeblastdb"))
-        self.config_dict["Barrnap"]        = self.value_assignment("path", config, "Tools", "Barrnap", os.path.join(tool_path, "Barrnap/bin/barrnap"))
-        self.config_dict["Infernal"]       = self.value_assignment("path", config, "Tools", "Infernal", os.path.join(tool_path, "infernal/cmsearch"))
+        self.config_dict["vsearch"]        = self.value_assignment("path", config, "Tools", "vsearch", "vsearch")
+        self.config_dict["BT2"]             = self.value_assignment("path", config, "Tools", "BT2", "bowtie2")
+        self.config_dict["BT2_index"]       = self.value_assignment("path", config, "Tools", "BT2_index", "bowtie2-build")
+        self.config_dict["samtools"]       = self.value_assignment("path", config, "Tools", "SAMTOOLS", "samtools")
+        self.config_dict["DMD"]        = self.value_assignment("path", config, "Tools", "DIAMOND", "diamond")
+        self.config_dict["Blastp"]         = self.value_assignment("path", config, "Tools", "Blastp", "blastp")
+        self.config_dict["Makeblastdb"]    = self.value_assignment("path", config, "Tools", "Makeblastdb", "makeblastdb")
+        self.config_dict["Barrnap"]        = self.value_assignment("path", config, "Tools", "Barrnap", "barrnap")
+        self.config_dict["Infernal"]       = self.value_assignment("path", config, "Tools", "Infernal", "cmsearch")
         self.config_dict["BLAST_dir"]      = self.value_assignment("path", config, "Tools", "BLAST_dir", os.path.join(tool_path, "BLAST_p"))
         self.config_dict["Spades"]         = self.value_assignment("path", config, "Tools", "Spades", os.path.join(tool_path, "SPAdes/bin/spades.py"))
-        self.config_dict["MetaGeneMark"]   = self.value_assignment("path", config, "Tools", "MetaGeneMark", os.path.join(tool_path, "mgm/gmhmmp"))
-        self.config_dict["kraken2"]        = self.value_assignment("path", config, "Tools", "kraken2", os.path.join(tool_path, "kraken2/kraken2"))
+        self.config_dict["mgm2"]   = self.value_assignment("path", config, "Tools", "MetaGeneMark2", "gmhmmp2")
+        self.config_dict["kraken2"]        = self.value_assignment("path", config, "Tools", "kraken2", "kraken2")
         self.config_dict["DeepEC"]      = self.value_assignment("path", config, "Tools", "DeepEC", os.path.join(tool_path, "DeepProZyme-v_1_0/run_deepextransformer.py"))
 
         #--------------------------------------------
@@ -513,10 +517,10 @@ class mpro_config:
         self.config_dict["convert_contig_segments"]    = self.value_assignment("path", config, "code", "output_convert_gene_map", os.path.join(script_path, "output_convert_gene_map_contig_segments.py"))
         self.config_dict["output_filter_taxa"]         = self.value_assignment("path", config, "code", "output_filter_taxa", os.path.join(script_path, "output_filter_taxa.py"))
         self.config_dict["output_filter_ECs"]          = self.value_assignment("path", config, "code", "output_filter_ec", os.path.join(script_path, "output_filter_ECs.py"))
-        self.config_dict["bwa_read_sorter"]            = self.value_assignment("path", config, "code", "bwa_read_sorter", os.path.join(script_path, "bwa_read_sorter.py"))
+        self.config_dict["bt2_read_sorter"]            = self.value_assignment("path", config, "code", "bwa_read_sorter", os.path.join(script_path, "bwa_read_sorter.py"))
         self.config_dict["ta_contig_name_convert"]     = self.value_assignment("path", config, "code", "ta_name_convert", os.path.join(script_path, "ta_contig_name_convert.py"))
         self.config_dict["GA_pre_scan_get_lib"]        = self.value_assignment("path", config, "code", "ga_pre_scan_get_lib", os.path.join(script_path, "ga_pre_scan_get_libs.py"))
-
+        
 
 
         

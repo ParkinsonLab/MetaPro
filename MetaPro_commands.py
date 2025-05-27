@@ -24,7 +24,7 @@ class mt_pipe_commands:
         self.read_mode = self.config_dict["read_mode"]        
 
                 
-        self.q_enc = config_dict["q_enc"]
+        self.q_enc = self.config_dict["q_enc"]
         self.output_path = dir_dict["out"]
         self.threads_str = str(self.config_dict["num_threads"])
         self.thread_count = self.config_dict["num_threads"]
@@ -50,14 +50,13 @@ class mt_pipe_commands:
             print(queue)
         return queue
                 
-    def create_quality_control_command(self, marker):
-
+    def create_quality_control_command(self, marker, q_enc):
         sort_pair_1 = ">&2 echo Sorting pair 1 | "
         sort_pair_1 += self.config_dict["Python"] + " "
         sort_pair_1 += self.config_dict["sort_reads"] + " "
         sort_pair_1 += self.file_dict["raw_p1"] + " "
         sort_pair_1 += self.file_dict["qf_sort_p1"] + " "
-        sort_pair_1 += "forward"
+        sort_pair_1 += "forward & "
 
         sort_pair_2 = ">&2 echo Sorting pair 2 | "
         sort_pair_2 += self.config_dict["Python"] + " "
@@ -73,7 +72,7 @@ class mt_pipe_commands:
         elif self.read_mode == "paired":
             adapter_removal_line += " --file1 " + self.file_dict["qf_sort_p1"]
             adapter_removal_line += " --file2 " + self.file_dict["qf_sort_p2"]
-        adapter_removal_line += " --qualitybase " + self.q_enc
+        adapter_removal_line += " --qualitybase " + q_enc
         if(self.q_enc == "33"):
             adapter_removal_line += " --qualitymax 75"
         adapter_removal_line += " --threads " + self.threads_str
@@ -192,7 +191,7 @@ class mt_pipe_commands:
             ]
         elif self.read_mode == "paired":
             COMMANDS_qual = [
-                sort_pair_1,
+                sort_pair_1 + 
                 sort_pair_2,
                 adapter_removal_line,
                 tag_remove_pair_1,
@@ -249,7 +248,7 @@ class mt_pipe_commands:
             
         # host removal on unique singletons
         bt2_hr_s = ">&2 echo bt2 host remove on singletons | "
-        bt2_hr_s += self.config_dict["bt2"] + " -p "
+        bt2_hr_s += self.config_dict["BT2"] + " -p "
         bt2_hr_s += self.threads_str + " "
         bt2_hr_s += "-x " + os.path.join(self.config_dict["Host_db"], cur_host) + " "
         bt2_hr_s += "-U " + in_seq_s + " " 
@@ -267,7 +266,7 @@ class mt_pipe_commands:
      
 
         bt2_hr_paired = ">&2 echo bt2 host-removal on paired | " 
-        bt2_hr_paired += self.config_dict["bt2"] + " "
+        bt2_hr_paired += self.config_dict["BT2"] + " "
         bt2_hr_paired += "-p " + self.threads_str + " "
         bt2_hr_paired += "-x " + os.path.join(self.config_dict["Host_db"], cur_host) + " "
         bt2_hr_paired += "-1 " + in_seq_1 + " "
@@ -360,48 +359,54 @@ class mt_pipe_commands:
                 
         return COMMANDS_host
 
-    def create_vector_filter_command(self, marker_file):
+    def create_vector_filter_command(self, marker_file, final_host):
         # why do we leave all the interim files intact?
         # because science needs repeatable data, and the process needs to be able to start at any point
         
         bt2_vr_s = ">&2 echo bt2 vector oprhans | "
-        bt2_vr_s += self.config_dict["bt2"] + " -p " + self.threads_str + " "
-        bt2_vr_s += "-x " + self.file_dict["vectors"] + " "
-        bt2_vr_s += "-U " + self.file_dict["no_host_s"] + " "
+        bt2_vr_s += self.config_dict["BT2"] + " -p " + self.threads_str + " "
+        bt2_vr_s += "-x " + os.path.join(self.config_dict["vector_db"], self.config_dict["vector_ID"]) + " "
+        if(final_host == "none"):
+            bt2_vr_s += "-U " + self.file_dict["qf_u_s"] + " "
+        else:
+            bt2_vr_s += "-U " + self.file_dict[final_host + "_no_host_s"] + " "
         bt2_vr_s += "-S " + self.file_dict["vec_s_sam"]
         
         
         bt2_vr_tut_s = ">&2 echo bt2 vector oprhans TUTORIAL MODE | "
-        bt2_vr_tut_s += self.config_dict["bt2"] + " -p " + self.threads_str + " "
-        bt2_vr_tut_s += "-x " + self.config_dict["vectors"] + " "
+        bt2_vr_tut_s += self.config_dict["BT2"] + " -p " + self.threads_str + " "
+        bt2_vr_tut_s += "-x " + os.path.join(self.config_dict["vector_db"], self.config_dict["vector_ID"]) + " "
         bt2_vr_tut_s += "-U " + self.config_dict["single"] + " "
         bt2_vr_tut_s += "-S " + self.file_dict["vec_s_sam"]
 
-        samtools_no_vec_s_convert = ">&2 echo samtools vector oprhans pt 1 | "
-        samtools_no_vec_s_convert += self.config_dict["samtools"] + " view -bS "
-        samtools_no_vec_s_convert += self.file_dict["vec_s_sam"]
-        samtools_no_vec_s_convert += " > " + self.file_dict["vec_s_bam"]
-
-        samtools_no_vec_s_export = ">&2 echo samtools vector singletons pt 2 | "
-        samtools_no_vec_s_export += self.config_dict["samtools"] + " fastq -n -f 4"
-        samtools_no_vec_s_export += " -0 " + self.file_dict["no_vec_s"] + " "
-        samtools_no_vec_s_export += self.file_dict["vec_s_bam"]
-
-        samtools_vec_s_export = ">&2 echo samtools vector singletons pt 3 | "
-        samtools_vec_s_export += self.config_dict["samtools"] + " fastq -n -F 4"
-        samtools_vec_s_export += " -0 " + self.file_dict["vec_s"] + " "
-        samtools_vec_s_export += self.file_dict["vec_s_bam"]
+        samtools_no_vec_s = ">&2 echo samtools vector oprhans pt 1 | "
+        samtools_no_vec_s += self.config_dict["samtools"] + " view -f 4 "
+        samtools_no_vec_s += self.file_dict["vec_s_sam"] + " | "
+        samtools_no_vec_s += self.config_dict["samtools"] + " fastq - > "
+        samtools_no_vec_s += self.file_dict["no_vec_s"] + " "
+        
+        samtools_vec_s = ">&2 echo samtools vector oprhans pt 1 | "
+        samtools_vec_s += self.config_dict["samtools"] + " view -F 4 "
+        samtools_vec_s += self.file_dict["vec_s_sam"] + " | "
+        samtools_vec_s += self.config_dict["samtools"] + " fastq - > "
+        samtools_vec_s += self.file_dict["vec_s"] + " "
+        
+        
 
         bt2_vr_paired = ">&2 echo bt2 vector paired | "
-        bt2_vr_paired += self.config_dict["bt2"] + " -p " + self.threads_str + " "
-        bt2_vr_paired += " -x " + self.config_dict["vectors"] + " "
-        bt2_vr_paired += "-1 " + self.file_dict["no_host_p1"] + " "
-        bt2_vr_paired += "-2 " + self.file_dict["no_host_p2"] + " "
+        bt2_vr_paired += self.config_dict["BT2"] + " -p " + self.threads_str + " "
+        bt2_vr_paired += " -x " + os.path.join(self.config_dict["vector_db"], self.config_dict["vector_ID"]) + " "
+        if(final_host != "none"):
+            bt2_vr_paired += "-1 " + self.file_dict[final_host + "_no_host_p1"] + " "
+            bt2_vr_paired += "-2 " + self.file_dict[final_host + "_no_host_p2"] + " "
+        else:
+            bt2_vr_paired += "-1 " + self.file_dict["qf_u_p1"] + " "
+            bt2_vr_paired += "-2 " + self.file_dict["qf_u_p2"] + " "
         bt2_vr_paired += "-S " + self.file_dict["vec_p_sam"]
 
         bt2_vr_tut_paired = ">&2 echo bt2 vector paired TUTORIAL MODE | "
-        bt2_vr_tut_paired += self.config_dict["bt2"] + " -p " + self.threads_str + " "
-        bt2_vr_tut_paired += "-x " +self.config_dict["vectors"] + " "
+        bt2_vr_tut_paired += self.config_dict["BT2"] + " -p " + self.threads_str + " "
+        bt2_vr_tut_paired += "-x " + os.path.join(self.config_dict["vector_db"], self.config_dict["vector_ID"]) + " "
         bt2_vr_tut_paired += "-1 " + self.config_dict["pair_1"] + " "
         bt2_vr_tut_paired += "-2 " + self.config_dict["pair_2"] + " "
         bt2_vr_tut_paired += "-S " + self.file_dict["vec_p_sam"]
@@ -412,8 +417,13 @@ class mt_pipe_commands:
         bt2_vr_filter_paired += "paired" + " "
         bt2_vr_filter_paired += self.config_dict["filter_stringency"] + " "
         bt2_vr_filter_paired += self.file_dict["vec_p_sam"] + " "
-        bt2_vr_filter_paired += self.file_dict["no_host_p1"] + " "
-        bt2_vr_filter_paired += self.file_dict["no_host_p2"] + " "
+        if(final_host == "none"):
+            bt2_vr_filter_paired += self.file_dict["qf_u_p1"] + " "
+            bt2_vr_filter_paired += self.file_dict["qf_u_p2"] + " "
+
+        else:
+            bt2_vr_filter_paired += self.file_dict[final_host + "_no_host_p1"] + " "
+            bt2_vr_filter_paired += self.file_dict[final_host + "_no_host_p2"] + " "
         bt2_vr_filter_paired += self.file_dict["no_vec_p1"] + " "
         bt2_vr_filter_paired += self.file_dict["no_vec_p2"] + " "
         bt2_vr_filter_paired += self.file_dict["vec_p1"] + " "
@@ -425,17 +435,15 @@ class mt_pipe_commands:
             if self.read_mode == "single":
                 COMMANDS_vector = [
                     bt2_vr_tut_s,
-                    samtools_no_vec_s_convert,
-                    samtools_no_vec_s_export,
-                    samtools_vec_s_export + " && " + make_marker
+                    samtools_no_vec_s,
+                    samtools_vec_s + " && " + make_marker
                     
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_vector = [
                     bt2_vr_tut_s,
-                    samtools_no_vec_s_convert,
-                    samtools_no_vec_s_export,
-                    samtools_vec_s_export,
+                    samtools_no_vec_s,
+                    samtools_vec_s,
                     bt2_vr_tut_paired,
                     bt2_vr_filter_paired + " && " + make_marker
                 ]
@@ -443,16 +451,13 @@ class mt_pipe_commands:
             if self.read_mode == "single":
                 COMMANDS_vector = [
                     bt2_vr_s,
-                    samtools_no_vec_s_convert,
-                    samtools_no_vec_s_export,
-                    samtools_vec_s_export + " && " + make_marker
+                    samtools_no_vec_s,
+                    samtools_vec_s + " && " + make_marker
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_vector = [
                     bt2_vr_s,
-                    samtools_no_vec_s_convert,
-                    samtools_no_vec_s_export,
-                    samtools_vec_s_export,
+                    samtools_no_vec_s,
                     bt2_vr_paired,
                     bt2_vr_filter_paired + " && " + make_marker
                 ]    
@@ -745,7 +750,7 @@ class mt_pipe_commands:
         remove_whitespace += final_contigs
         
         #bt2-ing against the final contigs gives us a proper contig-segment -> read map. 
-        #bt2_index = self.config_dict["bt2"] + " index -a bwtsw " + final_contigs
+        #bt2_index = self.config_dict["BT2"] + " index -a bwtsw " + final_contigs
         #note: bt2 index MUST be fasta.  not fastq
         bt2_index = self.config_dict["BT2_index"] + " " + final_contigs + " " + contigs_idx 
         
@@ -761,7 +766,7 @@ class mt_pipe_commands:
         bt2_paired_contigs += "| samtools view > " + self.file_dict["contigs_p_sam"]
 
         bt2_singletons_contigs = ">&2 echo bt2 singleton contigs | "
-        #bt2_singletons_contigs += self.config_dict["bt2"] + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
+        #bt2_singletons_contigs += self.config_dict["BT2"] + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
         bt2_singletons_contigs += self.config_dict["BT2"] +  " --score-min L,0,-0.2 --mp 40,40 --rdg 10,10 --rfg 10,10 --np 60 --dpad 15 --gbar 4 -L 50 -i S,1,0.75 "
         bt2_singletons_contigs += " -x " + contigs_idx + " "
         bt2_singletons_contigs += " -U " + self.file_dict["repop_s"]
@@ -1180,126 +1185,6 @@ class mt_pipe_commands:
         return [cat_kraken2 + " && " + make_marker]
         
 
-    
-        
-    def create_TA_centrifuge_command(self, current_stage_name, rRNA_stage, assemble_contigs_stage, operating_mode, marker_file):
-        subfolder               = os.path.join(self.output_path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        rRNA_folder             = os.path.join(self.output_path, rRNA_stage, "final_results", "other")
-        assemble_contigs_folder = os.path.join(self.output_path, assemble_contigs_stage, "final_results")
-        centrifuge_folder       = os.path.join(data_folder, "2_centrifuge")
-        jobs_folder             = os.path.join(data_folder, "jobs")
-        final_folder            = os.path.join(subfolder, "final_results")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(centrifuge_folder)
-        self.make_folder(jobs_folder)
-        self.make_folder(final_folder)
-        
-        singletons_extension = os.path.splitext(self.config_dict["single"])[1]
-        
-        if(operating_mode == "contigs"):
-            patch_contig_name = self.config_dict["Python"] + " "
-            patch_contig_name += self.config_dict["ta_contig_name_convert"] + " "
-            if(self.tutorial_keyword == "TA"):
-                patch_contig_name += self.sequence_contigs + " "
-            else:
-                patch_contig_name += os.path.join(assemble_contigs_folder, "contigs.fasta") + " "
-            patch_contig_name += os.path.join(centrifuge_folder, "contigs_renamed.fasta")
-        
-            centrifuge_on_contigs = ">&2 echo centrifuge on contigs | "
-            centrifuge_on_contigs += self.config_dict["Centrifuge"]
-            centrifuge_on_contigs += " -f -x " + self.config_dict["Centrifuge_db"]
-            centrifuge_on_contigs += " -U " + os.path.join(centrifuge_folder, "contigs_renamed.fasta")
-            centrifuge_on_contigs += " --exclude-taxids 2759 -k 1 --tab-fmt-cols " + "score,readID,taxID"
-            centrifuge_on_contigs += " --phred" + self.config_dict["q_enc"]
-            centrifuge_on_contigs += " -p 6"
-            centrifuge_on_contigs += " -S " + os.path.join(centrifuge_folder, "raw_contigs.tsv")
-            centrifuge_on_contigs += " --report-file " + os.path.join(centrifuge_folder, "raw_contigs.txt")
-            
-            back_convert_report = self.config_dict["Python"] + " "
-            back_convert_report += self.config_dict["ta_contig_name_convert"] + " "
-            back_convert_report += os.path.join(centrifuge_folder, "raw_contigs.tsv") + " "
-            back_convert_report += os.path.join(centrifuge_folder, "contigs.tsv")
-            
-            make_marker = "touch" + " "
-            make_marker += os.path.join(jobs_folder, marker_file)
-            
-            return [patch_contig_name + " && " + centrifuge_on_contigs + " && " + back_convert_report + " && " +  make_marker]
-
-            
-        elif(operating_mode == "reads"):
-            centrifuge_on_reads = ">&2 echo centrifuge on reads | "
-            centrifuge_on_reads += self.config_dict["Centrifuge"]
-            centrifuge_on_reads += " -x " + self.config_dict["Centrifuge_db"]
-            
-            if(self.tutorial_keyword == "TA"):
-                if(singletons_extension == ".fa" or singletons_extension == ".fasta"):
-                    centrifuge_on_reads += " -f -U " + self.config_dict["single"]
-                else:
-                    centrifuge_on_reads += " -U " + self.config_dict["single"]
-                if self.read_mode == "paired":
-                    centrifuge_on_reads += " -1 " + self.config_dict["pair_1"]
-                    centrifuge_on_reads += " -2 " + self.config_dict["pair_2"]
-            else:
-                centrifuge_on_reads += " -U " + os.path.join(assemble_contigs_folder, "singletons.fastq")
-                if self.read_mode == "paired":
-                    centrifuge_on_reads += " -1 " + os.path.join(assemble_contigs_folder, "pair_1.fastq")
-                    centrifuge_on_reads += " -2 " + os.path.join(assemble_contigs_folder, "pair_2.fastq")
-            centrifuge_on_reads += " --exclude-taxids 2759 -k 1 --tab-fmt-cols " + "score,readID,taxID"
-            centrifuge_on_reads += " --phred" + self.config_dict["q_enc"]
-            centrifuge_on_reads += " -p 6"
-            centrifuge_on_reads += " -S " + os.path.join(centrifuge_folder, "reads.tsv")
-            centrifuge_on_reads += " --report-file " + os.path.join(centrifuge_folder, "reads.txt")
-
-            make_marker = "touch" + " "
-            make_marker += os.path.join(jobs_folder, marker_file)
-        
-            return [centrifuge_on_reads + " && " + make_marker]
-            
-        elif(operating_mode == "rRNA"):
-        
-            centrifuge_on_rRNA = ">&2 echo centrifuge on rRNA | "
-            centrifuge_on_rRNA += self.config_dict["Centrifuge"]
-            centrifuge_on_rRNA += " -x " + self.config_dict["Centrifuge_db"]
-            centrifuge_on_rRNA += " -U " + os.path.join(rRNA_folder, "singletons_other.fastq")
-            if self.read_mode == "paired":
-                centrifuge_on_rRNA += " -1 " + os.path.join(rRNA_folder, "pair_1_other.fastq")
-                centrifuge_on_rRNA += " -2 " + os.path.join(rRNA_folder, "pair_2_other.fastq")
-            centrifuge_on_rRNA += " --exclude-taxids 2759 -k 1 --tab-fmt-cols " + "score,readID,taxID"
-            centrifuge_on_rRNA += " --phred" + self.config_dict["q_enc"]
-            centrifuge_on_rRNA += " -p 6"
-            centrifuge_on_rRNA += " -S " + os.path.join(final_folder, "other.tsv")
-            centrifuge_on_rRNA += " --report-file " + os.path.join(final_folder, "other.txt")
-            
-            make_marker = "touch" + " "
-            make_marker += os.path.join(jobs_folder, marker_file)
-            
-            return [centrifuge_on_rRNA + " &&  " + make_marker]
-        
-    def create_TA_centrifuge_pp_command(self, current_stage_name, marker_file):
-        subfolder               = os.path.join(self.output_path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        centrifuge_folder       = os.path.join(data_folder, "2_centrifuge")
-        jobs_folder             = os.path.join(data_folder, "jobs")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(centrifuge_folder)
-        self.make_folder(jobs_folder)        
-    
-        cat_centrifuge = ">&2 echo combining all centrifuge results | "
-        cat_centrifuge += "cat "
-        cat_centrifuge += os.path.join(centrifuge_folder, "reads.tsv") + " "
-        if(self.sequence_contigs != "None"):
-            cat_centrifuge += os.path.join(centrifuge_folder, "contigs.tsv")
-        cat_centrifuge += " > " + os.path.join(centrifuge_folder, "merged_centrifuge.tsv")
-
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
-        
-        return [cat_centrifuge + " && " + make_marker]
     
     def create_TA_taxon_pull_command(self, current_stage_name, ga_final_merge_stage, marker_file):
         subfolder               = os.path.join(self.output_path, current_stage_name)
