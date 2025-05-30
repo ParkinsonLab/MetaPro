@@ -77,7 +77,9 @@ class mpro_dir:
         self.config_dict = config_dict
         self.out_dir = self.config_dict["out_dir"]
         self.config_path = config_path
-        
+        if(not os.path.isabs(self.out_dir)):
+            self.out_dir = os.path.abspath(self.out_dir)
+            
         self.label_dict = dict()
         self.dir_dict = dict()
         self.dir_dict["main"] = self.out_dir

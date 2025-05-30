@@ -217,7 +217,7 @@ class mp_util:
         self.mp_store = []
         self.output_folder_path = dir_dict["main"]
         #self.paths = config_obj
-        self.bypass_log_name = config_dict["bypass_log_name"]
+        self.bypass_log_name = os.path.basename(config_dict["bypass_log"])
         self.mpsh = mp_seq_handler()
 
     def mem_checker(self, threshold):

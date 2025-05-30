@@ -170,6 +170,7 @@ class mpro_config:
         self.out_dir = self.config_dict["out_dir"]
         if not(os.path.isabs(self.out_dir)):
             self.out_dir = os.path.abspath(self.out_dir)
+            self.config_dict["out_dir"] = self.out_dir
             print(dt.today(), "output destination:", self.out_dir)
         
         #--------------------------------------------------
@@ -298,13 +299,13 @@ class mpro_config:
         
          
 
-        self.config_dict["bypass_log"] = self.value_assignment("path", config, "Settings", "bypass_log", os.path.join(self.out_dir, "bypass_long.txt"))
+        self.config_dict["bypass_log"] = os.path.abspath(os.path.join(self.config_dict["out_dir"], self.value_assignment("path", config, "Settings", "bypass_log", "bypass_log.txt")))
         self.config_dict["tutorial_keyword"] = self.value_assignment("str", config, "Settings", "tutorial_keyword", "None")
         self.config_dict["tutorial_mode"] = self.value_assignment("str", config, "Settings", "tutorial_mode", "None")
         self.config_dict["target_rank"]                 = self.value_assignment("str", config, "Settings", "target_rank", "genus")
         self.config_dict["adapterremoval_minlength"]    = self.value_assignment("str", config, "Settings", "AdapterRemoval_minlength", 30)
         self.config_dict["show_unclassified"]           = self.value_assignment("str", config, "Settings", "Show_unclassified", "No")
-        self.config_dict["bypass_log_name"]             = self.value_assignment("str", config, "Settings", "bypass_log_name", "bypass_log.txt")
+        #self.config_dict["bypass_log_name"]             = self.value_assignment("str", config, "Settings", "bypass_log_name", "bypass_log.txt")
         self.config_dict["debug_stop_flag"]             = self.value_assignment("str", config, "Settings", "debug_stop_flag", "none")
         self.config_dict["num_threads"]                 = self.value_assignment("int", config, "Settings", "num_threads", os.cpu_count())
         if(self.config_dict["num_threads"] == 0):

@@ -55,15 +55,12 @@ class mt_pipe_commands:
         sort_pair_1 += self.config_dict["Python"] + " "
         sort_pair_1 += self.config_dict["sort_reads"] + " "
         sort_pair_1 += self.file_dict["raw_p1"] + " "
-        sort_pair_1 += self.file_dict["qf_sort_p1"] + " "
-        sort_pair_1 += "forward & "
-
+        sort_pair_1 += self.file_dict["qf_sort_p1"] 
         sort_pair_2 = ">&2 echo Sorting pair 2 | "
         sort_pair_2 += self.config_dict["Python"] + " "
         sort_pair_2 += self.config_dict["sort_reads"] + " "
         sort_pair_2 += self.file_dict["raw_p2"] + " "
-        sort_pair_2 += self.file_dict["qf_sort_p2"] + " "
-        sort_pair_2 += "reverse"
+        sort_pair_2 += self.file_dict["qf_sort_p2"]
 
         adapter_removal_line = ">&2 echo Removing adapters | "
         adapter_removal_line += self.config_dict["AdapterRemoval"]
@@ -104,8 +101,7 @@ class mt_pipe_commands:
         tag_remove_singletons += self.config_dict["Python"] + " "
         tag_remove_singletons += self.config_dict["remove_tag"] + " "
         tag_remove_singletons += self.file_dict["qf_adapt_s"] + " "
-        tag_remove_singletons += self.file_dict["qf_tags_s"
-                                                ]
+        tag_remove_singletons += self.file_dict["qf_tags_s"]
         # tries to merge the cleaned pairs
         # rejects get sent out
         vsearch_merge = ">&2 echo " + "Vsearch Merge pairs | "
@@ -191,16 +187,17 @@ class mt_pipe_commands:
             ]
         elif self.read_mode == "paired":
             COMMANDS_qual = [
-                sort_pair_1 + 
+                sort_pair_1 + " & " +
                 sort_pair_2,
                 adapter_removal_line,
                 tag_remove_pair_1,
                 tag_remove_pair_2,
                 tag_remove_singletons,
+                ">&2 echo delaying 60s | sleep 60", 
                 vsearch_merge,
                 cat_glue,
-                vsearch_filter_0,
-                vsearch_filter_1,
+                vsearch_filter_0 + " & " +
+                vsearch_filter_1 + " & " +
                 vsearch_filter_2,
                 orphan_read_filter,
                 cdhit_singletons,

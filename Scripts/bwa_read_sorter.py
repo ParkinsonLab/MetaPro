@@ -6,11 +6,11 @@ import os
 import sys
 import pandas as pd
 from datetime import datetime as dt
+import numpy as np
 import re
 
-
 def import_fastq(file_name_in):
-    fastq_df = pd.read_csv(file_name_in, header=None, names=[None], sep="\n", skip_blank_lines = False, quoting=3)
+    fastq_df = pd.read_csv(file_name_in, header=None, names=[None], sep=r"\n", engine = "python", skip_blank_lines = False, quoting=3)
     fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
     fastq_df.columns = ["ID", "sequences", "junk", "quality"]
     fastq_df["ID"] = fastq_df["ID"].apply(lambda x: x.strip("@"))
@@ -124,11 +124,16 @@ if __name__ == "__main__":
         pair_1_filter_reject["ID"] = "@" + pair_1_filter_reject["ID"]
         pair_2_filter_reject["ID"] = "@" + pair_2_filter_reject["ID"]
         
-        pair_1_filter_pass.to_csv(pair_1_pass, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
-        pair_2_filter_pass.to_csv(pair_2_pass, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        #pair_1_filter_pass.to_csv(pair_1_pass, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        #pair_2_filter_pass.to_csv(pair_2_pass, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        np.savetxt(pair_1_pass, pair_1_filter_pass.values, delimiter = "\n", fmt='%s')
+        np.savetxt(pair_2_pass, pair_2_filter_pass.values, delimiter = "\n", fmt='%s')
+
         
-        pair_1_filter_reject.to_csv(pair_1_reject, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
-        pair_2_filter_reject.to_csv(pair_2_reject, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        #pair_1_filter_reject.to_csv(pair_1_reject, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        #pair_2_filter_reject.to_csv(pair_2_reject, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        np.savetxt(pair_1_reject, pair_1_filter_reject.values, delimiter = "\n", fmt='%s')
+        np.savetxt(pair_2_reject, pair_2_filter_reject.values, delimiter = "\n", fmt='%s')
         print(dt.today(), "done BWA filter")
                 
     elif(data_style == "single"):
@@ -147,7 +152,10 @@ if __name__ == "__main__":
         singletons_filter_reject["ID"] = "@" + singletons_filter_reject["ID"]
         
         print(dt.today(), "exporting singletons")
-        singletons_filter_pass.to_csv(singletons_pass, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
-        singletons_filter_reject.to_csv(singletons_reject, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        #singletons_filter_pass.to_csv(singletons_pass, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        #singletons_filter_reject.to_csv(singletons_reject, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        np.savetxt(singletons_pass, singletons_filter_pass.values, delimiter = "\n", fmt='%s')
+        np.savetxt(singletons_reject, singletons_filter_reject.values, delimiter = "\n", fmt='%s')
+
         print(dt.today(), "bwa filter singletons done!")
                 
