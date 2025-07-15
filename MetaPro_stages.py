@@ -228,6 +228,7 @@ class mp_stage:
         
             self.vector_end = time.time()
             self.debug_stop_check(self.label_dict["vec"])
+            self.marker_control.place_marker("vec")
 
     def mp_rRNA_filter(self):
         #don't split bnap.
@@ -238,21 +239,35 @@ class mp_stage:
         self.rRNA_filter_start = time.time()
         
         #if not check_where_resume(self.rRNA_filter_path, None, self.vector_path):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.label_dict["rRNA"]): 
-            #run bnap
+        #if self.mp_util.check_bypass_log(self.output_folder_path, self.label_dict["rRNA"]): 
+        if self.marker_control.check_marker("rRNA"):
+        #run bnap
+
+            for item in self.dir_dict["rRNA_list"]:
+                print(dt.today(), "making:", item, self.dir_dict[item])
+                self.dir_control.make_dirs(self.dir_dict[item])
             run_types = ["s"]
-            if(self.read_mode == "p"):
+            #print("SELF.READ_MODE:", self.read_mode)
+            if(self.read_mode == "paired"):
                 run_types.extend(["p1", "p2"])
 
+            print(dt.today(), "run types:", run_types)
+            #time.sleep(10)
             for run_type in run_types:
                 fa_in = self.file_dict["rRNA_"+str(run_type) + "_fa"]
                 fq_in = self.file_dict["no_vec_" + str(run_type)]
                 mRNA_out = self.file_dict["rRNA_bnap_mRNA_" + str(run_type)]
-                rRNA_out = self.file_dict["rRNA_bnap_rRNA_" + str(run_type)]
+                rRNA_out = self.file_dict["rRNA_bnap_other_" + str(run_type)]
                 bnap_out = self.file_dict["rRNA_bnap_all_" + str(run_type)]
-                self.mp_seq_handler.fastq_to_fasta(fa_in, fq_in)
-                command = self.commands.create_rRNA_filter_bnap_command(fa_in, fq_in, mRNA_out, rRNA_out, bnap_out)
-                self.mp_util.run_subjob_with_mp_store()
+                marker = self.marker_dict["rRNA_bnap_" + str(run_type)]
+                self.mp_seq_handler.fastq_to_fasta(fq_in, fa_in)
+                if not (os.path.exists(marker)):
+                    print(dt.today(), "running:", marker)
+                    command_list = self.commands.create_rRNA_filter_bnap_command(fa_in, fq_in, mRNA_out, rRNA_out, bnap_out, marker)
+                    self.mp_util.launch_stage_simple(self.file_dict["rRNA_bnap_job_" + str(run_type)], self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_rRNA"])
+                    #self.mp_util.run_subjob_with_mp_store()
+                else:
+                    print(dt.today(), "skipping:", marker)
 
 
             #wait for everything.
@@ -262,10 +277,26 @@ class mp_stage:
             #----------------------------------------------------------------------------
             # INFERNAL
             #split the fasta mRNA here
-            split_count_s = self.mp_seq_handler.split_fastq(self.file_dict["rRNA_bnap_mRNA_s"], self.file_dict["rRNA_inf_in_s"], self.config_dict["rRNA_chunksize"], "fasta")
-            split_count_p1 = self.mp_seq_handler.split_fastq(self.file_dict["rRNA_bnap_mRNA_p1"], self.file_dict["rRNA_inf_in_p1"], self.config_dict["rRNA_chunksize"], "fasta")
-            split_count_p2 = self.mp_seq_handler.split_fastq(self.file_dict["rRNA_bnap_mRNA_p2"], self.file_dict["rRNA_inf_in_p2"], self.config_dict["rRNA_chunksize"], "fasta")
+            split_count_s = 0
+            split_count_p1 = 0
+            split_count_p2 = 0
+            if not (os.path.exists(self.marker_dict["rRNA_split_s"])):
+                split_count_s = self.mp_seq_handler.split_fastq(self.file_dict["rRNA_bnap_mRNA_s"], self.file_dict["rRNA_inf_in_s"], self.config_dict["rRNA_chunksize"], "fasta")
+                self.marker_control.place_marker("rRNA_split_s")
+            else:
+                split_count_s = self.mp_seq_handler.get_split_count(self.dir_dict["rRNA_split"], "inf_s")
 
+            if not (os.path.exists(self.marker_dict["rRNA_split_p1"])): 
+                split_count_p1 = self.mp_seq_handler.split_fastq(self.file_dict["rRNA_bnap_mRNA_p1"], self.file_dict["rRNA_inf_in_p1"], self.config_dict["rRNA_chunksize"], "fasta")
+                self.marker_control.place_marker("rRNA_split_p1")
+            else:
+                split_count_p1 = self.mp_seq_handler.get_split_count(self.dir_dict["rRNA_split"], "inf_p1")
+            if not (os.path.exists(self.marker_dict["rRNA_split_p2"])):    
+                split_count_p2 = self.mp_seq_handler.split_fastq(self.file_dict["rRNA_bnap_mRNA_p2"], self.file_dict["rRNA_inf_in_p2"], self.config_dict["rRNA_chunksize"], "fasta")
+                self.marker_control.place_marker("rRNA_split_p2")
+            else:
+                split_count_p2 = self.mp_seq_handler.get_split_count(self.dir_dict["rRNA_split"], "inf_p2")
+            
             for i in range(0, split_count_s):
                 self.file_dict["rRNA_inf_in_s_" + str(i)] = self.file_dict["rRNA_inf_in_s"] + "_" + str(i) + ".fasta"
             for i in range(0, split_count_p1):
@@ -273,59 +304,64 @@ class mp_stage:
             for i in range(0, split_count_p2):
                 self.file_dict["rRNA_inf_in_p2_" + str(i)] = self.file_dict["rRNA_inf_in_p2"] + "_" + str(i) + ".fasta"
 
-            self.marker_control.issue_rRNA_markers(self.m_name["rRNA_inf_s"], split_count_s, "rRNA_mkrs")
-            self.marker_control.issue_rRNA_markers(self.m_name["rRNA_inf_p1"], split_count_p1, "rRNA_mkrs")
-            self.marker_control.issue_rRNA_markers(self.m_name["rRNA_inf_p2"], split_count_p2, "rRNA_mkrs")
+            #create inf out path
+            self.file_control.create_split_filepaths("rRNA_inf_out_s", split_count_s, self.file_dict["rRNA_inf_out_s"], ".inf_out")
+            self.file_control.create_split_filepaths("rRNA_inf_out_p1", split_count_p1, self.file_dict["rRNA_inf_out_p1"], ".inf_out")
+            self.file_control.create_split_filepaths("rRNA_inf_out_p2", split_count_p2, self.file_dict["rRNA_inf_out_p2"], ".inf_out")
+            self.file_control.create_split_filepaths("rRNA_inf_job_s", split_count_s, self.file_dict["rRNA_inf_job_s"], ".sh")
+            self.file_control.create_split_filepaths("rRNA_inf_job_p1", split_count_p1, self.file_dict["rRNA_inf_job_p1"], ".sh")
+            self.file_control.create_split_filepaths("rRNA_inf_job_p2", split_count_p2, self.file_dict["rRNA_inf_job_p2"], ".sh")
+            print("split count [s, p1, p2]", split_count_s, split_count_p1, split_count_p2)
+            self.marker_control.issue_split_markers(self.m_name["rRNA_inf_s"], split_count_s, "rRNA_mkrs")
+            self.marker_control.issue_split_markers(self.m_name["rRNA_inf_p1"], split_count_p1, "rRNA_mkrs")
+            self.marker_control.issue_split_markers(self.m_name["rRNA_inf_p2"], split_count_p2, "rRNA_mkrs")
 
             for i in range(0, split_count_s):
-                s_seq = self.file_dict["rRNA_inf_in_s" + str(i)]
-                inf_out = self.file_dict["rRNA_inf_out_s"] + "_" + str(i) + ".inf_out"
-                self.file_dict["rRNA_inf_s_" + str(i)] = inf_out
+                s_seq = self.file_dict["rRNA_inf_in_s_" + str(i)]
+                inf_out = self.file_dict["rRNA_inf_out_s_" + str(i)]
+                self.file_dict["rRNA_inf_in_s_" + str(i)] = inf_out
                 marker = self.marker_dict["rRNA_inf_s_" + str(i)]
-                job_name = "rRNA_inf_s" + "_" + str(i)
-                if(self.marker_control.check_marker(marker)):
+                job_path = self.file_dict["rRNA_inf_job_s_" + str(i)]
+                if(self.marker_control.check_marker("rRNA_inf_s_" + str(i))):
                     command = self.commands.create_rRNA_filter_infernal_command(s_seq, inf_out, marker)
-                    self.mp_util.run_subjob_with_hold(
+                    self.mp_util.run_subjob_simple(
                         self.config_dict["Infernal_mem_threshold"],
                         self.config_dict["Infernal_job_limit"],
                         self.config_dict["Infernal_job_delay"],
-                        self.dir_dict["rRNA_jobs"],
-                        job_name,
+                        job_path,
                         self.commands,
                         command)    
 
 
             for i in range(0, split_count_p1):
-                p1_seq = self.file_dict["rRNA_bnap_mRNA_p1_" + str(i)]
-                inf_out = self.file_dict["rRNA_inf_out_p1"] + "_" + str(i) + ".inf_out"
-                self.file_dict["rRNA_inf_p1_" + str(i)] = inf_out
+                p1_seq = self.file_dict["rRNA_inf_in_p1_" + str(i)]
+                inf_out = self.file_dict["rRNA_inf_out_p1_" + str(i)]
+                self.file_dict["rRNA_inf_in_p1_" + str(i)] = inf_out
                 marker = self.marker_dict["rRNA_inf_p1_" + str(i)]
-                job_name = "rRNA_inf_p1" + "_" + str(i)
-                if(self.marker_control.check_marker(marker)):
+                job_path = self.file_dict["rRNA_inf_job_p1_" + str(i)]
+                if(self.marker_control.check_marker("rRNA_inf_p1_" + str(i))):
                     command = self.commands.create_rRNA_filter_infernal_command(p1_seq, inf_out, marker)
-                    self.mp_util.run_subjob_with_hold(
+                    self.mp_util.run_subjob_simple(
                         self.config_dict["Infernal_mem_threshold"],
                         self.config_dict["Infernal_job_limit"],
                         self.config_dict["Infernal_job_delay"],
-                        self.dir_dict["rRNA_jobs"],
-                        job_name,
+                        job_path,
                         self.commands,
                         command)    
 
             for i in range(0, split_count_p2):
-                p2_seq = self.file_dict["rRNA_bnap_mRNA_p2_" + str(i)]
-                inf_out = self.file_dict["rRNA_inf_out_p2"] + "_" + str(i) + ".inf_out"
-                self.file_dict["rRNA_inf_p2_" + str(i)] = inf_out
+                p2_seq = self.file_dict["rRNA_inf_in_p2_" + str(i)]
+                inf_out = self.file_dict["rRNA_inf_out_p2_" + str(i)]
+                self.file_dict["rRNA_inf_in_p2_" + str(i)] = inf_out
                 marker = self.marker_dict["rRNA_inf_p2_" + str(i)]
-                job_name = "rRNA_inf_p2" + "_" + str(i)
-                if(self.marker_control.check_marker(marker)):
+                job_path = self.file_dict["rRNA_inf_job_p2_" + str(i)]
+                if(self.marker_control.check_marker("rRNA_inf_p2_" + str(i))):
                     command = self.commands.create_rRNA_filter_infernal_command(p2_seq, inf_out, marker)
-                    self.mp_util.run_subjob_with_hold(
+                    self.mp_util.run_subjob_simple(
                         self.config_dict["Infernal_mem_threshold"],
                         self.config_dict["Infernal_job_limit"],
                         self.config_dict["Infernal_job_delay"],
-                        self.dir_dict["rRNA_jobs"],
-                        job_name,
+                        job_path,
                         self.commands,
                         command)    
 
@@ -336,7 +372,7 @@ class mp_stage:
             if(split_count_s > 0):
                 with open(self.file_dict["rRNA_inf_all_s"], "wb") as out_file:
                     for i in range(0, split_count_s):
-                        inf_out = self.file_dict["rRNA_inf_s_" + str(i)]
+                        inf_out = self.file_dict["rRNA_inf_out_s_" + str(i)]
                         with open(inf_out, "rb") as in_file:
                             shutil.copyfileobj(in_file, out_file)
                         out_file.write(b"\n")
@@ -345,7 +381,7 @@ class mp_stage:
             if(split_count_p1 > 0):
                 with open(self.file_dict["rRNA_inf_all_p1"], "wb") as out_file:
                     for i in range(0, split_count_p1):
-                        inf_out = self.file_dict["rRNA_inf_p1_" + str(i)]
+                        inf_out = self.file_dict["rRNA_inf_out_p1_" + str(i)]
                         with open(inf_out, "rb") as in_file:
                             shutil.copyfileobj(in_file, out_file)
                         out_file.write(b"\n")
@@ -354,7 +390,7 @@ class mp_stage:
             if(split_count_p2 > 0):
                 with open(self.file_dict["rRNA_inf_all_p2"], "wb") as out_file:
                     for i in range(0, split_count_p2):
-                        inf_out = self.file_dict["rRNA_inf_p2_" + str(i)]
+                        inf_out = self.file_dict["rRNA_inf_out_p2_" + str(i)]
                         with open(inf_out, "rb") as in_file:
                             shutil.copyfileobj(in_file, out_file)
                         out_file.write(b"\n")
@@ -373,7 +409,7 @@ class mp_stage:
                 mRNA_p2 = self.file_dict["rRNA_mRNA_p2_fq"]
                 other_p1 = self.file_dict["rRNA_other_p1_fq"]
                 other_p2 = self.file_dict["rRNA_other_p2_fq"]
-
+                
                 command = self.commands.create_rRNA_inf_pp_pair_command(inf_p1, inf_p2, 
                                                                         bnap_p1, bnap_p2,
                                                                         self.file_dict["no_vec_p1"],
@@ -383,12 +419,11 @@ class mp_stage:
                                                                         self.marker_dict["rRNA_inf_pp_paired"]
                                                                         )
                 
-                self.mp_util.run_subjob_with_hold(
+                self.mp_util.run_subjob_simple(
                         self.config_dict["Infernal_mem_threshold"],
                         self.config_dict["Infernal_job_limit"],
                         self.config_dict["Infernal_job_delay"],
-                        self.dir_dict["rRNA_jobs"],
-                        "rRNA_inf_pp_paired",
+                        self.file_dict["rRNA_pp_p_job"],
                         self.commands,
                         command) 
 
@@ -400,15 +435,15 @@ class mp_stage:
                                                                  self.file_dict["rRNA_other_s_fq"],
                                                                  self.marker_dict["rRNA_inf_pp_s"]
                                                                  )
-            self.mp_util.run_subjob_with_hold(
+            self.mp_util.run_subjob_simple(
                         self.config_dict["Infernal_mem_threshold"],
                         self.config_dict["Infernal_job_limit"],
                         self.config_dict["Infernal_job_delay"],
-                        self.dir_dict["rRNA_jobs"],
-                        "rRNA_inf_pp_s",
+                        self.file_dict["rRNA_pp_s_job"],
                         self.commands,
                         command) 
             self.mp_util.wait_for_mp_store()
+            self.marker_control.place_marker("rRNA")
 
 #-----------------------------------------------------------------------------------------------------------------------        
 
@@ -416,12 +451,19 @@ class mp_stage:
         
         self.repop_start = time.time()
         #if not check_where_resume(repop_job_path, None, rRNA_filter_path):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.label_dict["repop"]):
-            job_name = self.repop_job_label
-            command_list = self.commands.create_repop_command(self.marker_dict["repop"])
-            self.mp_util.subdivide_and_launch(self.repop_job_delay, self.repop_mem_threshold, self.repop_job_limit, self.repop_job_label, job_name, self.commands, command_list)
-            self.mp_util.wait_for_mp_store()
+        if self.marker_control.check_marker("repop"):
+            for item in self.dir_dict["repop_list"]:
+                print(dt.today(), "making:", item, self.dir_dict[item])
+                self.dir_control.make_dirs(self.dir_dict[item])
+            #job_name = self.repop_job_label
             
+            command_list = self.commands.create_repop_command(self.marker_dict["repop"])
+            self.mp_util.run_subjob_with_hold(  self.config_dict["repop_mem_threshold"], 
+                                                self.config_dict["repop_job_limit"], 
+                                                self.config_dict["repop_job_delay"], 
+                                                self.file_dict["repop_job"], self.commands, command_list)
+            #self.mp_util.wait_for_mp_store()
+            self.marker_control.place_marker("repop")
         self.repop_end = time.time()
 
 
@@ -435,10 +477,10 @@ class mp_stage:
         mgm_fail_flag = True
         spades_fail_flag = True
 
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.label_dict["contigs"]):
-            job_name = self.assemble_contigs_label
+        if self.marker_control.check_marker("contigs"):
+            self.dir_control.make_dirs_from_list("contigs_list")
             command_list = self.commands.create_assemble_contigs_command(self.marker_dict["contigs"])
-            self.mp_util.run_subjob_simple(self.assemble_contigs_label, job_name, self.commands, command_list)
+            self.mp_util.run_subjob_simple(self.file_dict["contigs_job"], self.commands, command_list)
             
             if(os.path.exists(spades_done_file)):
                 if(os.path.exists(spades_transcript_file)):
@@ -448,7 +490,8 @@ class mp_stage:
                     spades_fail_flag = True
                     print(dt.today(), "SPADes ran, but did not create contigs")
             else:
-                sys.exit(dt.today(), "SPADes did not run. this is not normal. Contact admin immediately")
+                exit_string = str(dt.today()) + " SPADes did not run. this is not normal. Contact admin immediately"
+                sys.exit(exit_string)
 
             if(os.path.exists(mgm_gene_report)):
                 if(os.path.getsize(mgm_gene_report) > 0):
@@ -489,10 +532,11 @@ class mp_stage:
             else:
                 self.contigs_present = True
                 print(dt.today(), "Assemble-contigs pass")
-                self.mp_util.write_to_bypass_log(self.output_folder_path, self.assemble_contigs_label)
+                self.marker_control.place_marker("contigs")
+                #self.mp_util.write_to_bypass_log(self.output_folder_path, self.assemble_contigs_label)
             
-            self.cleanup_assemble_contigs_start = time.time()
-            self.mp_util.clean_or_compress(self.assemble_contigs_path, self.config_dict["keep_all"], self.config_dict["keep_assemble_contigs"])
+            
+            #self.mp_util.clean_or_compress(self.assemble_contigs_path, self.config_dict["keep_all"], self.config_dict["keep_assemble_contigs"])
             self.cleanup_assemble_contigs_end = time.time()
         
         else:
@@ -506,25 +550,29 @@ class mp_stage:
                 if(os.path.exists(spades_done_file)):
                     print(dt.today(), "No contigs were assembled.")
                     self.contigs_present = False
-                
+
+        #s
         #self.assemble_contigs_end = time.time()
         #print("assemble contigs:", '%1.1f' % (self.assemble_contigs_end - self.assemble_contigs_start - (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start)), "s")    
         #print("assemble contigs cleanup:", '%1.1f' % (self.cleanup_assemble_contigs_end - self.cleanup_assemble_contigs_start), "s")
         
         #self.debug_stop_check(self.assemble_contigs_label)
-    
+        
     def mp_GA_pre_scan(self):
         #scans the mRNA with a TA scanner to pick out a taxa trend.
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.label_dict["GA_pre_scan"]):
+        if self.marker_control.check_marker("GA_ps"):
+            self.dir_control.make_dirs_from_list("GA_ps_list")
+
             marker_path_list = []
             #----------------------------------------------------------------------
             #kraken2 on reads
             sections = ["s"]
-            if self.read_mode == "p":
+            if self.read_mode == "paired":
                 sections.extend(["p"])
             if(self.contigs_present):
                 sections.extend(["c"])    
             
+            print("GA pre-scan:", sections)
             for section in sections:
                 marker_tag = "ga_ps_" + section
                 
@@ -537,19 +585,17 @@ class mp_stage:
                         self.config_dict["TA_mem_threshold"], 
                         self.config_dict["TA_job_limit"], 
                         self.config_dict["TA_job_delay"], 
-                        self.dir_dict["GA_ps"], 
-                        self.marker_dict[marker_tag], 
-                        self.commands, 
+                        self.file_dict["ga_ps_k2_job"],
+                        
                         command_list
                     )        
             
-           
+             
             
             #-------------------------------------------------------
             #use the kraken2 results to make the DB
             
-            marker_file = "ga_collect_db"
-            marker_path = os.path.join(self.GA_pre_scan_jobs_folder, marker_file)
+            
             #glue all k2 reports together
             k2_reports = ["ga_ps_k2_report_s", "ga_ps_k2_report_c", "ga_ps_k2_report_p"]
             with open(self.file_dict["ga_ps_k2_report_all"], "wb") as out_file:
@@ -558,53 +604,56 @@ class mp_stage:
                         shutil.copyfileobj(in_file, out_file)
 
 
-
-            if(os.path.exists(marker_path)):
-                print(dt.today(), "skipping:", marker_file)
-            else:
-                marker_path_list.append(marker_path)
-                command_list = self.commands.create_GA_pre_scan_command(marker_file)
-                self.mp_util.run_subjob_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.GA_pre_scan_label, marker_file, self.commands, command_list)
-                print(dt.today(), "running:", marker_file)
-            self.mp_util.wait_for_mp_store()
-            
-
-            
+            if self.marker_control.check_marker("ga_ps_make"):
+                command_list = self.commands.create_GA_pre_scan_command(self.marker_dict["ga_ps_make"])
+                self.mp_util.run_subjob_with_hold(
+                    self.config_dict["TA_mem_threshold"], 
+                    self.config_dict["TA_job_limit"], 
+                    self.config_dict["TA_job_delay"], 
+                    self.file_dict["ga_ps_make_job"],
+                    command_list)
+                
+                
             
             #---------------------------------------------------------
             
-            
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_pre_scan_label)
-            
-        self.debug_stop_check(self.GA_pre_scan_label)
+            self.marker_control.place_marker("GA_ps")  
+            #self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_pre_scan_label)
+        #sys.exit(dt.today(), "stop here")
+        #self.debug_stop_check(self.GA_pre_scan_label)
     
 
         
     def mp_GA_BT2(self):
         #GA BT2 reads are not split
         self.GA_BT2_start = time.time()
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BT2_label):
+        #if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BT2_label):
+        if self.marker_control.check_marker("GA_BT2"):
             marker_path_list = []
+            lib_list = list()
+            if(os.path.exists(self.config_dict["custom_ga_lib_list"])):    
+                lib_list = self.file_control.read_lib_list(self.config_dict["custom_ga_lib_list"])
+            else:
+                lib_list = self.file_control.read_lib_list(self.file_dict["ga_lib_list"])
+                print(dt.today(), "custom ga lib list doesn't exist at:", self.config_dict["custom_ga_lib_list"])
+                print(dt.today(), "DEFAULTING TO chocophlan subset with GA pre-scan")
+                #time.sleep(10)
+
+            for item in lib_list:
+                print("lib list item:", item)
+                
+            #sys.exit("stop")    
             
-            
-            if not self.mp_util.check_where_resume(self.GA_BT2_path, None, self.GA_split_path):
-            
+            if (self.marker_control.check_marker("GA_BT2")):
+                self.dir_control.make_dirs_from_list("GA_BT2_list")
                 #-------------------------------------------------------------------------
                 #no looping. just run s, p, and c manually
                 #import the lib list
                 #lib list should contain the full path
-                lib_list = list()
-                if(self.config_dict["GA_DB_mode"] != "choco"):
-                    if(os.path.exists(self.config_dict["custom_ga_lib_list"])):    
-                        lib_list = self.import_ga_lib_list(self.config_dict["custom_ga_lib_list"])
-                    else:
-                        print(dt.today(), "custom ga lib list doesn't exist at:", self.config_dict["custom_ga_lib_list"])
-                        print("must use absolute path")
-                        sys.exit()
-                else:
-                    lib_list = self.import_ga_lib_list(self.file_dict["ga_lib_list"])
-
                 
+
+                p_mkr = ""
+                p_job = ""
                 for lib_entry in lib_list:
                     lib_basename = os.path.basename(lib_entry)
                     lib_tag = lib_basename
@@ -613,12 +662,15 @@ class mp_stage:
                     elif(lib_basename.endswith(".fa")):
                         lib_tag = lib_basename.strip(".fa")
                     
-                    if(self.config_dict["op_mode"] == "paired"):
+                    if((self.config_dict["read_mode"]=="p") or (self.config_dict["read_mode"] == "paired")):
                         p_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_p_" + lib_tag + "_job.sh")
                         p_mkr = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_p_" + lib_tag)
+                        
+
+
                     if(os.path.exists(p_mkr)):
                         print(dt.today(), "skipping:", p_mkr)
-                        continue
+                        
                     else:
                         marker_path_list.append(p_mkr)
                     
@@ -627,29 +679,47 @@ class mp_stage:
                         
                         command_list = self.commands.create_GA_BT2_command(lib_entry, self.file_dict["contigs_p1"], self.file_dict["contigs_p2"], self.file_dict["ga_bt2_p_sam"], p_mkr, "p")
                         #self.mp_util.run_subjob_with_hold(self.BT2_mem_threshold, self.BT2_job_limit, self.BT2_job_delay, self.GA_BT2_label, job_name, self.commands, command_list)
-                        self.mp_util.run_subjob_with_mem_footprint(self.BT2_mem_footprint, self.BT2_job_limit, self.GA_BT2_label, p_job, self.commands, command_list)
+                        self.mp_util.run_subjob_with_mem_footprint(self.config_dict["BT2_mem_footprint"], self.config_dict["BT2_job_limit"],  p_job, command_list)
 
 
 
                     s_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_s_" + lib_tag + "_job.sh")
                     s_mkr = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_s_" + lib_tag)
                     if(os.path.exists(s_mkr)):
-                        continue
+                        print(dt.today(), "skipping:", s_mkr)
+                    
                     else:
+                        print(dt.today(), "running:", s_mkr)
                         marker_path_list.append(s_mkr)
                         command_list = self.commands.create_GA_BT2_command(lib_entry, self.file_dict["contigs_s"], "none", self.file_dict["ga_bt2_s_sam"], s_mkr, "s")
-     
+                        self.mp_util.run_subjob_with_mem_footprint(self.config_dict["BT2_mem_footprint"], self.config_dict["BT2_job_limit"],  s_job, command_list)
 
-                print(dt.today(), "all BT2 jobs have launched.  waiting for them to finish")            
-                self.mp_util.wait_for_mp_store()
-                final_checklist = os.path.join(self.GA_BT2_path, "GA_BT2.txt")
-                self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-                self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BT2_label)
+
+                    c_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_c_" + lib_tag + "_job.sh")
+                    c_mkr = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_c_" + lib_tag)
+                    if(os.path.exists(c_mkr)):
+                        print(dt.today(), "skipping:", c_mkr)
+                        
+                    else:
+                        marker_path_list.append(c_mkr)
+                        print(dt.today(), "running:", c_mkr)
+                        command_list = self.commands.create_GA_BT2_command(lib_entry, self.file_dict["contigs_out_fa"], "none", self.file_dict["ga_bt2_c_sam"], c_mkr, "s")
+                        self.mp_util.run_subjob_with_mem_footprint(self.config_dict["BT2_mem_footprint"], self.config_dict["BT2_job_limit"], c_job, command_list)
+
+                    print(dt.today(), "all BT2 jobs for", lib_entry, "have been launched. waiting")            
+                    self.mp_util.wait_for_mp_store()
+                
+                #final_checklist = os.path.join(self.GA_BT2_path, "GA_BT2.txt")
+                #self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
+                if(self.marker_control.check_marker_list(marker_path_list)):
+                    self.marker_control.place_marker("GA_BT2")
     
-        self.debug_stop_check(self.GA_BT2_label)
+        #self.debug_stop_check(self.GA_BT2_label)
         
     def mp_GA_BT2_pp(self):                
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BT2_pp_label):
+        #if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BT2_pp_label):
+        if self.marker_control.check_marker("GA_BT2_PP"):
+           
             marker_path_list = []
             sections = ["s"]
             if self.read_mode == "p":
@@ -659,15 +729,16 @@ class mp_stage:
                 sections.extend(["c"])
                 
             lib_list = list()
-            if(self.config_dict["GA_DB_mode"] != "choco"):
-                if(os.path.exists(self.config_dict["custom_ga_lib_list"])):    
-                    lib_list = self.import_ga_lib_list(self.config_dict["custom_ga_lib_list"])
-                else:
-                    print(dt.today(), "custom ga lib list doesn't exist at:", self.config_dict["custom_ga_lib_list"])
-                    print("must use absolute path")
-                    sys.exit()
+            if(os.path.exists(self.config_dict["custom_ga_lib_list"])):    
+                lib_list = self.file_control.read_lib_list(self.config_dict["custom_ga_lib_list"])
             else:
-                lib_list = self.import_ga_lib_list(self.file_dict["ga_lib_list"])
+                lib_list = self.file_control.read_lib_list(self.file_dict["ga_lib_list"])
+                print(dt.today(), "custom ga lib list doesn't exist at:", self.config_dict["custom_ga_lib_list"])
+                print(dt.today(), "DEFAULTING TO chocophlan subset with GA pre-scan")
+                #time.sleep(10)
+
+            for item in lib_list:
+                print("lib list item:", item)
 
             
             for lib_entry in lib_list:
@@ -682,7 +753,10 @@ class mp_stage:
                 p_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_pp_p_" + lib_tag + "_job.sh")
                 p_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_pp_p_" + lib_tag)
 
-                command_list = self.commands.create_GA_BT2_pp_command(lib_entry, self.file_dict["GA_"])
+                command_list = self.commands.create_GA_BT2_pp_command(
+                    lib_entry, self.file_dict["gene_map_p"], self.file_dict["genes_p"], 
+                    self.file_dict["contigs_p1"], self.file_dict["contigs_p2"], self.file_dict["ga_bt2_p_sam"],
+                      )
 
                             
             print(dt.today(), "all BT2 PP jobs submitted.  waiting for sync")            
@@ -940,7 +1014,7 @@ class mp_stage:
                 marker_path_list.append(marker_path)
                 command_list = self.commands.create_TA_centrifuge_pp_command(self.ta_label, marker_file)
                 self.mp_util.run_subjob_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
-            self.mp_util.wait_for_mp_store()
+            #self.mp_util.wait_for_mp_store()
             final_checklist = os.path.join(self.TA_path, "TA_stage_3.txt")
             self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
             #-----------------------------------------------

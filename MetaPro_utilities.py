@@ -90,16 +90,25 @@ class mp_seq_handler:
         
         return df    
         
-    def fastq_to_fasta(fastq_file, fasta_file):
-        with open(fastq_file) as fin, open(fasta_file, 'w') as fout:
-            while True:
-                header = fin.readline().strip()
-                if not header:
-                    break
-                seq = fin.readline().strip()
-                fin.readline()  # Skip '+' line
-                fin.readline()  # Skip quality line
-                fout.write(f">{header[1:]}\n{seq}\n")
+    def fastq_to_fasta(self, fastq_file, fasta_file):
+        with open(fastq_file, "r") as fin:
+            with open(fasta_file, 'w') as fout:
+                while True:
+                    header = fin.readline().strip()
+                    if not header:
+                        break
+                    seq = fin.readline().strip()
+                    fin.readline()  # Skip '+' line
+                    fin.readline()  # Skip quality line
+                    fout.write(f">{header[1:]}\n{seq}\n")
+                    
+    def get_split_count(self, split_dir, header):
+        list_of_files = os.listdir(os.path.abspath(split_dir))
+        split_count = 0
+        for item in list_of_files:
+            if(item.startswith(header)):
+                split_count += 1
+        return split_count
 
     def split_fastq(self, file_name_in, file_name_out, chunks, export_mode):
         print(dt.today(), "FASTQ file name in:", file_name_in)
@@ -135,6 +144,7 @@ class mp_seq_handler:
                 #if(chunks == 1):
                 #    end_index += 1 #override on splits that only have 1
                 index_count += 1
+                fastq_df["ID"] = fastq_df["ID"].apply(lambda x: "@" + x)
                 if not(fastq_df.iloc[start_index:end_index, :].empty):
                     fastq_df.iloc[start_index:end_index, :].to_csv(new_file_name, chunksize = chunks, mode = "w+", index=False, sep='\n', header=False, quoting = 3)
                 else:
@@ -151,10 +161,11 @@ class mp_seq_handler:
                 index_count += 1
                 subselect_df = fastq_df[["ID", "seq"]]
                 subselect_df = subselect_df.iloc[start_index:end_index, :]
-                subselect_df["ID"] = subselect_df["ID"].apply(lambda x: x.replace("@", ">"))
+                subselect_df["ID"] = subselect_df["ID"].apply(lambda x: ">" + x)
                 if(not subselect_df.empty):
                     print(dt.today(), "exporting FASTQ split to FASTA:", new_file_name)
-                    subselect_df.to_csv(new_file_name, mode = "w+", index = False, sep = "\n", header = False, quoting=3)
+                    #subselect_df.to_csv(new_file_name, mode = "w+", index = False, sep = "\n", header = False, quoting=3)
+                    np.savetxt(new_file_name, subselect_df.values, delimiter = "\n", fmt='%s')
                     file_count += 1
                 else:
                     break
@@ -412,6 +423,7 @@ class mp_util:
             return False
 
     def make_script(self, job_path, command_list):
+        
         # create the pbs job, and launch items
         # job path: name and location of where to write the script.
         # command list:  list of command statements for writing
@@ -421,7 +433,8 @@ class mp_util:
         # no ID, no sbatch.  just run the command
         
         shell_script_full_path = job_path
-
+        print("using:", shell_script_full_path)
+        #time.sleep(3)
         with open(shell_script_full_path, "w") as PBS_script_out:
             for item in command_list:
                 PBS_script_out.write(item + "\n")
@@ -515,14 +528,14 @@ class mp_util:
         self.wait_for_mp_store()
                 
         
-    def launch_only_with_hold(self, mem_threshold, job_limit, job_delay, job_name, command_obj, command):
+    def launch_only_with_hold(self, mem_threshold, job_limit, job_delay, job_name, command):
         #launch a job in launch-only mode
         job_submitted = False
         while(not job_submitted):
             if(len(self.mp_store) < job_limit):
                 if(self.mem_checker(mem_threshold)):
                     process = mp.Process(
-                        target = command_obj.launch_only,
+                        target = self.launch_only,
                         args = (command, len(command))
                     )
                     process.start()
@@ -538,7 +551,7 @@ class mp_util:
         time.sleep(job_delay)
         
 
-    def run_subjob_with_hold(self, mem_threshold, job_limit, job_delay, job_location, job_name, command_obj, command):
+    def run_subjob_with_hold(self, mem_threshold, job_limit, job_delay, job_location, command):
         #launch a job in launch-with-create mode
         job_submitted = False
         while(not job_submitted):
@@ -547,11 +560,11 @@ class mp_util:
                 if(self.mem_checker(mem_threshold)):
                     process = mp.Process(
                         target = self.make_script,
-                        args = (job_location, job_name, command)
+                        args = (job_location, command)
                     )
                     process.start()
                     self.mp_store.append(process)
-                    print(dt.today(), job_name, "job submitted.  mem:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
+                    print(dt.today(), job_location, "job submitted.  mem:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
                     job_submitted = True
                 else:
                     #print(dt.today(), job_name, "Pausing. mem limit reached:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
@@ -560,8 +573,31 @@ class mp_util:
                 print(dt.today(), "job limit reached.  waiting for queue to flush")
                 self.wait_for_mp_store()
         #final wait
-        #self.wait_for_mp_store()
-    def run_subjob_with_mem_footprint(self, mem_footprint, job_limit, job_location, job_name, command_obj, command):
+        self.wait_for_mp_store()
+
+    def run_subjob_no_final(self, mem_threshold, job_limit, job_delay, job_location, command):
+        #launch a job in launch-with-create mode
+        job_submitted = False
+        while(not job_submitted):
+                
+            if(len(self.mp_store) < job_limit):
+                if(self.mem_checker(mem_threshold)):
+                    process = mp.Process(
+                        target = self.make_script,
+                        args = (job_location, command)
+                    )
+                    process.start()
+                    self.mp_store.append(process)
+                    print(dt.today(), job_location, "job submitted.  mem:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
+                    job_submitted = True
+                else:
+                    #print(dt.today(), job_name, "Pausing. mem limit reached:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
+                    time.sleep(job_delay)
+            else:
+                print(dt.today(), "job limit reached.  waiting for queue to flush")
+                self.wait_for_mp_store()
+        
+    def run_subjob_with_mem_footprint(self, mem_footprint, job_limit, job_location, command):
         #launch a job in launch-with-create mode
         #this controller won't be optimized for the system. It's made to keep the node from exploding.
         job_submitted = False
@@ -572,13 +608,13 @@ class mp_util:
                 if(self.mem_footprint_checker(len(self.mp_store), mem_footprint)):
                     process = mp.Process(
                         target = self.make_script,
-                        args = (job_location, job_name, command)
+                        args = (job_location, command)
                     )
                     process.start()
                     self.mp_store.append(process)
                     job_submitted = True
                     
-                    print(dt.today(), job_name, "job submitted.  mem:", len(self.mp_store) * mem_footprint, "GB", end='\r')
+                    print(dt.today(), job_location, "job submitted.  mem:", len(self.mp_store) * mem_footprint, "GB", end='\r')
                 else:
                     print(dt.today(), "job limit reached.  waiting for queue to flush")
                     self.wait_for_mp_store()

@@ -35,7 +35,7 @@ from datetime import datetime as dt
 import psutil as psu
 import threading as th
 import queue as q
-
+import time
 def debug_stop_check(self, stop_flag, signal):
     if(stop_flag == signal):
         sys.exit("paused at:", stop_flag)
@@ -81,17 +81,17 @@ def main(config_dict, dir_obj, time_obj, file_obj):
     #sys.exit("paused")
     
     # GA split
-    metapro_stage_obj.mp_GA_split()
+    #metapro_stage_obj.mp_GA_split()
 
     # GA lib check
-    metapro_stage_obj.mp_GA_lib_check()
+    #metapro_stage_obj.mp_GA_lib_check()
     
     # BWA gene annotation
-    metapro_stage_obj.mp_GA_BWA()
+    metapro_stage_obj.mp_GA_BT2()
     
     
     
-    metapro_stage_obj.mp_GA_BWA_pp()
+    metapro_stage_obj.mp_GA_BT2_pp()
     if(metapro_stage_obj.GA_DB_mode == "multi"):
         metapro_stage_obj.mp_GA_BWA_merge()
     
@@ -231,14 +231,12 @@ if __name__ == "__main__":
     print("Outputing to:", output_folder)
     config_obj = mpp.mpro_config(config_file)
     config_dict = config_obj.get_config_dict()
-    dir_obj = mpd.mpro_dir(config_file, config_dict)
+    
     
     time_obj = mpt.mpro_timing()
 
 
     
-    dir_dict = dir_obj.get_dir_dict()
-    label_dict = dir_obj.get_label_dict()
     
 
     config_dict["no_host"] = no_host
@@ -299,7 +297,9 @@ if __name__ == "__main__":
                 sys.exit()
     #Check vector lib integrity
     config_obj.check_BT2_valid(config_dict["vector_db"], "vectors")
-
+    dir_obj = mpd.mpro_dir(config_file, config_dict)
+    dir_dict = dir_obj.get_dir_dict()
+    label_dict = dir_obj.get_label_dict()
     file_obj = mpf.mpro_file_handler(config_dict, dir_dict)
     file_dict = file_obj.get_file_dict()
 

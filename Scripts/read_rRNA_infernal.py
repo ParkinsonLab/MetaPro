@@ -6,6 +6,7 @@
 import pandas as pd
 from datetime import datetime as dt
 import os
+import numpy as np
 import sys
 
 def import_infernal_rRNA(inf_file):
@@ -29,7 +30,7 @@ def import_infernal_rRNA(inf_file):
     return list(ID_list)
     
 def import_fastq(read_file):
-    raw_df = pd.read_csv(read_file, header = None, names = [None], sep = '\n', skip_blank_lines = False, quoting = 3)
+    raw_df = pd.read_csv(read_file, header = None, names = [None], sep = r'\n', engine = "python", skip_blank_lines = False, quoting = 3)
     fastq_df = pd.DataFrame(raw_df.values.reshape(int(len(raw_df)/4), 4))
     fastq_df.columns = ["ID", "seq", "junk", "quality"]
     
@@ -113,12 +114,17 @@ if __name__ == "__main__":
         pair_1_other_df = pair_1_raw_df[pair_1_raw_df["ID"].isin(common_id_list)]
         pair_2_other_df = pair_2_raw_df[pair_2_raw_df["ID"].isin(common_id_list)]
         
+        np.savetxt(pair_1_mRNA_file, pair_1_mRNA_df.values, delimiter = "\n", fmt='%s')
+        np.savetxt(pair_2_mRNA_file, pair_2_mRNA_df.values, delimiter = "\n", fmt='%s')
         
-        pair_1_mRNA_df.to_csv(pair_1_mRNA_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
-        pair_2_mRNA_df.to_csv(pair_2_mRNA_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        np.savetxt(pair_1_other_file, pair_1_other_df.values, delimiter = "\n", fmt='%s')
+        np.savetxt(pair_2_other_file, pair_2_other_df.values, delimiter = "\n", fmt='%s')
         
-        pair_1_other_df.to_csv(pair_1_other_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
-        pair_2_other_df.to_csv(pair_2_other_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        #pair_1_mRNA_df.to_csv(pair_1_mRNA_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        #pair_2_mRNA_df.to_csv(pair_2_mRNA_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        
+        #pair_1_other_df.to_csv(pair_1_other_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        #pair_2_other_df.to_csv(pair_2_other_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
         
     else:
         single_id_list = import_infernal_rRNA(single_inf_file)
@@ -129,7 +135,9 @@ if __name__ == "__main__":
         
         single_mRNA_df = single_raw_df[~single_raw_df["ID"].isin(single_id_list)]
         single_other_df = single_raw_df[single_raw_df["ID"].isin(single_id_list)]
-        single_mRNA_df.to_csv(single_mRNA_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
-        single_other_df.to_csv(single_other_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        #single_mRNA_df.to_csv(single_mRNA_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
+        #single_other_df.to_csv(single_other_file, sep = "\n", mode = "w", header = False, index = False, quoting = 3)
         
+        np.savetxt(single_mRNA_file, single_mRNA_df.values, delimiter = "\n", fmt='%s')
+        np.savetxt(single_other_file, single_other_df.values, delimiter = "\n", fmt='%s')
         

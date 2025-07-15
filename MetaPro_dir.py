@@ -7,6 +7,8 @@ from configparser import ConfigParser, ExtendedInterpolation
 
 class mpro_dir:
 
+    
+
     def make_dirs(self, path):
         if(not os.path.exists(path)):
             os.makedirs(path)
@@ -14,6 +16,11 @@ class mpro_dir:
             if(not os.path.isdir(path)):
                 os.makedirs(path)
 
+    def make_dirs_from_list(self, key):
+        for item in self.dir_dict[key]:
+            print(dt.today(), "building dir:", item)
+            self.make_dirs(self.dir_dict[item])
+    
     def value_assignment(self, filetype, config, config_section, var_name, default):
         value = ""
         #print("CONFIG:", config)
@@ -239,6 +246,7 @@ class mpro_dir:
         
         self.dir_dict["rRNA"] = os.path.join(self.out_dir, self.label_dict["rRNA"])
         self.dir_dict["rRNA_data"] = os.path.join(self.dir_dict["rRNA"], "data")
+        self.dir_dict["rRNA_convert"] = os.path.join(self.dir_dict["rRNA_data"], self.label_dict["rRNA_convert"])
         self.dir_dict["rRNA_jobs"] = os.path.join(self.dir_dict["rRNA"], "jobs")
         self.dir_dict["rRNA_mkrs"] = os.path.join(self.dir_dict["rRNA"], "mkrs")
         self.dir_dict["rRNA_split"] = os.path.join(self.dir_dict["rRNA_data"], "rRNA_split")
@@ -248,7 +256,7 @@ class mpro_dir:
         self.dir_dict["rRNA_export"] = os.path.join(self.dir_dict["rRNA"], "export")
         self.dir_dict["rRNA_mRNA"] = os.path.join(self.dir_dict["rRNA_export"], "mRNA")
         self.dir_dict["rRNA_other"] = os.path.join(self.dir_dict["rRNA_export"], "other")
-        self.dir_dict["rRNA_list"] = ["rRNA", "rRNA_data", "rRNA_jobs", "rRNA_split", "rRNA_bnap", "rRNA_inf", "rRNA_s_fasta", "rRNA_p1_fasta", "rRNA_p2_fasta", "rRNA_export", "rRNA_mRNA", "rRNA_other"]
+        self.dir_dict["rRNA_list"] = ["rRNA", "rRNA_data", "rRNA_convert", "rRNA_jobs", "rRNA_mkrs", "rRNA_split", "rRNA_bnap", "rRNA_inf", "rRNA_export", "rRNA_mRNA", "rRNA_other"]
 
         self.dir_dict["repop"] = os.path.join(self.out_dir, self.label_dict["repop"])
         self.dir_dict["repop_data"] = os.path.join(self.dir_dict["repop"], "data")
@@ -270,7 +278,8 @@ class mpro_dir:
         self.dir_dict["GA_ps_data"] = os.path.join(self.dir_dict["GA_ps"], "data")
         self.dir_dict["GA_ps_export"] = os.path.join(self.dir_dict["GA_ps"], "export")
         self.dir_dict["GA_ps_k2"] = os.path.join(self.dir_dict["GA_ps_data"], "k2")
-        self.dir_dict["GA_ps_wevote"] = os.path.join(self.dir_dict["GA_ps_data"], "wevote")
+        #self.dir_dict["GA_ps_wevote"] = os.path.join(self.dir_dict["GA_ps_data"], "wevote")
+        self.dir_dict["GA_ps_list"] = ["GA_ps", "GA_ps_data", "GA_ps_export", "GA_ps_k2"]
 
         self.dir_dict["GA_split"] = os.path.join(self.out_dir, self.label_dict["GA_split"])
 
@@ -281,7 +290,7 @@ class mpro_dir:
         self.dir_dict["GA_BT2_run"] = os.path.join(self.dir_dict["GA_BT2_data"], "0_BT2")
         self.dir_dict["GA_BT2_pp"] = os.path.join(self.dir_dict["GA_BT2_data"], "1_pp")
         self.dir_dict["GA_BT2_export"] = os.path.join(self.dir_dict["GA_BT2"], "export")
-        self.dir_dict["GA_BT2_list"] = ["GA_BT2", "GA_BT2_jobs", "GA_BT2_data", "GA_BT2_split", "GA_BT2_run", "GA_BT2_pp", "GA_BT2_export"]
+        self.dir_dict["GA_BT2_list"] = ["GA_BT2", "GA_BT2_jobs", "GA_BT2_data", "GA_BT2_run", "GA_BT2_mkrs", "GA_BT2_pp", "GA_BT2_export"]
 
         self.dir_dict["GA_DMD"] = os.path.join(self.out_dir, self.label_dict["GA_DMD"])        
         self.dir_dict["GA_DMD_data"] = os.path.join(self.dir_dict["GA_DMD"], "data")

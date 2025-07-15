@@ -21,6 +21,36 @@ from datetime import datetime as dt
 import multiprocessing as mp
 from shutil import copyfile
 
+
+def fastq_to_protein(input_file, output_file):
+    genetic_code = {
+        'TTT':'F', 'TTC':'F', 'TTA':'L', 'TTG':'L', 'TCT':'S', 'TCC':'S', 'TCA':'S', 'TCG':'S',
+        'TAT':'Y', 'TAC':'Y', 'TAA':'*', 'TAG':'*', 'TGT':'C', 'TGC':'C', 'TGA':'*', 'TGG':'W',
+        'CTT':'L', 'CTC':'L', 'CTA':'L', 'CTG':'L', 'CCT':'P', 'CCC':'P', 'CCA':'P', 'CCG':'P',
+        'CAT':'H', 'CAC':'H', 'CAA':'Q', 'CAG':'Q', 'CGT':'R', 'CGC':'R', 'CGA':'R', 'CGG':'R',
+        'ATT':'I', 'ATC':'I', 'ATA':'I', 'ATG':'M', 'ACT':'T', 'ACC':'T', 'ACA':'T', 'ACG':'T',
+        'AAT':'N', 'AAC':'N', 'AAA':'K', 'AAG':'K', 'AGT':'S', 'AGC':'S', 'AGA':'R', 'AGG':'R',
+        'GTT':'V', 'GTC':'V', 'GTA':'V', 'GTG':'V', 'GCT':'A', 'GCC':'A', 'GCA':'A', 'GCG':'A',
+        'GAT':'D', 'GAC':'D', 'GAA':'E', 'GAG':'E', 'GGT':'G', 'GGC':'G', 'GGA':'G', 'GGG':'G'
+    }
+    
+    with open(input_file) as f, open(output_file, 'w') as out:
+        while True:
+            header = f.readline()
+            if not header: break
+            seq = f.readline().strip()
+            plus = f.readline()
+            qual = f.readline().strip()
+            
+            # Translate
+            protein = ''.join(genetic_code.get(seq[i:i+3], 'X') for i in range(0, len(seq)-2, 3))
+            
+            # Write
+            out.write(header)
+            out.write(protein + '\n')
+            out.write(plus)
+            out.write(qual[::3][:len(protein)] + '\n')
+
 def get_match_score(cigar_segment):
     CIGAR = re.split("([MIDNSHPX=])", cigar_segment) # Split CIGAR string into list, placing
     CIGAR = CIGAR[:-1]                      #lop off the empty char artifact from the split
@@ -59,35 +89,35 @@ def check_file_safety(file_name):
         return False
 
 
-def import_contig2read(contig2read_file):
+def import_contig2read(contig_map_in):
     # make initial dict of contigID<->readsID(s):
-    contig2read_map = {}
+    contig_read_dict = {}
     contig_reads = []                                    # list of just reads
-    with open(contig2read_file,"r") as mapping:
+    with open(contig_map_in,"r") as mapping:
         for line in mapping:
             if len(line)>5:                             # line starts with 'NODE_'
                 entry= line.strip("\n").split("\t")     # break tab-separated into list
-                contig2read_map[entry[0]]= entry[2:]    # key=contigID, value=list of readID(s)
+                contig_read_dict[entry[0]]= entry[2:]    # key=contigID, value=list of readID(s)
                 contig_reads.extend(entry[2:])          # append all the reads
     
-    return contig2read_map, contig_reads
+    return contig_read_dict, contig_reads
 
-def filter_common_contigs(contig2read_map, contig_reads):
+def filter_common_contigs(contig_read_dict, contig_reads):
     # make new dict only of contigs with unique reads:
     # (hard to tell w BWA what contigs match better, so for reads associated with multiple matched contigs, avoid choosing btw contigs for now.)
     contig_reads_count = Counter(contig_reads)           # dict of read<->no. of contigs
-    contig2read_map_uniq = {}
+    contig_read_dict_uniq = {}
     contig_unique_reads = []                             # DEBUG
-    for contig in contig2read_map:
-        for read in contig2read_map[contig]:            # If contig has
+    for contig in contig_read_dict:
+        for read in contig_read_dict[contig]:            # If contig has
             if contig_reads_count[read]>1:              #  a read assoc. w multiple contigs
                 break                                   #  then throw the contig away,
         else:
-            contig2read_map_uniq[contig]= contig2read_map[contig]
+            contig_read_dict_uniq[contig]= contig_read_dict[contig]
                                                         #  else, store it in the unique dict.
-            contig_unique_reads.extend(contig2read_map[contig]) # DEBUG
+            contig_unique_reads.extend(contig_read_dict[contig]) # DEBUG
 
-    return contig2read_map_uniq, contig_unique_reads
+    return contig_read_dict_uniq, contig_unique_reads
 
 #####################################
 # FUNCTION:
@@ -113,14 +143,14 @@ def filter_common_contigs(contig2read_map, contig_reads):
 # =	Read Match; the nucleotide is present in the reference.
 # X	Read Mismatch; the nucleotide is present in the reference.
 
-def gene_map(cigar_cutoff, sam, contig2read_map):#, mapped_reads, gene2read_map, contig2read_map):#, contig2read_map_uniq):                                      # Set of unmapped contig/readIDs=
+def gene_map(cigar_cutoff, sam, contig_read_dict):#, mapped_reads, gene_read_dict, contig_read_dict):#, contig_read_dict_uniq):                                      # Set of unmapped contig/readIDs=
                                                         #  gene_map(BWA .sam file)
     
 
     # tracking BWA-assigned & unassigned:
     query_details_dict = dict() #details about the match that we care about
     mapped = set()              #qualified mapped reads
-    gene2read_map = dict()      #final gene->reads map
+    gene_read_dict = dict()      #final gene->reads map
     unmapped = set()            #qualified unmapped reads
     repeat_read_count = 0
     repeat_disagreements = 0
@@ -166,7 +196,7 @@ def gene_map(cigar_cutoff, sam, contig2read_map):#, mapped_reads, gene2read_map,
                 else:
                     
                     #if contig, mark it <we convert to reads down below>
-                    if query in contig2read_map:                
+                    if query in contig_read_dict:                
                         contig = True                        
                     else:
                         contig = False                           
@@ -209,22 +239,22 @@ def gene_map(cigar_cutoff, sam, contig2read_map):#, mapped_reads, gene2read_map,
             # RECORD alignments:
             if contig:                                      # If query is a contig, then
                 contig_reads = list()
-                for read in contig2read_map[query]:
+                for read in contig_read_dict[query]:
                     contig_reads.append(read + "<AS_score>" + str(AS_score))
-                if(db_match in gene2read_map):
-                    gene2read_map[db_match].extend(contig_reads)
+                if(db_match in gene_read_dict):
+                    gene_read_dict[db_match].extend(contig_reads)
                 else:
-                    gene2read_map[db_match] = contig_reads
+                    gene_read_dict[db_match] = contig_reads
             else:
                 read_entry = query + "<AS_score>" + str(AS_score)
-                if(db_match in gene2read_map):
+                if(db_match in gene_read_dict):
                     
-                    gene2read_map[db_match].append(read_entry)       #  append its readID to aligned gene<->read dict,
-                    #print(dt.today(), "old entry:", gene2read_map[db_match])
+                    gene_read_dict[db_match].append(read_entry)       #  append its readID to aligned gene<->read dict,
+                    #print(dt.today(), "old entry:", gene_read_dict[db_match])
                 else:
                     
-                    gene2read_map[db_match] = [read_entry]
-                    #print(dt.today(), "new entry:", gene2read_map[db_match])
+                    gene_read_dict[db_match] = [read_entry]
+                    #print(dt.today(), "new entry:", gene_read_dict[db_match])
             #sort the queries    
         else:
             unmapped.add(query)
@@ -234,7 +264,7 @@ def gene_map(cigar_cutoff, sam, contig2read_map):#, mapped_reads, gene2read_map,
     print(dt.today(), "repeated reads in scan:", repeat_read_count)
     print(dt.today(), "disagreements:", repeat_disagreements)
     print(dt.today(), "one-sided alignments:", repeat_one_sided_alignments)
-    return unmapped, mapped, gene2read_map
+    return unmapped, mapped, gene_read_dict
     
 
 def write_unmapped_reads(unmapped_reads, reads_in, output_file):
@@ -247,10 +277,21 @@ def write_unmapped_reads(unmapped_reads, reads_in, output_file):
         unmapped_seqs = []                               # Inintialize list of SeqRecords.
         for read in unmapped_reads:                     # Put corresponding SeqRecords for unmapped_reads
             if(read in read_seqs):
-                unmapped_seqs.append(read_seqs[read])       #  into unmapped_seqs
+                # Get the original nucleotide record
+                nuc_record = read_seqs[read]
+                # Translate to protein
+                protein_seq = nuc_record.seq.translate(to_stop=True)
+                # Create new record with protein sequence
+                protein_record = nuc_record[:]  # Copy the record
+                protein_record.seq = protein_seq
+                unmapped_seqs.append(protein_record)
+
+                #---------------------------------------------------
+                #for nucleotides only
+                #unmapped_seqs.append(read_seqs[read])       #  into unmapped_seqs
             else:
                 print("ignoring:", read, "can't find in read_seqs")
-        with open(output_file,"w") as out:
+        with open(output_file,"a") as out:
             SeqIO.write(unmapped_seqs, out, "fasta")    #  and write it to file.
 
         # print no. aligned reads from current readtype set:
@@ -259,42 +300,42 @@ def write_unmapped_reads(unmapped_reads, reads_in, output_file):
         #prev_mapping_count= len(mapped_reads)
 
 
-def write_gene_map(DNA_DB, gene2read_file, gene2read_map, aligned_genes_out):
+def write_gene_map(DNA_DB, gene2read_file, gene_read_dict, aligned_genes_out):
     # WRITE OUTPUT: write gene<->read mapfile of BWA-aligned:
     # [BWA-aligned geneID, length, #reads, readIDs ...]
     reads_count = 0
     genes = []
-    with open(gene2read_file,"w") as out_map:
+    with open(gene2read_file,"a") as out_map:
         #btw, the "gene length" is literally the length of chars in the entry.  We can totally do away with seqIO
         for record in SeqIO.parse(DNA_DB, "fasta"):         # Loop through SeqRec of all genes in DNA db:
                                                             #  (DNA db is needed to get the sequence.)
-            if record.id in gene2read_map:                  #  If DNA db gene is one of the matched genes,
+            if record.id in gene_read_dict:                  #  If DNA db gene is one of the matched genes,
                 genes.append(record)                        #  append the SeqRec to genes list (NOT REALLY USED), and
-                out_map.write(record.id + "\t" + str(len(record.seq)) + "\t" + str(len(gene2read_map[record.id])))
+                out_map.write(record.id + "\t" + str(len(record.seq)) + "\t" + str(len(gene_read_dict[record.id])))
                                                             #  write [aligned geneID, length, #reads, ...],
-                for read in gene2read_map[record.id]:
+                for read in gene_read_dict[record.id]:
                     out_map.write("\t" + read.strip("\n"))  #  [readIDs ...],
                     reads_count+= 1
                 else:
                     out_map.write("\n")                     #  and a new line character.
     
     #WRITE THE ANNOTATED GENES OUT TO A FILE.  FOR DOWNSTREAM USE
-    with open(aligned_genes_out,"w") as outfile:
+    with open(aligned_genes_out,"a") as outfile:
         SeqIO.write(genes, outfile, "fasta") 
     
 if __name__ == "__main__":
     cigar_cut           = sys.argv[1]
     DNA_DB              = sys.argv[2]       # INPUT: DNA db used for BT2 alignement
-    contig2read_file    = sys.argv[3]       # INPUT: [contigID, #reads, readIDs ...]
-    gene_map_out       = sys.argv[4]       # OUTPUT: [BWA-aligned geneID, length, #reads, readIDs ...]
-    aligned_genes_out    = sys.argv[5]       # OUTPUT: genes mapped by BWA.
+    contig_map_in    = sys.argv[3]       # INPUT: [contigID, #reads, readIDs ...]
+    gene_map_out       = sys.argv[4]       # In + OUTPUT: [BWA-aligned geneID, length, #reads, readIDs ...]
+    aligned_genes_out    = sys.argv[5]       # in + OUTPUT: genes mapped by BWA.
     
-    read1_in            = sys.argv[6]
-    read2_in            = sys.argv[7]   
-    sam_in              = sys.argv[8]
-    read1_out           = sys.argv[9]
-    read2_out           = sys.argv[10]
-    op_mode             = sys.argv[11]
+    read1_in            = sys.argv[6]   #in
+    read2_in            = sys.argv[7]   #in
+    sam_in              = sys.argv[8]   #in
+    read1_out           = sys.argv[9]   #in/out.  append
+    read2_out           = sys.argv[10]  #in/out. append
+    op_mode             = sys.argv[11]  #in
     
     input_safety = check_file_safety(read1_in) and check_file_safety(sam_in)
     if(op_mode == "p"):
@@ -303,15 +344,15 @@ if __name__ == "__main__":
 
     cigar_cutoff = int(cigar_cut)
     if(input_safety):
-        contig2read_map = dict()
-        if(contig2read_file != "None"):
-            contig2read_map, contig_reads = import_contig2read(contig2read_file)
+        contig_read_dict = dict()
+        if(contig_map_in != "None"):
+            contig_read_dict, contig_reads = import_contig2read(contig_map_in)
         
-        #contig2read_map_uniq, contig_unique_reads = filter_common_contigs(contig2read_map, contig_reads)
+        #contig_read_dict_uniq, contig_unique_reads = filter_common_contigs(contig_read_dict, contig_reads)
         # tracking BWA-assigned:
-        unmapped_reads, mapped_reads, gene2read_map = gene_map(cigar_cutoff, sam_in, contig2read_map)
+        unmapped_reads, mapped_reads, gene_read_dict = gene_map(cigar_cutoff, sam_in, contig_read_dict)
         
-        write_gene_map(DNA_DB, gene_map_out, gene2read_map, aligned_genes_out)
+        write_gene_map(DNA_DB, gene_map_out, gene_read_dict, aligned_genes_out)
         write_unmapped_reads(unmapped_reads, read1_in, read1_out)
         if(op_mode == "p"):
             write_unmapped_reads(unmapped_reads, read2_in, read2_out)

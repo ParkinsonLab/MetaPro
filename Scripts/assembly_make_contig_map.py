@@ -11,9 +11,10 @@ import pandas as pd
 import re
 from datetime import datetime as dt
 import time
+import numpy as np
 
 def import_fastq(file_name_in):
-    fastq_df = pd.read_csv(file_name_in, header=None, names=[None], sep="\n", skip_blank_lines = False, quoting=3)
+    fastq_df = pd.read_csv(file_name_in, header=None, names=[None], sep=r"\n", engine = "python", skip_blank_lines = False, quoting=3)
     fastq_df = pd.DataFrame(fastq_df.values.reshape(int(len(fastq_df)/4), 4))
     fastq_df.columns = ["ID", "sequences", "junk", "quality"]
     fastq_df["ID"] = fastq_df["ID"].apply(lambda x: x.strip("@"))
@@ -153,6 +154,8 @@ def export_contig_map(map_out_name, final_contig_read_dict):
             map_out.write(out_line)
             
 def pull_unmapped_reads(read_id, read_status_dict):
+    print("ID:", read_id)
+    
     if(read_id in read_status_dict):
         read_status = read_status_dict[read_id]["status"]
         if(read_status == "c"):
@@ -169,11 +172,12 @@ def pull_unmapped_reads(read_id, read_status_dict):
 def export_unmapped_reads(read_in, read_out, sample_read_status_dict):
     #export_path = os.path.join(raw_read_location, sample_file + ".fastq")
     sample_df = import_fastq(read_in)
+    #print(sample_df)
     unmapped_sample_df = sample_df[sample_df["ID"].apply(lambda x: pull_unmapped_reads(x, sample_read_status_dict))]
     unmapped_sample_df["ID"] = "@" + unmapped_sample_df["ID"]
     #export_sample_path = os.path.join(export_location, sample_file + ".fastq")
-    unmapped_sample_df.to_csv(read_out, header = False, index = False, mode = "w", sep = "\n", quoting = 3)
-       
+    #unmapped_sample_df.to_csv(read_out, header = False, index = False, mode = "w", sep = "\n", quoting = 3)
+    np.savetxt(read_out, unmapped_sample_df.values, delimiter = "\n", fmt='%s')
 
 if __name__ == "__main__":
     operating_mode = sys.argv[1]
@@ -197,22 +201,35 @@ if __name__ == "__main__":
     if(operating_mode == "paired"):
         paired_sam = sys.argv[10]
         paired_contig_read_dict, paired_read_status_dict = import_samfile(paired_sam)
+
+        
     
         singletons_reads = singletons_read_status_dict.keys()
         paired_reads = paired_read_status_dict.keys()
+        
+        
         common_keys = list(set(singletons_reads) & set(paired_reads))
         if(len(common_keys) > 0):
             print(dt.today(), "singleton keys in paired.  this shouldn't happen")
             sys.exit("death")
         
     final_contig_read_dict = merge_dict(paired_contig_read_dict, singletons_contig_read_dict, "contigs")
+    
     #contig_map_out = os.path.join(export_location, "contig_map.tsv")
     export_contig_map(contig_map_out, final_contig_read_dict)
-    
-    export_unmapped_reads(raw_read_location, export_location, "singletons", singletons_read_status_dict)
-    
+    single_keys = singletons_read_status_dict.keys()
+    if(len(single_keys) > 0):
+        export_unmapped_reads(s_in, s_out, singletons_read_status_dict)
+    print("number of pair keys:", len(paired_read_status_dict.keys()))
+    count = 0
+    for key in paired_read_status_dict.keys():
+        print(key, paired_read_status_dict[key],  paired_read_status_dict[key]["status"])
+        count += 1
+        if(count > 10):
+            break
+
     if(operating_mode == "paired"):
-        export_unmapped_reads(raw_read_location, export_location, "pair_1", paired_read_status_dict)
-        export_unmapped_reads(raw_read_location, export_location, "pair_2", paired_read_status_dict)
+        export_unmapped_reads(p1_in, p1_out, paired_read_status_dict)
+        export_unmapped_reads(p2_in, p2_out, paired_read_status_dict)
             
             

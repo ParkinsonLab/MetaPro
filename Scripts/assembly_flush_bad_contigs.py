@@ -1,6 +1,7 @@
 import os
 import sys
 import pandas as pd
+import numpy as np
 #remove all contig segments not in the map
 
 def import_contig_map_headers(contig_map):
@@ -43,8 +44,14 @@ if __name__ == "__main__":
     export_path = sys.argv[3]
     
     header_list = import_contig_map_headers(contig_map_file)
+    count = 0
+    for key in header_list:
+        print("inside contig map:", key)
+        count += 1
+        if(count > 10):
+            break
     contigs_dict = import_fasta_plain(contigs_fasta)
-    
+    print(contigs_dict)
     contigs_df = pd.DataFrame.from_dict(contigs_dict, orient = "index", columns = ["read"])
     contigs_df["ID"] = contigs_df.index
     contigs_df.reset_index(drop = True, inplace = True)
@@ -53,10 +60,11 @@ if __name__ == "__main__":
     cols = ["ID", "read"]
     final_contigs_df = final_contigs_df[cols]
     print(final_contigs_df)
-    final_contigs_df.to_csv(export_path, sep = "\n", quoting = 3, header = False, index = False, mode = "w")
-    print("old:", contigs_df.shape)
+    #final_contigs_df.to_csv(export_path, sep = "\n", quoting = 3, header = False, index = False, mode = "w")
+    np.savetxt(export_path, final_contigs_df.values, delimiter='\n', fmt='%s')
+    #print("old:", contigs_df.shape)
     
-    print("new", final_contigs_df.shape)
+    #print("new", final_contigs_df.shape)
     
     
     

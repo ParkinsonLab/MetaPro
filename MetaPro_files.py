@@ -13,15 +13,16 @@ class mpro_file_handler:
     #the file-interconnect. 
     
 
-    def read_lib_list(self):
+    def read_lib_list(self, lib_file):
         #reads the lib list and fills in the file dict
+        #new format: just lines that are found.
         lib_set = set()
-        with open(self.file_dict["ga_lib_list"], "r") as lib_list:
+        with open(lib_file, "r") as lib_list:
             for line in lib_list:
-                line_split = line.split("|")
-                if(line_split[0] == "yes"):
-                    lib_file = str(line_split[2])
-                    lib_set.add(lib_file)
+                lib_line = line.strip("\n")
+                if(os.path.exists(lib_line)):
+                    lib_set.add(lib_line)
+                    print("OK:", lib_line)
         return lib_set
 
 
@@ -37,10 +38,15 @@ class mpro_file_handler:
 
     def get_file_dict(self):
         return self.file_dict
+    
+    def create_split_filepaths(self, header, full_count, file_base_path, ext):
+        full_count = int(full_count)
+        for i in range (0, full_count):
+            self.file_dict[header + "_" + str(i)] = file_base_path + "_" + str(i) + ext
 
     def __init__(self, config_dict, dir_dict):
         print("in file:", config_dict["pair_1"])
-        time.sleep(3)
+        #time.sleep(3)
         self.dir_dict = dir_dict
         self.config_dict = config_dict
         self.file_dict = dict()
@@ -118,7 +124,11 @@ class mpro_file_handler:
         ]
 
         self.file_dict["vec_job"] = os.path.join(self.dir_dict["vec"], "vector_job.sh")    
-
+        
+        self.file_dict["rRNA_s_fa"] = os.path.join(self.dir_dict["rRNA_convert"], "s.fasta")
+        self.file_dict["rRNA_p1_fa"] = os.path.join(self.dir_dict["rRNA_convert"], "p1.fasta")
+        self.file_dict["rRNA_p2_fa"] = os.path.join(self.dir_dict["rRNA_convert"], "p2.fasta")
+        
         
         self.file_dict["rRNA_bnap_s"] = os.path.join(self.dir_dict["rRNA_bnap"], "s")
         self.file_dict["rRNA_bnap_p1"] = os.path.join(self.dir_dict["rRNA_bnap"], "p1")
@@ -136,6 +146,13 @@ class mpro_file_handler:
         self.file_dict["rRNA_bnap_mRNA_p1"] = os.path.join(self.dir_dict["rRNA_mRNA"], "mRNA_bnap_p1.fastq")
         self.file_dict["rRNA_bnap_mRNA_p2"] = os.path.join(self.dir_dict["rRNA_mRNA"], "mRNA_bnap_p2.fastq")
 
+        self.file_dict["rRNA_inf_job_s"] = os.path.join(self.dir_dict["rRNA_jobs"], "inf_s")
+        self.file_dict["rRNA_inf_job_p1"] = os.path.join(self.dir_dict["rRNA_jobs"], "inf_p1")
+        self.file_dict["rRNA_inf_job_p2"] = os.path.join(self.dir_dict["rRNA_jobs"], "inf_p2")
+        
+        self.file_dict["rRNA_pp_p_job"] = os.path.join(self.dir_dict["rRNA_jobs"], "rRNA_pp_p")
+        self.file_dict["rRNA_pp_s_job"] = os.path.join(self.dir_dict["rRNA_jobs"], "rRNA_pp_s")
+
         self.file_dict["rRNA_inf_in_s"] = os.path.join(self.dir_dict["rRNA_split"], "inf_s")
         self.file_dict["rRNA_inf_in_p1"] = os.path.join(self.dir_dict["rRNA_split"], "inf_p1")
         self.file_dict["rRNA_inf_in_p2"] = os.path.join(self.dir_dict["rRNA_split"], "inf_p2")
@@ -152,17 +169,19 @@ class mpro_file_handler:
         self.file_dict["rRNA_inf_all_p1"] = os.path.join(self.dir_dict["rRNA_inf"], "all_p1.inf_out")
         self.file_dict["rRNA_inf_all_p2"] = os.path.join(self.dir_dict["rRNA_inf"], "all_p2.inf_out")
 
-        self.file_dict["rRNA_mRNA_s_fq"] = os.path.join(self.dir_dict["rRNA_mRNA"], "all", "s_mRNA.fastq")
-        self.file_dict["rRNA_mRNA_p1_fq"] = os.path.join(self.dir_dict["rRNA_mRNA"], "all", "p1_mRNA.fastq")
-        self.file_dict["rRNA_mRNA_p2_fq"] = os.path.join(self.dir_dict["rRNA_mRNA"], "all", "p2_mRNA.fastq")
+        self.file_dict["rRNA_mRNA_s_fq"] = os.path.join(self.dir_dict["rRNA_mRNA"], "all_s_mRNA.fastq")
+        self.file_dict["rRNA_mRNA_p1_fq"] = os.path.join(self.dir_dict["rRNA_mRNA"], "all_p1_mRNA.fastq")
+        self.file_dict["rRNA_mRNA_p2_fq"] = os.path.join(self.dir_dict["rRNA_mRNA"], "all_p2_mRNA.fastq")
         
-        self.file_dict["rRNA_other_s_fq"] = os.path.join(self.dir_dict["rRNA_other"], "all", "s_other.fastq")
-        self.file_dict["rRNA_other_p1_fq"] = os.path.join(self.dir_dict["rRNA_other"], "all", "p1_other.fastq")
-        self.file_dict["rRNA_other_p2_fq"] = os.path.join(self.dir_dict["rRNA_other"], "all", "p2_other.fastq")
+        self.file_dict["rRNA_other_s_fq"] = os.path.join(self.dir_dict["rRNA_other"], "all_s_other.fastq")
+        self.file_dict["rRNA_other_p1_fq"] = os.path.join(self.dir_dict["rRNA_other"], "all_p1_other.fastq")
+        self.file_dict["rRNA_other_p2_fq"] = os.path.join(self.dir_dict["rRNA_other"], "all_p2_other.fastq")
 
-
+        self.file_dict["repop_job"] = os.path.join(self.dir_dict["repop"], "repop_job.sh")
         self.file_dict["repop_s"] = os.path.join(self.dir_dict["repop_export"], "s.fastq")
         self.file_dict["repop_other_s"] = os.path.join(self.dir_dict["repop_export"], "s_other.fastq")
+        self.file_dict["repop_s_extra"] = os.path.join(self.dir_dict["repop_export"], "s_extra.fastq")
+        self.file_dict["repop_other_s_extra"] = os.path.join(self.dir_dict["repop_export"], "s_other_extra.fastq")
 
         self.file_dict["repop_p1"] = os.path.join(self.dir_dict["repop_export"], "p1.fastq")
         self.file_dict["repop_other_p1"] = os.path.join(self.dir_dict["repop_export"], "p1_other.fastq")
@@ -170,6 +189,7 @@ class mpro_file_handler:
         self.file_dict["repop_p2"] = os.path.join(self.dir_dict["repop_export"], "p2.fastq")
         self.file_dict["repop_other_p2"] = os.path.join(self.dir_dict["repop_export"], "p2_other.fastq")
 
+        self.file_dict["contigs_job"] = os.path.join(self.dir_dict["contigs"], "contigs.sh")
         self.file_dict["contigs_transcripts"] = os.path.join(self.dir_dict["contigs_spades"], "transcripts.fasta")
         self.file_dict["contigs_og_fa"] = os.path.join(self.dir_dict["contigs_spades"], "contigs.fasta")
         self.file_dict["contigs_split"] = os.path.join(self.dir_dict["contigs_mgm"], "disassembled_contigs.fasta")
@@ -186,13 +206,16 @@ class mpro_file_handler:
         self.file_dict["contigs_p2"] = os.path.join(self.dir_dict["contigs_export"], "p2.fastq")
         self.file_dict["contigs_s"] = os.path.join(self.dir_dict["contigs_export"], "s.fastq")
         
+        self.file_dict["ga_ps_k2_job"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_k2.sh")
+        self.file_dict["ga_ps_make_job"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_make.sh")
+        self.file_dict["ga_lib_status"] = os.path.join(self.dir_dict["GA_ps_export"], "lib_status.txt")
+        self.file_dict["ga_lib_reject"] = os.path.join(self.dir_dict["GA_ps_export"], "lib_reject.txt")
         self.file_dict["ga_lib_list"] = os.path.join(self.dir_dict["GA_ps_data"], "lib_list.txt")
-        self.file_dict["ga_lib_status"] = os.path.join(self.dir_dict["GA_ps_data"], "lib_status.txt")
         self.file_dict["ga_ps_k2_report_c"] = os.path.join(self.dir_dict["GA_ps_k2"], "kraken2_report_c.txt")
         self.file_dict["ga_ps_k2_report_s"] = os.path.join(self.dir_dict["GA_ps_k2"], "kraken2_report_s.txt")
         self.file_dict["ga_ps_k2_report_p"] = os.path.join(self.dir_dict["GA_ps_k2"], "kraken2_report_p.txt")
         self.file_dict["ga_ps_k2_report_all"] = os.path.join(self.dir_dict["GA_ps_k2"], "kraken2_report_all.txt")
-        self.file_dict["ga_ps_wevote"] = os.path.join(self.dir_dict["GA_ps_wevote"], "taxa_report.tsv")
+        #self.file_dict["ga_ps_wevote"] = os.path.join(self.dir_dict["GA_ps_wevote"], "taxa_report.tsv")
 
         self.file_dict["ga_split_s"] = os.path.join(self.dir_dict["GA_split"], "s")
         self.file_dict["ga_split_p1"] = os.path.join(self.dir_dict["GA_split"], "p1")
@@ -201,6 +224,29 @@ class mpro_file_handler:
         self.file_dict["ga_bt2_p_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "p.sam")
         self.file_dict["ga_bt2_s_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "s.sam")
         self.file_dict["ga_bt2_c_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "c.sam")
+
+        self.file_dict["ga_bt2_s_hits_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "s_hits.sam")
+        self.file_dict["ga_bt2_s_miss_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "s_miss.sam")
+        self.file_dict["ga_bt2_p_hits_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "p_hits.sam")
+        self.file_dict["ga_bt2_p_miss_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "p_miss.sam")
+        self.file_dict["ga_bt2_c_hits_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "c_hits.sam")
+        self.file_dict["ga_bt2_c_miss_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "c_miss.sam")
+
+        self.file_dict["gene_map_c"] = os.path.join(self.dir_dict["GA_BT2_export"], "gene_map_c.tsv")
+        self.file_dict["gene_map_p"] = os.path.join(self.dir_dict["GA_BT2_export"], "gene_map_p.tsv")
+        self.file_dict["gene_map_s"] = os.path.join(self.dir_dict["GA_BT2_export"], "gene_map_s.tsv")
+        self.file_dict["gene_map_full"] = os.path.join(self.dir_dict["GTA_BT2_export"], "gene_map.tsv")
+        self.file_dict["genes_c"] = os.path.join(self.dir_dict["GA_BT2_export"], "genes_c.fasta")
+        self.file_dict["genes_p"] = os.path.join(self.dir_dict["GA_BT2_export"], "genes_p.fasta")
+        self.file_dict["genes_s"] = os.path.join(self.dir_dict["GA_BT2_export"], "genes_s.fasta")
+        self.file_dict["genes_full"] = os.path.join(self.dir_dict["GA_BT2_export"], "genes_annot.fasta")
+
+        self.file_dict["ga_rem_prot_p1"] = os.path.join(self.dir_dict["GA_BT2_export"], "p1_rem_prot.fasta")
+        self.file_dict["ga_rem_prot_p2"] = os.path.join(self.dir_dict["GA_BT2_export"], "p2_rem_prot.fasta")
+        self.file_dict["ga_rem_prot_c"] = os.path.join(self.dir_dict["GA_BT2_export"], "c_rem_prot.fasta")
+        self.file_dict["ga_rem_prot_s"] = os.path.join(self.dir_dict["GA_BT2_export"], "s_rem_prot.fasta")
+        
+        
 
     
 

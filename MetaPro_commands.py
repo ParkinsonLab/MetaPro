@@ -190,7 +190,7 @@ class mt_pipe_commands:
                 sort_pair_1 + " & " +
                 sort_pair_2,
                 adapter_removal_line,
-                tag_remove_pair_1,
+                tag_remove_pair_1 + " & " +
                 tag_remove_pair_2,
                 tag_remove_singletons,
                 ">&2 echo delaying 60s | sleep 60", 
@@ -320,18 +320,19 @@ class mt_pipe_commands:
             if self.read_mode == "single":
                 COMMANDS_host = [
                     bt2_hr_s,
-                    samtools_hr_s_sam_to_bam,
-                    samtools_no_host_s_bam_to_fastq,
-                    samtools_host_s_bam_to_fastq + " && " + make_marker
+                    sam_host_s, 
+                    sam_no_host_s + " && " + make_marker
                 ]
             elif self.read_mode == "paired":
                 COMMANDS_host = [
                     bt2_hr_s,
-                    samtools_hr_s_sam_to_bam,
-                    samtools_no_host_s_bam_to_fastq,
-                    samtools_host_s_bam_to_fastq,
                     bt2_hr_paired,
-                    bt2_hr_filter_paired + " && " + make_marker
+                    sam_no_host_s,
+                    sam_host_s,
+                    sam_no_host_p,
+                    sam_host_p
+                    cat_host_p,
+                    cat_no_host_p + " && " + make_marker
 
                 ]
         else:
@@ -455,13 +456,14 @@ class mt_pipe_commands:
                 COMMANDS_vector = [
                     bt2_vr_s,
                     samtools_no_vec_s,
+                    samtools_vec_s,
                     bt2_vr_paired,
                     bt2_vr_filter_paired + " && " + make_marker
                 ]    
 
         return COMMANDS_vector
          
-    def create_rRNA_filter_barrnap_command(self, fasta_seqs, fastq_in, mRNA_out, rRNA_out, Barrnap_out, marker_file):
+    def create_rRNA_filter_bnap_command(self, fasta_seqs, fastq_in, mRNA_out, rRNA_out, Barrnap_out, marker_file):
         # called by each split file
         # category -> singletons, pair 1, pair 2
         # file name -> the specific split section of the category (the fastq segments)
@@ -497,7 +499,7 @@ class mt_pipe_commands:
 
         Barrnap_pp = ">&2 echo Running Barrnap pp scripts | "
         Barrnap_pp += self.config_dict["Python"] + " "
-        Barrnap_pp += self.config_dict["Barrnap_post"] + " "
+        Barrnap_pp += self.config_dict["barrnap_post"] + " "
         Barrnap_pp += Barrnap_out + " "
         Barrnap_pp += fastq_in + " "
         Barrnap_pp += mRNA_out + " "
@@ -556,7 +558,7 @@ class mt_pipe_commands:
     def create_rRNA_inf_pp_s_command(self, inf_s, barrnap_s, raw_s, mRNA_s, other_s, marker_file):
        
         inf_pp = self.config_dict["Python"] + " "
-        inf_pp += self.config_dict["rRNA_filter"] + " "
+        inf_pp += self.config_dict["rRNA_inf_pp"] + " "
         inf_pp += self.config_dict["filter_stringency"] + " "
         inf_pp += "single" + " "
         inf_pp += inf_s + " "
@@ -651,17 +653,11 @@ class mt_pipe_commands:
         singleton_repop_filter += self.config_dict["orphaned_read_filter"] + " "
         singleton_repop_filter += self.file_dict["repop_p1"] + " "
         singleton_repop_filter += self.file_dict["repop_p2"] + " "
-        singleton_repop_filter += self.file_dict["repop_s"] + " "
-        singleton_repop_filter += self.file_dict["repop_p1"] + " "
-        singleton_repop_filter += self.file_dict["repop_p2"] + " "
         singleton_repop_filter += self.file_dict["repop_s"]
     
         singleton_repop_filter_rRNA = ">&2 echo filtering rRNA for new singletons | "  
         singleton_repop_filter_rRNA += self.config_dict["Python"] + " "
         singleton_repop_filter_rRNA += self.config_dict["orphaned_read_filter"] + " "
-        singleton_repop_filter_rRNA += self.file_dict["repop_other_p1"] + " "
-        singleton_repop_filter_rRNA += self.file_dict["repop_other_p2"] + " "
-        singleton_repop_filter_rRNA += self.file_dict["repop_other_s"] + " "
         singleton_repop_filter_rRNA += self.file_dict["repop_other_p1"] + " "
         singleton_repop_filter_rRNA += self.file_dict["repop_other_p2"] + " "
         singleton_repop_filter_rRNA += self.file_dict["repop_other_s"]
@@ -673,7 +669,7 @@ class mt_pipe_commands:
                 COMMANDS_Repopulate = [
                     repop_singletons + " && " + make_marker
                 ]
-            elif self.read_mode == "paired":
+            elif (self.read_mode == "paired") or (self.read_mode == "p"):
                 COMMANDS_Repopulate = [
                     repop_singletons,
                     repop_pair_1,
@@ -718,13 +714,16 @@ class mt_pipe_commands:
             if self.read_mode == "paired":
                 spades += " -1 " + self.file_dict["repop_p1"]  # in1 (pair 1)
                 spades += " -2 " + self.file_dict["repop_p2"]  # in2 (pair 2)
-            spades += " -s " + self.file_dict["repop_s"]  # in_single (singletons)
+            if(os.path.getsize(self.file_dict["repop_s"]) <= 0):
+                print(dt.today(), "warning: empty singletons in SPAdes call.  MetaPro will ignore singletons")
+            else:
+                spades += " -s " + self.file_dict["repop_s"]  # in_single (singletons)
         spades += " -o " + self.dir_dict["contigs_spades"]  # out
 
         spades += " && touch " + self.file_dict["contigs_spades_done"]
 
         #if there is no output, bypass contigs. -> But this is a v2 upgrade.  
-        spades_rename = "cp " + self.file_dict["contigs_transcripts"] + " " + self.file_dict["contigs_og_fa"]  # rename output
+        #spades_rename = "cp " + self.file_dict["contigs_transcripts"] + " " + self.file_dict["contigs_og_fa"]  # rename output
         
         
         
@@ -736,10 +735,11 @@ class mt_pipe_commands:
         #-------------------------------------------------------
         #spades does too good of a job sometimes.  Disassemble it into genes.
         disassemble_contigs = ">&2 echo Disassembling contigs | "
-        disassemble_contigs += self.config_dict["MetaGeneMark"] + " -o " + self.file_dict["contigs_gene_report"] + " "
+        disassemble_contigs += self.config_dict["mgm1"] + " -o " + self.file_dict["contigs_gene_report"] + " "
         disassemble_contigs += "-D " + self.file_dict["contigs_split"] + " "
         disassemble_contigs += "-m " + self.config_dict["mgm_model"] + " "
-        disassemble_contigs += self.file_dict["contigs_og_fa"]
+        disassemble_contigs += self.file_dict["contigs_transcripts"]
+        
         
         remove_whitespace = ">&2 echo Removing whitespace from fasta | " 
         remove_whitespace += self.config_dict["Python"] + " " + self.config_dict["remove_gaps_in_fasta"] + " "
@@ -763,8 +763,9 @@ class mt_pipe_commands:
         bt2_paired_contigs += "| samtools view > " + self.file_dict["contigs_p_sam"]
 
         bt2_singletons_contigs = ">&2 echo bt2 singleton contigs | "
+        bt2_singletons_contigs += self.config_dict["BT2"] 
         #bt2_singletons_contigs += self.config_dict["BT2"] + " mem -t " + self.threads_str + " -B 40 -O 60 -E 10 -L 50 "
-        bt2_singletons_contigs += self.config_dict["BT2"] +  " --score-min L,0,-0.2 --mp 40,40 --rdg 10,10 --rfg 10,10 --np 60 --dpad 15 --gbar 4 -L 50 -i S,1,0.75 "
+        #bt2_singletons_contigs += self.config_dict["BT2"] +  " --score-min L,0,-0.2 --mp 40,40 --rdg 10,10 --rfg 10,10 --np 60 --dpad 15 --gbar 4 -L 50 -i S,1,0.75 "
         bt2_singletons_contigs += " -x " + contigs_idx + " "
         bt2_singletons_contigs += " -U " + self.file_dict["repop_s"]
         bt2_singletons_contigs += " > " + self.file_dict["contigs_s_sam"]
@@ -773,6 +774,7 @@ class mt_pipe_commands:
         make_contig_map += self.config_dict["Python"] + " "
         make_contig_map += self.config_dict["Map_contig"] + " "
         make_contig_map += self.read_mode + " "
+        make_contig_map += self.file_dict["contigs_map"] + " "
         make_contig_map += self.file_dict["repop_p1"] + " "
         make_contig_map += self.file_dict["repop_p2"] + " "
         make_contig_map += self.file_dict["contigs_p1"] + " "
@@ -796,28 +798,28 @@ class mt_pipe_commands:
 
         if self.read_mode == "single":
             COMMANDS_Assemble = [
-                spades + " && " + 
-                spades_rename + " && " +
-                disassemble_contigs + " && " +
-                remove_whitespace + " && " +
-                bt2_index + " && " +
-                bt2_singletons_contigs + " && " +
-                make_contig_map + " && " +
-                flush_bad_contigs + " && " + 
+                spades,
+                #spades_rename,
+                disassemble_contigs,
+                remove_whitespace,
+                bt2_index,
+                bt2_singletons_contigs,
+                make_contig_map,
+                flush_bad_contigs, 
                 make_marker
                 
             ]
         elif self.read_mode == "paired":
             COMMANDS_Assemble = [
-                spades + " && " +
-                spades_rename + " && " +
-                disassemble_contigs + " && " +
-                remove_whitespace + " && " +
-                bt2_index + " && " +
-                bt2_paired_contigs + " && " +
-                bt2_singletons_contigs + " && " +
-                make_contig_map + " && " + 
-                flush_bad_contigs + " && " + 
+                spades,
+                #spades_rename,
+                disassemble_contigs,
+                remove_whitespace,
+                bt2_index,
+                bt2_paired_contigs,
+                bt2_singletons_contigs,
+                make_contig_map, 
+                flush_bad_contigs, 
                 make_marker
             ]
 
@@ -867,7 +869,6 @@ class mt_pipe_commands:
         ga_get_lib = ">&2 echo GA pre-scan get libs | "
         ga_get_lib += self.config_dict["Python"] + " "
         ga_get_lib += self.config_dict["GA_pre_scan_get_lib"] + " "
-        ga_get_lib += "k2" + " "
         ga_get_lib += self.file_dict["ga_ps_k2_report_all"] + " "
         ga_get_lib += self.config_dict["taxid_tree"] + " "
         ga_get_lib += self.config_dict["nodes"] + " "
@@ -884,19 +885,20 @@ class mt_pipe_commands:
         # meant to be called multiple times: query file is a split file
         # aug 10, 2021: changed ref path to accomodate new split-chocophlan
         #feb 20, 2025: reiterating call-per-file.
-        
+           
         bt2_job = self.config_dict["BT2"] + " -p " + self.threads_str + " "
         bt2_job += " -x " + db_path + " "
         if(op_mode == "p"):
             bt2_job += "-1 " + read_1 + " "
             bt2_job += "-2" + read_2 + " | "
-
-        else:
-            bt2_job += "-U " + read_1 + " | "
-    
-        bt2_job += self.config_dict["samtools"] + " view "
-        bt2_job += "> " + sam_out
         
+        elif(read_1.endswith(".fasta")):
+            bt2_job += "-f -U " + read_1 + " "
+        else:
+            bt2_job += "-U " + read_1 + " "
+    
+        bt2_job += "-S " + sam_out
+
         #make_marker = ">&2 echo marking bt2 job complete: " + file_tag + " | "
         make_marker = "touch" + " " + marker_file
     
@@ -907,8 +909,10 @@ class mt_pipe_commands:
         return COMMANDS_bt2
         
     
-    def create_GA_BT2_pp_command(self, ref_path, reads_in, reads_out, bt2_in, gene_map, mapped_genes, marker_file):
+    def create_GA_BT2_pp_command(self, ref_path, gene_map, genes_hit, read_in_1, read_in_2, sam_file, read_out_1, read_out_2, op_mode, marker_file):
         #may 01, 2025: simplified pp call.  
+        #run on every lib list section.
+        #
 
         ga_bt2_pp = self.config_dict["Python"] + " "
         ga_bt2_pp += self.config_dict["ga_bt2_pp"] + " "
@@ -919,10 +923,15 @@ class mt_pipe_commands:
         else:        
             ga_bt2_pp += self.file_dict["contigs_map"] + " "  # IN
         ga_bt2_pp += gene_map + " "  # OUT
-        ga_bt2_pp += mapped_genes + " " #OUT
-        ga_bt2_pp += reads_in + " "
-        ga_bt2_pp += bt2_in + " "
-        ga_bt2_pp += reads_out
+        ga_bt2_pp += genes_hit + " " #OUT
+        ga_bt2_pp += read_in_1 + " "
+        ga_bt2_pp += read_in_2 + " "
+
+        ga_bt2_pp += sam_file + " "
+        ga_bt2_pp += read_out_1 + " "
+        ga_bt2_pp += read_out_2 + " "
+        ga_bt2_pp += op_mode
+
 
         make_marker = "touch " + marker_file
 
