@@ -78,7 +78,8 @@ RUN wget https://github.com/BenLangmead/bowtie2/releases/download/v2.5.4/bowtie2
 # Install DIAMOND
 #RUN wget http://github.com/bbuchfink/diamond/releases/download/v0.9.19/diamond-linux64.tar.gz -O DIAMOND.tar.gz \
 #RUN wget https://github.com/bbuchfink/diamond/releases/download/v2.1.10/diamond-linux64.tar.gz -O DIAMOND.tar.gz \
-RUN wget https://github.com/bbuchfink/diamond/releases/download/v2.1.11/diamond-linux64.tar.gz -O DIAMOND.tar.gz \
+#RUN wget https://github.com/bbuchfink/diamond/releases/download/v2.1.11/diamond-linux64.tar.gz -O DIAMOND.tar.gz \
+RUN wget https://github.com/bbuchfink/diamond/releases/download/v2.1.12/diamond-linux64.tar.gz -O DIAMOND.tar.gz\
 && mkdir DIAMOND \
 && tar --remove-files -xzvf DIAMOND.tar.gz -C DIAMOND \
 && rm DIAMOND.tar.gz
