@@ -225,6 +225,12 @@ class mpro_config:
         repop_job_delay_default             = 10
         TA_job_delay_default                = 5
         EC_job_delay_default                = 1
+        dmd_speed_default                   = "fast"
+        
+        dmd_hit_count_default               = 1
+        dmd_id_score_default                = 90
+        dmd_query_cover_default             = 70
+        dmd_min_score_default               = 80
 
         keep_all_default = "yes"
         keep_quality_default = "no"
@@ -320,21 +326,27 @@ class mpro_config:
         
         self.config_dict["RPKM_cutoff"]                = self.value_assignment("float", config, "Settings", "RPKM_cutoff", 0.01)
         self.config_dict["BT2_cigar_cutoff"]           = self.value_assignment("int", config, "Settings", "BT2_cigar_cutoff", BT2_cigar_default)            
-        self.config_dict["DIAMOND_identity_cutoff"]    = self.value_assignment("int", config, "Settings", "DIAMOND_identity_cutoff", DIAMOND_identity_default)
-        self.config_dict["DIAMOND_length_cutoff"]      = self.value_assignment("float", config, "Settings", "DIAMOND_length_cutoff", DIAMOND_length_default)
-        self.config_dict["DIAMOND_score_cutoff"]       = self.value_assignment("int", config, "Settings", "DIAMOND_score_cutoff", DIAMOND_score_default)
+        self.config_dict["DMD_identity_cutoff"]    = self.value_assignment("int", config, "Settings", "DMD_identity_cutoff", DIAMOND_identity_default)
+        self.config_dict["DMD_length_cutoff"]      = self.value_assignment("float", config, "Settings", "DMD_length_cutoff", DIAMOND_length_default)
+        self.config_dict["DMD_score_cutoff"]       = self.value_assignment("int", config, "Settings", "DMD_score_cutoff", DIAMOND_score_default)
         #-----------------------------------------------------------------------------------------------   
 
         
         self.config_dict["BT2_mem_footprint"]      = self.value_assignment("int", config, "Settings", "BT2_mem_footprint", BT2_mem_footprint_default)
         self.config_dict["BLAT_mem_footprint"]     = self.value_assignment("int", config, "Settings", "BLAT_mem_footprint", BLAT_mem_footprint_default)
         self.config_dict["DMD_mem_footprint"]      = self.value_assignment("int", config, "Settings", "DMD_mem_footprint", DMD_mem_footprint_default)
-        
+
+        #----------------------------------------------------------------------------------------
+        self.config_dict["DMD_speed"] = self.value_assignment("str", config, "Settings", "DMD_speed", dmd_speed_default)    
+        self.config_dict["DMD_hit_count"] = self.value_assignment("int", config, "Settings", "DMD_hit_count", dmd_hit_count_default)
+        self.config_dict["DMD_id_score"] = self.value_assignment("int", config, "Settings", "DMD_id_score", dmd_id_score_default)
+        self.config_dict["DMD_query_cover"] = self.value_assignment("int", config, "Settings", "DMD_query_cover", dmd_query_cover_default)
+        self.config_dict["DMD_min_score"] = self.value_assignment("int", config, "Settings", "DMD_min_score", dmd_min_score_default)
 
         #-------------------------------------------------------------------------------------------------
         self.config_dict["BT2_mem_threshold"]              = self.value_assignment("int", config, "Settings", "BT2_mem_threshold", BT2_mem_default)
         self.config_dict["BLAT_mem_threshold"]             = self.value_assignment("int", config, "Settings", "BLAT_mem_threshold", BLAT_mem_default)
-        self.config_dict["DIAMOND_mem_threshold"]          = self.value_assignment("int", config, "Settings", "DIAMOND_mem_threshold", DIAMOND_mem_default)
+        self.config_dict["DMD_mem_threshold"]          = self.value_assignment("int", config, "Settings", "DIAMOND_mem_threshold", DIAMOND_mem_default)
         self.config_dict["DETECT_mem_threshold"]           = self.value_assignment("int", config, "Settings", "DETECT_mem_threshold", DETECT_mem_default)
         self.config_dict["Infernal_mem_threshold"]         = self.value_assignment("int", config, "Settings", "Infernal_mem_threshold", Infernal_mem_default)
         self.config_dict["Barrnap_mem_threshold"]          = self.value_assignment("int", config, "Settings", "Barrnap_mem_threshold", Barrnap_mem_default)
@@ -350,13 +362,13 @@ class mpro_config:
         
         self.config_dict["BT2_job_limit"]              = self.value_assignment("int", config, "Settings", "BT2_job_limit", BT2_job_limit_default)
         self.config_dict["BLAT_job_limit"]             = self.value_assignment("int", config, "Settings", "BLAT_job_limit", BLAT_job_limit_default)
-        self.config_dict["DIAMOND_job_limit"]          = self.value_assignment("int", config, "Settings", "DIAMOND_job_limit", DIAMOND_job_limit_default)
+        self.config_dict["DMD_job_limit"]          = self.value_assignment("int", config, "Settings", "DIAMOND_job_limit", DIAMOND_job_limit_default)
         self.config_dict["DETECT_job_limit"]           = self.value_assignment("int", config, "Settings", "DETECT_job_limit", DETECT_job_limit_default)
         self.config_dict["Infernal_job_limit"]         = self.value_assignment("int", config, "Settings", "Infernal_job_limit", Infernal_job_limit_default)
         self.config_dict["Barrnap_job_limit"]          = self.value_assignment("int", config, "Settings", "Barrnap_job_limit", Barrnap_job_limit_default)
         self.config_dict["BWA_pp_job_limit"]           = self.value_assignment("int", config, "Settings", "BWA_pp_job_limit", BWA_pp_job_limit_default)
         self.config_dict["BLAT_pp_job_limit"]          = self.value_assignment("int", config, "Settings", "BLAT_pp_job_limit", BLAT_pp_job_limit_default)
-        self.config_dict["DIAMOND_pp_job_limit"]       = self.value_assignment("int", config, "Settings", "DIAMOND_pp_job_limit", DIAMOND_pp_job_limit_default)
+        self.config_dict["DMD_pp_job_limit"]       = self.value_assignment("int", config, "Settings", "DIAMOND_pp_job_limit", DIAMOND_pp_job_limit_default)
         self.config_dict["GA_final_merge_job_limit"]   = self.value_assignment("int", config, "Settings", "GA_final_merge_job_limit", GA_final_merge_job_limit_default)
         self.config_dict["TA_job_limit"]               = self.value_assignment("int", config, "Settings", "TA_job_limit", TA_job_limit_default)
         self.config_dict["repop_job_limit"]            = self.value_assignment("int", config, "Settings", "repop_job_limit", repop_job_limit_default)
@@ -368,7 +380,7 @@ class mpro_config:
         self.config_dict["Barrnap_job_delay"]          = self.value_assignment("float", config, "Settings", "Barrnap_job_delay", Barrnap_job_delay_default)
         self.config_dict["BT2_job_delay"]              = self.value_assignment("float", config, "Settings", "BT2_job_delay", BT2_job_delay_default)
         self.config_dict["BLAT_job_delay"]             = self.value_assignment("float", config, "Settings", "BLAT_job_delay", BLAT_job_delay_default)
-        self.config_dict["DIAMOND_job_delay"]          = self.value_assignment("float", config, "Settings", "DIAMOND_job_delay", DIAMOND_job_delay_default)
+        self.config_dict["DMD_job_delay"]          = self.value_assignment("float", config, "Settings", "DIAMOND_job_delay", DIAMOND_job_delay_default)
         self.config_dict["DETECT_job_delay"]           = self.value_assignment("float", config, "Settings", "DETECT_job_delay", DETECT_job_delay_default)
         self.config_dict["BWA_pp_job_delay"]           = self.value_assignment("float", config, "Settings", "BWA_pp_job_delay", BWA_pp_job_delay_default)
         self.config_dict["BLAT_pp_job_delay"]          = self.value_assignment("float", config, "Settings", "BLAT_pp_job_delay", BLAT_pp_job_delay_default)
@@ -422,8 +434,8 @@ class mpro_config:
         self.config_dict["Rfam"]                = self.value_assignment("path", config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
         self.config_dict["DNA_DB"]              = self.value_assignment("path", config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
         self.config_dict["source_taxa_DB"]      = self.value_assignment("path", config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"))
-        self.config_dict["Prot_DB"]             = self.value_assignment("path", config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr"))
-        self.config_dict["Prot_DB_reads"]       = self.value_assignment("path", config, "Databases", "Prot_DB_reads", os.path.join(database_path, "nr/nr"))
+        self.config_dict["Prot_DB"]             = self.value_assignment("path", config, "Databases", "Prot_DB", os.path.join(database_path, "nr/nr.fasta"))
+        self.config_dict["Prot_DB_reads"]       = self.value_assignment("path", config, "Databases", "Prot_DB_reads", os.path.join(database_path, "nr/nr.fasta"))
         self.config_dict["accession2taxid"]     = self.value_assignment("path", config, "Databases", "accession2taxid", os.path.join(database_path, "accession2taxid/accession2taxid"))
         self.config_dict["nodes"]               = self.value_assignment("path", config, "Databases", "nodes", os.path.join(database_path, "WEVOTE_db", "nodes.dmp"))
         self.config_dict["names"]               = self.value_assignment("path", config, "Databases", "names", os.path.join(database_path, "WEVOTE_db", "names.dmp"))
@@ -489,8 +501,7 @@ class mpro_config:
         self.config_dict["Map_contig"]                 = self.value_assignment("path", config, "code", "map_contig", os.path.join(script_path, "assembly_make_contig_map.py"))
         self.config_dict["flush_bad_contigs"]          = self.value_assignment("path", config, "code", "flush_bad_contigs", os.path.join(script_path, "assembly_flush_bad_contigs.py"))
         self.config_dict["contig_duplicate_remover"]   = self.value_assignment("path", config, "code", "contig_duplicate_remover", os.path.join(script_path, "assembly_deduplicate.py"))
-        self.config_dict["GA_BT2_pp"]                   = self.value_assignment("path", config, "code", "ga_bwa_pp", os.path.join(script_path, "GA_samfile.py"))
-        self.config_dict["Map_reads_gene_BLAT"]        = self.value_assignment("path", config, "code", "ga_blat_pp", os.path.join(script_path, "ga_BLAT_generic_v3.py"))
+        self.config_dict["GA_BT2_pp"]                   = self.value_assignment("path", config, "code", "ga_bt2_pp", os.path.join(script_path, "GA_samfile.py"))
         self.config_dict["Map_reads_prot_DMND"]        = self.value_assignment("path", config, "code", "ga_dmd_pp", os.path.join(script_path, "ga_Diamond_generic_v2.py"))
         self.config_dict["GA_final_merge"]             = self.value_assignment("path", config, "code", "ga_final_merge", os.path.join(script_path, "ga_Final_merge_v4.py"))
         self.config_dict["GA_merge_fasta"]             = self.value_assignment("path", config, "code", "ga_merge_fasta", os.path.join(script_path, "ga_merge_fasta.py"))

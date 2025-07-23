@@ -330,7 +330,7 @@ class mt_pipe_commands:
                     sam_no_host_s,
                     sam_host_s,
                     sam_no_host_p,
-                    sam_host_p
+                    sam_host_p,
                     cat_host_p,
                     cat_no_host_p + " && " + make_marker
 
@@ -890,14 +890,14 @@ class mt_pipe_commands:
         bt2_job += " -x " + db_path + " "
         if(op_mode == "p"):
             bt2_job += "-1 " + read_1 + " "
-            bt2_job += "-2" + read_2 + " | "
+            bt2_job += "-2" + read_2 + " "
         
         elif(read_1.endswith(".fasta")):
             bt2_job += "-f -U " + read_1 + " "
         else:
             bt2_job += "-U " + read_1 + " "
     
-        bt2_job += "-S " + sam_out
+        bt2_job += " | samtools view >> " + sam_out
 
         #make_marker = ">&2 echo marking bt2 job complete: " + file_tag + " | "
         make_marker = "touch" + " " + marker_file
@@ -915,10 +915,10 @@ class mt_pipe_commands:
         #
 
         ga_bt2_pp = self.config_dict["Python"] + " "
-        ga_bt2_pp += self.config_dict["ga_bt2_pp"] + " "
-        ga_bt2_pp += str(self.config_dict["bt2_cigar_cutoff"]) + " "
+        ga_bt2_pp += self.config_dict["GA_BT2_pp"] + " "
+        ga_bt2_pp += str(self.config_dict["BT2_cigar_cutoff"]) + " "
         ga_bt2_pp += ref_path + " "
-        if(self.sequence_contigs == "None"):
+        if(not os.path.exists(self.file_dict["contigs_out_fa"])):
             ga_bt2_pp += "None" + " "
         else:        
             ga_bt2_pp += self.file_dict["contigs_map"] + " "  # IN
@@ -943,116 +943,56 @@ class mt_pipe_commands:
         return COMMANDS_bt2_pp
 
 
-
-    def create_merge_bt2_fasta_command(self, stage_name, query_file, marker_file):
-        sample_root_name = os.path.basename(query_file)
-        sample_root_name = os.path.splitext(sample_root_name)[0]
-
-        subfolder       = os.path.join(self.output_path, stage_name)
-        data_folder     = os.path.join(subfolder, "data")
-        bt2_folder      = os.path.join(data_folder, "1_bt2")
-        split_folder    = os.path.join(data_folder, "0_read_split")
-        pp_folder       = os.path.join(data_folder, "2_bt2_pp")
-        final_folder    = os.path.join(subfolder, "final_results")
         
-        jobs_folder     = os.path.join(data_folder, "jobs")
+    def create_GA_DMD_command(self, query_file, out_file, block_size, marker_file):
         
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(bt2_folder)
-        self.make_folder(final_folder)
-        self.make_folder(jobs_folder)
-        self.make_folder(pp_folder)
-
-        merge_bt2_fastas = ">&2 echo " + str(dt.today()) + " GA bt2 merge leftover reads " + sample_root_name + " | "
-        merge_bt2_fastas += self.config_dict["Python"] + " "
-        merge_bt2_fastas += self.config_dict["GA_merge_fasta"] + " "
-        merge_bt2_fastas += pp_folder + " " 
-        merge_bt2_fastas += sample_root_name + " " 
-        merge_bt2_fastas += final_folder
-
-        make_marker = ">&2 echo merge bt2 leftover fastas: " + marker_file + " | " 
-        make_marker += "touch" + " " 
-        make_marker += os.path.join(jobs_folder, marker_file)
-
-        return [merge_bt2_fastas + " && " + make_marker]
-
 
         
-    def create_DIAMOND_annotate_command_v2(self, stage_name, query_file, marker_file):
-        sample_root_name = os.path.basename(query_file)
-        sample_root_name = os.path.splitext(sample_root_name)[0]
-    
-        subfolder           = os.path.join(self.output_path, stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        #dep_loc             = os.path.join(self.output_path, dependency_stage_name, "final_results")
-        diamond_folder      = os.path.join(data_folder, "0_diamond")
-        main_temp_folder    = os.path.join(data_folder, sample_root_name + "_diamond_temp")
-        temp_folder         = os.path.join(main_temp_folder, "temp")
-        jobs_folder         = os.path.join(data_folder, "jobs")
-        
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(diamond_folder)
-        self.make_folder(main_temp_folder)
-        self.make_folder(temp_folder)
-        self.make_folder(jobs_folder)
-        
-        diamond_annotate = ">&2 echo " + str(dt.today()) + " GA DIAMOND " + sample_root_name + " | "
+        diamond_annotate = ">&2 echo " + str(dt.today()) + " GA DIAMOND " + query_file + " | "
         diamond_annotate += self.config_dict["DMD"]
         diamond_annotate += " blastx -p " + self.threads_str
         diamond_annotate += " -d " + self.config_dict["Prot_DB"]
         diamond_annotate += " -q " + query_file 
-        diamond_annotate += " -o " + os.path.join(diamond_folder, sample_root_name + ".dmdout")
-        diamond_annotate += " -f 6 -t " + temp_folder #section_temp_folder
-        diamond_annotate += " -k 10 --id 85 --query-cover 65 --min-score 60 --unal 1"
+        diamond_annotate += " -o " + out_file
+        diamond_annotate += " --" + str(self.config_dict["DMD_speed"])
+        diamond_annotate += " --block-size " + str(block_size)
+        diamond_annotate += " -f 6 --tmpdir " + self.dir_dict["GA_DMD_temp"] #section_temp_folder
+        diamond_annotate += " -k " + str(self.config_dict["DMD_hit_count"]) 
+        diamond_annotate += " --id " + str(self.config_dict["DMD_id_score"]) 
+        diamond_annotate += " --query-cover " + str(self.config_dict["DMD_query_cover"])
+        diamond_annotate += " --min-score " + str(self.config_dict["DMD_min_score"])
+        diamond_annotate += " --unal 1"
 
         #make_marker = ">&2 echo marking DIAMOND complete: " + sample_root_name + " | "
         make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
+        make_marker += marker_file
 
         return [diamond_annotate + " && " + make_marker]
 
 
    
-    def create_DIAMOND_pp_command_v2(self, stage_name, dependency_stage_name, query_file, marker_file):
+    def create_DIAMOND_pp_command_v2(self, reads_in, dmd_in, reads_out, marker_file):
     
-        sample_root_name = os.path.basename(query_file)
-        sample_root_name = os.path.splitext(sample_root_name)[0]
-        # the command just calls the merger program
-        subfolder       = os.path.join(self.output_path, stage_name)
-        data_folder     = os.path.join(subfolder, "data")
-        dep_loc         = os.path.join(self.output_path, dependency_stage_name, "final_results")  # implied to be blat pp
-        diamond_folder  = os.path.join(data_folder, "0_diamond/")
-        final_folder    = os.path.join(subfolder, "final_results")
-        jobs_folder     = os.path.join(data_folder, "jobs")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(final_folder)
-        self.make_folder(jobs_folder)
-
-        diamond_pp = ">&2 echo " + str(dt.today()) + " DIAMOND post process " + sample_root_name + " | "
+        
+        diamond_pp = ">&2 echo " + str(dt.today()) + " DMD post process"  + " | "
         diamond_pp += self.config_dict["Python"] + " "
         diamond_pp += self.config_dict["Map_reads_prot_DMND"] + " "
         diamond_pp += str(self.config_dict["DMD_identity_cutoff"]) + " "
         diamond_pp += str(self.config_dict["DMD_length_cutoff"]) + " "
         diamond_pp += str(self.config_dict["DMD_score_cutoff"]) + " "
         diamond_pp += self.config_dict["Prot_DB_reads"] + " "                # IN
-        if(self.sequence_contigs == "None"):
+        if(not os.path.exists(self.file_dict["contigs_map"]) == "None"):
             diamond_pp += "None" + " "
         else:
-            diamond_pp += os.path.join(dep_loc, "contig_map.tsv") + " "         # IN
-        diamond_pp += os.path.join(final_folder, sample_root_name + "_diamond_gene_map.tsv") + " "      # OUT
-        diamond_pp += os.path.join(final_folder, sample_root_name + "_diamond_proteins.faa") + " "      # OUT
+            diamond_pp += self.file_dict["contigs_map"] + " "         # IN
+        diamond_pp += self.file_dict["ga_dmd_gene_map"] + " "      # OUT
+        diamond_pp += self.file_dict["ga_dmd_prot"] + " "      # OUT
         
-        diamond_pp += query_file + " "                                                  # IN
-        diamond_pp += os.path.join(diamond_folder, sample_root_name + ".dmdout") + " "  # IN
-        diamond_pp += os.path.join(final_folder, sample_root_name + ".fasta") + " "     # OUT
+        diamond_pp += reads_in + " "                                                  # IN
+        diamond_pp += dmd_in + " "  # IN
+        diamond_pp += reads_out + " "     # OUT
         
-        make_marker = ">&2 echo diamond pp complete: " + sample_root_name + " | "
-        make_marker += "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
+        make_marker = "touch" + " " + marker_file
 
         COMMANDS_Annotate_Diamond_Post = [
             diamond_pp + " && " + make_marker

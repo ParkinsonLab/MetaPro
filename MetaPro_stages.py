@@ -677,7 +677,9 @@ class mp_stage:
                         #aug 10, 2021: new bigger chocophlan (from humann3) is in segments because we can't index it as a whole.  
                         #if the DB is still an old version, the tag should just say "chocophlan".  otherwise, it will say the chocophlan chunk name
                         
-                        command_list = self.commands.create_GA_BT2_command(lib_entry, self.file_dict["contigs_p1"], self.file_dict["contigs_p2"], self.file_dict["ga_bt2_p_sam"], p_mkr, "p")
+                        command_list = self.commands.create_GA_BT2_command(
+                            lib_entry, self.file_dict["contigs_p1"], self.file_dict["contigs_p2"], 
+                            self.file_dict["ga_bt2_p_sam"], p_mkr, "p")
                         #self.mp_util.run_subjob_with_hold(self.BT2_mem_threshold, self.BT2_job_limit, self.BT2_job_delay, self.GA_BT2_label, job_name, self.commands, command_list)
                         self.mp_util.run_subjob_with_mem_footprint(self.config_dict["BT2_mem_footprint"], self.config_dict["BT2_job_limit"],  p_job, command_list)
 
@@ -752,149 +754,184 @@ class mp_stage:
 
                 p_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_pp_p_" + lib_tag + "_job.sh")
                 p_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_pp_p_" + lib_tag)
-
+                marker_path_list.append(p_marker)
                 command_list = self.commands.create_GA_BT2_pp_command(
                     lib_entry, self.file_dict["gene_map_p"], self.file_dict["genes_p"], 
                     self.file_dict["contigs_p1"], self.file_dict["contigs_p2"], self.file_dict["ga_bt2_p_sam"],
+                    self.file_dict["ga_rem_p1"], self.file_dict["ga_rem_p2"], "p", p_marker
                       )
+                if(os.path.exists(p_marker)):
+                    print(dt.today(), "skipping: ", p_marker)
+                else:
+                    self.mp_util.run_subjob_with_mem_footprint(self.config_dict["BT2_mem_footprint"], self.config_dict["BT2_job_limit"],  p_job, command_list)
 
-                            
+
+                s_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_pp_s_" + lib_tag + "_job.sh")
+                s_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_pp_s_" + lib_tag)
+                marker_path_list.append(s_marker)
+                command_list = self.commands.create_GA_BT2_pp_command(
+                    lib_entry, self.file_dict["gene_map_s"], self.file_dict["genes_s"],
+                    self.file_dict["contigs_s"], "None", self.file_dict["ga_bt2_s_sam"],
+                    self.file_dict["ga_rem_s"], "None", "s", s_marker
+                )
+                if(os.path.exists(s_marker)):
+                    print(dt.today(), "skipping: ", s_marker)
+                else:
+                    self.mp_util.run_subjob_with_mem_footprint(self.config_dict["BT2_mem_footprint"], self.config_dict["BT2_job_limit"],  s_job, command_list)
+                
+                c_job = os.path.join(self.dir_dict["GA_BT2_jobs"], "GA_BT2_pp_c_" + lib_tag + "_job.sh")
+                c_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_pp_c_" + lib_tag)
+                marker_path_list.append(c_marker)
+                command_list = self.commands.create_GA_BT2_pp_command(
+                    lib_entry, self.file_dict["gene_map_c"], self.file_dict["genes_c"],
+                    self.file_dict["contigs_out_fa"], "None", self.file_dict["ga_bt2_c_sam"],
+                    self.file_dict["ga_rem_c"], "None", "c", c_marker
+                )
+                if(os.path.exists(c_marker)):    
+                    print(dt.today(), "skipping: ", c_marker)
+                else:
+                    self.mp_util.run_subjob_with_mem_footprint(self.config_dict["BT2_mem_footprint"], self.config_dict["BT2_job_limit"],  c_job, command_list)
+                
+                    print(dt.today(), "BT2 pp batch launched for: ", lib_entry)
+                self.mp_util.wait_for_mp_store()
+
             print(dt.today(), "all BT2 PP jobs submitted.  waiting for sync")            
             self.mp_util.wait_for_mp_store()
-            marker_file = "BT2_copy_contig_map"
-            marker_path = os.path.join(self.GA_BT2_jobs_folder, marker_file)
-            if(os.path.exists(marker_path)):
-                print(dt.today(), "skipping:", marker_file)
-            else:   
-                marker_path_list.append(marker_path)
-                command_list = self.commands.create_BT2_copy_contig_map_command(self.GA_BT2_label, self.assemble_contigs_label, marker_file)
-                self.mp_util.run_subjob_simple(self.GA_BT2_label, self.GA_BT2_label + "_copy_contig_map", self.commands, command_list)
+
 
             
-            final_checklist = os.path.join(self.GA_BT2_path, "GA_BT2_pp.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BT2_pp_label)
+
+            gene_map_list = [self.file_dict["gene_map_s"], self.file_dict["gene_map_c"], self.file_dict["gene_map_p"]]
+            self.mp_util.concatenate_files_efficient(gene_map_list, self.file_dict["gene_map_full"])
+            if(self.marker_control.check_marker_list(marker_path_list)):
+                self.marker_control.place_marker("GA_BT2_PP")
+            else:
+                print(dt.today(), "not all markers finished")
+                sys.exit()
+
+
+            #self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
+            #self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BT2_pp_label)
         
         self.debug_stop_check("GA_BT2_pp")
         
-    def mp_GA_BT2_merge(self):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_BT2_merge_label):
-            #merge 
-            marker_path_list = []
-            sections = ["s"]
-            if self.read_mode == "p":
-                sections.extend(["p"])
-            if(self.contigs_present):
-                sections.extend(["c"])
-            
-            for section in sections:
-                for split_sample in os.listdir(os.path.join(self.GA_split_path, "final_results", section)):
-                    full_sample_path = os.path.join(os.path.join(self.GA_split_path, "final_results",section, split_sample))
-                    print("split sample:", full_sample_path)
-                    file_tag = os.path.basename(split_sample)
-                    file_tag = os.path.splitext(file_tag)[0]
-                    ref_path = self.config_dict["DNA_DB"]
-
-                    marker_file = file_tag + "_merge_fasta"
-                    marker_path = os.path.join(self.GA_BT2_jobs_folder, marker_file)
-                    if(os.path.exists(marker_path)):
-                        print(dt.today(), "skipping:", marker_file)
-                        continue
-                    else:
-                        marker_path_list.append(marker_path)
-                        job_name = "BT2_fasta_merge_" + file_tag
-                        command_list = self.commands.create_merge_BT2_fasta_command(self.GA_BT2_label, full_sample_path, marker_file)
-                        self.mp_util.run_subjob_with_hold(self.BT2_pp_mem_threshold, self.BT2_pp_job_limit, self.BT2_pp_job_delay, self.GA_BT2_label, job_name, self.commands, command_list)
-
-            print(dt.today(), "All BT2 merge jobs have launched. waiting for sync")
-            self.mp_util.wait_for_mp_store()
-            final_checklist = os.path.join(self.GA_BT2_path, "GA_BT2_merge.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_BT2_merge_label)
-            
-     
-        self.cleanup_GA_BT2_start = time.time()
-        self.mp_util.delete_folder_simple(self.GA_BT2_jobs_folder)
-        self.mp_util.clean_or_compress(self.GA_BT2_path, self.config_dict["keep_all"], self.keep_GA_BT2)
-        
-        self.cleanup_GA_BT2_end = time.time()
-        self.GA_BT2_end = time.time()
-        print("GA BT2:", '%1.1f' % (self.GA_BT2_end - self.GA_BT2_start - (self.cleanup_GA_BT2_end - self.cleanup_GA_BT2_start)), "s")
-        print("GA BT2 cleanup:", '%1.1f' % (self.cleanup_GA_BT2_end - self.cleanup_GA_BT2_start), "s")
-        self.debug_stop_check("GA_BT2_merge")
-
+        #there used to be a merge step, but it's no longer necessary with BT2 and the scaled-down parallelization
     
     def mp_GA_dmd(self):
         # ------------------------------------------------------
         # Diamond gene annotation
         self.GA_DIAMOND_start = time.time()
         #GA_DIAMOND_tool_output_path = os.path.join(self.GA_DIAMOND_path, "data", "0_diamond")
-        #if not check_where_resume(None, self.GA_DIAMOND_tool_output_path, self.GA_BLAT_path, file_check_bypass = True):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_DIAMOND_label):
-            marker_path_list = []
-            for split_sample in os.listdir(os.path.join(self.GA_BLAT_path, "final_results")):
-                if(split_sample.endswith(".fasta")):
-                    file_tag = os.path.basename(split_sample)
-                    file_tag = os.path.splitext(file_tag)[0]
-                    job_name = "DIAMOND_" + file_tag
-                    full_sample_path = os.path.join(os.path.join(self.GA_BLAT_path, "final_results", split_sample))
-                    marker_file = file_tag + "_diamond"
-                    marker_path = os.path.join(self.GA_DIAMOND_jobs_folder, marker_file)
-                    if(os.path.exists(marker_path)):
-                        print(dt.today(), "skipping:", marker_path)
-                        continue
-                    else:
-                        marker_path_list.append(marker_path)
-                        command_list = self.commands.create_DIAMOND_annotate_command_v2(self.GA_DIAMOND_label, full_sample_path, marker_file)
-                        #self.mp_util.run_subjob_with_hold(self.DIAMOND_mem_threshold, self.DIAMOND_job_limit, self.DIAMOND_job_delay, self.GA_DIAMOND_label, job_name, self.commands, command_list)
-                        self.mp_util.run_subjob_with_mem_footprint(self.DMD_mem_footprint, self.DIAMOND_job_limit, self.GA_DIAMOND_label, job_name, self.commands, command_list)
+        #if not check_where_resume(None, self.GA_DIAMOND_tool_output_path, self.GA_BLAT_path, file_check_bypass = True):        
+        #jul 21, 2025: it's been determined that sequential is the way to go, given that we can increase the block-size of the run
+        #yes, it's true.  
 
+        if(self.marker_control.check_marker("GA_DMD")):
+            self.dir_control.make_dirs_from_list("GA_DMD_list")
+            
+            marker_path_list = []
+            #remember: don't split the DMD jobs.  there's no consistency across mem use on input size.
+            if(self.marker_control.check_marker("GA_DMD_p1")):
+                block_size = self.mp_util.determine_dmd_mem_limit(self.file_dict["ga_rem_p1"])
+                marker_path_list.append(self.marker_dict["GA_DMD_p1"])
+                command_list = self.commands.create_GA_DMD_command(self.file_dict["ga_rem_p1"], self.file_dict["ga_dmd_p1_dmdout"], block_size, self.marker_dict["GA_DMD_p1"])
+                self.mp_util.run_subjob_with_hold(self.config_dict["DMD_mem_footprint"], self.config_dict["DMD_job_limit"], self.config_dict["DMD_job_delay"], self.file_dict["ga_dmd_p1_job"], command_list)
+                
+
+            if(self.marker_control.check_marker("GA_DMD_p2")):
+                block_size = self.mp_util.determine_dmd_mem_limit(self.file_dict["ga_rem_p2"])
+                marker_path_list.append(self.marker_dict["GA_DMD_p2"])
+                command_list = self.commands.create_GA_DMD_command(self.file_dict["ga_rem_p2"], self.file_dict["ga_dmd_p2_dmdout"], block_size, self.marker_dict["GA_DMD_p2"])
+                self.mp_util.run_subjob_with_hold(self.config_dict["DMD_mem_footprint"], self.config_dict["DMD_job_limit"], self.config_dict["DMD_job_delay"], self.file_dict["ga_dmd_p2_job"], command_list)
+                
+            if(self.marker_control.check_marker("GA_DMD_c")):
+                block_size = self.mp_util.determine_dmd_mem_limit(self.file_dict["ga_rem_c"])
+                marker_path_list.append(self.marker_dict["GA_DMD_c"])
+                command_list = self.commands.create_GA_DMD_command(self.file_dict["ga_rem_c"], self.file_dict["ga_dmd_c_dmdout"], block_size, self.marker_dict["GA_DMD_c"])
+                self.mp_util.run_subjob_with_hold(self.config_dict["DMD_mem_footprint"], self.config_dict["DMD_job_limit"], self.config_dict["DMD_job_delay"], self.file_dict["ga_dmd_c_job"], command_list)
+                
+
+            if(self.marker_control.check_marker("GA_DMD_s")):
+                marker_path_list.append(self.marker_dict["GA_DMD_s"])
+                block_size = self.mp_util.determine_dmd_mem_limit(self.file_dict["ga_rem_s"])
+                command_list = self.commands.create_GA_DMD_command(self.file_dict["ga_rem_s"], self.file_dict["ga_dmd_s_dmdout"], block_size, self.marker_dict["GA_DMD_s"])
+                self.mp_util.run_subjob_with_hold(self.config_dict["DMD_mem_footprint"], self.config_dict["DMD_job_limit"], self.config_dict["DMD_job_delay"], self.file_dict["ga_dmd_s_job"], command_list)
+                
             print(dt.today(), "All DIAMOND jobs launched.  waiting for join")
             self.mp_util.wait_for_mp_store()
-            final_checklist = os.path.join(self.GA_DIAMOND_path, "GA_DIAMOND.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_DIAMOND_label)
+            if(self.marker_control.check_marker_list(marker_path_list)):
+                self.marker_control.place_marker("GA_DMD")
+            else:
+                print(dt.today(), "DMD: not all markers finished")
+                sys.exit()
         
-        self.debug_stop_check(self.GA_DIAMOND_label)
         
     def mp_GA_dmd_pp(self):        
         #if not check_where_resume(GA_DIAMOND_path, None, self.GA_DIAMOND_tool_output_path, file_check_bypass = True):
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_DIAMOND_pp_label):
+        if(self.marker_control.check_marker("GA_DMD_pp")):
             #print(dt.today(), "DIAMOND PP threads used:", self.config_dict["num_threads/2)
             marker_path_list = []
-            for split_sample in os.listdir(os.path.join(self.GA_BLAT_path, "final_results")):
-                if(split_sample.endswith(".fasta")):
-                    file_tag = os.path.basename(split_sample)
-                    file_tag = os.path.splitext(file_tag)[0]
-                    job_name = "DIAMOND_pp_" + file_tag
-                    full_sample_path = os.path.join(os.path.join(self.GA_BLAT_path, "final_results", split_sample))
-                    marker_file = file_tag + "_diamond_pp"
-                    marker_path = os.path.join(self.GA_DIAMOND_jobs_folder, marker_file)
-                    if(os.path.exists(marker_path)):
-                        print(dt.today(), "skipping:", marker_file)
-                        continue
-                    else:
-                        marker_path_list.append(marker_path)
-                        command_list = self.commands.create_DIAMOND_pp_command_v2(self.GA_DIAMOND_label, self.GA_BLAT_label, full_sample_path, marker_file)
-                        self.mp_util.run_subjob_with_hold(self.DIAMOND_pp_mem_threshold, self.DIAMOND_pp_job_limit, self.DIAMOND_pp_job_delay, self.GA_DIAMOND_label, job_name, self.commands, command_list)
-                                        
+            if(self.marker_control.check_marker("GA_DMD_pp_p1")):
+
+                marker_path_list.append(self.marker_dict["GA_DMD_pp_p1"])
+                command_list = self.commands.create_DIAMOND_pp_command_v2(
+                    self.file_dict["ga_rem_p1"], self.file_dict["ga_dmd_p1_dmdout"], 
+                    self.file_dict["ga_dmd_rem_p1"], self.marker_dict["GA_DMD_pp_p1"]
+                    )
+                
+                self.mp_util.run_subjob_with_mem_footprint(
+                    self.config_dict["DMD_mem_footprint"], self.config_dict["DMD_job_limit"], 
+                    self.file_dict["ga_dmd_pp_p1_job"], command_list
+                    )
+                
+            if(self.marker_control.check_marker("GA_DMD_pp_p2")):
+
+                marker_path_list.append(self.marker_dict["GA_DMD_pp_p2"])
+                command_list = self.commands.create_DIAMOND_pp_command_v2(
+                    self.file_dict["ga_rem_p2"], self.file_dict["ga_dmd_p2_dmdout"], 
+                    self.file_dict["ga_dmd_rem_p2"], self.marker_dict["GA_DMD_pp_p2"]
+                    )
+                
+                self.mp_util.run_subjob_with_mem_footprint(
+                    self.config_dict["DMD_mem_footprint"], self.config_dict["DMD_job_limit"], 
+                    self.file_dict["ga_dmd_pp_p2_job"], command_list
+                    )
+                
+            if(self.marker_control.check_marker("GA_DMD_pp_s")):
+
+                marker_path_list.append(self.marker_dict["GA_DMD_pp_s"])
+                command_list = self.commands.create_DIAMOND_pp_command_v2(
+                    self.file_dict["ga_rem_s"], self.file_dict["ga_dmd_s_dmdout"], 
+                    self.file_dict["ga_dmd_rem_s"], self.marker_dict["GA_DMD_pp_s"]
+                    )
+                
+                self.mp_util.run_subjob_with_mem_footprint(
+                    self.config_dict["DMD_mem_footprint"], self.config_dict["DMD_job_limit"], 
+                    self.file_dict["ga_dmd_pp_s_job"], command_list
+                    )    
+           
+            if(self.marker_control.check_marker("GA_DMD_pp_c")):
+
+                marker_path_list.append(self.marker_dict["GA_DMD_pp_c"])
+                command_list = self.commands.create_DIAMOND_pp_command_v2(
+                    self.file_dict["ga_rem_c"], self.file_dict["ga_dmd_c_dmdout"], 
+                    self.file_dict["ga_dmd_rem_c"], self.marker_dict["GA_DMD_pp_c"]
+                    )
+                
+                self.mp_util.run_subjob_with_mem_footprint(
+                    self.config_dict["DMD_mem_footprint"], self.config_dict["DMD_job_limit"], 
+                    self.file_dict["ga_dmd_pp_c_job"], command_list
+                    )   
+                             
             print(dt.today(), "DIAMOND pp jobs submitted.  waiting for sync")
             self.mp_util.wait_for_mp_store()
-            final_checklist = os.path.join(self.GA_DIAMOND_path, "GA_DIAMOND_pp.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-                
-            self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_DIAMOND_pp_label)
-        
+            if(self.marker_control.check_marker_list(marker_path_list)):
+                self.place_marker("GA_DMD_pp")
+            else:
+                print(dt.today(), "Not all DMD pp markers finished")
+                sys.exit()
             
-        
-            self.cleanup_GA_DIAMOND_start = time.time()
-            self.mp_util.delete_folder_simple(self.GA_DIAMOND_jobs_folder)
-            self.mp_util.clean_or_compress(self.GA_DIAMOND_path, self.config_dict["keep_all"], self.keep_GA_DIAMOND)
-            self.cleanup_GA_DIAMOND_end = time.time()
-        self.GA_DIAMOND_end = time.time()
-        print("GA DIAMOND:", '%1.1f' % (self.GA_DIAMOND_end - self.GA_DIAMOND_start - (self.cleanup_GA_DIAMOND_end - self.cleanup_GA_DIAMOND_start)), "s")
-        print("GA DIAMOND cleanup:", '%1.1f' % (self.cleanup_GA_DIAMOND_end - self.cleanup_GA_DIAMOND_start), "s")
-        
+            
         self.debug_stop_check(self.GA_DIAMOND_pp_label)
         
     def mp_GA_final_merge(self):

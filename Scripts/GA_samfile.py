@@ -20,7 +20,7 @@ from Bio import SeqIO
 from datetime import datetime as dt
 import multiprocessing as mp
 from shutil import copyfile
-
+from Bio.SeqRecord import SeqRecord
 
 def fastq_to_protein(input_file, output_file):
     genetic_code = {
@@ -277,18 +277,22 @@ def write_unmapped_reads(unmapped_reads, reads_in, output_file):
         unmapped_seqs = []                               # Inintialize list of SeqRecords.
         for read in unmapped_reads:                     # Put corresponding SeqRecords for unmapped_reads
             if(read in read_seqs):
-                # Get the original nucleotide record
-                nuc_record = read_seqs[read]
-                # Translate to protein
-                protein_seq = nuc_record.seq.translate(to_stop=True)
-                # Create new record with protein sequence
-                protein_record = nuc_record[:]  # Copy the record
-                protein_record.seq = protein_seq
-                unmapped_seqs.append(protein_record)
+                ## Get the original nucleotide record
+                #nuc_record = read_seqs[read]
+                ## Translate to protein
+                #protein_seq = nuc_record.seq.translate(to_stop=True)
+                ## Create new record with protein sequence
+                #protein_record = SeqRecord(
+                #    seq=protein_seq,
+                #    id=nuc_record.id,
+                #    name=nuc_record.name,
+                #    description=nuc_record.description + " (translated)"
+                #)
+                #unmapped_seqs.append(protein_record)
 
                 #---------------------------------------------------
                 #for nucleotides only
-                #unmapped_seqs.append(read_seqs[read])       #  into unmapped_seqs
+                unmapped_seqs.append(read_seqs[read])       #  into unmapped_seqs
             else:
                 print("ignoring:", read, "can't find in read_seqs")
         with open(output_file,"a") as out:

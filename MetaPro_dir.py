@@ -67,11 +67,6 @@ class mpro_dir:
 
         return value
         
-        
-        
-        
-        
-        
     
     def get_label_dict(self):
         return self.label_dict
@@ -294,12 +289,14 @@ class mpro_dir:
 
         self.dir_dict["GA_DMD"] = os.path.join(self.out_dir, self.label_dict["GA_DMD"])        
         self.dir_dict["GA_DMD_data"] = os.path.join(self.dir_dict["GA_DMD"], "data")
+        
         self.dir_dict["GA_DMD_export"] = os.path.join(self.dir_dict["GA_DMD"], "export")
         self.dir_dict["GA_DMD_jobs"] = os.path.join(self.dir_dict["GA_DMD"], "jobs")
+        self.dir_dict["GA_DMD_mkrs"] = os.path.join(self.dir_dict["GA_DMD"], "markers")
         self.dir_dict["GA_DMD_run"] = os.path.join(self.dir_dict["GA_DMD_data"], "0_dmd")
         self.dir_dict["GA_DMD_pp"] = os.path.join(self.dir_dict["GA_DMD_data"], "1_pp")
         self.dir_dict["GA_DMD_temp"] = os.path.join(self.dir_dict["GA_DMD_run"], "temp")
-        self.dir_dict["GA_DMD_list"] = ["GA_DMD", "GA_DMD_data", "GA_DMD_jobs", "GA_DMD_export", "GA_DMD_run", "GA_DMD_pp", "GA_DMD_temp"]
+        self.dir_dict["GA_DMD_list"] = ["GA_DMD", "GA_DMD_data", "GA_DMD_jobs", "GA_DMD_mkrs", "GA_DMD_export", "GA_DMD_run", "GA_DMD_pp", "GA_DMD_temp"]
 
         self.dir_dict["GA_FM"] = os.path.join(self.out_dir, self.label_dict["GA_final_merge"])
         self.dir_dict["GA_FM_data"] = os.path.join(self.dir_dict["GA_FM"], "data")

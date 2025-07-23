@@ -92,17 +92,7 @@ def main(config_dict, dir_obj, time_obj, file_obj):
     
     
     metapro_stage_obj.mp_GA_BT2_pp()
-    if(metapro_stage_obj.GA_DB_mode == "multi"):
-        metapro_stage_obj.mp_GA_BWA_merge()
-    
-    
-    
-    # BLAT gene annotation
-    metapro_stage_obj.mp_GA_BLAT()
-    metapro_stage_obj.mp_GA_BLAT_pp()
-    metapro_stage_obj.mp_GA_BLAT_merge()
-    
-    
+   
     
     #DIAMOND gene annotation
     metapro_stage_obj.mp_GA_dmd()

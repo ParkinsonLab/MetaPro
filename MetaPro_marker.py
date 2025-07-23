@@ -31,18 +31,22 @@ class mpro_marker:
                 pass
         
     def check_marker_list(self, marker_list):
-        status = False
+        status = True
         for item in marker_list:
             print(dt.today(), "checking:", item)
             if(os.path.exists(item)):
                 status = True
+                print("OK:", item)
             else:
+                print(dt.today(), "failed marker: ", item)
                 return False
+        print(dt.today(), "everything's fine")
         return status
 
     def check_marker(self, tag):
         print(dt.today(), "checking:", tag)
         if(os.path.exists(self.marker_dict[tag])):
+            print(dt.today(), "skipping: ", self.marker_dict[tag])
             return False
         else:
             return True
@@ -95,5 +99,16 @@ class mpro_marker:
         self.marker_dict["GA_BT2"] = os.path.join(self.dir_dict["GA_BT2"], "GA_BT2")
         self.marker_dict["GA_BT2_PP"] = os.path.join(self.dir_dict["GA_BT2"], "GA_BT2_PP")
         
-
+        self.marker_dict["GA_DMD"] = os.path.join(self.dir_dict["GA_DMD"], "GA_DMD")
+        self.marker_dict["GA_DMD_p1"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_p1")
+        self.marker_dict["GA_DMD_p2"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_p2")
+        self.marker_dict["GA_DMD_s"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_s")
+        self.marker_dict["GA_DMD_c"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_c")
+        self.marker_dict["GA_DMD_pp"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_pp")
+        self.marker_dict["GA_DMD_pp_p1"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_pp_p1")
+        self.marker_dict["GA_DMD_pp_p2"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_pp_p2")
+        self.marker_dict["GA_DMD_pp_c"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_pp_c")
+        self.marker_dict["GA_DMD_pp_s"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_pp_s")
+        
+        
 

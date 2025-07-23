@@ -231,6 +231,64 @@ class mp_util:
         self.bypass_log_name = os.path.basename(config_dict["bypass_log"])
         self.mpsh = mp_seq_handler()
 
+    def get_query_size_gb(self, query_file):
+        """Get query file size in GB"""
+        try:
+            file_size_bytes = os.path.getsize(query_file)
+            file_size_gb = file_size_bytes / (1024**3)  # Convert bytes to GB
+            return file_size_gb
+        except FileNotFoundError:
+            print(f"Warning: Query file {query_file} not found. Using default size.")
+            return 7.0  # Default fallback
+        except Exception as e:
+            print(f"Error getting file size for {query_file}: {e}. Using default size.")
+            return 7.0  # Default fallback
+
+    def determine_dmd_mem_limit(self, query_file):
+        mem = psu.virtual_memory()
+        total_mem = mem.total/(1024*1024*1024)
+        
+        # Get actual query file size
+        query_file_size_gb = self.get_query_size_gb(query_file)
+        
+        # Sequential processing - use 80% of total RAM for single job
+        safety_buffer = 0.8
+        available_memory = total_mem * safety_buffer
+        
+        # Account for actual DIAMOND memory usage (not full 373GB database)
+        nr_index_memory = 15   # GB (database metadata/index structures only)
+        working_memory = 10    # GB (alignment buffers, etc.)
+        query_memory = query_file_size_gb + 2  # Add 2GB overhead
+        base_memory = nr_index_memory + query_memory + working_memory
+        
+        # Available memory for block-size after accounting for base usage
+        available_for_blocks = available_memory - base_memory
+        
+        print(f"Total RAM: {total_mem:.1f}GB, Available for blocks: {available_for_blocks:.1f}GB")
+        
+        # Set block-size based on available memory
+        if available_for_blocks > 100:     # 400GB+ systems
+            block_size = min(40.0, available_for_blocks / 3)
+        elif available_for_blocks > 50:    # 200GB+ systems
+            block_size = min(25.0, available_for_blocks / 2)
+        elif available_for_blocks > 20:    # 180GB systems
+            block_size = min(15.0, available_for_blocks / 2)
+        elif available_for_blocks > 5:     # Lower memory systems
+            block_size = min(8.0, available_for_blocks / 2)
+        elif available_for_blocks > 0:     # Minimal systems
+            block_size = min(4.0, available_for_blocks)
+        else:
+            print("WARNING: Very low available memory for DIAMOND processing.")
+            block_size = 2.0  # Conservative fallback
+        return block_size
+
+    def concatenate_files_efficient(self, file_list, output_file):
+        with open(output_file, 'w') as outfile:
+            for filename in file_list:
+                with open(filename, 'r') as infile:
+                    for line in infile:
+                        outfile.write(line)
+
     def mem_checker(self, threshold):
         #threshold is a percentage for available memory.  
         
