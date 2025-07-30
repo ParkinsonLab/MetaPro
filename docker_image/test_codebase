@@ -1,4 +1,5 @@
-FROM parkinsonlab/mpro_stash:v1.0.5
+FROM parkinsonlab/mpro_stash:v1.0.6
+
 
 
 #-------------------------------------------
@@ -7,6 +8,9 @@ WORKDIR /pipeline
 RUN mkdir /pipeline/Scripts && mkdir /pipeline/custom_databases && mkdir /pipeline/setup_scripts
 
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro.py /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_dir.py /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_files.py /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_marker.py /pipeline
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_paths.py /pipeline
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_commands.py /pipeline
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_utilities.py /pipeline
