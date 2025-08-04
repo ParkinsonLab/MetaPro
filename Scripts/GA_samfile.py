@@ -268,6 +268,13 @@ def gene_map(cigar_cutoff, sam, contig_read_dict):#, mapped_reads, gene_read_dic
     
 
 def write_unmapped_reads(unmapped_reads, reads_in, output_file):
+    #due to the way samfiles are formed <iterative concat>, the final samfile will have all unmapped reads. 
+    #therefore, a single pass-through is enough
+    if(os.path.exists(output_file)):
+        print(dt.today(), "no need to write more unmapped reads:", output_file)
+        return 0
+
+
     if not unmapped_reads:
         print(dt.today(), "no unmapped reads found.  skipping")
         return
