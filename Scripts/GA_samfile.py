@@ -268,41 +268,48 @@ def gene_map(cigar_cutoff, sam, contig_read_dict):#, mapped_reads, gene_read_dic
     
 
 def write_unmapped_reads(unmapped_reads, reads_in, output_file):
-    if(len(unmapped_reads) == 0):
+    if not unmapped_reads:
         print(dt.today(), "no unmapped reads found.  skipping")
-    else:
-        read_seqs = SeqIO.index(reads_in, os.path.splitext(reads_in)[1][1:])
-        # WRITE OUTPUT: non-BT2-aligned contig/readIDs:
-        # and seqs (.fasta):
-        unmapped_seqs = []                               # Inintialize list of SeqRecords.
-        for read in unmapped_reads:                     # Put corresponding SeqRecords for unmapped_reads
-            if(read in read_seqs):
-                ## Get the original nucleotide record
-                #nuc_record = read_seqs[read]
-                ## Translate to protein
-                #protein_seq = nuc_record.seq.translate(to_stop=True)
-                ## Create new record with protein sequence
-                #protein_record = SeqRecord(
-                #    seq=protein_seq,
-                #    id=nuc_record.id,
-                #    name=nuc_record.name,
-                #    description=nuc_record.description + " (translated)"
-                #)
-                #unmapped_seqs.append(protein_record)
-
-                #---------------------------------------------------
-                #for nucleotides only
-                unmapped_seqs.append(read_seqs[read])       #  into unmapped_seqs
+        return
+    
+    # Fast check for existing IDs - only read headers
+    existing_ids = set()
+    if os.path.exists(output_file):
+        with open(output_file, "rb") as f:  # Binary mode is faster
+            for line in f:
+                if line.startswith(b'>'):
+                    existing_ids.add(line[1:].split()[0].decode('ascii'))
+    
+    # Pre-filter to only truly new reads
+    new_reads = []
+    for read in unmapped_reads:
+        if read not in existing_ids:
+            new_reads.append(read)
+    
+    if not new_reads:
+        print("No new sequences to add - all were duplicates")
+        return
+    
+    print("Processing", len(new_reads), "new reads out of", len(unmapped_reads), "total")
+    
+    # Only index if we have new reads to process
+    read_seqs = SeqIO.index(reads_in, os.path.splitext(reads_in)[1][1:])
+    
+    # Write directly without building intermediate list
+    count = 0
+    with open(output_file, "a") as out:
+        for i, read in enumerate(new_reads):
+            if read in read_seqs:
+                SeqIO.write(read_seqs[read], out, "fasta")
+                count += 1
             else:
                 print("ignoring:", read, "can't find in read_seqs")
-        with open(output_file,"a") as out:
-            SeqIO.write(unmapped_seqs, out, "fasta")    #  and write it to file.
-
-        # print no. aligned reads from current readtype set:
-        #print (str(len(mapped_reads)-prev_mapping_count) + ' additional reads were mapped from ' + os.path.basename(reads_in))
-        #if x!=2: print ('')
-        #prev_mapping_count= len(mapped_reads)
-
+            
+            # Progress indicator every 1000 reads
+            if (i + 1) % 1000 == 0:
+                print("Processed", i + 1, "of", len(new_reads), "reads")
+    
+    print("Added", count, "new sequences to", output_file)
 
 def write_gene_map(DNA_DB, gene2read_file, gene_read_dict, aligned_genes_out):
     # WRITE OUTPUT: write gene<->read mapfile of BWA-aligned:
