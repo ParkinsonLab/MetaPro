@@ -1,78 +1,159 @@
 import os
 import sys
-import pandas as pd
-import numpy as np
 from datetime import datetime as dt
-# what this code does:
-# takes in 2 pair fastq files, splits them up into 3: matching IDs (in both), and what doesn't match
-# to scale this, break up the inputs, and build a reduction. 
-# we expect this code to be called multiple times
 
-def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i):
+def parse_fastq_streaming(filepath):
+    """
+    Generator that yields FASTQ records one at a time without loading entire file into memory.
+    Returns (id, full_record) tuples.
+    """
+    with open(filepath, 'r') as f:
+        while True:
+            header = f.readline()
+            if not header:
+                break
+            seq = f.readline()
+            plus = f.readline()
+            qual = f.readline()
+            
+            header = header.strip()
+            seq = seq.strip()
+            plus = plus.strip()
+            qual = qual.strip()
+            
+            # Extract ID (everything before first space)
+            read_id = header.split()[0] if ' ' in header else header
+            full_record = '\n'.join([header, seq, plus, qual]) + '\n'
+            
+            yield (read_id, full_record)
 
-    #There's some situations where there's no orphans generated from the previous steps.
-    # feb 19, 2025: this code should work if it's opening the same file it's appending to.  
-    if(os.path.exists(orphans_path_i)):
-        if(os.path.getsize(orphans_path_i) == 0):
-            print(dt.today(), "empty singletons. skipping")
-            #with open(unique_path_o, "w") as out_file:
-            #    pass
-        #else:
-        #removed: redundant logic
-        #    orphans_i_file = pd.read_csv(orphans_path_i, header=None, names=[None], sep = r'\n', engine="python",  skip_blank_lines = False, quoting = 3)
-        #    orphans_df = pd.DataFrame(orphans_i_file.values.reshape(int(len(orphans_i_file)/4), 4))
-        #    orphans_df.columns = ["ID", "seq", "junk", "quality"]
-        #    np.savetxt(orphans_path_i, orphans_df.values(), mode = "w", delimiter = "\n", fmt='%s')
-            #orphans_df.to_csv(unique_path_o, sep = '\n', mode = 'a', header=False, index=False, quoting = 3)
-        #    print(dt.today(), "placeholder for exporting singles")
+def get_read_ids(filepath):
+    """
+    First pass: collect all read IDs from a FASTQ file.
+    Memory efficient - only stores IDs, not full records.
+    """
+    ids = set()
+    print("Scanning IDs from", filepath)
+    
+    count = 0
+    for read_id, _ in parse_fastq_streaming(filepath):
+        ids.add(read_id)
+        count += 1
+        if count % 1000000 == 0:  # Progress indicator for large files
+            print("  Processed", count, "reads...")
+    
+    print("Found", len(ids), "unique IDs in", filepath)
+    return ids
+
+def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_o, orphans_path_o):
+    """
+    Memory-efficient version that processes files in streaming fashion.
+    Uses two passes to minimize memory usage with large files.
+    """
+    
+    # Handle existing orphans first
+    if os.path.exists(orphans_path_i) and os.path.getsize(orphans_path_i) > 0:
+        print(dt.today(), "Found existing orphans file with", os.path.getsize(orphans_path_i), "bytes")
+        with open(orphans_path_i, 'r') as infile, open(orphans_path_o, 'w') as outfile:
+            outfile.write(infile.read())
+        print("Copied existing orphans from", orphans_path_i, "to", orphans_path_o)
     else:
-        print(orphans_path_i, "doesn't exist")
+        if os.path.exists(orphans_path_i):
+            print(dt.today(), "empty singletons file exists")
+        else:
+            print(orphans_path_i, "doesn't exist, starting with empty orphans file")
+        open(orphans_path_o, 'w').close()
+    
+    print("Processing", p0_path_i, "and", p1_path_i)
+    
+    # Pass 1: Get all read IDs from both files (memory efficient)
+    print("Pass 1: Collecting read IDs...")
+    start_time = dt.now()
+    
+    ids_0 = get_read_ids(p0_path_i)
+    ids_1 = get_read_ids(p1_path_i)
+    
+    # Find intersection - reads present in both files
+    common_ids = ids_0.intersection(ids_1)
+    print("Found", len(common_ids), "matching pairs")
+    print("File 0 orphans:", len(ids_0) - len(common_ids))
+    print("File 1 orphans:", len(ids_1) - len(common_ids))
+    print("ID collection time:", dt.now() - start_time)
+    
+    # Pass 2: Stream through files again and write output based on ID sets
+    print("Pass 2: Writing output files...")
+    start_time = dt.now()
+    
+    # Process first file
+    matched_count_0 = 0
+    orphan_count_0 = 0
+    
+    print("Processing file 0...")
+    with open(p0_path_o, 'w') as matched_out, open(orphans_path_o, 'a') as orphan_out:
+        for read_id, full_record in parse_fastq_streaming(p0_path_i):
+            if read_id in common_ids:
+                matched_out.write(full_record)
+                matched_count_0 += 1
+            else:
+                orphan_out.write(full_record)
+                orphan_count_0 += 1
+            
+            if (matched_count_0 + orphan_count_0) % 1000000 == 0:
+                print("  Processed", matched_count_0 + orphan_count_0, "reads from file 0...")
+    
+    # Process second file
+    matched_count_1 = 0
+    orphan_count_1 = 0
+    
+    print("Processing file 1...")
+    with open(p1_path_o, 'w') as matched_out, open(orphans_path_o, 'a') as orphan_out:
+        for read_id, full_record in parse_fastq_streaming(p1_path_i):
+            if read_id in common_ids:
+                matched_out.write(full_record)
+                matched_count_1 += 1
+            else:
+                orphan_out.write(full_record)
+                orphan_count_1 += 1
+            
+            if (matched_count_1 + orphan_count_1) % 1000000 == 0:
+                print("  Processed", matched_count_1 + orphan_count_1, "reads from file 1...")
+    
+    print("File processing time:", dt.now() - start_time)
+    print("Saved", matched_count_0, "matching pairs to", p0_path_o)
+    print("Saved", matched_count_1, "matching pairs to", p1_path_o)
+    print("Appended", orphan_count_0 + orphan_count_1, "new orphans to", orphans_path_o)
+    
+    # Show final orphan file size
+    if os.path.exists(orphans_path_o):
+        print("Total orphans file size:", os.path.getsize(orphans_path_o), "bytes")
+    
+    # Clean up memory
+    del ids_0, ids_1, common_ids
 
-    pre_df_0 = pd.read_csv(p0_path_i, header=None, names=[None], sep = r'\n', engine="python", skip_blank_lines = False, quoting=3)
-    pre_df_1 = pd.read_csv(p1_path_i, header=None, names=[None], sep = r'\n', engine="python",  skip_blank_lines = False, quoting=3)
-    df_0 = pd.DataFrame(pre_df_0.values.reshape(int(len(pre_df_0)/4), 4))
-    df_1 = pd.DataFrame(pre_df_1.values.reshape(int(len(pre_df_1)/4), 4))
-    
-    df_0.columns = ["ID", "seq", "junk", "quality"]
-    df_1.columns = ["ID", "seq", "junk", "quality"]
-    #df_0["ID"] = df_0["ID"].apply(lambda x: x.split(" ")[0]) #There may be a space in the ID, left in some types of FASTQs.  
-    #df_1["ID"] = df_1["ID"].apply(lambda x: x.split(" ")[0]) #we remove them to that the ID-matching will work
-    common = df_0.merge(df_1, on=["ID"])
-    
-    #stuff that belongs go here
-    #df_0[df_0.ID.isin(common.ID)].to_csv(pair_0_path_o, sep = '\n', mode = 'w+', header = False, index = False, quoting = 3)
-    #df_1[df_1.ID.isin(common.ID)].to_csv(pair_1_path_o, sep = '\n', mode = 'w+', header = False, index = False, quoting = 3)
-    df_0_yes = df_0[df_0.ID.isin(common.ID)]
-    df_1_yes = df_1[df_1.ID.isin(common.ID)]
-
-    np.savetxt(p0_path_i, df_0_yes.values, delimiter = "\n", fmt='%s')
-    np.savetxt(p1_path_i, df_1_yes.values, delimiter = "\n", fmt='%s')
-    
-    #stuff that doesn't belong go to another pile
-    # First dataframe (write mode)
-    data_0 = df_0[~df_0.ID.isin(common.ID)]
-    with open(orphans_path_i, "a") as file_write:
-        np.savetxt(file_write, data_0.values, delimiter='\n', fmt='%s')
-
-    # Second dataframe (append mode)
-    data_1 = df_1[~df_1.ID.isin(common.ID)]
-    with open(orphans_path_i, "a") as file_write:
-        np.savetxt(file_write, data_1.values, delimiter='\n', fmt='%s')
-    
-    
 
 if __name__ == "__main__":
-    if(len(sys.argv) < 7):
-        print("Too few input arguements.  Not filtering for orphans")
-    elif(len(sys.argv) > 7):
-        print("Too many input arguments.  Not filtering for orphans")
-    else:
-        p0_path_i = os.path.abspath(sys.argv[1])
-        p1_path_i = os.path.abspath(sys.argv[2])
-        orphans_path_i = os.path.abspath(sys.argv[3])
-        
-        print("p0 in:", p0_path_i)
-        print("p1 in:", p1_path_i)
-
-        filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i)
-        
+    if len(sys.argv) != 7:
+        print("Usage: python script.py <p0_in> <p1_in> <orphans_in> <p0_out> <p1_out> <orphans_out>")
+        sys.exit(1)
+    
+    p0_path_i = os.path.abspath(sys.argv[1])
+    p1_path_i = os.path.abspath(sys.argv[2])
+    orphans_path_i = os.path.abspath(sys.argv[3])
+    
+    p0_path_o = os.path.abspath(sys.argv[4])
+    p1_path_o = os.path.abspath(sys.argv[5])
+    orphans_path_o = os.path.abspath(sys.argv[6])
+    
+    print("Input files:")
+    print("  p0 in:", p0_path_i)
+    print("  p1 in:", p1_path_i)
+    print("  orphans in:", orphans_path_i)
+    print("Output files:")
+    print("  p0 out:", p0_path_o)
+    print("  p1 out:", p1_path_o)
+    print("  orphans out:", orphans_path_o)
+    
+    start_time = dt.now()
+    filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_o, orphans_path_o)
+    end_time = dt.now()
+    print("Total processing time:", end_time - start_time)
