@@ -199,7 +199,9 @@ class mt_pipe_commands:
                 vsearch_filter_0 + " & " +
                 vsearch_filter_1 + " & " +
                 vsearch_filter_2,
+                ">&2 echo delaying 60s | sleep 60", 
                 orphan_read_filter,
+                ">&2 echo delaying 60s | sleep 60", 
                 cdhit_singletons,
                 cdhit_paired + " && "  + make_marker
             ]

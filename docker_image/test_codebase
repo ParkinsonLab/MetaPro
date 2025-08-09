@@ -13,6 +13,7 @@ ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_files.py
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_marker.py /pipeline
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_paths.py /pipeline
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_commands.py /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_time.py /pipeline
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_utilities.py /pipeline
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_stages.py /pipeline
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Config.ini /pipeline

@@ -194,8 +194,9 @@ class mp_stage:
                             for item in self.dir_dict[host_id + "_dir_list"]:
                                 self.dir_control.make_dirs(self.dir_dict[item])
                             host_mkr = self.marker_dict[item + "_host"]
+                            host_job = os.path.join(self.dir_dict["host_jobs"], item + "_job.sh")
                             command_list = self.commands.create_host_filter_command(self.config_dict["host_IDs"], host_count, host_mkr)
-                            self.mp_util.launch_stage_simple(self.host_filter_label, self.dir_dict["host"], self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_host"])
+                            self.mp_util.launch_stage_simple(host_job, command_list, self.config_dict["keep_all"], self.config_dict["keep_host"])
                             self.time_control.measure_time("host", "end")
                             self.marker_control.place_marker(self.marker_dict[host_id + "_host"])
                         else:
@@ -324,15 +325,14 @@ class mp_stage:
                 job_path = self.file_dict["rRNA_inf_job_s_" + str(i)]
                 if(self.marker_control.check_marker("rRNA_inf_s_" + str(i))):
                     command = self.commands.create_rRNA_filter_infernal_command(s_seq, inf_out, marker)
-                    self.mp_util.run_subjob_simple(
+                    self.mp_util.run_subjob_no_final(
                         self.config_dict["Infernal_mem_threshold"],
                         self.config_dict["Infernal_job_limit"],
                         self.config_dict["Infernal_job_delay"],
                         job_path,
-                        self.commands,
                         command)    
-
-
+            self.mp_util.wait_for_mp_store()
+            
             for i in range(0, split_count_p1):
                 p1_seq = self.file_dict["rRNA_inf_in_p1_" + str(i)]
                 inf_out = self.file_dict["rRNA_inf_out_p1_" + str(i)]
@@ -341,13 +341,13 @@ class mp_stage:
                 job_path = self.file_dict["rRNA_inf_job_p1_" + str(i)]
                 if(self.marker_control.check_marker("rRNA_inf_p1_" + str(i))):
                     command = self.commands.create_rRNA_filter_infernal_command(p1_seq, inf_out, marker)
-                    self.mp_util.run_subjob_simple(
+                    self.mp_util.run_subjob_no_final(
                         self.config_dict["Infernal_mem_threshold"],
                         self.config_dict["Infernal_job_limit"],
                         self.config_dict["Infernal_job_delay"],
                         job_path,
-                        self.commands,
                         command)    
+            self.mp_util.wait_for_mp_store()
 
             for i in range(0, split_count_p2):
                 p2_seq = self.file_dict["rRNA_inf_in_p2_" + str(i)]
@@ -357,12 +357,11 @@ class mp_stage:
                 job_path = self.file_dict["rRNA_inf_job_p2_" + str(i)]
                 if(self.marker_control.check_marker("rRNA_inf_p2_" + str(i))):
                     command = self.commands.create_rRNA_filter_infernal_command(p2_seq, inf_out, marker)
-                    self.mp_util.run_subjob_simple(
+                    self.mp_util.run_subjob_no_final(
                         self.config_dict["Infernal_mem_threshold"],
                         self.config_dict["Infernal_job_limit"],
                         self.config_dict["Infernal_job_delay"],
                         job_path,
-                        self.commands,
                         command)    
 
             #wait for everything.
@@ -419,12 +418,11 @@ class mp_stage:
                                                                         self.marker_dict["rRNA_inf_pp_paired"]
                                                                         )
                 
-                self.mp_util.run_subjob_simple(
+                self.mp_util.run_subjob_no_final(
                         self.config_dict["Infernal_mem_threshold"],
                         self.config_dict["Infernal_job_limit"],
                         self.config_dict["Infernal_job_delay"],
                         self.file_dict["rRNA_pp_p_job"],
-                        self.commands,
                         command) 
 
 
@@ -435,12 +433,11 @@ class mp_stage:
                                                                  self.file_dict["rRNA_other_s_fq"],
                                                                  self.marker_dict["rRNA_inf_pp_s"]
                                                                  )
-            self.mp_util.run_subjob_simple(
+            self.mp_util.run_subjob_no_final(
                         self.config_dict["Infernal_mem_threshold"],
                         self.config_dict["Infernal_job_limit"],
                         self.config_dict["Infernal_job_delay"],
                         self.file_dict["rRNA_pp_s_job"],
-                        self.commands,
                         command) 
             self.mp_util.wait_for_mp_store()
             self.marker_control.place_marker("rRNA")
@@ -461,7 +458,7 @@ class mp_stage:
             self.mp_util.run_subjob_with_hold(  self.config_dict["repop_mem_threshold"], 
                                                 self.config_dict["repop_job_limit"], 
                                                 self.config_dict["repop_job_delay"], 
-                                                self.file_dict["repop_job"], self.commands, command_list)
+                                                self.file_dict["repop_job"], command_list)
             #self.mp_util.wait_for_mp_store()
             self.marker_control.place_marker("repop")
         self.repop_end = time.time()
@@ -480,8 +477,12 @@ class mp_stage:
         if self.marker_control.check_marker("contigs"):
             self.dir_control.make_dirs_from_list("contigs_list")
             command_list = self.commands.create_assemble_contigs_command(self.marker_dict["contigs"])
-            self.mp_util.run_subjob_simple(self.file_dict["contigs_job"], self.commands, command_list)
-            
+            self.mp_util.run_subjob_with_hold(
+                self.config_dict["repop_mem_threshold"], 
+                self.config_dict["repop_job_limit"], 
+                self.config_dict["repop_job_delay"],
+                self.file_dict["contigs_job"], 
+                command_list)
             if(os.path.exists(spades_done_file)):
                 if(os.path.exists(spades_transcript_file)):
                     spades_fail_flag = False

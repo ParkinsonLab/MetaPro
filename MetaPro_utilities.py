@@ -531,7 +531,7 @@ class mp_util:
                         raise
 
 
-    def run_subjob_simple(self, job_location, command_obj, commands):
+    def run_subjob_simple(self, job_location, commands):
         #just launches a job.  no multi-process.
         process = mp.Process(
             target=self.make_script,
@@ -540,7 +540,7 @@ class mp_util:
         process.start()
         process.join()
 
-    def run_subjob_with_mp_store(self, job_location, job_label, command_obj, commands):
+    def run_subjob_with_mp_store(self, job_location, job_label, commands):
         #just launches a job.  no multi-process.
         process = mp.Process(
             target=self.make_script,
@@ -549,15 +549,15 @@ class mp_util:
         process.start()
         self.mp_store.append(process)
 
-    def launch_only_simple(self, command_obj, commands):
+    def launch_only_simple(self, commands):
         process = mp.Process(
-            target=command_obj.launch_only,
+            target=self.launch_only,
             args=(commands, len(commands))
         )
         process.start()
         process.join()
         
-    def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_location, job_label, command_obj, commands):
+    def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_location, job_label, commands):
         #just launches a job.  no multi-process.
         #Jan 25, 2022: now adding job controls.
         job_counter = 0
@@ -741,7 +741,7 @@ class mp_util:
             self.delete_folder(analysis_path)
 
 
-    def launch_stage_simple(self, job_path, commands, command_list, keep_all, keep_job):
+    def launch_stage_simple(self, job_path, command_list, keep_all, keep_job):
         #wrapper for simple job launches (quality, host)
         #cleanup_job_start = 0
         #cleanup_job_end = 0
@@ -750,7 +750,7 @@ class mp_util:
 
         if self.check_bypass_log(self.output_folder_path, job_label):
             print(dt.today(), "NEW CHECK running:", job_label)
-            self.run_subjob_simple(job_path, commands, command_list)
+            self.run_subjob_simple(job_path, command_list)
             
             self.write_to_bypass_log(self.output_folder_path, job_label)
             #cleanup_job_start = time.time()

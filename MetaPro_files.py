@@ -101,6 +101,7 @@ class mpro_file_handler:
                 self.file_dict[item + "_no_host_u"] = os.path.join(self.dir_dict[item + "_host_export"], "u_no_host.fastq")
                 self.file_dict[item + "_no_host_s_sam"] = os.path.join(self.dir_dict[item + "_host_scan"], "s_no_host.sam")
                 self.file_dict[item + "_no_host_p_sam"] = os.path.join(self.dir_dict[item + "_host_scan"], "p_no_host.sam")
+                self.file_dict[item + "_job"] = os.path.join(self.dir_dict["host_jobs"])
                 
 
             self.file_dict[item + "_host_clean_list"] = [
