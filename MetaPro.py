@@ -275,10 +275,10 @@ if __name__ == "__main__":
         output_folder = os.path.abspath(output_folder)
         print(dt.today(), "output destination:", output_folder)
 
-    #Check DB integrity
+    #Check DB integrity. no-host engaged
     if(config_dict["no_host"] is True):
         print(dt.today(), "pre-flight check: host-DB indexing")
-        host_list = config_dict["host_list"]
+        host_list = config_dict["Host_IDs"]
         for item in host_list:
             pass_flag = config_obj.check_BT2_valid(config_dict["Host_db"], item)
             if(not pass_flag):

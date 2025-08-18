@@ -171,13 +171,13 @@ class mp_stage:
 
     def mp_host_filter(self):
         if not self.config_dict["no_host"]:
-            print("host id list:", self.config_dict["host_IDs"])
-            if("none" in self.config_dict["host_IDs"]):
+            print("host id list:", self.config_dict["Host_IDs"])
+            if("none" in self.config_dict["Host_IDs"]):
                 print(dt.today(), "no hosts specified. bypassing")
             
             else:
                 print(dt.today(), "host elements detected")
-                for host_id in self.config_dict["host_IDs"]:
+                for host_id in self.config_dict["Host_IDs"]:
                     if((host_id != "none") or (host_id != "None")):
                         print(dt.today(), "using Host ID:", host_id)
                         print(dt.today(), "checking for marker:", host_id + "_host")
@@ -195,7 +195,7 @@ class mp_stage:
                                 self.dir_control.make_dirs(self.dir_dict[item])
                             host_mkr = self.marker_dict[item + "_host"]
                             host_job = os.path.join(self.dir_dict["host_jobs"], item + "_job.sh")
-                            command_list = self.commands.create_host_filter_command(self.config_dict["host_IDs"], host_count, host_mkr)
+                            command_list = self.commands.create_host_filter_command(self.config_dict["Host_IDs"], host_count, host_mkr)
                             self.mp_util.launch_stage_simple(host_job, command_list, self.config_dict["keep_all"], self.config_dict["keep_host"])
                             self.time_control.measure_time("host", "end")
                             self.marker_control.place_marker(self.marker_dict[host_id + "_host"])
@@ -215,7 +215,7 @@ class mp_stage:
             #if self.config_dict["no_host"]:
                 #get dep args from quality filter
                 #if not check_where_resume(vector_path, None, self.quality_path):
-            final_host = self.config_dict["host_IDs"][-1]
+            final_host = self.config_dict["Host_IDs"][-1]
             print("using final host:", final_host)
 
             for item in self.dir_dict["vec_list"]:
