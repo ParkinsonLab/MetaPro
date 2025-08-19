@@ -73,10 +73,11 @@ class mpro_marker:
         self.m_name["rRNA_inf_s"] = "rRNA_inf_s"
         self.m_name["rRNA_inf_p1"] = "rRNA_inf_p1"
         self.m_name["rRNA_inf_p2"] = "rRNA_inf_p2"
+        
 
         self.marker_dict = dict()
         self.marker_dict["qf"] = os.path.join(self.dir_dict["qf"], self.m_name["qf"])
-        for item in self.config_dict["host_IDs"]:
+        for item in self.config_dict["Host_IDs"]:
             self.marker_dict[item + "_host"] = os.path.join(self.dir_dict["main_host"], item + "_mkr")
         self.marker_dict["vec"] = os.path.join(self.dir_dict["vec"], self.m_name["vec"])
         self.marker_dict["rRNA"] = os.path.join(self.dir_dict["rRNA"], self.m_name["rRNA"])

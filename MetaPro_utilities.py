@@ -752,7 +752,7 @@ class mp_util:
             print(dt.today(), "NEW CHECK running:", job_label)
             self.run_subjob_simple(job_path, command_list)
             
-            self.write_to_bypass_log(self.output_folder_path, job_label)
+            #self.write_to_bypass_log(self.output_folder_path, job_label)
             #cleanup_job_start = time.time()
             self.clean_or_compress(job_path, keep_all, keep_job)
             #cleanup_job_end = time.time()    

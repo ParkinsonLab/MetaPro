@@ -161,7 +161,7 @@ class mp_stage:
                 self.dir_control.make_dirs(self.dir_dict[item])
 
             command_list = self.commands.create_quality_control_command(self.marker_dict["qf"], self.config_dict["q_enc"])
-            self.mp_util.launch_stage_simple(self.file_dict["qf_job"], self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_quality"])
+            self.mp_util.launch_stage_simple(self.file_dict["qf_job"], command_list, self.config_dict["keep_all"], self.config_dict["keep_quality"])
             self.time_control.measure_time("qf", "end")
             self.marker_control.place_marker("qf")
             self.debug_stop_check(self.label_dict["qf"])
@@ -182,8 +182,8 @@ class mp_stage:
                         print(dt.today(), "using Host ID:", host_id)
                         print(dt.today(), "checking for marker:", host_id + "_host")
                         if(self.marker_control.check_marker(host_id + "_host")):
-                            for item in self.dir_dict[host_id + "_dir_list"]:
-                                self.dir_control.make_dirs[item]
+                            self.dir_control.make_dirs_from_list(host_id + "_dir_list")
+
                             print(dt.today(), "running:", host_id + "_host")
                             self.time_control.measure_time("host", "start")
                             host_count = 0
@@ -191,21 +191,19 @@ class mp_stage:
                                 print(dt.today(), "no host specified. skipping")
                                 break
                             
-                            for item in self.dir_dict[host_id + "_dir_list"]:
-                                self.dir_control.make_dirs(self.dir_dict[item])
-                            host_mkr = self.marker_dict[item + "_host"]
-                            host_job = os.path.join(self.dir_dict["host_jobs"], item + "_job.sh")
+                            host_mkr = self.marker_dict[host_id + "_host"]
+                            host_job = os.path.join(self.dir_dict["host_jobs"], host_id + "_job.sh")
                             command_list = self.commands.create_host_filter_command(self.config_dict["Host_IDs"], host_count, host_mkr)
                             self.mp_util.launch_stage_simple(host_job, command_list, self.config_dict["keep_all"], self.config_dict["keep_host"])
                             self.time_control.measure_time("host", "end")
-                            self.marker_control.place_marker(self.marker_dict[host_id + "_host"])
+                            self.marker_control.place_marker(host_id + "_host")
                         else:
                             print(dt.today(), "skipping:", host_id + "_host")
                     else:
                         print(dt.today(), "no hosts to filter")
                         break
             
-                self.debug_stop_check(self.label_dict[host_id + "_host"])
+                #self.debug_stop_check(self.label_dict[host_id + "_host"])
 
                 
 
@@ -224,7 +222,7 @@ class mp_stage:
                 
 
             command_list = self.commands.create_vector_filter_command(self.marker_dict["vec"], final_host)
-            self.mp_util.launch_stage_simple(self.file_dict["vec_job"], self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_vector"])
+            self.mp_util.launch_stage_simple(self.file_dict["vec_job"], command_list, self.config_dict["keep_all"], self.config_dict["keep_vector"])
 
         
             self.vector_end = time.time()
@@ -265,7 +263,7 @@ class mp_stage:
                 if not (os.path.exists(marker)):
                     print(dt.today(), "running:", marker)
                     command_list = self.commands.create_rRNA_filter_bnap_command(fa_in, fq_in, mRNA_out, rRNA_out, bnap_out, marker)
-                    self.mp_util.launch_stage_simple(self.file_dict["rRNA_bnap_job_" + str(run_type)], self.commands, command_list, self.config_dict["keep_all"], self.config_dict["keep_rRNA"])
+                    self.mp_util.launch_stage_simple(self.file_dict["rRNA_bnap_job_" + str(run_type)], command_list, self.config_dict["keep_all"], self.config_dict["keep_rRNA"])
                     #self.mp_util.run_subjob_with_mp_store()
                 else:
                     print(dt.today(), "skipping:", marker)

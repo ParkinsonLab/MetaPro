@@ -19,6 +19,7 @@ class mpro_dir:
     def make_dirs_from_list(self, key):
         for item in self.dir_dict[key]:
             print(dt.today(), "building dir:", item)
+            print("key:", self.dir_dict[item])
             self.make_dirs(self.dir_dict[item])
     
     def value_assignment(self, filetype, config, config_section, var_name, default):
@@ -223,14 +224,19 @@ class mpro_dir:
         self.dir_dict["qf_list"] = ["qf", "qf_data", "qf_sort", "qf_adapt", "qf_tags", "qf_merge", "qf_hq", "qf_orphan", "qf_dup", "qf_export"]
         
         self.dir_dict["main_host"] = os.path.join(self.out_dir, "host")
+        self.dir_dict["main_host_export"] = os.path.join(self.dir_dict["main_host"], "export")
         self.dir_dict["host_jobs"] = os.path.join(self.dir_dict["main_host"], "jobs")
-        for item in self.label_dict["host"]:
+        for item in self.config_dict["Host_IDs"]:
             self.dir_dict[item + "_host"] = os.path.join(self.dir_dict["main_host"], item)
             self.dir_dict[item + "_host_data"] = os.path.join(self.dir_dict[item + "_host"], "data")
             self.dir_dict[item +"_host_scan"] = os.path.join(self.dir_dict[item + "_host_data"], "0_BT2_scan")
             self.dir_dict[item + "_host_export"] = os.path.join(self.dir_dict[item + "_host"], "export")
 
-            self.dir_dict[item + "_dir_list"] = ["main_host", "host_jobs", item + "_host", item + "_host_data", item + "_host_scan", item + "_host_export"]
+            self.dir_dict[item + "_dir_list"] = ["main_host", "main_host_export", "host_jobs", item + "_host", item + "_host_data", item + "_host_scan", item + "_host_export"]
+            #for item in self.dir_dict[item + "_dir_list"]:
+                #print("item:", item, self.dir_dict[item])
+                #time.sleep(1)
+
 
         self.dir_dict["vec"] = os.path.join(self.out_dir, self.label_dict["vec"])
         self.dir_dict["vec_data"] = os.path.join(self.dir_dict["vec"], "data")

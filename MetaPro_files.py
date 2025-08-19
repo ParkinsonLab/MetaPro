@@ -85,7 +85,7 @@ class mpro_file_handler:
             "qf_merge_s", "qf_merge_s2", "qf_merge_p1", "qf_merge_p2"                                           
         ]
         self.file_dict["qf_job"] = os.path.join(self.dir_dict["qf"], "qf_job.sh")
-        for item in self.config_dict["host_IDs"]:
+        for item in self.config_dict["Host_IDs"]:
             if(item == "none"):
                 break
             else:
@@ -102,6 +102,9 @@ class mpro_file_handler:
                 self.file_dict[item + "_no_host_s_sam"] = os.path.join(self.dir_dict[item + "_host_scan"], "s_no_host.sam")
                 self.file_dict[item + "_no_host_p_sam"] = os.path.join(self.dir_dict[item + "_host_scan"], "p_no_host.sam")
                 self.file_dict[item + "_job"] = os.path.join(self.dir_dict["host_jobs"])
+                self.file_dict["final_no_host_p1"] = os.path.join(self.dir_dict["main_host_export"], "p1_no_host.fastq")
+                self.file_dict["final_no_host_p2"] = os.path.join(self.dir_dict["main_host_export"], "p2_no_host.fastq")
+                self.file_dict["final_no_host_s"] = os.path.join(self.dir_dict["main_host_export"], "s_no_host.fastq")
                 
 
             self.file_dict[item + "_host_clean_list"] = [

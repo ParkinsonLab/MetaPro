@@ -4,6 +4,7 @@
 
 import os
 from datetime import datetime as dt
+import time
 
 class mt_pipe_commands:
     # --------------------------------------------------------------------
@@ -21,6 +22,9 @@ class mt_pipe_commands:
         # path to the genome sequence file
         
         self.tutorial_keyword = self.config_dict["tutorial_keyword"]
+
+        print("tutorial keyword:", self.tutorial_keyword)
+        time.sleep(4)
         self.read_mode = self.config_dict["read_mode"]        
 
                 
@@ -208,6 +212,7 @@ class mt_pipe_commands:
 
         return COMMANDS_qual
 
+    
     def create_host_filter_command(self, host_id_list, host_count, marker):
         #may 09, 2025: removing python scripts. samtools can just do it all.
         cur_host = host_id_list[host_count]
@@ -223,7 +228,7 @@ class mt_pipe_commands:
         out_seq_u = self.file_dict[cur_host + "_no_host_u"]
         out_seq_1 = self.file_dict[cur_host + "_no_host_p1"]
         out_seq_2 = self.file_dict[cur_host + "_no_host_p2"]
-        no_host_sam_s = self.file_dict[cur_host + "_no_host_s.sam"]
+        no_host_sam_s = self.file_dict[cur_host + "_no_host_s_sam"]
         
         no_host_sam_p = self.file_dict[cur_host + "_no_host_p_sam"]
         in_seq_1 = "none"
@@ -241,9 +246,10 @@ class mt_pipe_commands:
             in_seq_s = self.file_dict[prev_host + "_no_host_s"]
             
         if(host_count == (len(host_id_list) -1)):
-            out_seq_1 = self.file_dict["final_no_host_p1"]
-            out_seq_2 = self.file_dict["final_no_host_p2"]
-            out_seq_s = self.file_dict["final_no_host_s"]
+            last_host = host_id_list[-1]
+            out_seq_1 = self.file_dict[last_host + "_no_host_p1"]
+            out_seq_2 = self.file_dict[last_host + "_no_host_p2"]
+            out_seq_s = self.file_dict[last_host + "_no_host_s"]
             
         # host removal on unique singletons
         bt2_hr_s = ">&2 echo bt2 host remove on singletons | "
@@ -253,16 +259,16 @@ class mt_pipe_commands:
         bt2_hr_s += "-U " + in_seq_s + " " 
         bt2_hr_s += "-S " + no_host_sam_s
         
-        sam_no_host_s = self.config_dict["samtools"] + " view -f 4 "
+        sam_no_host_s = self.config_dict["samtools"] + " view -f 4 -h "
         sam_no_host_s += no_host_sam_s + " | "
         sam_no_host_s += self.config_dict["samtools"] + " fastq - > "
         sam_no_host_s += out_seq_s
         
-        sam_host_s = self.config_dict["samtools"] + " view -F 4 "
+        sam_host_s = self.config_dict["samtools"] + " view -F 4 -h "
         sam_host_s += no_host_sam_s + " | " 
         sam_host_s += self.config_dict["samtools"] + " fastq - > "
         sam_host_s += host_seq_s
-     
+    
 
         bt2_hr_paired = ">&2 echo bt2 host-removal on paired | " 
         bt2_hr_paired += self.config_dict["BT2"] + " "
@@ -276,21 +282,21 @@ class mt_pipe_commands:
         sam_no_host_p = self.config_dict["samtools"] + " view "
         if(self.config_dict["filter_stringency"] == "high"):
             #read and mate unmapped.  12
-            sam_no_host_p += "-f 12 " 
+            sam_no_host_p += "-f 12 -h " 
         else:
-            sam_no_host_p += "-f 4 " 
+            sam_no_host_p += "-f 4 -h " 
         sam_no_host_p += no_host_sam_p + " | "
         sam_no_host_p += self.config_dict["samtools"] + " fastq - "
         sam_no_host_p += "-1 " + out_seq_1 + " "
         sam_no_host_p += "-2 " + out_seq_2 + " "
-        sam_no_host_p += "-s " + out_seq_s + " "
+        sam_no_host_p += "-s " + out_seq_o + " "
         sam_no_host_p += "-0 " + out_seq_u
         
         sam_host_p = self.config_dict["samtools"] + " view "
         if(self.config_dict["filter_stringency"] == "high"):
-            sam_host_p += "-F 12 " 
+            sam_host_p += "-F 12 -h " 
         else:
-            sam_host_p += "-F 4 "
+            sam_host_p += "-F 4 -h "
         sam_host_p += no_host_sam_p + " | "
         sam_host_p += self.config_dict["samtools"] + " fastq - "
         sam_host_p += "-1 " + host_seq_1 + " "
@@ -298,16 +304,22 @@ class mt_pipe_commands:
         sam_host_p += "-s " + host_seq_o + " "
         sam_host_p += "-0 " + host_seq_u
         
+        # Create empty files for cases where samtools doesn't create some output files
+        create_empty_files = "touch " + out_seq_u + " " + out_seq_o + " " + host_seq_o + " " + host_seq_u
+        
+        # Fixed cat commands using temporary files to avoid overwriting input
         cat_no_host_p = "cat "
         cat_no_host_p += out_seq_u + " "
         cat_no_host_p += out_seq_o + " "
-        cat_no_host_p += out_seq_s + " > " + out_seq_s
+        cat_no_host_p += out_seq_s + " > " + out_seq_s + "_temp"
+        cat_no_host_p += " && mv " + out_seq_s + "_temp " + out_seq_s
 
         cat_host_p = "cat "
         cat_host_p += host_seq_o + " " 
         cat_host_p += host_seq_u + " "
-        cat_host_p += host_seq_s + " > " + host_seq_s
-     
+        cat_host_p += host_seq_s + " > " + host_seq_s + "_temp"
+        cat_host_p += " && mv " + host_seq_s + "_temp " + host_seq_s
+    
         
         make_marker = "touch " + marker
 
@@ -318,7 +330,7 @@ class mt_pipe_commands:
         
 
         
-        if(self.tutorial_keyword is None):
+        if(self.tutorial_keyword is None or self.tutorial_keyword == "None"):
             if self.read_mode == "single":
                 COMMANDS_host = [
                     bt2_hr_s,
@@ -333,11 +345,12 @@ class mt_pipe_commands:
                     sam_host_s,
                     sam_no_host_p,
                     sam_host_p,
+                    create_empty_files,
                     cat_host_p,
                     cat_no_host_p + " && " + make_marker
 
                 ]
-        else:
+        elif(self.tutorial_keyword == "host"):
             print(dt.today(), "Host filter operating in tutorial-mode")
             if self.read_mode == "single":
                 COMMANDS_host = [
@@ -355,9 +368,13 @@ class mt_pipe_commands:
                     bt2_hr_tut_paired,
                     bt2_hr_filter_paired + " && " + make_marker
                 ]
-
+        else:
+            print("tutorial keyword:", type(self.tutorial_keyword))
+            print(self.tutorial_keyword)
                 
         return COMMANDS_host
+
+
 
     def create_vector_filter_command(self, marker_file, final_host):
         # why do we leave all the interim files intact?
