@@ -6,20 +6,42 @@ def parse_fastq_streaming(filepath):
     """
     Generator that yields FASTQ records one at a time without loading entire file into memory.
     Returns (id, full_record) tuples.
+    Fixed version that handles incomplete records at file end.
     """
     with open(filepath, 'r') as f:
         while True:
             header = f.readline()
             if not header:
                 break
+            
             seq = f.readline()
             plus = f.readline()
             qual = f.readline()
+            
+            # Check if we have a complete record (all 4 lines present and non-empty)
+            if not seq or not plus or not qual:
+                print(f"Warning: Incomplete FASTQ record at end of file {filepath}")
+                print(f"Header: {repr(header)}")
+                print(f"Seq: {repr(seq)}")
+                print(f"Plus: {repr(plus)}")
+                print(f"Qual: {repr(qual)}")
+                break
             
             header = header.strip()
             seq = seq.strip()
             plus = plus.strip()
             qual = qual.strip()
+            
+            # Additional validation
+            if not header.startswith('@'):
+                print(f"Warning: Invalid header line: {header}")
+                continue
+            if not plus.startswith('+'):
+                print(f"Warning: Invalid plus line: {plus}")
+                continue
+            if len(seq) != len(qual):
+                print(f"Warning: Sequence and quality lengths don't match: {len(seq)} vs {len(qual)}")
+                continue
             
             # Extract ID (everything before first space)
             read_id = header.split()[0] if ' ' in header else header
