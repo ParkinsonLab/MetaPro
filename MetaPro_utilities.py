@@ -540,11 +540,7 @@ class mp_util:
         process.start()
         process.join()
 
-<<<<<<< HEAD
     def run_subjob_with_mp_store(self, job_location, commands):
-=======
-    def run_subjob_with_mp_store(self, job_location, job_label, commands):
->>>>>>> origin/feature/2025_tool_update
         #just launches a job.  no multi-process.
         process = mp.Process(
             target=self.make_script,
@@ -561,11 +557,7 @@ class mp_util:
         process.start()
         process.join()
         
-<<<<<<< HEAD
     def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_file, commands):
-=======
-    def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_location, job_label, commands):
->>>>>>> origin/feature/2025_tool_update
         #just launches a job.  no multi-process.
         #Jan 25, 2022: now adding job controls.
         job_counter = 0
