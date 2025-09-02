@@ -20,12 +20,12 @@ ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ea_comb
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ga_pre_scan_assemble_libs.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ga_pre_scan_get_libs.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/GA_samfile.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ga_Diamond_generic_v2.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ga_Final_merge_v4.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ga_merge_fasta.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ga_final_merge_proteins.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ga_final_merge_map.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ga_final_merge_fastq.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ga_final_merge_fasta.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/output_are_you_in_a_contig.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/output_contig_stats.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/output_convert_gene_map_contig_segments.py /pipeline/Scripts
@@ -50,11 +50,7 @@ ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/read_sa
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/bwa_read_sorter.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/read_sort.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/read_split.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ta_combine_v3.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ta_constrain.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ta_constrain_taxonomy_v2.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ta_taxid_v3.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ta_wevote_parser.py /pipeline/Scripts
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ta_apply_names.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/remove_gaps_in_fasta.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/ta_contig_name_convert.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/4.0.0/Scripts/alter_taxa_for_krona.py /pipeline/Scripts

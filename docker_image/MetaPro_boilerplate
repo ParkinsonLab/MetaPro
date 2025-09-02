@@ -268,10 +268,6 @@ ENV PATH="${PATH}:/pipeline_tools/bowtie2"
 ENV PATH="${PATH}:/pipeline_tools/mgm2/src"
 ENV PATH="${PATH}:/pipeline_tools/DeepProZyme-v_1_0"
 ENV PATH="${PATH}:/pipeline_tools/mgm"
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/feature/2025_tool_update
 
 #RUN apt-get update
 #RUN apt-get upgrade
