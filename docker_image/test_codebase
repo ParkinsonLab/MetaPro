@@ -20,7 +20,6 @@ ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ea_combi
 #ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_pre_scan_assemble_libs.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_pre_scan_get_libs.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/GA_samfile.py /pipeline/Scripts
-ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_Diamond_generic_v2.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_Final_merge_v4.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_merge_fasta.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/ga_final_merge_proteins.py /pipeline/Scripts
