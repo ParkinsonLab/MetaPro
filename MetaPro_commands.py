@@ -928,7 +928,7 @@ class mt_pipe_commands:
         return COMMANDS_bt2
         
     
-    def create_GA_BT2_pp_command(self, ref_path, gene_map, genes_hit, read_in_1, read_in_2, sam_file, read_out_1, read_out_2, op_mode, marker_file):
+    def create_GA_BT2_pp_command(self, ref_path, gene_map, genes_hit, prot_hit, read_in_1, read_in_2, sam_file, read_out_1, read_out_2, op_mode, marker_file):
         #may 01, 2025: simplified pp call.  
         #run on every lib list section.
         #
@@ -943,6 +943,7 @@ class mt_pipe_commands:
             ga_bt2_pp += self.file_dict["contigs_map"] + " "  # IN
         ga_bt2_pp += gene_map + " "  # OUT
         ga_bt2_pp += genes_hit + " " #OUT
+        ga_bt2_pp += prot_hit + " "
         ga_bt2_pp += read_in_1 + " "
         ga_bt2_pp += read_in_2 + " "
 
@@ -990,12 +991,12 @@ class mt_pipe_commands:
 
 
    
-    def create_DIAMOND_pp_command_v2(self, reads_in, dmd_in, reads_out, marker_file):
+    def create_DIAMOND_pp_command_v2(self, reads_in, dmd_in, reads_out, prot_out, prot_map_out, marker_file):
     
         
         diamond_pp = ">&2 echo " + str(dt.today()) + " DMD post process"  + " | "
         diamond_pp += self.config_dict["Python"] + " "
-        diamond_pp += self.config_dict["Map_reads_prot_DMND"] + " "
+        diamond_pp += self.config_dict["GA_dmd_pp"] + " "
         diamond_pp += str(self.config_dict["DMD_identity_cutoff"]) + " "
         diamond_pp += str(self.config_dict["DMD_length_cutoff"]) + " "
         diamond_pp += str(self.config_dict["DMD_score_cutoff"]) + " "
@@ -1004,8 +1005,8 @@ class mt_pipe_commands:
             diamond_pp += "None" + " "
         else:
             diamond_pp += self.file_dict["contigs_map"] + " "         # IN
-        diamond_pp += self.file_dict["ga_dmd_gene_map"] + " "      # OUT
-        diamond_pp += self.file_dict["ga_dmd_prot"] + " "      # OUT
+        diamond_pp += prot_map_out + " "      # OUT
+        diamond_pp += prot_out + " "      # OUT
         
         diamond_pp += reads_in + " "                                                  # IN
         diamond_pp += dmd_in + " "  # IN
@@ -1021,115 +1022,45 @@ class mt_pipe_commands:
 
 
 
-    def create_GA_final_merge_command(self, current_stage_name, dep_0_name, dep_1_name, dep_2_name, dep_3_name, marker_file):
-        subfolder       = os.path.join(self.output_path, current_stage_name)
-        data_folder     = os.path.join(subfolder, "data")
-        final_folder    = os.path.join(subfolder, "final_results")
-        dep_0_path      = os.path.join(self.output_path, dep_0_name, "final_results")   #assemble-contigs
-        dep_1_path      = os.path.join(self.output_path, dep_1_name, "final_results")   #bt2
-        dep_2_path      = os.path.join(self.output_path, dep_2_name, "final_results")   #blat
-        dep_3_path      = os.path.join(self.output_path, dep_3_name, "final_results")   #dmd
-        jobs_folder     = os.path.join(data_folder, "jobs")
+    def create_GA_final_merge_command(self, marker_0, marker_1, marker_2, marker_3):
         
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(final_folder)
-        self.make_folder(jobs_folder)
         
-        final_merge_fastq = self.config_dict["Python"] + " "
-        final_merge_fastq += self.config_dict["GA_final_merge_fasta"] + " "
-        final_merge_fastq += dep_0_path + " "
-        final_merge_fastq += dep_3_path + " "
-        final_merge_fastq += self.read_mode + " "
-        final_merge_fastq += final_folder
-        
+        final_merge_bt2 = self.config_dict["Python"] + " "
+        final_merge_bt2 += self.config_dict["GA_final_merge_fasta"] + " "
+        final_merge_bt2 += self.dir_dict["GA_BT2_export_genes"] + " "
+        final_merge_bt2 += self.file_dict["ga_fm_bt2_genes"]
+
+        final_merge_dmd = self.config_dict["Python"] + " "
+        final_merge_dmd += self.config_dict["GA_final_merge_fasta"] + " "
+        final_merge_dmd += self.dir_dict["GA_DMD_export_prot"] + " "
+        final_merge_dmd += self.file_dict["ga_fm_dmd_prot"]
+
         final_merge_proteins = self.config_dict["Python"] + " "
         final_merge_proteins += self.config_dict["GA_final_merge_proteins"] + " "
-        final_merge_proteins += dep_1_path + " "
-        final_merge_proteins += dep_2_path + " "
-        final_merge_proteins += dep_3_path + " "
-        final_merge_proteins += final_folder
-        
+        final_merge_proteins += self.dir_dict["GA_BT2_export_prot"] + " "
+        final_merge_proteins += self.dir_dict["GA_DMD_export_prot"] + " "
+        final_merge_proteins += self.file_dict["ga_fm_all_prot"]
+
         final_merge_maps = self.config_dict["Python"] + " "
         final_merge_maps += self.config_dict["GA_final_merge_maps"] + " "
-        final_merge_maps += dep_1_path + " "
-        final_merge_maps += dep_2_path + " "
-        final_merge_maps += dep_3_path + " "
-        final_merge_maps += final_folder
+        final_merge_maps += self.dir_dict["GA_BT2_export_maps"] + " "
+        final_merge_maps += self.dir_dict["GA_DMD_export_maps"] + " "
+        final_merge_maps += self.file_dict["ga_fm_gene_map"]
         
         
-        
-        make_marker_p = ">&2 echo " + str(dt.today()) + " GA final merge | "
-        make_marker_p += "touch" + " "
-        make_marker_p += os.path.join(jobs_folder, marker_file + "_proteins")
-        
-        make_marker_f = ">&2 echo " + str(dt.today()) + " GA final merge | "
-        make_marker_f += "touch" + " "
-        make_marker_f += os.path.join(jobs_folder, marker_file + "_fastq")
-        
-        make_marker_m = ">&2 echo " + str(dt.today()) + " GA final merge | "
-        make_marker_m += "touch" + " "
-        make_marker_m += os.path.join(jobs_folder, marker_file + "_maps")
         
         
         COMMANDS_ga_final_merge = [
-            final_merge_maps + " && " + make_marker_m,
-            final_merge_fastq + " && " + make_marker_f,
-            final_merge_proteins + " && " + make_marker_p
+            final_merge_bt2 + " && touch " + marker_0,
+            final_merge_dmd + " && touch " + marker_1,
+            final_merge_proteins +  " && touch " + marker_2,
+            final_merge_maps + " && touch " + marker_3
+        
         ]
     
         return COMMANDS_ga_final_merge
     
 
-    def create_TA_kraken2_command(self, current_stage_name, assemble_contigs_stage, operating_mode, marker_file):
-        subfolder               = os.path.join(self.output_path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        assemble_contigs_folder = os.path.join(self.output_path, assemble_contigs_stage, "final_results")
-        kraken2_folder            = os.path.join(data_folder, "1_kraken2")
-        jobs_folder             = os.path.join(data_folder, "jobs")
-        
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(kraken2_folder)
-        self.make_folder(jobs_folder)
-
-        if(operating_mode == "contigs"):
-            kraken2_c = ">&2 echo Kraken2 on contigs | "
-            kraken2_c += self.config_dict["kraken2"] + " "
-            kraken2_c += "--db " + self.config_dict["kraken2_db"] + " "
-            kraken2_c += "--threads " + str(self.config_dict["num_threads"]) + " "
-            kraken2_c += os.path.join(assemble_contigs_folder, "contigs.fasta") + " "
-            kraken2_c += "--output " + os.path.join(kraken2_folder, "kraken2_c_report.txt")
-            
-            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
-            
-            return [kraken2_c + " && " + make_marker]
-            
-        elif(operating_mode == "singletons"):
-            kraken2_s = ">&2 echo Kraken2 on singletons | "
-            kraken2_s += self.config_dict["kraken2"] + " "
-            kraken2_s += "--db " + self.config_dict["kraken2_db"] + " "
-            kraken2_s += "--threads " + str(self.config_dict["num_threads"]) + " "
-            kraken2_s += os.path.join(assemble_contigs_folder, "singletons.fastq") + " " 
-            kraken2_s += "--output " + os.path.join(kraken2_folder, "kraken2_s_report.txt")
-            
-            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
-            
-            return [kraken2_s + " && " + make_marker]
-            
-        elif(operating_mode == "paired"):
-            kraken2_p = ">&2 echo Kraken2 on paired | " 
-            kraken2_p += self.config_dict["kraken2"] + " "
-            kraken2_p += "--db " + self.config_dict["kraken2_db"] +  " "
-            kraken2_p += "--threads " + str(self.config_dict["num_threads"]) + " "
-            kraken2_p += "--paired " + os.path.join(assemble_contigs_folder, "pair_1.fastq") + " " + os.path.join(assemble_contigs_folder, "pair_2.fastq") + " "
-            kraken2_p += "--output " + os.path.join(kraken2_folder, "kraken2_p_report.txt")
-            
-            make_marker = "touch " + os.path.join(jobs_folder, marker_file)
-            
-            return [kraken2_p + " && " + make_marker]
-            
-    def create_TA_kraken2_pp_command(self, current_stage_name, marker_file):
         subfolder               = os.path.join(self.output_path, current_stage_name)
         data_folder             = os.path.join(subfolder, "data")
         kraken2_folder            = os.path.join(data_folder, "1_kraken2")
@@ -1149,144 +1080,23 @@ class mt_pipe_commands:
         
         return [cat_kraken2 + " && " + make_marker]
         
+    def create_TA_repack_command(self, marker):
+        repack = self.config_dict["Python"] + " "
+        repack += self.config_dict["TA_apply_names"] + " "
+        repack += self.file_dict["ga_ps_k2_report_all"] + " "
+        repack += self.config_dict["names"] + " "
+        repack += self.config_dict["nodes"] + " "
+        repack += self.file_dict["ta_report"]
 
-    
-    def create_TA_taxon_pull_command(self, current_stage_name, ga_final_merge_stage, marker_file):
-        subfolder               = os.path.join(self.output_path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        final_merge_folder      = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
-        ga_taxa_folder          = os.path.join(data_folder, "0_gene_taxa")
-        jobs_folder             = os.path.join(data_folder, "jobs")
+        make_marker = "touch " + marker 
 
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(ga_taxa_folder)
-        self.make_folder(jobs_folder)
-        
+        COMMANDS_ta_repack = [
+            repack + " && " + make_marker
+        ]
 
-        get_taxa_from_gene = ">&2 echo get taxa from gene | "
-        get_taxa_from_gene += self.config_dict["Python"] + " "
-        get_taxa_from_gene += self.config_dict["Annotated_taxid"] + " "  # SLOW STEP
-        get_taxa_from_gene += os.path.join(final_merge_folder, "gene_map.tsv") + " "
-        get_taxa_from_gene += self.config_dict["accession2taxid"] + " "
-        get_taxa_from_gene += os.path.join(ga_taxa_folder, "ga_taxon.tsv")
-        
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
-        
-        return [get_taxa_from_gene + " && " + make_marker]
-        
-    def create_TA_wevote_combine_command(self, current_stage_name, assemble_contigs_stage, marker_file):
-        subfolder               = os.path.join(self.output_path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        assemble_contigs_folder = os.path.join(self.output_path, assemble_contigs_stage, "final_results")
-        #kaiju_folder            = os.path.join(data_folder, "1_kaiju")
-        kraken2_folder          = os.path.join(data_folder, "1_kraken2")
-        centrifuge_folder       = os.path.join(data_folder, "2_centrifuge")
-        wevote_folder           = os.path.join(data_folder, "3_wevote")
-        final_folder            = os.path.join(subfolder, "final_results")
-        jobs_folder             = os.path.join(data_folder, "jobs")
-        
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(wevote_folder)
-        self.make_folder(final_folder)
-        self.make_folder(jobs_folder)
-        
-        wevote_combine = ">&2 echo combining classification outputs for wevote | "
-        wevote_combine += self.config_dict["Python"] + " "
-        wevote_combine += self.config_dict["Classification_combine"] + " "
-        wevote_combine += os.path.join(assemble_contigs_folder, "contig_map.tsv")
-        wevote_combine += " " + os.path.join(wevote_folder, "wevote_input.csv") + " "
-        wevote_combine += "none" + " "
-        wevote_combine += "none" + " "
-        wevote_combine += "none" + " "
-        wevote_combine += os.path.join(kraken2_folder, "merged_kraken2.txt") + " "
-        wevote_combine += os.path.join(centrifuge_folder, "merged_centrifuge.tsv")  
 
-        wevote_call = ">&2 echo Running WEVOTE | "
-        wevote_call += self.config_dict["WEVOTE"]
-        wevote_call += " -i " + os.path.join(wevote_folder, "wevote_input.csv")
-        wevote_call += " -d " + self.config_dict["WEVOTEDB"]
-        wevote_call += " -p " + os.path.join(wevote_folder, "wevote")
-        wevote_call += " -n " + self.threads_str
-        wevote_call += " -k " + "2"
-        wevote_call += " -a " + "0"
-        wevote_call += " -s " + "0"
-        
-        wevote_collect = ">&2 echo gathering WEVOTE results | "
-        wevote_collect += self.config_dict["Python"] + " "
-        wevote_collect += self.config_dict["Wevote_parser"] + " "
-        wevote_collect += os.path.join(wevote_folder, "wevote_WEVOTE_Details.txt") + " "
-        wevote_collect += os.path.join(wevote_folder, "taxonomic_classifications.tsv")
-        
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
-        
-        return [wevote_combine + " && " + wevote_call + " && " + wevote_collect +  " && " + make_marker]
-        
-    
-    def create_TA_final_command(self, current_stage_name, assemble_contigs_stage, marker_file):
-        subfolder               = os.path.join(self.output_path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        assemble_contigs_folder = os.path.join(self.output_path, assemble_contigs_stage, "final_results")
-        ga_taxa_folder          = os.path.join(data_folder, "0_gene_taxa")
-        kraken2_folder            = os.path.join(data_folder, "1_kraken2")
-        centrifuge_folder       = os.path.join(data_folder, "2_centrifuge")
-        wevote_folder           = os.path.join(data_folder, "3_wevote")
-        final_folder            = os.path.join(subfolder, "final_results")
-        jobs_folder             = os.path.join(data_folder, "jobs")
+        return COMMANDS_ta_repack
 
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(ga_taxa_folder)
-        self.make_folder(kraken2_folder)
-        self.make_folder(centrifuge_folder)
-        self.make_folder(wevote_folder)
-        self.make_folder(final_folder)
-        self.make_folder(jobs_folder)
-
-        wevote_combine = ">&2 echo combining classification outputs for wevote | "
-        wevote_combine += self.config_dict["Python"] + " "
-        wevote_combine += self.config_dict["Classification_combine"] + " "
-        wevote_combine += os.path.join(assemble_contigs_folder, "contig_map.tsv")
-        wevote_combine += " " + os.path.join(wevote_folder, "wevote_ensemble.csv") + " "
-        wevote_combine += os.path.join(ga_taxa_folder, "ga_taxon.tsv") + " "
-        wevote_combine += os.path.join(ga_taxa_folder, "ga_taxon.tsv") + " "
-        wevote_combine += os.path.join(ga_taxa_folder, "ga_taxon.tsv") + " "
-        wevote_combine += os.path.join(kraken2_folder, "merged_kraken2.txt") + " "
-        wevote_combine += os.path.join(centrifuge_folder, "merged_centrifuge.tsv")        
-
-        wevote_call = ">&2 echo Running WEVOTE | "
-        wevote_call += self.config_dict["WEVOTE"]
-        wevote_call += " -i " + os.path.join(wevote_folder, "wevote_ensemble.csv")
-        wevote_call += " -d " + self.config_dict["WEVOTEDB"]
-        wevote_call += " -p " + os.path.join(wevote_folder, "wevote")
-        wevote_call += " -n " + self.threads_str
-        wevote_call += " -k " + "2"
-        wevote_call += " -a " + "0"
-        wevote_call += " -s " + "0"
-        
-        wevote_collect = ">&2 echo gathering WEVOTE results | "
-        wevote_collect += self.config_dict["Python"] + " "
-        wevote_collect += self.config_dict["Wevote_parser"] + " "
-        wevote_collect += os.path.join(wevote_folder, "wevote_WEVOTE_Details.txt") + " "
-        wevote_collect += os.path.join(final_folder, "taxonomic_classifications.tsv")
-        
-        constrain = ">&2 echo Constraining the Taxonomic Annotation | " 
-        constrain += self.config_dict["Python"] + " " + self.config_dict["Constrain_classification"] + " "
-        constrain += self.config_dict["target_rank"] + " "
-        constrain += os.path.join(final_folder, "taxonomic_classifications.tsv") + " "
-        constrain += self.config_dict["nodes"] + " "
-        constrain += self.config_dict["names"] + " "
-        constrain += os.path.join(final_folder, "constrain_classification.tsv")
-        
-        make_marker = "touch" + " "
-        make_marker += os.path.join(jobs_folder, marker_file)
-   
-        return [wevote_combine + " && " + wevote_call + " && " + wevote_collect + " && " + constrain + " && " + make_marker]
-        
-      
 
     def create_EC_DETECT_command(self, current_stage_name, ga_final_merge_stage, marker_file):
         subfolder           = os.path.join(self.output_path, current_stage_name)

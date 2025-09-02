@@ -236,14 +236,17 @@ class mpro_file_handler:
         self.file_dict["ga_bt2_c_hits_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "c_hits.sam")
         self.file_dict["ga_bt2_c_miss_sam"] = os.path.join(self.dir_dict["GA_BT2_run"], "c_miss.sam")
 
-        self.file_dict["gene_map_c"] = os.path.join(self.dir_dict["GA_BT2_export"], "gene_map_c.tsv")
-        self.file_dict["gene_map_p"] = os.path.join(self.dir_dict["GA_BT2_export"], "gene_map_p.tsv")
-        self.file_dict["gene_map_s"] = os.path.join(self.dir_dict["GA_BT2_export"], "gene_map_s.tsv")
+        self.file_dict["gene_map_c"] = os.path.join(self.dir_dict["GA_BT2_export"], "c_gene_map.tsv")
+        self.file_dict["gene_map_p"] = os.path.join(self.dir_dict["GA_BT2_export"], "p_gene_map.tsv")
+        self.file_dict["gene_map_s"] = os.path.join(self.dir_dict["GA_BT2_export"], "s_gene_map.tsv")
         self.file_dict["gene_map_full"] = os.path.join(self.dir_dict["GA_BT2_export"], "gene_map.tsv")
-        self.file_dict["genes_c"] = os.path.join(self.dir_dict["GA_BT2_export"], "genes_c.fasta")
-        self.file_dict["genes_p"] = os.path.join(self.dir_dict["GA_BT2_export"], "genes_p.fasta")
-        self.file_dict["genes_s"] = os.path.join(self.dir_dict["GA_BT2_export"], "genes_s.fasta")
-        self.file_dict["genes_full"] = os.path.join(self.dir_dict["GA_BT2_export"], "genes_annot.fasta")
+        self.file_dict["genes_c"] = os.path.join(self.dir_dict["GA_BT2_export_genes"], "genes_c.fasta")
+        self.file_dict["genes_p"] = os.path.join(self.dir_dict["GA_BT2_export_genes"], "genes_p.fasta")
+        self.file_dict["genes_s"] = os.path.join(self.dir_dict["GA_BT2_export_genes"], "genes_s.fasta")
+        self.file_dict["bt2_prot_s"] = os.path.join(self.dir_dict["GA_BT2_export_prot"], "prot_s.faa")
+        self.file_dict["bt2_prot_c"] = os.path.join(self.dir_dict["GA_BT2_export_prot"], "prot_c.faa")
+        self.file_dict["bt2_prot_p"] = os.path.join(self.dir_dict["GA_BT2_export_prot"], "prot_p.faa")
+        self.file_dict["genes_full"] = os.path.join(self.dir_dict["GA_BT2_export_prot"], "genes_annot.fasta")
 
         self.file_dict["ga_rem_prot_p1"] = os.path.join(self.dir_dict["GA_BT2_export"], "p1_rem_prot.fasta")
         self.file_dict["ga_rem_prot_p2"] = os.path.join(self.dir_dict["GA_BT2_export"], "p2_rem_prot.fasta")
@@ -266,8 +269,19 @@ class mpro_file_handler:
         self.file_dict["ga_dmd_s_dmdout"] = os.path.join(self.dir_dict["GA_DMD_data"], "s.dmdout")
         self.file_dict["ga_dmd_c_dmdout"] = os.path.join(self.dir_dict["GA_DMD_data"], "c.dmdout")
 
-        self.file_dict["ga_dmd_gene_map"] = os.path.join(self.dir_dict["GA_DMD_export"], "dmd_gene_map.tsv")
-        self.file_dict["ga_dmd_prot"] = os.path.join(self.dir_dict["GA_DMD_export"], "dmd_prot.faa")
+        self.file_dict["ga_dmd_prot_map_c"] = os.path.join(self.dir_dict["GA_DMD_export_maps"], "c_prot_map.tsv")
+        self.file_dict["ga_dmd_prot_map_p1"] = os.path.join(self.dir_dict["GA_DMD_export_maps"], "p1_prot_map.tsv")
+        self.file_dict["ga_dmd_prot_map_p2"] = os.path.join(self.dir_dict["GA_DMD_export_maps"], "p2_prot_map.tsv")
+        self.file_dict["ga_dmd_prot_map_s"] = os.path.join(self.dir_dict["GA_DMD_export_maps"], "s_prot_map.tsv")
+
+        #self.file_dict["ga_dmd_prot_map"] = os.path.join(self.dir_dict["GA_DMD_export"], "dmd_prot_map.tsv")
+        #self.file_dict["ga_dmd_prot"] = os.path.join(self.dir_dict["GA_DMD_export"], "dmd_prot.faa")
+        self.file_dict["ga_dmd_prot_c"] = os.path.join(self.dir_dict["GA_DMD_export_prot"], "prot_c.faa")
+        self.file_dict["ga_dmd_prot_p1"] = os.path.join(self.dir_dict["GA_DMD_export_prot"], "prot_p1.faa")
+        self.file_dict["ga_dmd_prot_p2"] = os.path.join(self.dir_dict["GA_DMD_export_prot"], "prot_p2.faa")
+        self.file_dict["ga_dmd_prot_s"] = os.path.join(self.dir_dict["GA_DMD_export_prot"], "prot_s.faa")
+
+
         self.file_dict["ga_dmd_rem_p1"] = os.path.join(self.dir_dict["GA_DMD_export"], "p1_rem_prot.fasta")
         self.file_dict["ga_dmd_rem_p2"] = os.path.join(self.dir_dict["GA_DMD_export"], "p2_rem_prot.fasta")
         self.file_dict["ga_dmd_rem_s"] = os.path.join(self.dir_dict["GA_DMD_export"], "s_rem_prot.fasta")
@@ -277,8 +291,15 @@ class mpro_file_handler:
         self.file_dict["ga_dmd_pp_p2_job"] = os.path.join(self.dir_dict["GA_DMD_jobs"], "dmd_pp_p2.sh")
         self.file_dict["ga_dmd_pp_s_job"] = os.path.join(self.dir_dict["GA_DMD_jobs"], "dmd_pp_s.sh")
         self.file_dict["ga_dmd_pp_c_job"] = os.path.join(self.dir_dict["GA_DMD_jobs"], "dmd_pp_c.sh")
+
+        self.file_dict["ga_fm_job"] = os.path.join(self.dir_dict["GA_FM"], "GA_FM.sh")
+        self.file_dict["ga_fm_gene_map"] = os.path.join(self.dir_dict["GA_FM_export"], "final_gene_map.tsv")
+        self.file_dict["ga_fm_bt2_genes"] = os.path.join(self.dir_dict["GA_FM_export"], "bt2_genes.fasta")
+        self.file_dict["ga_fm_dmd_prot"] = os.path.join(self.dir_dict["GA_FM_export"], "dmd_proteins.faa")
+        self.file_dict["ga_fm_all_prot"] = os.path.join(self.dir_dict["GA_FM_export"], "all_proteins.faa")
         
 
-    
+        self.file_dict["ta_report"] = os.path.join(self.dir_dict["TA_export"], "taxa_report.tsv")
+        self.file_dict["ta_job"] = os.path.join(self.dir_dict["TA_jobs"], "TA.sh")
 
 

@@ -292,33 +292,35 @@ class mpro_dir:
         self.dir_dict["GA_BT2_run"] = os.path.join(self.dir_dict["GA_BT2_data"], "0_BT2")
         self.dir_dict["GA_BT2_pp"] = os.path.join(self.dir_dict["GA_BT2_data"], "1_pp")
         self.dir_dict["GA_BT2_export"] = os.path.join(self.dir_dict["GA_BT2"], "export")
-        self.dir_dict["GA_BT2_list"] = ["GA_BT2", "GA_BT2_jobs", "GA_BT2_data", "GA_BT2_run", "GA_BT2_mkrs", "GA_BT2_pp", "GA_BT2_export"]
+        self.dir_dict["GA_BT2_export_genes"] = os.path.join(self.dir_dict["GA_BT2_export"], "genes")
+        self.dir_dict["GA_BT2_export_prot"] = os.path.join(self.dir_dict["GA_BT2_export"], "prot")
+        self.dir_dict["GA_BT2_export_maps"] = os.path.join(self.dir_dict["GA_BT2_export"], "maps")
+        self.dir_dict["GA_BT2_list"] = ["GA_BT2", "GA_BT2_jobs", "GA_BT2_data", "GA_BT2_run", "GA_BT2_mkrs", "GA_BT2_pp", "GA_BT2_export", "GA_BT2_export_maps", "GA_BT2_export_genes", "GA_BT2_export_prot"]
 
         self.dir_dict["GA_DMD"] = os.path.join(self.out_dir, self.label_dict["GA_DMD"])        
         self.dir_dict["GA_DMD_data"] = os.path.join(self.dir_dict["GA_DMD"], "data")
         
         self.dir_dict["GA_DMD_export"] = os.path.join(self.dir_dict["GA_DMD"], "export")
+        self.dir_dict["GA_DMD_export_prot"] = os.path.join(self.dir_dict["GA_DMD_export"], "prot")
+        self.dir_dict["GA_DMD_export_maps"] = os.path.join(self.dir_dict["GA_DMD_export"], "maps")
         self.dir_dict["GA_DMD_jobs"] = os.path.join(self.dir_dict["GA_DMD"], "jobs")
         self.dir_dict["GA_DMD_mkrs"] = os.path.join(self.dir_dict["GA_DMD"], "markers")
         self.dir_dict["GA_DMD_run"] = os.path.join(self.dir_dict["GA_DMD_data"], "0_dmd")
         self.dir_dict["GA_DMD_pp"] = os.path.join(self.dir_dict["GA_DMD_data"], "1_pp")
         self.dir_dict["GA_DMD_temp"] = os.path.join(self.dir_dict["GA_DMD_run"], "temp")
-        self.dir_dict["GA_DMD_list"] = ["GA_DMD", "GA_DMD_data", "GA_DMD_jobs", "GA_DMD_mkrs", "GA_DMD_export", "GA_DMD_run", "GA_DMD_pp", "GA_DMD_temp"]
+        self.dir_dict["GA_DMD_list"] = ["GA_DMD", "GA_DMD_data", "GA_DMD_jobs", "GA_DMD_mkrs", "GA_DMD_export", "GA_DMD_export_prot", "GA_DMD_export_maps", "GA_DMD_run", "GA_DMD_pp", "GA_DMD_temp"]
 
         self.dir_dict["GA_FM"] = os.path.join(self.out_dir, self.label_dict["GA_final_merge"])
         self.dir_dict["GA_FM_data"] = os.path.join(self.dir_dict["GA_FM"], "data")
+        self.dir_dict["GA_FM_mkrs"] = os.path.join(self.dir_dict["GA_FM"], "markers")
         self.dir_dict["GA_FM_export"] = os.path.join(self.dir_dict["GA_FM"], "export")
         self.dir_dict["GA_FM_jobs"] = os.path.join(self.dir_dict["GA_FM"], "jobs")
-        self.dir_dict["GA_FM_list"] = ["GA_FM", "GA_FM_data", "GA_FM_export", "GA_FM_jobs"]
+        self.dir_dict["GA_FM_list"] = ["GA_FM", "GA_FM_data", "GA_FM_export", "GA_FM_mkrs", "GA_FM_jobs"]
 
         self.dir_dict["TA"] = os.path.join(self.out_dir, self.label_dict["TA"])
-        self.dir_dict["TA_data"] = os.path.join(self.dir_dict["TA"], "data")
-        self.dir_dict["TA_jobs"] = os.path.join(self.dir_dict["TA"], "jobs")
         self.dir_dict["TA_export"] = os.path.join(self.dir_dict["TA"], "export")
-        self.dir_dict["TA_pull"] = os.path.join(self.dir_dict["TA_data"], "0_ga_extract")
-        self.dir_dict["TA_kraken2"] = os.path.join(self.dir_dict["TA_data"], "1_kraken2")
-        self.dir_dict["TA_wevote"] = os.path.join(self.dir_dict["TA_data"], "2_wevote")
-        self.dir_dict["TA_list"] = ["TA", "TA_data", "TA_jobs", "TA_export", "TA_pull", "TA_kraken2", "TA_wevote"]
+        self.dir_dict["TA_jobs"] = os.path.join(self.dir_dict["TA"], "jobs")
+        self.dir_dict["TA_list"] = ["TA", "TA_jobs", "TA_export"]
 
         self.dir_dict["EC"] = os.path.join(self.out_dir, self.label_dict["EC"])
         self.dir_dict["EC_data"] = os.path.join(self.dir_dict["EC"], "data")

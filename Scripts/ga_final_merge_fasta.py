@@ -16,11 +16,9 @@ def main():
     input_dir = sys.argv[1]
     output_file = sys.argv[2]
     
-    # Get all FASTA files in directory
-    fasta_extensions = ('.fasta', '.fas', '.fa', '.fna', '.faa', '.ffn', '.frn')
+    # Get all files in directory
     files = [os.path.join(input_dir, f) for f in os.listdir(input_dir) 
-             if os.path.isfile(os.path.join(input_dir, f)) and 
-             f.lower().endswith(fasta_extensions)]
+             if os.path.isfile(os.path.join(input_dir, f))]
     
     unique_sequences = set()
     

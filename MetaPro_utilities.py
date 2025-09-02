@@ -540,11 +540,15 @@ class mp_util:
         process.start()
         process.join()
 
+<<<<<<< HEAD
+    def run_subjob_with_mp_store(self, job_location, commands):
+=======
     def run_subjob_with_mp_store(self, job_location, job_label, commands):
+>>>>>>> origin/feature/2025_tool_update
         #just launches a job.  no multi-process.
         process = mp.Process(
             target=self.make_script,
-            args=(job_location, job_label, commands)
+            args=(job_location, commands)
         )
         process.start()
         self.mp_store.append(process)
@@ -557,12 +561,19 @@ class mp_util:
         process.start()
         process.join()
         
+<<<<<<< HEAD
+    def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_file, commands):
+=======
     def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_location, job_label, commands):
+>>>>>>> origin/feature/2025_tool_update
         #just launches a job.  no multi-process.
         #Jan 25, 2022: now adding job controls.
         job_counter = 0
         for item in commands:
-            job_name = job_label + "_" + str(job_counter)
+            job_location = os.path.dirname(job_file)
+            job_name = os.path.basename(job_file)
+            full_job_name = "job_" + str(job_counter) + "_" + job_name
+            full_job_path = os.path.join(job_location, full_job_name)
             job_counter += 1
             job_submitted = False
             while(not job_submitted):
@@ -571,11 +582,11 @@ class mp_util:
 
                         process = mp.Process(
                             target=self.make_script,
-                            args=(job_location, job_name, [item])
+                            args=(full_job_path, [item])
                         )
                         process.start()
                         self.mp_store.append(process)
-                        print(dt.today(), job_name, "job submitted.  mem:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
+                        print(dt.today(), full_job_path, "job submitted.  mem:", psu.virtual_memory().available/(1024*1024*1000), "GB", end='\r')
                         job_submitted = True
                     else:
                         time.sleep(job_delay)

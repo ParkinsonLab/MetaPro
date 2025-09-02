@@ -51,6 +51,22 @@ def fastq_to_protein(input_file, output_file):
             out.write(plus)
             out.write(qual[::3][:len(protein)] + '\n')
 
+
+def convert_to_proteins(gene_records, protein_output_file):
+    """Convert gene records to proteins and write to file"""
+    protein_records = []
+    for record in gene_records:
+        try:
+            protein_seq = record.seq.translate(stop_symbol="")
+            protein_record = SeqRecord(protein_seq, id=record.id, description=record.description)
+            protein_records.append(protein_record)
+        except:
+            continue
+    
+    with open(protein_output_file, "a") as outfile:
+        SeqIO.write(protein_records, outfile, "fasta")
+
+
 def get_match_score(cigar_segment):
     CIGAR = re.split("([MIDNSHPX=])", cigar_segment) # Split CIGAR string into list, placing
     CIGAR = CIGAR[:-1]                      #lop off the empty char artifact from the split
@@ -318,7 +334,7 @@ def write_unmapped_reads(unmapped_reads, reads_in, output_file):
     
     print("Added", count, "new sequences to", output_file)
 
-def write_gene_map(DNA_DB, gene2read_file, gene_read_dict, aligned_genes_out):
+def write_gene_map(DNA_DB, gene2read_file, gene_read_dict, aligned_genes_out, aligned_prot_out):
     # WRITE OUTPUT: write gene<->read mapfile of BWA-aligned:
     # [BWA-aligned geneID, length, #reads, readIDs ...]
     reads_count = 0
@@ -341,19 +357,22 @@ def write_gene_map(DNA_DB, gene2read_file, gene_read_dict, aligned_genes_out):
     with open(aligned_genes_out,"a") as outfile:
         SeqIO.write(genes, outfile, "fasta") 
     
+    convert_to_proteins(genes, aligned_prot_out)
+    
 if __name__ == "__main__":
     cigar_cut           = sys.argv[1]
     DNA_DB              = sys.argv[2]       # INPUT: DNA db used for BT2 alignement
     contig_map_in    = sys.argv[3]       # INPUT: [contigID, #reads, readIDs ...]
     gene_map_out       = sys.argv[4]       # In + OUTPUT: [BWA-aligned geneID, length, #reads, readIDs ...]
     aligned_genes_out    = sys.argv[5]       # in + OUTPUT: genes mapped by BWA.
+    aligned_prot_out = sys.argv[6]
     
-    read1_in            = sys.argv[6]   #in
-    read2_in            = sys.argv[7]   #in
-    sam_in              = sys.argv[8]   #in
-    read1_out           = sys.argv[9]   #in/out.  append
-    read2_out           = sys.argv[10]  #in/out. append
-    op_mode             = sys.argv[11]  #in
+    read1_in            = sys.argv[7]   #in
+    read2_in            = sys.argv[8]   #in
+    sam_in              = sys.argv[9]   #in
+    read1_out           = sys.argv[10]   #in/out.  append
+    read2_out           = sys.argv[11]  #in/out. append
+    op_mode             = sys.argv[12]  #in
     
     input_safety = check_file_safety(read1_in) and check_file_safety(sam_in)
     if(op_mode == "p"):
@@ -370,7 +389,7 @@ if __name__ == "__main__":
         # tracking BWA-assigned:
         unmapped_reads, mapped_reads, gene_read_dict = gene_map(cigar_cutoff, sam_in, contig_read_dict)
         
-        write_gene_map(DNA_DB, gene_map_out, gene_read_dict, aligned_genes_out)
+        write_gene_map(DNA_DB, gene_map_out, gene_read_dict, aligned_genes_out, aligned_prot_out)
         write_unmapped_reads(unmapped_reads, read1_in, read1_out)
         if(op_mode == "p"):
             write_unmapped_reads(unmapped_reads, read2_in, read2_out)

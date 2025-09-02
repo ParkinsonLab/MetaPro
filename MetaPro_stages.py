@@ -755,7 +755,7 @@ class mp_stage:
                 p_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_pp_p_" + lib_tag)
                 marker_path_list.append(p_marker)
                 command_list = self.commands.create_GA_BT2_pp_command(
-                    lib_entry, self.file_dict["gene_map_p"], self.file_dict["genes_p"], 
+                    lib_entry, self.file_dict["gene_map_p"], self.file_dict["genes_p"], self.file_dict["bt2_prot_p"],
                     self.file_dict["contigs_p1"], self.file_dict["contigs_p2"], self.file_dict["ga_bt2_p_sam"],
                     self.file_dict["ga_rem_p1"], self.file_dict["ga_rem_p2"], "p", p_marker
                       )
@@ -769,7 +769,7 @@ class mp_stage:
                 s_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_pp_s_" + lib_tag)
                 marker_path_list.append(s_marker)
                 command_list = self.commands.create_GA_BT2_pp_command(
-                    lib_entry, self.file_dict["gene_map_s"], self.file_dict["genes_s"],
+                    lib_entry, self.file_dict["gene_map_s"], self.file_dict["genes_s"], self.file_dict["bt2_prot_s"],
                     self.file_dict["contigs_s"], "None", self.file_dict["ga_bt2_s_sam"],
                     self.file_dict["ga_rem_s"], "None", "s", s_marker
                 )
@@ -782,7 +782,7 @@ class mp_stage:
                 c_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_pp_c_" + lib_tag)
                 marker_path_list.append(c_marker)
                 command_list = self.commands.create_GA_BT2_pp_command(
-                    lib_entry, self.file_dict["gene_map_c"], self.file_dict["genes_c"],
+                    lib_entry, self.file_dict["gene_map_c"], self.file_dict["genes_c"], self.file_dict["bt2_prot_c"],
                     self.file_dict["contigs_out_fa"], "None", self.file_dict["ga_bt2_c_sam"],
                     self.file_dict["ga_rem_c"], "None", "c", c_marker
                 )
@@ -798,10 +798,6 @@ class mp_stage:
             self.mp_util.wait_for_mp_store()
 
 
-            
-
-            gene_map_list = [self.file_dict["gene_map_s"], self.file_dict["gene_map_c"], self.file_dict["gene_map_p"]]
-            self.mp_util.concatenate_files_efficient(gene_map_list, self.file_dict["gene_map_full"])
             if(self.marker_control.check_marker_list(marker_path_list)):
                 self.marker_control.place_marker("GA_BT2_PP")
             else:
@@ -875,210 +871,119 @@ class mp_stage:
                 marker_path_list.append(self.marker_dict["GA_DMD_pp_p1"])
                 command_list = self.commands.create_DIAMOND_pp_command_v2(
                     self.file_dict["ga_rem_p1"], self.file_dict["ga_dmd_p1_dmdout"], 
-                    self.file_dict["ga_dmd_rem_p1"], self.marker_dict["GA_DMD_pp_p1"]
+                    self.file_dict["ga_dmd_rem_p1"], self.file_dict["ga_dmd_prot_p1"],
+                    self.file_dict["ga_dmd_prot_map_p1"], self.marker_dict["GA_DMD_pp_p1"]
                     )
                 
                 self.mp_util.run_subjob_with_mem_footprint(
                     self.config_dict["DMD_mem_footprint"], self.config_dict["DMD_job_limit"], 
                     self.file_dict["ga_dmd_pp_p1_job"], command_list
                     )
+                #self.mp_util.wait_for_mp_store()
                 
             if(self.marker_control.check_marker("GA_DMD_pp_p2")):
 
                 marker_path_list.append(self.marker_dict["GA_DMD_pp_p2"])
                 command_list = self.commands.create_DIAMOND_pp_command_v2(
                     self.file_dict["ga_rem_p2"], self.file_dict["ga_dmd_p2_dmdout"], 
-                    self.file_dict["ga_dmd_rem_p2"], self.marker_dict["GA_DMD_pp_p2"]
+                    self.file_dict["ga_dmd_rem_p2"], self.file_dict["ga_dmd_prot_p2"],
+                    self.file_dict["ga_dmd_prot_map_p2"], self.marker_dict["GA_DMD_pp_p2"]
                     )
                 
                 self.mp_util.run_subjob_with_mem_footprint(
                     self.config_dict["DMD_mem_footprint"], self.config_dict["DMD_job_limit"], 
                     self.file_dict["ga_dmd_pp_p2_job"], command_list
                     )
-                
+                #self.mp_util.wait_for_mp_store()
+
             if(self.marker_control.check_marker("GA_DMD_pp_s")):
 
                 marker_path_list.append(self.marker_dict["GA_DMD_pp_s"])
                 command_list = self.commands.create_DIAMOND_pp_command_v2(
                     self.file_dict["ga_rem_s"], self.file_dict["ga_dmd_s_dmdout"], 
-                    self.file_dict["ga_dmd_rem_s"], self.marker_dict["GA_DMD_pp_s"]
+                    self.file_dict["ga_dmd_rem_s"], self.file_dict["ga_dmd_prot_s"],
+                    self.file_dict["ga_dmd_prot_map_s"], self.marker_dict["GA_DMD_pp_s"]
                     )
                 
                 self.mp_util.run_subjob_with_mem_footprint(
                     self.config_dict["DMD_mem_footprint"], self.config_dict["DMD_job_limit"], 
                     self.file_dict["ga_dmd_pp_s_job"], command_list
                     )    
-           
+                #self.mp_util.wait_for_mp_store()
+                
+
+
             if(self.marker_control.check_marker("GA_DMD_pp_c")):
 
                 marker_path_list.append(self.marker_dict["GA_DMD_pp_c"])
                 command_list = self.commands.create_DIAMOND_pp_command_v2(
                     self.file_dict["ga_rem_c"], self.file_dict["ga_dmd_c_dmdout"], 
-                    self.file_dict["ga_dmd_rem_c"], self.marker_dict["GA_DMD_pp_c"]
+                    self.file_dict["ga_dmd_rem_c"], self.file_dict["ga_dmd_prot_c"], 
+                    self.file_dict["ga_dmd_prot_map_c"], self.marker_dict["GA_DMD_pp_c"]
                     )
                 
                 self.mp_util.run_subjob_with_mem_footprint(
                     self.config_dict["DMD_mem_footprint"], self.config_dict["DMD_job_limit"], 
                     self.file_dict["ga_dmd_pp_c_job"], command_list
                     )   
+                #self.mp_util.wait_for_mp_store()
                              
             print(dt.today(), "DIAMOND pp jobs submitted.  waiting for sync")
             self.mp_util.wait_for_mp_store()
+
+            gene_map_list = [self.file_dict["ga_dmd_prot_map_s"], self.file_dict["ga_dmd_prot_map_c"], self.file_dict["ga_dmd_prot_map_p1"], self.file_dict["ga_dmd_prot_map_p2"]]
+            #self.mp_util.concatenate_files_efficient(gene_map_list, self.file_dict["ga_dmd_prot_map"])
+
+            prot_list = [self.file_dict["ga_dmd_prot_s"], self.file_dict["ga_dmd_prot_c"], self.file_dict["ga_dmd_prot_p1"], self.file_dict["ga_dmd_prot_p2"]]
+            #self.mp_util.concatenate_files_efficient(prot_list, self.file_dict["ga_dmd_prot"])
+
+
             if(self.marker_control.check_marker_list(marker_path_list)):
-                self.place_marker("GA_DMD_pp")
+                self.marker_control.place_marker("GA_DMD_pp")
             else:
                 print(dt.today(), "Not all DMD pp markers finished")
                 sys.exit()
             
             
-        self.debug_stop_check(self.GA_DIAMOND_pp_label)
+        #self.debug_stop_check(self.GA_DIAMOND_pp_label)
         
     def mp_GA_final_merge(self):
+        
         self.GA_final_merge_start = time.time()
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_final_merge_label):
-            marker_file = "GA_final_merge"
-            marker_path_p = os.path.join(self.ga_final_merge_path, "data", "jobs", "GA_final_merge_proteins")
-            marker_path_m = os.path.join(self.ga_final_merge_path, "data", "jobs", "GA_final_merge_maps")
-            marker_path_f = os.path.join(self.ga_final_merge_path, "data", "jobs", "GA_final_merge_fastq")
-            if(os.path.exists(marker_path_p) and os.path.exists(marker_path_m) and os.path.exists(marker_path_f)):
-                print(dt.today(), "skipping: GA final merge")
-            else:
-                command_list = self.commands.create_GA_final_merge_command(self.GA_final_merge_label, self.assemble_contigs_label, self.GA_BT2_label, self.GA_BLAT_label, self.GA_DIAMOND_label,  marker_file)
-                job_name = "GA_final_merge"
-                self.mp_util.subdivide_and_launch(self.GA_final_merge_job_delay, self.GA_final_merge_mem_threshold, self.GA_final_merge_job_limit, self.GA_final_merge_label, job_name, self.commands, command_list)
-            
-            #check if all_proteins.faa was generated
-            all_proteins_path = os.path.join(self.output_folder_path, self.GA_final_merge_label, "final_results", "all_proteins.faa")
-            if(os.path.exists(marker_path_p)):
-                if(os.path.getsize(all_proteins_path) > 0):
-                    self.mp_util.write_to_bypass_log(self.output_folder_path, self.GA_final_merge_label)
-                    print(dt.today(), "All_proteins.faa is OK.  Continuing")
-                else:
-                    sys.exit("GA final merge failed.  proteins weren't translated")
+        #if self.mp_util.check_bypass_log(self.output_folder_path, self.GA_final_merge_label):
+        
+        if self.marker_control.check_marker("GA_FM"):
+            self.dir_control.make_dirs_from_list("GA_FM_list")
+            marker_path_list = [self.marker_dict["GA_FM_bt2"], self.marker_dict["GA_FM_dmd"],
+                self.marker_dict["GA_FM_prot"], self.marker_dict["GA_FM_maps"]]
+            command_list = self.commands.create_GA_final_merge_command(
+                self.marker_dict["GA_FM_bt2"], self.marker_dict["GA_FM_dmd"],
+                self.marker_dict["GA_FM_prot"], self.marker_dict["GA_FM_maps"]
+                )
+            job_name = "GA_final_merge"
+            self.mp_util.subdivide_and_launch(
+                self.config_dict["GA_final_merge_job_delay"], self.config_dict["GA_final_merge_mem_threshold"], 
+                self.config_dict["GA_final_merge_job_limit"], self.file_dict["ga_fm_job"], command_list)
+            if self.marker_control.check_marker_list(marker_path_list):
+                self.marker_control.place_marker("GA_FM")
                 
         self.GA_final_merge_end = time.time()
         print("GA final merge:", '%1.1f' % (self.GA_final_merge_end - self.GA_final_merge_start), "s")
-        self.mp_util.clean_or_compress(self.ga_final_merge_path, self.config_dict["keep_all"], self.keep_GA_final)
+        #self.mp_util.clean_or_compress(self.ga_final_merge_path, self.config_dict["keep_all"], self.keep_GA_final)
         
-        self.debug_stop_check(self.GA_final_merge_label)
+        #self.debug_stop_check(self.GA_final_merge_label)
 
     def mp_TA(self):
+        #this is a bit of a misnomer now.  It just repacks the kraken2 report.  We already did a TA scan to narrow down the library.
         self.TA_start = time.time()
-        
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.ta_label):
-            #-----------------------------------------
-            # stage 1
-            marker_path_list = []
-            #----------------------------------------------
-            #centrifuge is too much of a RAM hog.  can't run more than 1 at a time
-            sections = ["reads"]
-            for section in sections:
-                marker_file = "TA_centrifuge_" + section
-                marker_path = os.path.join(self.TA_jobs_folder, marker_file)
-                
-                if(os.path.exists(marker_path)):
-                    print(dt.today(), "skipping:", marker_file)
-                else:
-                    marker_path_list.append(marker_path)
-                    command_list = self.commands.create_TA_centrifuge_command(self.ta_label, self.rRNA_filter_label, self.assemble_contigs_label, section, marker_file)
-                    self.mp_util.run_subjob_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
-                    
-            sections = ["singletons"]
-            if self.read_mode == "p":
-                sections.extend(["paired"])
-            if(self.contigs_present):
-                sections.extend(["contigs"])    
-            
-            for section in sections:
-                marker_file = "TA_kraken2_" + section
-                marker_path = os.path.join(self.TA_jobs_folder, marker_file)
-                if(os.path.exists(marker_path)):
-                    print(dt.today(), "skipping:", marker_file)
-                else:
-                    marker_path_list.append(marker_path)
-                    command_list = self.commands.create_TA_kraken2_command(self.ta_label, self.assemble_contigs_label, section, marker_file)
-                    self.mp_util.run_subjob_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)        
-            marker_file = "TA_taxon_pull"
-            marker_path = os.path.join(self.TA_jobs_folder, marker_file)
-            if(os.path.exists(marker_path)):
-                print(dt.today(), "skipping:", marker_file)
-            else:
-                marker_path_list.append(marker_path)
-                command_list = self.commands.create_TA_taxon_pull_command(self.ta_label, self.GA_final_merge_label, marker_file)
-                self.mp_util.run_subjob_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
-            print(dt.today(), "waiting for TA stage 1")
+        if self.marker_control.check_marker("TA"):
+            self.dir_control.make_dirs_from_list("TA_list")
+            command_list = self.commands.create_TA_repack_command(self.marker_dict["TA"])
+            self.mp_util.run_subjob_with_mp_store(self.file_dict["ta_job"], command_list)
             self.mp_util.wait_for_mp_store()
-            final_checklist = os.path.join(self.TA_path, "TA_stage_1.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            
-            #--------------------------------------------------
-            # stage 2
-            marker_path_list = []
-            sections = ["contigs"]
-            for section in sections:
-                marker_file = "TA_centrifuge_" + section
-                marker_path = os.path.join(self.TA_jobs_folder, marker_file)
-                
-                if(os.path.exists(marker_path)):
-                    print(dt.today(), "skipping:", marker_file)
-                else:
-                    marker_path_list.append(marker_path)
-                    command_list = self.commands.create_TA_centrifuge_command(self.ta_label, self.rRNA_filter_label, self.assemble_contigs_label, section, marker_file)
-                    self.mp_util.run_subjob_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
-            
-            marker_file = "TA_kraken2_pp"
-            marker_path = os.path.join(self.TA_jobs_folder, marker_file)
-            if(os.path.exists(marker_path)):
-                print(dt.today(), "skipping:", marker_file)
-            else:
-                marker_path_list.append(marker_path)
-                command_list = self.commands.create_TA_kraken2_pp_command(self.ta_label, marker_file)
-                self.mp_util.run_subjob_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
-            self.mp_util.wait_for_mp_store()
-            final_checklist = os.path.join(self.TA_path, "TA_stage_2.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            #------------------------------------------------------------------
-
-            #-----------------------------------------------------------------
-            # stage 3
-            marker_path_list = []
-            marker_file = "TA_centrifuge_pp"
-            marker_path = os.path.join(self.TA_jobs_folder, marker_file)
-            if(os.path.exists(marker_path)):
-                print(dt.today(), "skipping:", marker_file)
-            else:
-                marker_path_list.append(marker_path)
-                command_list = self.commands.create_TA_centrifuge_pp_command(self.ta_label, marker_file)
-                self.mp_util.run_subjob_with_hold(self.TA_mem_threshold, self.TA_job_limit, self.TA_job_delay, self.ta_label, marker_file, self.commands, command_list)
-            #self.mp_util.wait_for_mp_store()
-            final_checklist = os.path.join(self.TA_path, "TA_stage_3.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            #-----------------------------------------------
-            # stage 4
-            marker_path_list = []
-            
-            marker_file = "TA_final"
-            marker_path = os.path.join(self.TA_jobs_folder, marker_file)
-            if(os.path.exists(marker_path)):
-                print(dt.today(), "skipping:", marker_file)
-            else:
-                marker_path_list.append(marker_path)
-                command_list = self.commands.create_TA_final_command(self.ta_label, self.assemble_contigs_label, marker_file)
-                self.mp_util.run_subjob_simple(self.ta_label, marker_file, self.commands, command_list)
-            final_checklist = os.path.join(self.TA_path, "TA_final.txt")
-            self.mp_util.check_all_job_markers(marker_path_list, final_checklist)
-            
-            if(os.path.exists(marker_path)):
-                self.mp_util.write_to_bypass_log(self.output_folder_path, self.ta_label)
-                
-        self.cleanup_TA_start = time.time()
-        self.mp_util.clean_or_compress(self.TA_path, self.config_dict["keep_all"], self.keep_TA)
-        self.cleanup_TA_end = time.time()
+     
         self.TA_end = time.time()
-        print("TA:", '%1.1f' % (self.TA_end - self.TA_start - (self.cleanup_TA_end - self.cleanup_TA_start)), "s")
-        print("TA cleanup:", '%1.1f' % (self.cleanup_TA_end - self.cleanup_TA_start), "s")
-        
-        self.debug_stop_check(self.ta_label)
+    
 
     def mp_EC(self):
         

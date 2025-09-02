@@ -218,30 +218,27 @@ def form_prot_map(identity_cutoff, length_cutoff, score_cutoff, hits, contig2rea
 # WRITE OUTPUT: rewrite gene<->read map file to include DMD-aligned:
 # [BWA&BLAT&DMD-aligned geneID, length, #reads, readIDs ...]
 def write_proteins_genemap(prot2read_map, Prot_DB, new_prot2read_file, prot_file):
-    reads_count= 0
-    proteins= []
-    unique_reads_set = set()
-    print(dt.today(), "starting to append to new gene map")
-    
-    #with open(new_gene2read_file,"a") as out_map:               
-    with open(new_prot2read_file,"a") as out_map:               
-
-        # write proteins:
-        for record in SeqIO.parse(Prot_DB,"fasta"):         # Loop through SeqRec of all prot in PROTdb:
-                                                            #  (PROTdb is needed to get the aa sequence.)
-            if record.id in prot2read_map:                  #  If PROTdb prot is one of the matched proteins,
-                proteins.append(record)                     #  append the SeqRec to proteins list (for next file), and
-                out_map.write(record.id + "\t" + str(len(record.seq)*3) + "\t" + str(len(prot2read_map[record.id]))) #multiplied by 3 because proteins come in amino acids (groups of 3)
-                                                            #  write [aligned protID, length (in nt), #reads, ...],
-                for read in prot2read_map[record.id]:
-                    out_map.write("\t" + read.strip("\n"))  #  [readIDs ...],
-                    reads_count+= 1
-                else:
-                    out_map.write("\n")                     #  and a new line character.
-                    
-    with open(prot_file,"w") as out_prot:
-        SeqIO.write(proteins, out_prot, "fasta")            # and aligned proteins aa seqs.
-    
+   reads_count = 0
+   proteins = []
+   unique_reads_set = set()
+   print(dt.today(), "starting to append to new gene map")
+   
+   with open(new_prot2read_file, "a") as out_map:
+       first_entry = True
+       for record in SeqIO.parse(Prot_DB, "fasta"):
+           if record.id in prot2read_map:
+               if not first_entry:
+                   out_map.write("\n")
+               first_entry = False
+               
+               proteins.append(record)
+               out_map.write(record.id + "\t" + str(len(record.seq)*3) + "\t" + str(len(prot2read_map[record.id])))
+               for read in prot2read_map[record.id]:
+                   out_map.write("\t" + read.strip("\n"))
+                   reads_count += 1
+   
+   with open(prot_file, "w") as out_prot:
+       SeqIO.write(proteins, out_prot, "fasta")
 
 
 

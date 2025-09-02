@@ -105,11 +105,17 @@ class mpro_marker:
         self.marker_dict["GA_DMD_p2"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_p2")
         self.marker_dict["GA_DMD_s"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_s")
         self.marker_dict["GA_DMD_c"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_c")
-        self.marker_dict["GA_DMD_pp"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_pp")
+        self.marker_dict["GA_DMD_pp"] = os.path.join(self.dir_dict["GA_DMD"], "GA_DMD_pp")
         self.marker_dict["GA_DMD_pp_p1"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_pp_p1")
         self.marker_dict["GA_DMD_pp_p2"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_pp_p2")
         self.marker_dict["GA_DMD_pp_c"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_pp_c")
         self.marker_dict["GA_DMD_pp_s"] = os.path.join(self.dir_dict["GA_DMD_mkrs"], "GA_DMD_pp_s")
         
+        self.marker_dict["GA_FM"] = os.path.join(self.dir_dict["GA_FM"], "GA_FM")
+        self.marker_dict["GA_FM_bt2"] = os.path.join(self.dir_dict["GA_FM_mkrs"], "merge_bt2_genes")
+        self.marker_dict["GA_FM_dmd"] = os.path.join(self.dir_dict["GA_FM_mkrs"], "merge_dmd_prot")
+        self.marker_dict["GA_FM_prot"] = os.path.join(self.dir_dict["GA_FM_mkrs"], "merge_all_prots")
+        self.marker_dict["GA_FM_maps"] = os.path.join(self.dir_dict["GA_FM_mkrs"], "merge_maps")
         
 
+        self.marker_dict["TA"] = os.path.join(self.dir_dict["TA"], "TA")

@@ -251,6 +251,8 @@ RUN pip install  --upgrade pip \
 && pip install tqdm \
 && pip install transformers
 
+RUN apt-get install -y nano
+
 ENV PATH="${PATH}:/pipeline_tools/SPAdes/bin"
 ENV PATH="${PATH}:/pipeline_tools/BWA"
 ENV PATH="${PATH}:/pipeline_tools/MetaGeneMark_linux_64"
@@ -266,6 +268,10 @@ ENV PATH="${PATH}:/pipeline_tools/bowtie2"
 ENV PATH="${PATH}:/pipeline_tools/mgm2/src"
 ENV PATH="${PATH}:/pipeline_tools/DeepProZyme-v_1_0"
 ENV PATH="${PATH}:/pipeline_tools/mgm"
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/feature/2025_tool_update
 
 #RUN apt-get update
 #RUN apt-get upgrade
