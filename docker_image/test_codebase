@@ -14,6 +14,8 @@ ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_marker.p
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_dir.py /pipeline
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_files.py /pipeline
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_stages.py /pipeline
+ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/MetaPro_time.py /pipeline
+
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Config.ini /pipeline
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/Detect_2.2.10.py /pipeline/Scripts
 ADD https://raw.githubusercontent.com/ParkinsonLab/MetaPro/test/Scripts/assembly_deduplicate.py /pipeline/Scripts
