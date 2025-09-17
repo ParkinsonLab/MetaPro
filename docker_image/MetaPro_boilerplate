@@ -1,273 +1,93 @@
-#FROM continuumio/anaconda3
-#version 1.0.1: added kraken2
-#version 1.0.2: added valgrind
-#version 1.0.3: added heaptrack
-#version 1.0.4: updated for 2025
-#version 1.0.5: updated to ubuntu 24.04.  python too old
-#version 1.0.6: new tools.
-
-FROM ubuntu:24.04
+FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
 MAINTAINER Billy Taj
 
-FROM python:3
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    wget unzip build-essential gcc make cmake autoconf \
+    libz-dev libbz2-dev libboost-all-dev flex libncurses5-dev \
+    liblzma-dev perl vim less libcurl4-openssl-dev libgd-dev \
+    default-jre default-jdk libidn11-dev valgrind heaptrack \
+    bedtools nano git \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN pip install  --upgrade pip \
-&& pip install biopython \
-&& pip install pandas \
-&& pip install matplotlib \
-&& pip install seaborn \
-&& pip install pillow \
-&& pip install psutil \
-&& pip install requests \
-&& pip install hanging_threads
-
-
-RUN apt-get -y update \
-&& apt-get -y upgrade \
-&& apt-get -y install wget \
-&& apt-get -y install unzip \
-&& apt-get -y install g++ \
-&& apt-get -y install gcc \
-&& apt-get -y install make \
-&& apt-get -y install libz-dev \
-&& apt-get -y install libbz2-dev \
-&& apt-get -y install autoconf \
-&& apt-get -y install build-essential \
-&& apt-get -y install libboost-all-dev \
-&& apt-get -y install flex \
-&& apt-get -y install cmake \
-&& apt-get -y install libncurses5-dev \
-&& apt-get -y install liblzma-dev \
-&& apt-get -y install perl \
-&& apt-get install -y vim \
-&& apt-get install -y less \
-&& apt-get install -y libcurl4-openssl-dev
-
-
-#needed for Needle
-RUN apt-get update \
-&& apt-get install libgd-dev -y \
-&& apt-get clean
+# Install Python packages
+RUN pip install --no-cache-dir \
+    biopython pandas matplotlib seaborn pillow psutil requests \
+    numpy scikit-learn tqdm transformers
 
 WORKDIR /pipeline_tools
-#----------------------------------------------------
-# Install AdapaterRemoval
-#RUN wget https://github.com/MikkelSchubert/adapterremoval/archive/v2.1.7.tar.gz -O adapterremoval.tar.gz \
+
+# Install all your bioinformatics tools (abbreviated for space)
 RUN wget https://github.com/MikkelSchubert/adapterremoval/archive/refs/tags/v2.3.4.tar.gz -O adapterremoval.tar.gz \
-
-&& mkdir /pipeline_tools/adapterremoval \
-&& tar -xzvf adapterremoval.tar.gz \
-&& rm adapterremoval.tar.gz \
-&& cd adapterremoval-2.3.4 \
-&& make && mv build/AdapterRemoval /pipeline_tools/adapterremoval/ \
-&& cd /pipeline_tools \
-&& rm -r adapterremoval-2.3.4
-
-
-
-
+    && mkdir adapterremoval && tar -xzf adapterremoval.tar.gz \
+    && cd adapterremoval-2.3.4 && make && mv build/AdapterRemoval ../adapterremoval/ \
+    && cd .. && rm -rf adapterremoval-2.3.4 adapterremoval.tar.gz
 
 RUN wget https://github.com/BenLangmead/bowtie2/releases/download/v2.5.4/bowtie2-2.5.4-linux-x86_64.zip -O bowtie2.zip \
-&& unzip bowtie2.zip \
-&& mv bowtie2-2.5.4-linux-x86_64 bowtie2
+    && unzip bowtie2.zip && mv bowtie2-2.5.4-linux-x86_64 bowtie2 && rm bowtie2.zip
 
+RUN wget https://github.com/bbuchfink/diamond/releases/download/v2.1.12/diamond-linux64.tar.gz \
+    && mkdir DIAMOND && tar -xzf diamond-linux64.tar.gz -C DIAMOND && rm diamond-linux64.tar.gz
 
+RUN wget http://eddylab.org/infernal/infernal-1.1.5.tar.gz \
+    && tar -xzf infernal-1.1.5.tar.gz && mkdir infernal \
+    && mv infernal-1.1.5/* infernal && rm -rf infernal-1.1.5 infernal-1.1.5.tar.gz \
+    && cd infernal && ./configure && make && cd ..
 
+RUN wget https://github.com/marbl/Krona/releases/download/v2.7/KronaTools-2.7.tar \
+    && tar -xf KronaTools-2.7.tar && mkdir KronaTools \
+    && mv KronaTools-2.7/* KronaTools/ && rm -rf KronaTools-2.7 KronaTools-2.7.tar \
+    && cd KronaTools && perl install.pl && cd ..
 
-#-----------------------------------------------------
-# Install DIAMOND
-#RUN wget http://github.com/bbuchfink/diamond/releases/download/v0.9.19/diamond-linux64.tar.gz -O DIAMOND.tar.gz \
-#RUN wget https://github.com/bbuchfink/diamond/releases/download/v2.1.10/diamond-linux64.tar.gz -O DIAMOND.tar.gz \
-#RUN wget https://github.com/bbuchfink/diamond/releases/download/v2.1.11/diamond-linux64.tar.gz -O DIAMOND.tar.gz \
-RUN wget https://github.com/bbuchfink/diamond/releases/download/v2.1.12/diamond-linux64.tar.gz -O DIAMOND.tar.gz\
-&& mkdir DIAMOND \
-&& tar --remove-files -xzvf DIAMOND.tar.gz -C DIAMOND \
-&& rm DIAMOND.tar.gz
+RUN wget https://github.com/samtools/samtools/releases/download/1.21/samtools-1.21.tar.bz2 \
+    && tar -xjf samtools-1.21.tar.bz2 && mkdir samtools \
+    && cd samtools-1.21 && make && mv samtools ../samtools/ \
+    && cd .. && rm -rf samtools-1.21 samtools-1.21.tar.bz2
 
+RUN wget https://github.com/ablab/spades/releases/download/v4.2.0/SPAdes-4.2.0-Linux.tar.gz \
+    && tar -xzf SPAdes-4.2.0-Linux.tar.gz && rm SPAdes-4.2.0-Linux.tar.gz
 
-#-------------------------------------------
-# Install Infernal
-RUN wget http://eddylab.org/infernal/infernal-1.1.5.tar.gz -O infernal.tar.gz \
-&& tar --remove-files -xzvf infernal.tar.gz \
-&& rm infernal.tar.gz \
-&& mkdir infernal \
-&& mv infernal-1.1.5/* infernal \
-&& rm -r infernal-1.1.5 \
-&& cd infernal \
-&& sh configure \
-&& make \
-&& cd /pipeline_tools
+RUN wget https://github.com/torognes/vsearch/releases/download/v2.29.2/vsearch-2.29.2-linux-x86_64.tar.gz \
+    && mkdir vsearch && tar -xzf vsearch-2.29.2-linux-x86_64.tar.gz \
+    && mv vsearch-2.29.2-linux-x86_64 vsearch && rm vsearch-2.29.2-linux-x86_64.tar.gz
 
+RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.16.0/ncbi-blast-2.16.0+-x64-linux.tar.gz \
+    && tar -xzf ncbi-blast-2.16.0+-x64-linux.tar.gz && mkdir BLAST_p \
+    && mv ncbi-blast-2.16.0+/bin/* BLAST_p/ && rm -rf ncbi-blast-2.16.0+ ncbi-blast-2.16.0+-x64-linux.tar.gz
 
-
-#---------------------------------------
-# Install KronaTools (for ktImportText)
-# note, ktImportText is now a perl script, not a binary.  We probably need most of this, if not all of this.  No cleaning
-RUN wget https://github.com/marbl/Krona/releases/download/v2.7/KronaTools-2.7.tar -O KronaTools.tar \
-&& tar --remove-files -xvf KronaTools.tar \
-&& rm KronaTools.tar \
-&& mkdir KronaTools \
-&& mv KronaTools-2.7/* KronaTools/ \
-&& rm -r KronaTools-2.7 \
-&& cd KronaTools \
-&& perl install.pl \
-&& cd /pipeline_tools
-
-
-#------------------------------------------------------
-# Install SAMTools
-RUN wget https://github.com/samtools/samtools/releases/download/1.21/samtools-1.21.tar.bz2 -O samtools.tar.bz2 \
-&& tar --remove-files -xjvf samtools.tar.bz2 \
-&& rm samtools.tar.bz2 \
-&& mkdir samtools \
-&& cd samtools-1.21 \
-&& make \
-&& mv samtools /pipeline_tools/samtools \
-&& cd /pipeline_tools \
-&& rm -r samtools-1.21
-
-
-RUN wget https://github.com/ablab/spades/releases/download/v4.2.0/SPAdes-4.2.0-Linux.tar.gz -O SPAdes.tar.gz \
-&& tar --remove-files -xzvf SPAdes.tar.gz \
-&& rm SPAdes.tar.gz
-
-
-
-
-
-#----------------------------------------------------
-# Install vsearch
-RUN wget https://github.com/torognes/vsearch/releases/download/v2.29.2/vsearch-2.29.2-linux-x86_64.tar.gz -O vsearch.tar.gz \
-&& mkdir vsearch \
-&& tar --remove-files -xzvf vsearch.tar.gz \
-&& rm vsearch.tar.gz \ 
-&& mv vsearch-2.29.2-linux-x86_64 vsearch \
-&& cd /pipeline_tools 
-
-
-#------------------------------------------------------------------------
-#post-build annoyances with java
-## JAVA INSTALLATION
-RUN apt-get update && apt-get install -y default-jre \
-&& apt-get install -y default-jdk \
-&& cd /pipeline_tools
-
-
-
-#------------------------------------
-# Install BLAST+
-RUN apt-get install -y libidn11-dev \
-&& wget -c https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.16.0/ncbi-blast-2.16.0+-x64-linux.tar.gz -O BLAST_p.tar.gz \
-&& tar --remove-files -xzvf BLAST_p.tar.gz \
-&& rm BLAST_p.tar.gz \
-&& mkdir BLAST_p \
-&& mv ncbi-blast-2.16.0+/bin/* BLAST_p \
-&& rm -r ncbi-blast-2.16.0+
-
-
-
-#RUN mkdir BLAST_p && mv ncbi-blast-2.7.1+-src/c++/* BLAST_p && rm -r ncbi-blast-2.7.1+-src
-#WORKDIR BLAST_p
-#RUN ./configure --without-boost && make 
-
-
-#-----------------------------------
-# Add MetaGeneMark
-WORKDIR /pipeline_tools
 ADD https://github.com/billytaj/parkinson_int_meta_pipe/blob/develop/mgm/MetaGeneMark_linux_64.tar.gz?raw=true /pipeline_tools
-RUN mkdir mgm \
-&& mv MetaGeneMark_linux_64.tar.gz MetaGeneMark.tar \
-&& tar -xvf MetaGeneMark.tar && mv MetaGeneMark_linux_64/mgm/* /pipeline_tools/mgm \
-&& chmod 755 /pipeline_tools/mgm/gmhmmp
+RUN mkdir mgm && mv MetaGeneMark_linux_64.tar.gz MetaGeneMark.tar \
+    && tar -xf MetaGeneMark.tar && mv MetaGeneMark_linux_64/mgm/* mgm/ \
+    && chmod 755 mgm/gmhmmp && rm MetaGeneMark.tar
 
+RUN wget https://github.com/s-andrews/FastQC/archive/refs/tags/v0.12.1.zip -O fastqc.zip \
+    && unzip fastqc.zip && chmod 755 FastQC-0.12.1/fastqc && rm fastqc.zip
 
-
-
-WORKDIR /pipeline_tools
-RUN wget https://github.com/s-andrews/FastQC/archive/refs/tags/v0.12.1.zip -O fastqc.zip\
-&& unzip fastqc.zip \
-&& chmod 755 /pipeline_tools/FastQC-0.12.1/fastqc \ 
-&& rm fastqc.zip
-
-#----------------------------------------
-#Add kraken2
-WORKDIR /pipeline_tools
 RUN wget https://github.com/DerrickWood/kraken2/archive/refs/tags/v2.14.zip -O kraken2.zip \
-&& unzip kraken2.zip \
-&& cd kraken2-2.14 \
-&& ./install_kraken2.sh . \
-&& cd .. \
-&& rm kraken2.zip \
-&& mv kraken2-2.14 kraken2
+    && unzip kraken2.zip && cd kraken2-2.14 && ./install_kraken2.sh . \
+    && cd .. && mv kraken2-2.14 kraken2 && rm kraken2.zip
 
-
-
-RUN apt-get autoclean \
-&& apt-get autoremove \
-&& apt-get update \
-&& apt-get clean && apt-get install -y valgrind && apt-get install -y heaptrack
-#------------------------------------------
-
-WORKDIR /pipeline_tools
-#---------------------------------------
-# Install Barrnap
-RUN apt-get -y install bedtools
-
-
-#RUN wget https://github.com/tseemann/barrnap/archive/0.8.zip -O barrnap.zip \
 RUN wget https://github.com/tseemann/barrnap/archive/refs/tags/0.9.zip -O barrnap.zip \
-&& unzip barrnap.zip 
+    && unzip barrnap.zip && rm barrnap.zip
 
+RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz \
+    && tar -xzf cd-hit-v4.8.1-2019-0228.tar.gz && cd cd-hit-v4.8.1-2019-0228 \
+    && make && cd cd-hit-auxtools && make && cd ../.. \
+    && mkdir cdhit_dup && mv cd-hit-v4.8.1-2019-0228/* cdhit_dup/ \
+    && rm -rf cd-hit-v4.8.1-2019-0228 cd-hit-v4.8.1-2019-0228.tar.gz
 
+RUN wget https://compsysbio.org/metapro_hosting/mgm2.zip && unzip mgm2.zip && rm mgm2.zip
 
-
-#----------------------------------------------------
-# Install CD-HIT-DUP (from auxtools)
-RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz -O cdhit.tar.gz \
-&& tar --remove-files -xzvf cdhit.tar.gz \
-&& rm cdhit.tar.gz \
-&& cd cd-hit-v4.8.1-2019-0228 \ 
-&& make \
-&& cd cd-hit-auxtools \
-&& make \
-&& cd /pipeline_tools \
-&& mkdir cdhit_dup \
-&& mv /pipeline_tools/cd-hit-v4.8.1-2019-0228/* /pipeline_tools/cdhit_dup \
-&& cd /pipeline_tools \
-&& rm -r cd-hit-v4.8.1-2019-0228
-
-#---------------------------------------------------------
-# Install MetaGeneMark2
-RUN wget https://compsysbio.org/metapro_hosting/mgm2.zip \
-&& unzip mgm2.zip
-
-#------------------------------------------------------------
-# Install DeepEC
 RUN wget https://github.com/kaistsystemsbiology/DeepProZyme/archive/refs/tags/v_1_0.zip -O DeepEC.zip \
-&& unzip DeepEC.zip
+    && unzip DeepEC.zip && rm DeepEC.zip
 
-RUN pip install  --upgrade pip \
-&& pip install torch \
-&& pip install tqdm \
-&& pip install transformers
+# Install DeepProZyme wrapper
+RUN wget https://compsysbio.org/metapro_hosting/deepc_wrapper.py -O /usr/local/bin/run_deepectransformer.py \
+    && chmod +x /usr/local/bin/run_deepectransformer.py
 
-RUN apt-get install -y nano
-
-ENV PATH="${PATH}:/pipeline_tools/SPAdes/bin"
-ENV PATH="${PATH}:/pipeline_tools/BWA"
-ENV PATH="${PATH}:/pipeline_tools/MetaGeneMark_linux_64"
-ENV PATH="${PATH}:/pipeline_tools/barrnap-0.9/bin"
-ENV PATH="${PATH}:/pipeline_tools/cdhit_dup/cd-hit-auxtools"
-ENV PATH="${PATH}:/pipeline_tools/DIAMOND"
-ENV PATH="${PATH}:/pipeline_tools/kraken2"
-ENV PATH="${PATH}:/pipeline_tools/samtools"
-ENV PATH="${PATH}:/pipeline_tools/vsearch/vsearch-2.29.2-linux-x86_64/bin"
-ENV PATH="${PATH}:/pipeline_tools/adapterremoval"
-ENV PATH="${PATH}:/pipeline_tools/infernal/src"
-ENV PATH="${PATH}:/pipeline_tools/bowtie2"
-ENV PATH="${PATH}:/pipeline_tools/mgm2/src"
+ENV PATH="${PATH}:/pipeline_tools/SPAdes-4.2.0-Linux/bin:/pipeline_tools/bowtie2:/pipeline_tools/DIAMOND"
+ENV PATH="${PATH}:/pipeline_tools/infernal/src:/pipeline_tools/samtools:/pipeline_tools/vsearch/bin"
+ENV PATH="${PATH}:/pipeline_tools/adapterremoval:/pipeline_tools/BLAST_p:/pipeline_tools/mgm"
+ENV PATH="${PATH}:/pipeline_tools/FastQC-0.12.1:/pipeline_tools/kraken2:/pipeline_tools/barrnap-0.9/bin"
+ENV PATH="${PATH}:/pipeline_tools/cdhit_dup/cd-hit-auxtools:/pipeline_tools/mgm2/src"
 ENV PATH="${PATH}:/pipeline_tools/DeepProZyme-v_1_0"
-ENV PATH="${PATH}:/pipeline_tools/mgm"
-
-#RUN apt-get update
-#RUN apt-get upgrade

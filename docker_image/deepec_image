@@ -1,0 +1,94 @@
+# Fixed DeepEC/DeepProZyme Installation
+FROM python:3.6-slim
+MAINTAINER Billy Taj
+
+# Install system dependencies including diamond
+RUN apt-get update && apt-get install -y \
+    wget unzip git curl \
+    build-essential \
+    && wget http://github.com/bbuchfink/diamond/releases/download/v2.0.11/diamond-linux64.tar.gz \
+    && tar xzf diamond-linux64.tar.gz \
+    && mv diamond /usr/local/bin/ \
+    && rm diamond-linux64.tar.gz \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create working directory
+WORKDIR /deepec
+
+# Install DeepProZyme and check directory structure
+RUN wget https://github.com/kaistsystemsbiology/DeepProZyme/archive/refs/tags/v_1_0.zip -O DeepEC.zip \
+    && unzip DeepEC.zip \
+    && mv DeepProZyme-v_1_0/* . \
+    && rm -rf DeepProZyme-v_1_0 DeepEC.zip \
+    && echo "=== DeepProZyme directory structure ===" \
+    && find . -type d -name "*model*" \
+    && find . -name "*.pth" \
+    && ls -la \
+    && echo "=== End directory listing ==="
+
+# Install Python dependencies with a newer transformers version that handles URLs correctly
+RUN pip install --no-cache-dir \
+    torch==1.7.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
+    transformers==4.5.1 \
+    tqdm==4.53.0 \
+    biopython==1.78 \
+    matplotlib \
+    numpy \
+    scikit-learn \
+    pandas
+
+# Manually download the BERT model files that actually exist
+RUN mkdir -p /deepec/hf_cache/models--Rostlab--prot_bert_bfd/snapshots/main && \
+    cd /deepec/hf_cache/models--Rostlab--prot_bert_bfd/snapshots/main && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/config.json && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/pytorch_model.bin && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/tokenizer_config.json && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/vocab.txt && \
+    echo "BERT model files downloaded manually (skipped missing tokenizer.json)"
+
+# Set environment variables for runtime to use the manually downloaded model
+ENV HF_HOME=/deepec/hf_cache
+ENV TRANSFORMERS_CACHE=/deepec/hf_cache
+ENV TRANSFORMERS_OFFLINE=1
+
+# Fix the model path in the script to use absolute path
+RUN sed -i 's|./model/model.pth|/deepec/model/model.pth|g' run_deepectransformer.py
+
+# Download and setup the DeepEC wrapper
+RUN wget https://compsysbio.org/metapro_hosting/deepec_wrapper.py -O deepec.py \
+    && chmod +x deepec.py
+
+# Verify installations and check package locations
+RUN python -c "import torch; import transformers; import tokenizers; print('All dependencies OK')" \
+    && python -c "from transformers import AutoTokenizer; print('Transformers import OK')" \
+    && python -c "import transformers; print('Transformers location:', transformers.__file__)" \
+    && python -c "import tokenizers; print('Tokenizers version:', tokenizers.__version__)"
+
+# Ensure the deepec directory structure is correct and create __init__.py if missing
+RUN cd /deepec && \
+    ls -la && \
+    if [ ! -f deepec/__init__.py ]; then touch deepec/__init__.py; fi && \
+    if [ ! -f __init__.py ]; then touch __init__.py; fi
+
+# Set environment variables to isolate container Python environment
+ENV PYTHONPATH="/deepec:/usr/local/lib/python3.8/site-packages"
+ENV PATH="/deepec:/usr/local/bin:${PATH}"
+ENV PYTHONUSERBASE="/tmp/python-user"
+ENV PIP_USER=false
+
+# Clear any inherited Python paths
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Create a non-root user and fix permissions
+RUN groupadd -r deepec && useradd -r -g deepec -u 1000 deepec \
+    && chown -R deepec:deepec /deepec \
+    && chmod -R 755 /deepec
+
+# Switch to non-root user
+USER deepec
+
+# Set working directory to deepec so relative paths work
+WORKDIR /deepec
+
+CMD ["/bin/bash"]
