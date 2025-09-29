@@ -26,10 +26,10 @@ RUN wget https://github.com/kaistsystemsbiology/DeepProZyme/archive/refs/tags/v_
     && ls -la \
     && echo "=== End directory listing ==="
 
-# Install Python dependencies with a newer transformers version that handles URLs correctly
+# Install Python dependencies matching the original environment.yml versions
 RUN pip install --no-cache-dir \
     torch==1.7.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
-    transformers==4.5.1 \
+    transformers==3.5.1 \
     tqdm==4.53.0 \
     biopython==1.78 \
     matplotlib \
@@ -37,18 +37,24 @@ RUN pip install --no-cache-dir \
     scikit-learn \
     pandas
 
-# Manually download the BERT model files that actually exist
-RUN mkdir -p /deepec/hf_cache/models--Rostlab--prot_bert_bfd/snapshots/main && \
-    cd /deepec/hf_cache/models--Rostlab--prot_bert_bfd/snapshots/main && \
-    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/config.json && \
-    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/pytorch_model.bin && \
-    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/tokenizer_config.json && \
-    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/vocab.txt && \
-    echo "BERT model files downloaded manually (skipped missing tokenizer.json)"
+# Create proper HuggingFace cache structure and fix config
+RUN mkdir -p /deepec/hf_cache/transformers && \
+    cd /deepec/hf_cache/transformers && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/config.json -O config.json && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/pytorch_model.bin -O pytorch_model.bin && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/tokenizer_config.json -O tokenizer_config.json && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/vocab.txt -O vocab.txt && \
+    sed -i 's/"hidden_size": 1024/"hidden_size": 1024,\n  "model_type": "bert"/' config.json && \
+    echo "BERT model files downloaded and config fixed"
 
-# Set environment variables for runtime to use the manually downloaded model
+# Replace the problematic line in data_loader.py using a simple sed command
+RUN sed -i 's/Rostlab\/prot_bert_bfd/\/deepec\/hf_cache\/transformers/g' /deepec/deepec/data_loader.py && \
+    sed -i 's/AutoTokenizer.from_pretrained(tokenizer_name, do_lower_case=False)/AutoTokenizer.from_pretrained(tokenizer_name, do_lower_case=False, local_files_only=True)/g' /deepec/deepec/data_loader.py && \
+    echo "Patched data loader to use local tokenizer"
+
+# Set environment variables 
 ENV HF_HOME=/deepec/hf_cache
-ENV TRANSFORMERS_CACHE=/deepec/hf_cache
+ENV TRANSFORMERS_CACHE=/deepec/hf_cache/transformers
 ENV TRANSFORMERS_OFFLINE=1
 
 # Fix the model path in the script to use absolute path

@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
+FROM continuumio/miniconda3:latest
 MAINTAINER Billy Taj
 
 # Install system dependencies
@@ -10,14 +10,38 @@ RUN apt-get update && apt-get install -y \
     bedtools nano git \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Python packages
-RUN pip install --no-cache-dir \
+# Create MetaPro environment (default) with explicit cleanup
+RUN conda create -n metapro python=3.9 -y && \
+    conda clean -afy
+
+# Install MetaPro packages
+RUN conda run -n metapro pip install --no-cache-dir \
+    torch torchvision torchaudio \
     biopython pandas matplotlib seaborn pillow psutil requests \
-    numpy scikit-learn tqdm transformers
+    numpy scikit-learn tqdm transformers && \
+    conda clean -afy
 
-WORKDIR /pipeline_tools
+# Create DeepEC environment with exact versions
+RUN conda create -n deepec python=3.6 -y && \
+    conda clean -afy
 
-# Install all your bioinformatics tools (abbreviated for space)
+# Install DeepEC packages
+RUN conda run -n deepec pip install --no-cache-dir \
+    torch==1.7.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
+    transformers==3.5.1 \
+    tqdm==4.53.0 \
+    biopython==1.78 \
+    matplotlib \
+    numpy \
+    scikit-learn \
+    pandas && \
+    conda clean -afy
+
+# Make MetaPro the default environment
+RUN echo "conda activate metapro" >> ~/.bashrc
+ENV PATH /opt/conda/envs/metapro/bin:$PATH
+
+WORKDIR /pipeline_tools (same as before)
 RUN wget https://github.com/MikkelSchubert/adapterremoval/archive/refs/tags/v2.3.4.tar.gz -O adapterremoval.tar.gz \
     && mkdir adapterremoval && tar -xzf adapterremoval.tar.gz \
     && cd adapterremoval-2.3.4 && make && mv build/AdapterRemoval ../adapterremoval/ \
@@ -55,10 +79,11 @@ RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.16.0/ncbi-blast
     && tar -xzf ncbi-blast-2.16.0+-x64-linux.tar.gz && mkdir BLAST_p \
     && mv ncbi-blast-2.16.0+/bin/* BLAST_p/ && rm -rf ncbi-blast-2.16.0+ ncbi-blast-2.16.0+-x64-linux.tar.gz
 
-ADD https://github.com/billytaj/parkinson_int_meta_pipe/blob/develop/mgm/MetaGeneMark_linux_64.tar.gz?raw=true /pipeline_tools
-RUN mkdir mgm && mv MetaGeneMark_linux_64.tar.gz MetaGeneMark.tar \
-    && tar -xf MetaGeneMark.tar && mv MetaGeneMark_linux_64/mgm/* mgm/ \
-    && chmod 755 mgm/gmhmmp && rm MetaGeneMark.tar
+
+RUN wget https://compsysbio.org/metapro_hosting/MetaGeneMark_linux_64.tar.gz
+RUN mkdir mgm \
+    && tar -xzf MetaGeneMark_linux_64.tar.gz && mv MetaGeneMark_linux_64/mgm/* mgm/ \
+    && chmod 755 mgm/gmhmmp && rm MetaGeneMark_linux_64.tar.gz
 
 RUN wget https://github.com/s-andrews/FastQC/archive/refs/tags/v0.12.1.zip -O fastqc.zip \
     && unzip fastqc.zip && chmod 755 FastQC-0.12.1/fastqc && rm fastqc.zip
@@ -78,11 +103,27 @@ RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.
 
 RUN wget https://compsysbio.org/metapro_hosting/mgm2.zip && unzip mgm2.zip && rm mgm2.zip
 
-RUN wget https://github.com/kaistsystemsbiology/DeepProZyme/archive/refs/tags/v_1_0.zip -O DeepEC.zip \
-    && unzip DeepEC.zip && rm DeepEC.zip
+# Install DeepEC in the deepec environment
+RUN conda run -n deepec bash -c " \
+    cd /opt && \
+    wget https://github.com/kaistsystemsbiology/DeepProZyme/archive/refs/tags/v_1_0.zip -O DeepEC.zip && \
+    unzip DeepEC.zip && \
+    mv DeepProZyme-v_1_0 deepec && \
+    rm DeepEC.zip && \
+    cd deepec && \
+    mkdir -p hf_cache/transformers && \
+    cd hf_cache/transformers && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/config.json && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/pytorch_model.bin && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/tokenizer_config.json && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/vocab.txt && \
+    cd /opt/deepec && \
+    sed -i 's/Rostlab\/prot_bert_bfd/\/opt\/deepec\/hf_cache\/transformers/g' deepec/data_loader.py && \
+    sed -i 's/AutoTokenizer.from_pretrained(tokenizer_name, do_lower_case=False)/AutoTokenizer.from_pretrained(tokenizer_name, do_lower_case=False, local_files_only=True)/g' deepec/data_loader.py && \
+    sed -i 's|./model/model.pth|/opt/deepec/model/model.pth|g' run_deepectransformer.py"
 
-# Install DeepProZyme wrapper
-RUN wget https://compsysbio.org/metapro_hosting/deepc_wrapper.py -O /usr/local/bin/run_deepectransformer.py \
+# Download the existing wrapper script that already has the correct arguments
+RUN wget https://compsysbio.org/metapro_hosting/deepec_wrapper.py -O /usr/local/bin/run_deepectransformer.py \
     && chmod +x /usr/local/bin/run_deepectransformer.py
 
 ENV PATH="${PATH}:/pipeline_tools/SPAdes-4.2.0-Linux/bin:/pipeline_tools/bowtie2:/pipeline_tools/DIAMOND"
@@ -90,4 +131,7 @@ ENV PATH="${PATH}:/pipeline_tools/infernal/src:/pipeline_tools/samtools:/pipelin
 ENV PATH="${PATH}:/pipeline_tools/adapterremoval:/pipeline_tools/BLAST_p:/pipeline_tools/mgm"
 ENV PATH="${PATH}:/pipeline_tools/FastQC-0.12.1:/pipeline_tools/kraken2:/pipeline_tools/barrnap-0.9/bin"
 ENV PATH="${PATH}:/pipeline_tools/cdhit_dup/cd-hit-auxtools:/pipeline_tools/mgm2/src"
-ENV PATH="${PATH}:/pipeline_tools/DeepProZyme-v_1_0"
+ENV PATH="${PATH}:/usr/local/bin"
+
+# Activate metapro environment by default
+RUN echo "conda activate metapro" >> ~/.bashrc

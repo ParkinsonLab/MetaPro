@@ -2,7 +2,7 @@
 FROM parkinsonlab/mpro_stash:v1.0.7
 
 # Download and install the DeepProZyme wrapper
-RUN wget https://compsysbio.org/metapro_hosting/deepc_wrapper.py -O /usr/local/bin/run_deepectransformer.py \
+RUN wget https://compsysbio.org/metapro_hosting/deepec_wrapper.py -O /usr/local/bin/run_deepectransformer.py \
 && chmod +x /usr/local/bin/run_deepectransformer.py
 
 # Set the working directory for the pipeline code
