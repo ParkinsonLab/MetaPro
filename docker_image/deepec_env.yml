@@ -1,0 +1,17 @@
+name: deepec
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - pip
+  - pytorch=1.7.0
+  - cpuonly
+  - transformers==3.5.1
+  - tqdm==4.53.0
+  - biopython==1.78
+  - matplotlib
+  - numpy
+  - scikit-learn
+  - pandas
