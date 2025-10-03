@@ -85,6 +85,8 @@ RUN wget https://github.com/kaistsystemsbiology/DeepProZyme/archive/refs/tags/v_
 RUN wget https://compsysbio.org/metapro_hosting/deepec_wrapper.py -O /usr/local/bin/run_deepectransformer.py \
     && chmod +x /usr/local/bin/run_deepectransformer.py
 
+
+
 ENV PATH="${PATH}:/pipeline_tools/SPAdes-4.2.0-Linux/bin:/pipeline_tools/bowtie2:/pipeline_tools/DIAMOND"
 ENV PATH="${PATH}:/pipeline_tools/infernal/src:/pipeline_tools/samtools:/pipeline_tools/vsearch/bin"
 ENV PATH="${PATH}:/pipeline_tools/adapterremoval:/pipeline_tools/BLAST_p:/pipeline_tools/mgm"

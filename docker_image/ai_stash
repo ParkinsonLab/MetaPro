@@ -5,7 +5,7 @@ FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget unzip build-essential gcc make cmake autoconf \
     libz-dev libbz2-dev libboost-all-dev flex libncurses5-dev \
-    liblzma-dev perl vim less libcurl4-openssl-dev libgd-dev \
+    liblzma-dev perl vim nano less libcurl4-openssl-dev libgd-dev \
     default-jre git bedtools \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -107,6 +107,13 @@ ARG CACHE_BUSTER=3
 # Install the DeepEC wrapper script that knows how to activate the conda environment
 RUN wget https://compsysbio.org/metapro_hosting/deepec_wrapper.py -O /usr/local/bin/run_deepectransformer.py \
     && chmod +x /usr/local/bin/run_deepectransformer.py
+
+
+
+# Install Python packages
+RUN pip install --no-cache-dir \
+    biopython pandas matplotlib seaborn pillow psutil requests \
+    numpy scikit-learn tqdm transformers
 
 # Default to the base directory with a bash shell
 WORKDIR /
