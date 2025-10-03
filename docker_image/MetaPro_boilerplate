@@ -1,23 +1,18 @@
+# Start with a base image that includes Conda and CUDA support
 FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
-MAINTAINER Billy Taj
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies needed for compiling tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
     wget unzip build-essential gcc make cmake autoconf \
     libz-dev libbz2-dev libboost-all-dev flex libncurses5-dev \
-    liblzma-dev perl vim less libcurl4-openssl-dev libgd-dev \
-    default-jre default-jdk libidn11-dev valgrind heaptrack \
-    bedtools nano git \
+    liblzma-dev perl vim nano less libcurl4-openssl-dev libgd-dev \
+    default-jre git bedtools \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Python packages
-RUN pip install --no-cache-dir \
-    biopython pandas matplotlib seaborn pillow psutil requests \
-    numpy scikit-learn tqdm transformers
-
+# === PART 1: Install General Bioinformatics Tools in the Base System ===
 WORKDIR /pipeline_tools
 
-# Install all your bioinformatics tools (abbreviated for space)
+# --- The following RUN commands are from your original MetaPro_boilerplate ---
 RUN wget https://github.com/MikkelSchubert/adapterremoval/archive/refs/tags/v2.3.4.tar.gz -O adapterremoval.tar.gz \
     && mkdir adapterremoval && tar -xzf adapterremoval.tar.gz \
     && cd adapterremoval-2.3.4 && make && mv build/AdapterRemoval ../adapterremoval/ \
@@ -37,7 +32,7 @@ RUN wget http://eddylab.org/infernal/infernal-1.1.5.tar.gz \
 RUN wget https://github.com/marbl/Krona/releases/download/v2.7/KronaTools-2.7.tar \
     && tar -xf KronaTools-2.7.tar && mkdir KronaTools \
     && mv KronaTools-2.7/* KronaTools/ && rm -rf KronaTools-2.7 KronaTools-2.7.tar \
-    && cd KronaTools && perl install.pl && cd ..
+    && cd KronaTools && perl install.pl --prefix . && cd ..
 
 RUN wget https://github.com/samtools/samtools/releases/download/1.21/samtools-1.21.tar.bz2 \
     && tar -xjf samtools-1.21.tar.bz2 && mkdir samtools \
@@ -55,43 +50,71 @@ RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.16.0/ncbi-blast
     && tar -xzf ncbi-blast-2.16.0+-x64-linux.tar.gz && mkdir BLAST_p \
     && mv ncbi-blast-2.16.0+/bin/* BLAST_p/ && rm -rf ncbi-blast-2.16.0+ ncbi-blast-2.16.0+-x64-linux.tar.gz
 
-ADD https://github.com/billytaj/parkinson_int_meta_pipe/blob/develop/mgm/MetaGeneMark_linux_64.tar.gz?raw=true /pipeline_tools
-RUN mkdir mgm && mv MetaGeneMark_linux_64.tar.gz MetaGeneMark.tar \
-    && tar -xf MetaGeneMark.tar && mv MetaGeneMark_linux_64/mgm/* mgm/ \
-    && chmod 755 mgm/gmhmmp && rm MetaGeneMark.tar
-
 RUN wget https://github.com/s-andrews/FastQC/archive/refs/tags/v0.12.1.zip -O fastqc.zip \
     && unzip fastqc.zip && chmod 755 FastQC-0.12.1/fastqc && rm fastqc.zip
 
-RUN wget https://github.com/DerrickWood/kraken2/archive/refs/tags/v2.14.zip -O kraken2.zip \
-    && unzip kraken2.zip && cd kraken2-2.14 && ./install_kraken2.sh . \
-    && cd .. && mv kraken2-2.14 kraken2 && rm kraken2.zip
+RUN wget https://github.com/DerrickWood/kraken2/archive/refs/tags/v2.1.3.zip -O kraken2.zip \
+    && unzip kraken2.zip && cd kraken2-2.1.3 && ./install_kraken2.sh . \
+    && cd .. && mv kraken2-2.1.3 kraken2 && rm kraken2.zip
 
 RUN wget https://github.com/tseemann/barrnap/archive/refs/tags/0.9.zip -O barrnap.zip \
     && unzip barrnap.zip && rm barrnap.zip
 
 RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz \
     && tar -xzf cd-hit-v4.8.1-2019-0228.tar.gz && cd cd-hit-v4.8.1-2019-0228 \
-    && make && cd cd-hit-auxtools && make && cd ../.. \
+    && make && cd ../ \
     && mkdir cdhit_dup && mv cd-hit-v4.8.1-2019-0228/* cdhit_dup/ \
     && rm -rf cd-hit-v4.8.1-2019-0228 cd-hit-v4.8.1-2019-0228.tar.gz
 
-RUN wget https://compsysbio.org/metapro_hosting/mgm2.zip && unzip mgm2.zip && rm mgm2.zip
+# Add all the tool binaries to the system PATH
+ENV PATH="${PATH}:/pipeline_tools/SPAdes-4.2.0-Linux/bin:/pipeline_tools/bowtie2:/pipeline_tools/DIAMOND"
+ENV PATH="${PATH}:/pipeline_tools/infernal/src:/pipeline_tools/samtools:/pipeline_tools/vsearch/bin"
+ENV PATH="${PATH}:/pipeline_tools/adapterremoval:/pipeline_tools/BLAST_p:/pipeline_tools/FastQC-0.12.1"
+ENV PATH="${PATH}:/pipeline_tools/kraken2:/pipeline_tools/barrnap-0.9/bin:/pipeline_tools/cdhit_dup"
+ENV PATH="${PATH}:/pipeline_tools/KronaTools/bin"
 
+# === PART 2: Create a Dedicated Conda Environment for DeepEC ===
+COPY deepec_env.yml /tmp/
+RUN conda env create -f /tmp/deepec_env.yml && rm /tmp/deepec_env.yml
+
+# === PART 3: Set up DeepEC Source Code and Offline Models ===
+WORKDIR /deepec
 RUN wget https://github.com/kaistsystemsbiology/DeepProZyme/archive/refs/tags/v_1_0.zip -O DeepEC.zip \
-    && unzip DeepEC.zip && rm DeepEC.zip
+    && unzip DeepEC.zip \
+    && mv DeepProZyme-v_1_0/* . \
+    && rm -rf DeepProZyme-v_1_0 DeepEC.zip
 
-# Install DeepProZyme wrapper
+RUN mkdir -p /deepec/hf_cache/transformers && \
+    cd /deepec/hf_cache/transformers && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/config.json && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/pytorch_model.bin && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/tokenizer_config.json && \
+    wget https://huggingface.co/Rostlab/prot_bert_bfd/resolve/main/vocab.txt
+
+# Patch the model config and source code to use local files
+RUN sed -i 's/"hidden_size": 1024/"hidden_size": 1024,\n  "model_type": "bert"/' /deepec/hf_cache/transformers/config.json && \
+    sed -i 's|Rostlab/prot_bert_bfd|/deepec/hf_cache/transformers|g' /deepec/deepec/data_loader.py && \
+    sed -i 's/AutoTokenizer.from_pretrained(tokenizer_name, do_lower_case=False)/AutoTokenizer.from_pretrained(tokenizer_name, do_lower_case=False, local_files_only=True)/g' /deepec/deepec/data_loader.py && \
+    sed -i 's|./model/model.pth|/deepec/model/model.pth|g' run_deepectransformer.py
+
+# Set environment variables for offline HuggingFace usage
+ENV HF_HOME=/deepec/hf_cache
+ENV TRANSFORMERS_CACHE=/deepec/hf_cache/transformers
+ENV TRANSFORMERS_OFFLINE=1
+
+ARG CACHE_BUSTER=3
+
+# Install the DeepEC wrapper script that knows how to activate the conda environment
 RUN wget https://compsysbio.org/metapro_hosting/deepec_wrapper.py -O /usr/local/bin/run_deepectransformer.py \
     && chmod +x /usr/local/bin/run_deepectransformer.py
 
 
 
-ENV PATH="${PATH}:/pipeline_tools/SPAdes-4.2.0-Linux/bin:/pipeline_tools/bowtie2:/pipeline_tools/DIAMOND"
-ENV PATH="${PATH}:/pipeline_tools/infernal/src:/pipeline_tools/samtools:/pipeline_tools/vsearch/bin"
-ENV PATH="${PATH}:/pipeline_tools/adapterremoval:/pipeline_tools/BLAST_p:/pipeline_tools/mgm"
-ENV PATH="${PATH}:/pipeline_tools/FastQC-0.12.1:/pipeline_tools/kraken2:/pipeline_tools/barrnap-0.9/bin"
-ENV PATH="${PATH}:/pipeline_tools/cdhit_dup/cd-hit-auxtools:/pipeline_tools/mgm2/src"
-ENV PATH="${PATH}:/pipeline_tools/DeepProZyme-v_1_0"
+# Install Python packages
+RUN pip install --no-cache-dir \
+    biopython pandas matplotlib seaborn pillow psutil requests \
+    numpy scikit-learn tqdm transformers
 
+# Default to the base directory with a bash shell
+WORKDIR /
 CMD ["bash"]

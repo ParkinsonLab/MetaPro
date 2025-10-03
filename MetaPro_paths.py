@@ -415,6 +415,10 @@ class mpro_config:
         self.config_dict["GA_chunksize"]               = self.value_assignment("int", config, "Settings", "GA_chunk_size", GA_chunksize_default)
         self.config_dict["EC_chunksize"]               = self.value_assignment("int", config, "Settings", "EC_chunk_size", EC_chunksize_default)
         self.config_dict["rRNA_chunksize"]             = self.value_assignment("int", config, "Settings", "rRNA_chunk_size", rRNA_chunksize_default)
+
+        #--------------------------------------------------------------------------------------
+        self.config_dict["deepec_cpu_count"]            = self.value_assignment("int", config, "Settings", "deepec_cpu_count", int(os.cpu_count()))
+        self.config_dict["deepec_batch_size"]           = self.value_assignment("int", config, "Settings", "deepec_batch_size", 256)
         
      
         
@@ -484,7 +488,7 @@ class mpro_config:
         self.config_dict["mgm2"]   = self.value_assignment("path", config, "Tools", "MetaGeneMark2", "gmhmmp2")
         self.config_dict["mgm1"]   = self.value_assignment("path", config, "Tools", "MetaGeneMark1", "gmhmmp")
         self.config_dict["kraken2"]        = self.value_assignment("path", config, "Tools", "kraken2", "kraken2")
-        self.config_dict["DeepEC"]      = self.value_assignment("path", config, "Tools", "DeepEC", os.path.join(tool_path, "DeepProZyme-v_1_0/run_deepextransformer.py"))
+        self.config_dict["DeepEC"]      = self.value_assignment("path", config, "Tools", "DeepEC", "run_deepectransformer.py"))
 
         #--------------------------------------------
         # Python scripts
@@ -502,7 +506,7 @@ class mpro_config:
         self.config_dict["flush_bad_contigs"]          = self.value_assignment("path", config, "code", "flush_bad_contigs", os.path.join(script_path, "assembly_flush_bad_contigs.py"))
         self.config_dict["contig_duplicate_remover"]   = self.value_assignment("path", config, "code", "contig_duplicate_remover", os.path.join(script_path, "assembly_deduplicate.py"))
         self.config_dict["GA_BT2_pp"]                   = self.value_assignment("path", config, "code", "ga_bt2_pp", os.path.join(script_path, "GA_samfile.py"))
-        self.config_dict["GA_dmd_pp"]        = self.value_assignment("path", config, "code", "ga_dmd_pp", os.path.join(script_path, "ga_dmd_pp.py"))
+        self.config_dict["GA_dmd_pp"]        = self.value_assignment("path", config, "code", "ga_dmd_pp", os.path.join(script_path, "ga_Diamond_generic_v2.py"))
         self.config_dict["GA_final_merge"]             = self.value_assignment("path", config, "code", "ga_final_merge", os.path.join(script_path, "ga_Final_merge_v4.py"))
         self.config_dict["GA_merge_fasta"]             = self.value_assignment("path", config, "code", "ga_merge_fasta", os.path.join(script_path, "ga_merge_fasta.py"))
         self.config_dict["GA_final_merge_fasta"]       = self.value_assignment("path", config, "code", "ga_final_merge_fasta", os.path.join(script_path, "ga_final_merge_fasta.py"))
