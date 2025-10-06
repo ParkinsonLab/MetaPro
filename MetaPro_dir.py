@@ -321,10 +321,7 @@ class mpro_dir:
         self.dir_dict["EC_data"] = os.path.join(self.dir_dict["EC"], "data")
         self.dir_dict["EC_jobs"] = os.path.join(self.dir_dict["EC"], "jobs")
         self.dir_dict["EC_export"] = os.path.join(self.dir_dict["EC"], "export")
-        self.dir_dict["EC_detect"] = os.path.join(self.dir_dict["EC_data"], "0_detect")
-        self.dir_dict["EC_priam"] = os.path.join(self.dir_dict["EC_data"], "1_priam")
-        self.dir_dict["EC_DMD"] = os.path.join(self.dir_dict["EC_data"], "2_DMD")
-        self.dir_dict["EC_list"] = ["EC", "EC_data", "EC_jobs", "EC_export", "EC_detect", "EC_priam", "EC_DMD"]
+        self.dir_dict["EC_list"] = ["EC", "EC_data", "EC_jobs", "EC_export"]
 
         self.dir_dict["out"] = os.path.join(self.out_dir, self.label_dict["out"])
         self.dir_dict["out_export"] = os.path.join(self.dir_dict["out"], "export")

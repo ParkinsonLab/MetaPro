@@ -1100,9 +1100,9 @@ class mt_pipe_commands:
     def create_deepec_command(self, marker):
         deepec_run = self.config_dict["DeepEC"] + " "
         deepec_run += "-i" + " " + self.file_dict["ga_fm_all_prot"] + " "
-        deepec_run += "-o" + " " + self.dir_dict["EC"] + " "
-        deepec_run += "-b" + " " + self.config_dict["deepec_batch_size"]
-        deepec_run += "-cpu" + " " + self.config_dict["deepec_cpu_count"]
+        deepec_run += "-o" + " " + self.dir_dict["EC_data"] + " "
+        deepec_run += "-b" + " " + str(self.config_dict["deepec_batch_size"]) + " "
+        deepec_run += "-cpu" + " " + str(self.config_dict["deepec_cpu_count"])
 
         make_marker = "touch" + " " + marker
         return [deepec_run + " && " + make_marker]

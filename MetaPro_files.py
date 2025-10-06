@@ -303,3 +303,7 @@ class mpro_file_handler:
         self.file_dict["ta_job"] = os.path.join(self.dir_dict["TA_jobs"], "TA.sh")
 
 
+        self.file_dict["ec_job"] = os.path.join(self.dir_dict["EC_jobs"], "EC.sh")
+        self.file_dict["ec_report"] = os.path.join(self.dir_dict["EC_data"], "tmp", "DL_prediction_results.txt")
+
+

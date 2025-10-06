@@ -991,9 +991,10 @@ class mp_stage:
         if self.marker_control.check_marker("EC"):
             self.dir_control.make_dirs_from_list("EC_list")
             command_list = self.commands.create_deepec_command(self.marker_dict["EC"])
-        
+            self.mp_util.run_subjob_with_mp_store(self.file_dict["ec_job"], command_list)
+            self.mp_util.wait_for_mp_store()
         self.cleanup_EC_start = time.time()
-        self.mp_util.clean_or_compress(self.ec_path, self.config_dict["keep_all"], self.keep_EC)
+        #self.mp_util.clean_or_compress(self.ec_path, self.config_dict["keep_all"], self.keep_EC)
         self.cleanup_EC_end = time.time()
         self.EC_post_end = time.time()
             
@@ -1002,7 +1003,7 @@ class mp_stage:
         print("EC run:", '%1.1f' % (self.EC_end - self.EC_start), "s")
         print("EC cleanup:", '%1.1f' % (self.cleanup_EC_end - self.cleanup_EC_start), "s")
         
-        self.debug_stop_check(self.ec_label)
+        #self.debug_stop_check(self.ec_label)
 
     def mp_output(self):
         self.Cytoscape_start = time.time()

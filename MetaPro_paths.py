@@ -418,7 +418,7 @@ class mpro_config:
 
         #--------------------------------------------------------------------------------------
         self.config_dict["deepec_cpu_count"]            = self.value_assignment("int", config, "Settings", "deepec_cpu_count", int(os.cpu_count()))
-        self.config_dict["deepec_batch_size"]           = self.value_assignment("int", config, "Settings", "deepec_batch_size", 256)
+        self.config_dict["deepec_batch_size"]           = self.value_assignment("int", config, "Settings", "deepec_batch_size", 512)
         
      
         
@@ -488,7 +488,7 @@ class mpro_config:
         self.config_dict["mgm2"]   = self.value_assignment("path", config, "Tools", "MetaGeneMark2", "gmhmmp2")
         self.config_dict["mgm1"]   = self.value_assignment("path", config, "Tools", "MetaGeneMark1", "gmhmmp")
         self.config_dict["kraken2"]        = self.value_assignment("path", config, "Tools", "kraken2", "kraken2")
-        self.config_dict["DeepEC"]      = self.value_assignment("path", config, "Tools", "DeepEC", "run_deepectransformer.py"))
+        self.config_dict["DeepEC"]      = self.value_assignment("path", config, "Tools", "DeepEC", "run_deepectransformer.py")
 
         #--------------------------------------------
         # Python scripts

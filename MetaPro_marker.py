@@ -119,3 +119,4 @@ class mpro_marker:
         
 
         self.marker_dict["TA"] = os.path.join(self.dir_dict["TA"], "TA")
+        self.marker_dict["EC"] = os.path.join(self.dir_dict["EC"], "EC")
