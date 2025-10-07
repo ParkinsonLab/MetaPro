@@ -42,9 +42,7 @@ RUN wget https://github.com/samtools/samtools/releases/download/1.21/samtools-1.
 RUN wget https://github.com/ablab/spades/releases/download/v4.2.0/SPAdes-4.2.0-Linux.tar.gz \
     && tar -xzf SPAdes-4.2.0-Linux.tar.gz && rm SPAdes-4.2.0-Linux.tar.gz
 
-RUN wget https://github.com/torognes/vsearch/releases/download/v2.29.2/vsearch-2.29.2-linux-x86_64.tar.gz \
-    && mkdir vsearch && tar -xzf vsearch-2.29.2-linux-x86_64.tar.gz \
-    && mv vsearch-2.29.2-linux-x86_64 vsearch && rm vsearch-2.29.2-linux-x86_64.tar.gz
+
 
 RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.16.0/ncbi-blast-2.16.0+-x64-linux.tar.gz \
     && tar -xzf ncbi-blast-2.16.0+-x64-linux.tar.gz && mkdir BLAST_p \
@@ -59,18 +57,25 @@ RUN wget https://github.com/DerrickWood/kraken2/archive/refs/tags/v2.1.3.zip -O 
 
 RUN wget https://github.com/tseemann/barrnap/archive/refs/tags/0.9.zip -O barrnap.zip \
     && unzip barrnap.zip && rm barrnap.zip
+	
+RUN wget https://github.com/torognes/vsearch/releases/download/v2.29.2/vsearch-2.29.2-linux-x86_64.tar.gz \
+    && tar -xzf vsearch-2.29.2-linux-x86_64.tar.gz \
+    && mv vsearch-2.29.2-linux-x86_64 vsearch && rm vsearch-2.29.2-linux-x86_64.tar.gz	
 
 RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz \
-    && tar -xzf cd-hit-v4.8.1-2019-0228.tar.gz && cd cd-hit-v4.8.1-2019-0228 \
-    && make && cd ../ \
-    && mkdir cdhit_dup && mv cd-hit-v4.8.1-2019-0228/* cdhit_dup/ \
+    && tar -xzf cd-hit-v4.8.1-2019-0228.tar.gz \
+    && mv cd-hit-v4.8.1-2019-0228 cdhit \
+    && cd cdhit/cd-hit-auxtools \
+    && make && cd ../../ \
+    
     && rm -rf cd-hit-v4.8.1-2019-0228 cd-hit-v4.8.1-2019-0228.tar.gz
+
 
 # Add all the tool binaries to the system PATH
 ENV PATH="${PATH}:/pipeline_tools/SPAdes-4.2.0-Linux/bin:/pipeline_tools/bowtie2:/pipeline_tools/DIAMOND"
 ENV PATH="${PATH}:/pipeline_tools/infernal/src:/pipeline_tools/samtools:/pipeline_tools/vsearch/bin"
 ENV PATH="${PATH}:/pipeline_tools/adapterremoval:/pipeline_tools/BLAST_p:/pipeline_tools/FastQC-0.12.1"
-ENV PATH="${PATH}:/pipeline_tools/kraken2:/pipeline_tools/barrnap-0.9/bin:/pipeline_tools/cdhit_dup"
+ENV PATH="${PATH}:/pipeline_tools/kraken2:/pipeline_tools/barrnap-0.9/bin:/pipeline_tools/cdhit/cd-hit-auxtools"
 ENV PATH="${PATH}:/pipeline_tools/KronaTools/bin"
 
 # === PART 2: Create a Dedicated Conda Environment for DeepEC ===
@@ -114,6 +119,9 @@ RUN wget https://compsysbio.org/metapro_hosting/deepec_wrapper.py -O /usr/local/
 RUN pip install --no-cache-dir \
     biopython pandas matplotlib seaborn pillow psutil requests \
     numpy scikit-learn tqdm transformers
+	
+
+
 
 # Default to the base directory with a bash shell
 WORKDIR /
