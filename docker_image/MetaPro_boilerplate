@@ -67,8 +67,14 @@ RUN wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.
     && mv cd-hit-v4.8.1-2019-0228 cdhit \
     && cd cdhit/cd-hit-auxtools \
     && make && cd ../../ \
-    
     && rm -rf cd-hit-v4.8.1-2019-0228 cd-hit-v4.8.1-2019-0228.tar.gz
+
+RUN wget https://compsysbio.org/metapro_hosting/MetaGeneMark_linux_64.tar.gz \
+    && mkdir mgm \
+    && tar -xvf MetaGeneMark_linux_64.tar.gz && mv MetaGeneMark_linux_64/mgm/* /pipeline_tools/mgm \
+    && chmod 755 /pipeline_tools/mgm/gmhmmp \
+    && rm -rf MetaGeneMark_linux_64*
+
 
 
 # Add all the tool binaries to the system PATH
@@ -76,7 +82,7 @@ ENV PATH="${PATH}:/pipeline_tools/SPAdes-4.2.0-Linux/bin:/pipeline_tools/bowtie2
 ENV PATH="${PATH}:/pipeline_tools/infernal/src:/pipeline_tools/samtools:/pipeline_tools/vsearch/bin"
 ENV PATH="${PATH}:/pipeline_tools/adapterremoval:/pipeline_tools/BLAST_p:/pipeline_tools/FastQC-0.12.1"
 ENV PATH="${PATH}:/pipeline_tools/kraken2:/pipeline_tools/barrnap-0.9/bin:/pipeline_tools/cdhit/cd-hit-auxtools"
-ENV PATH="${PATH}:/pipeline_tools/KronaTools/bin"
+ENV PATH="${PATH}:/pipeline_tools/KronaTools/bin:/pipeline_tools/mgm"
 
 # === PART 2: Create a Dedicated Conda Environment for DeepEC ===
 COPY deepec_env.yml /tmp/
