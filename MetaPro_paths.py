@@ -506,7 +506,7 @@ class mpro_config:
         self.config_dict["flush_bad_contigs"]          = self.value_assignment("path", config, "code", "flush_bad_contigs", os.path.join(script_path, "assembly_flush_bad_contigs.py"))
         self.config_dict["contig_duplicate_remover"]   = self.value_assignment("path", config, "code", "contig_duplicate_remover", os.path.join(script_path, "assembly_deduplicate.py"))
         self.config_dict["GA_BT2_pp"]                   = self.value_assignment("path", config, "code", "ga_bt2_pp", os.path.join(script_path, "GA_samfile.py"))
-        self.config_dict["GA_dmd_pp"]        = self.value_assignment("path", config, "code", "ga_dmd_pp", os.path.join(script_path, "ga_Diamond_generic_v2.py"))
+        self.config_dict["GA_dmd_pp"]        = self.value_assignment("path", config, "code", "ga_dmd_pp", os.path.join(script_path, "ga_dmd_pp.py"))
         self.config_dict["GA_final_merge"]             = self.value_assignment("path", config, "code", "ga_final_merge", os.path.join(script_path, "ga_Final_merge_v4.py"))
         self.config_dict["GA_merge_fasta"]             = self.value_assignment("path", config, "code", "ga_merge_fasta", os.path.join(script_path, "ga_merge_fasta.py"))
         self.config_dict["GA_final_merge_fasta"]       = self.value_assignment("path", config, "code", "ga_final_merge_fasta", os.path.join(script_path, "ga_final_merge_fasta.py"))
