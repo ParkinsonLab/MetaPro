@@ -202,8 +202,8 @@ class mpro_config:
         BLAT_job_limit_default              = cpu_default
         DIAMOND_job_limit_default           = cpu_default
         DETECT_job_limit_default            = cpu_default
-        Infernal_job_limit_default          = 1000
-        Barrnap_job_limit_default           = 1000
+        Infernal_job_limit_default          = cpu_default
+        Barrnap_job_limit_default           = cpu_default
         BWA_pp_job_limit_default            = cpu_default
         BLAT_pp_job_limit_default           = cpu_default
         DIAMOND_pp_job_limit_default        = cpu_default
