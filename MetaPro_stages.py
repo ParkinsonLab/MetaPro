@@ -1006,6 +1006,11 @@ class mp_stage:
         #self.debug_stop_check(self.ec_label)
 
     def mp_output(self):
+
+        if self.marker_control.check_marker("Out"):
+            self.dir_control.make_dirs_from_list("out_lost")
+
+
         self.Cytoscape_start = time.time()
         #if not check_where_resume(network_path, None, self.ec_path):
         

@@ -105,6 +105,8 @@ class mpro_file_handler:
                 self.file_dict["final_no_host_p1"] = os.path.join(self.dir_dict["main_host_export"], "p1_no_host.fastq")
                 self.file_dict["final_no_host_p2"] = os.path.join(self.dir_dict["main_host_export"], "p2_no_host.fastq")
                 self.file_dict["final_no_host_s"] = os.path.join(self.dir_dict["main_host_export"], "s_no_host.fastq")
+
+                
                 
 
             self.file_dict[item + "_host_clean_list"] = [
@@ -305,5 +307,25 @@ class mpro_file_handler:
 
         self.file_dict["ec_job"] = os.path.join(self.dir_dict["EC_jobs"], "EC.sh")
         self.file_dict["ec_report"] = os.path.join(self.dir_dict["EC_data"], "tmp", "DL_prediction_results.txt")
+        self.file_dict["ec_final_report"] = os.path.join(self.dir_dict["EC_data"], "DeepECv2_result.txt")
 
 
+        self.file_dict["out_gene_map"] = os.path.join(self.dir_dict["out_export"], "gene_map.tsv")
+        self.file_dict["out_rpkm"] = os.path.join(self.dir_dict["out_export"], "RPKM_table.tsv")
+        self.file_dict["out_cytoscape"] = os.path.join(self.dir_dict["out_export"], "Cytoscape_network.tsv")
+        self.file_dict["out_heatmap_rpkm"] = os.path.join(self.dir_dict["out_export"], "EC_heatmap_RPKM.tsv")
+
+        for item in self.config_dict["Host_IDs"]:
+
+            #self.file_dict[item + "_u_host_s"] = os.path.join(self.dir_dict["out_data"], item + "_u_s.fastq")
+            #self.file_dict[item + "_u_host_p1"] = os.path.join(self.dir_dict["out_data"], item + "_u_p1.fastq")
+            self.file_dict[item + "_u_host_p2"] = os.path.join(self.dir_dict["out_data"], item + "_u_p2.fastq")
+            self.file_dict[item + "_full_host_s"] = os.path.join(self.dir_dict["out_data"], item + "_s_full_hosts.fastq")
+            self.file_dict[item + "_full_host_p1"] = os.path.join(self.dir_dict["out_data"], item +"_p1_full_host.fastq")
+            self.file_dict[item + "_full_host_p2"] = os.path.join(self.dir_dict["out_data"], item + "_p2_full_host.fastq")
+
+        self.file_dict["out_full_vec_s"] = os.path.join(self.dir_dict["out_data"], "full_s_vec.fastq")
+        self.file_dict["out_full_vec_p1"] = os.path.join(self.dir_dict["out_data"], "full_p1_vec.fastq")
+        self.file_dict["out_full_vec_p2"] = os.path.join(self.dir_dict["out_data"], "full_p2_vec.fastq")
+        self.file_dict["out_contig_stats"] = os.path.join(self.dir_dict["out_export"], "contig_stats.txt")
+        

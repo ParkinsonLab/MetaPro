@@ -1109,40 +1109,14 @@ class mt_pipe_commands:
         
 
         
-    def create_output_copy_gene_map_command(self, current_stage_name, ga_final_merge_stage):
-        #just copies the gene map over to the output
-        subfolder               = os.path.join(self.output_path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        ga_final_merge_folder   = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
-        final_folder            = os.path.join(subfolder, "final_results")
+        
+    def create_rpkm_command(self):
+       
+        move_map = ">&2 echo cp gene map | "
+        move_map += "cp" + " " 
+        move_map += self.file_dict["gene_map_full"] + " "
+        move_map += self.file_dict["out_gene_map"]
 
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(final_folder)
-        gene_map_location = os.path.join(ga_final_merge_folder, "gene_map.tsv")
-        
-        copy_gene_map = ">&2 echo copying gene map | "
-        copy_gene_map += "cp " + os.path.join(ga_final_merge_folder, "gene_map.tsv") + " "
-        copy_gene_map += os.path.join(final_folder, "gene_map.tsv")
-        
-        return[copy_gene_map]
-
-        
-    def create_output_network_generation_command(self, current_stage_name, ga_final_merge_stage, taxonomic_annotation_stage, enzyme_annotation_stage):
-        subfolder           = os.path.join(self.output_path, current_stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        ga_final_merge_folder  = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
-        ta_folder           = os.path.join(self.output_path, taxonomic_annotation_stage, "final_results")
-        ea_folder           = os.path.join(self.output_path, enzyme_annotation_stage, "final_results")
-        data_folder         = os.path.join(subfolder, "data")
-        final_folder        = os.path.join(subfolder, "final_results")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(final_folder)
-        #gene_map_location = os.path.join(final_folder, "final_gene_map.tsv")
-        gene_map_location = os.path.join(ga_final_merge_folder, "gene_map.tsv")
-        
         network_generation = ">&2 echo Generating RPKM and Cytoscape network | "
         network_generation += self.config_dict["Python"] + " "
         network_generation += self.config_dict["RPKM"] + " "
@@ -1150,100 +1124,115 @@ class mt_pipe_commands:
         network_generation += "None" + " "
         network_generation += self.config_dict["nodes"] + " "
         network_generation += self.config_dict["names"] + " "
-        network_generation += gene_map_location + " "
-        network_generation += os.path.join(ta_folder, "taxonomic_classifications.tsv") + " "
-        network_generation += os.path.join(ea_folder, "proteins.ECs_All") + " "
+        network_generation += self.file_dict["out_gene_map"] + " "
+        network_generation += self.file_dict["ta_report"]+ " "
+        network_generation += self.file_dict["ec_final_report"] + " "
         network_generation += self.config_dict["show_unclassified"] + " "
-        network_generation += os.path.join(final_folder, "RPKM_table.tsv") + " "
-        network_generation += os.path.join(final_folder, "Cytoscape_network.tsv") + " "
+        network_generation += self.file_dict["out_rpkm"] + " "
+        network_generation += self.file_dict["out_cytoscape"]
         
         
         
         flatten_rpkm = ">&2 echo Reformat RPKM for EC heatmap | "
         flatten_rpkm += self.config_dict["Python"] + " "
         flatten_rpkm += self.config_dict["format_RPKM"] + " "
-        flatten_rpkm += os.path.join(final_folder, "RPKM_table.tsv") + " "
-        flatten_rpkm += os.path.join(final_folder, "EC_heatmap_RPKM.tsv")
+        flatten_rpkm += self.file_dict["out_rpkm"] + " "
+        flatten_rpkm += self.file_dict["out_heatmap_rpkm"]
         
-        return [network_generation, flatten_rpkm]
+        return [move_map, network_generation, flatten_rpkm]
         
-    def create_output_unique_hosts_singletons_command(self, current_stage_name, quality_stage, host_stage):
-        #only call if we had hosts to filter
-        subfolder           = os.path.join(self.output_path, current_stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        quality_folder      = os.path.join(self.output_path, quality_stage, "final_results")
-        host_folder         = os.path.join(self.output_path, host_stage, "final_results")
-        data_folder         = os.path.join(subfolder, "data")
-        unique_hosts_folder = os.path.join(data_folder, "1_unique_hosts")
-        full_hosts_folder   = os.path.join(data_folder, "2_full_hosts")
-        final_folder        = os.path.join(subfolder, "final_results")
+    def create_output_unique_junk(self):
+        command_list = list()
+        for item in self.config_dict["Host_IDs"]:
+            #no longer needed. we save the host reads.
+            #get_unique_host_reads_singletons = ">&2 echo get singleton host reads for stats | "
+            #get_unique_host_reads_singletons += self.config_dict["Python"] + " "
+            #get_unique_host_reads_singletons += self.config_dict["get_unique_host_reads"] + " "
+            #get_unique_host_reads_singletons += self.file_dict[item + "_host_s"] + " "
+            #get_unique_host_reads_singletons += self.file_dict["qf_u_s"] + " "
+            #get_unique_host_reads_singletons += os.path.join(unique_hosts_folder, "singletons_hosts.fastq")
+        
+        
+            repop_singletons_hosts = ">&2 echo repopulating singletons hosts | " 
+            repop_singletons_hosts += self.config_dict["Python"] + " "
+            repop_singletons_hosts += self.config_dict["duplicate_repopulate"]+ " "
+            if(self.read_mode == "single"):
+                repop_singletons_hosts += self.file_dict["qf_hq_s"] + " " #os.path.join(quality_folder, "singletons_hq.fastq") + " "
+            else:
+                repop_singletons_hosts += self.file_dict["qf_o_s"] + " " #os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
+            repop_singletons_hosts += self.file_dict[item + "_host_s"] + " " #os.path.join(unique_hosts_folder, "singletons_hosts.fastq") + " "
+            repop_singletons_hosts += self.file_dict["qf_clstr_s"] + " " #os.path.join(quality_folder, "singletons_unique.fastq.clstr") + " "
+            repop_singletons_hosts += self.file_dict[item + "_full_hosts_s"] #os.path.join(full_hosts_folder, "singletons_full_hosts.fastq")
 
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(data_folder)
-        self.make_folder(unique_hosts_folder)
-        self.make_folder(full_hosts_folder)
-        self.make_folder(final_folder)
-        
-        
-        get_unique_host_reads_singletons = ">&2 echo get singleton host reads for stats | "
-        get_unique_host_reads_singletons += self.config_dict["Python"] + " "
-        get_unique_host_reads_singletons += self.config_dict["get_unique_host_reads"] + " "
-        get_unique_host_reads_singletons += os.path.join(host_folder, "singletons.fastq") + " "
-        get_unique_host_reads_singletons += os.path.join(quality_folder, "singletons.fastq") + " "
-        get_unique_host_reads_singletons += os.path.join(unique_hosts_folder, "singletons_hosts.fastq")
-        
-        
-        repop_singletons_hosts = ">&2 echo repopulating singletons hosts | " 
-        repop_singletons_hosts += self.config_dict["Python"] + " "
-        repop_singletons_hosts += self.config_dict["duplicate_repopulate"]+ " "
+            command_list.append(repop_singletons_hosts)
+
+
+            repop_pair_1_hosts = ">&2 echo repopulating pair 1 hosts | " 
+            repop_pair_1_hosts += self.config_dict["Python"] + " "
+            repop_pair_1_hosts += self.config_dict["duplicate_repopulate"]+ " "
+            if self.read_mode == "single":
+                repop_pair_1_hosts += self.file_dict["qf_hq_p1"] + " " #os.path.join(quality_folder, "pair_1_match.fastq") + " "
+            else:
+                repop_pair_1_hosts += self.file_dict["qf_o_p1"] + " "
+
+            repop_pair_1_hosts += self.file_dict[item + "_host_p1"] + " "#os.path.join(unique_hosts_folder, "pair_1_hosts.fastq") + " "
+            repop_pair_1_hosts += self.file_dict["qf_clstr_p1"] + " "#os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
+            repop_pair_1_hosts += self.file_dict[item + "_full_hosts_p1"]#os.path.join(full_hosts_folder, "pair_1_full_hosts.fastq")
+            command_list.append(repop_pair_1_hosts)
+
+            repop_pair_2_hosts = ">&2 echo repopulating pair 2 hosts | " 
+            repop_pair_2_hosts += self.config_dict["Python"] + " "
+            repop_pair_2_hosts += self.config_dict["duplicate_repopulate"]+ " "
+            if self.read_mode == "single":
+                repop_pair_2_hosts += self.file_dict["qf_hq_p2"] + " " #os.path.join(quality_folder, "pair_1_match.fastq") + " "
+            else:
+                repop_pair_2_hosts += self.file_dict["qf_o_p2"] + " "
+
+            repop_pair_2_hosts += self.file_dict[item + "_host_p2"] + " "#os.path.join(unique_hosts_folder, "pair_1_hosts.fastq") + " "
+            repop_pair_2_hosts += self.file_dict["qf_clstr_p2"] + " "#os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
+            repop_pair_2_hosts += self.file_dict[item + "_full_hosts_p2"]#os.path.join(full_hosts_folder, "pair_1_full_hosts.fastq")
+            command_list.append(repop_pair_2_hosts)
+
+
+        repop_vec_s = ">&2 echo repopulating singletons vectors | " 
+        repop_vec_s += self.config_dict["Python"] + " "
+        repop_vec_s += self.config_dict["duplicate_repopulate"]+ " "
         if(self.read_mode == "single"):
-            repop_singletons_hosts += os.path.join(quality_folder, "singletons_hq.fastq") + " "
+            repop_vec_s += self.file_dict["qf_hq_s"] + " "#os.path.join(quality_folder, "singletons_hq.fastq") + " "
         else:
-            repop_singletons_hosts += os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
-        repop_singletons_hosts += os.path.join(unique_hosts_folder, "singletons_hosts.fastq") + " "
-        repop_singletons_hosts += os.path.join(quality_folder, "singletons_unique.fastq.clstr") + " "
-        repop_singletons_hosts += os.path.join(full_hosts_folder, "singletons_full_hosts.fastq")
-        
-        return [get_unique_host_reads_singletons, repop_singletons_hosts]
-        
-    def create_output_unique_hosts_pair_1_command(self, current_stage_name, quality_stage, host_stage):
-        #only call if we had hosts to filter
-        subfolder           = os.path.join(self.output_path, current_stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        quality_folder      = os.path.join(self.output_path, quality_stage, "final_results")
-        host_folder         = os.path.join(self.output_path, host_stage, "final_results")
-        data_folder         = os.path.join(subfolder, "data")
-        unique_hosts_folder = os.path.join(data_folder, "1_unique_hosts")
-        full_hosts_folder   = os.path.join(data_folder, "2_full_hosts")
-        final_folder        = os.path.join(subfolder, "final_results")
+            repop_vec_s += self.file_dict["qf_o_s"] + " "#os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
+        repop_vec_s += self.file_dict["vec_s"] + " "#os.path.join(unique_vectors_folder, "singletons_vectors.fastq") + " "
+        repop_vec_s += self.file_dict["qf_clstr_s"] + " "#os.path.join(quality_folder, "singletons_unique.fastq.clstr") + " "
+        repop_vec_s += self.file_dict["out_full_vec_s"] #os.path.join(full_vectors_folder, "singletons_full_vectors.fastq")
+        command_list.append(repop_vec_s)
 
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
+        repop_vec_p1 = ">&2 echo repopulating vectors p1 | " 
+        repop_vec_p1 += self.config_dict["Python"] + " "
+        repop_vec_p1 += self.config_dict["duplicate_repopulate"]+ " "
+        if(self.read_mode == "single"):
+            repop_vec_p1 += self.file_dict["qf_hq_p1"] + " "#os.path.join(quality_folder, "singletons_hq.fastq") + " "
+        else:
+            repop_vec_p1 += self.file_dict["qf_o_p1"] + " "#os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
+        repop_vec_p1 += self.file_dict["vec_p1"] + " "#os.path.join(unique_vectors_folder, "singletons_vectors.fastq") + " "
+        repop_vec_p1 += self.file_dict["qf_clstr_p1"] + " "#os.path.join(quality_folder, "singletons_unique.fastq.clstr") + " "
+        repop_vec_p1 += self.file_dict["out_full_vec_p1"] #os.path.join(full_vectors_folder, "singletons_full_vectors.fastq")
+        command_list.append(repop_vec_p1)
 
-        self.make_folder(data_folder)
-        self.make_folder(unique_hosts_folder)
-        self.make_folder(full_hosts_folder)
-        self.make_folder(final_folder)
+        repop_vec_p2 = ">&2 echo repopulating vectors p2 | " 
+        repop_vec_p2 += self.config_dict["Python"] + " "
+        repop_vec_p2 += self.config_dict["duplicate_repopulate"]+ " "
+        if(self.read_mode == "single"):
+            repop_vec_p2 += self.file_dict["qf_hq_p2"] + " "#os.path.join(quality_folder, "singletons_hq.fastq") + " "
+        else:
+            repop_vec_p2 += self.file_dict["qf_o_p2"] + " "#os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
+        repop_vec_p2 += self.file_dict["vec_p2"] + " "#os.path.join(unique_vectors_folder, "singletons_vectors.fastq") + " "
+        repop_vec_p2 += self.file_dict["qf_clstr_p2"] + " "#os.path.join(quality_folder, "singletons_unique.fastq.clstr") + " "
+        repop_vec_p2 += self.file_dict["out_full_vec_p2"] #os.path.join(full_vectors_folder, "singletons_full_vectors.fastq")
+        command_list.append(repop_vec_p2)
+
+        return command_list
         
-        get_unique_host_reads_pair_1 = ">&2 echo get pair 1 host reads for stats | " 
-        get_unique_host_reads_pair_1 += self.config_dict["Python"] + " "
-        get_unique_host_reads_pair_1 += self.config_dict["get_unique_host_reads"] + " "
-        get_unique_host_reads_pair_1 += os.path.join(host_folder, "pair_1.fastq") + " "
-        get_unique_host_reads_pair_1 += os.path.join(quality_folder, "pair_1.fastq") + " "
-        get_unique_host_reads_pair_1 += os.path.join(unique_hosts_folder, "pair_1_hosts.fastq")
-        
-        repop_pair_1_hosts = ">&2 echo repopulating pair 1 hosts | " 
-        repop_pair_1_hosts += self.config_dict["Python"] + " "
-        repop_pair_1_hosts += self.config_dict["duplicate_repopulate"]+ " "
-        repop_pair_1_hosts += os.path.join(quality_folder, "pair_1_match.fastq") + " "
-        repop_pair_1_hosts += os.path.join(unique_hosts_folder, "pair_1_hosts.fastq") + " "
-        repop_pair_1_hosts += os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
-        repop_pair_1_hosts += os.path.join(full_hosts_folder, "pair_1_full_hosts.fastq")
-        
-        return [get_unique_host_reads_pair_1, repop_pair_1_hosts]
-        
-    def create_output_unique_hosts_pair_2_command(self, current_stage_name, quality_stage, host_stage):
+
         #only call if we had hosts to filter
         subfolder           = os.path.join(self.output_path, current_stage_name)
         data_folder         = os.path.join(subfolder, "data")
@@ -1276,151 +1265,9 @@ class mt_pipe_commands:
         repop_pair_2_hosts += os.path.join(full_hosts_folder, "pair_2_full_hosts.fastq")
         
         return [get_unique_host_reads_pair_2, repop_pair_2_hosts]
-#-------------------------------------------------------------------------------------------
-    def create_output_unique_vectors_singletons_command(self, current_stage_name, quality_stage, host_stage, vectors_stage):
-        #only call if we had hosts to filter
-        subfolder               = os.path.join(self.output_path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        quality_folder          = os.path.join(self.output_path, quality_stage, "final_results")
-        host_folder             = os.path.join(self.output_path, host_stage, "final_results")
-        vectors_folder          = os.path.join(self.output_path, vectors_stage, "final_results")
-        data_folder             = os.path.join(subfolder, "data")
-        unique_vectors_folder   = os.path.join(data_folder, "3_unique_vectors")
-        full_vectors_folder     = os.path.join(data_folder, "4_full_vectors")
-        final_folder            = os.path.join(subfolder, "final_results")
 
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(unique_vectors_folder)
-        self.make_folder(full_vectors_folder)
-        self.make_folder(final_folder)
-        
-        get_unique_vectors_reads_singletons = ">&2 echo get singleton vectors reads for stats | "
-        get_unique_vectors_reads_singletons += self.config_dict["Python"] + " "
-        get_unique_vectors_reads_singletons += self.config_dict["get_unique_host_reads"] + " "
-            
-        
-        if(self.no_host_flag):
-            get_unique_vectors_reads_singletons += os.path.join(vectors_folder, "singletons.fastq") + " "
-            get_unique_vectors_reads_singletons += os.path.join(quality_folder, "singletons.fastq") + " "
-            get_unique_vectors_reads_singletons += os.path.join(unique_vectors_folder, "singletons_vectors.fastq")
-            
-        else:
-        
-            get_unique_vectors_reads_singletons += os.path.join(vectors_folder, "singletons.fastq") + " "
-            get_unique_vectors_reads_singletons += os.path.join(host_folder, "singletons.fastq") + " "
-            get_unique_vectors_reads_singletons += os.path.join(unique_vectors_folder, "singletons_vectors.fastq")
-            
-            
-        repop_singletons_vectors = ">&2 echo repopulating singletons vectors | " 
-        repop_singletons_vectors += self.config_dict["Python"] + " "
-        repop_singletons_vectors += self.config_dict["duplicate_repopulate"]+ " "
-        if(self.read_mode == "single"):
-            repop_singletons_vectors += os.path.join(quality_folder, "singletons_hq.fastq") + " "
-        else:
-            repop_singletons_vectors += os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
-        repop_singletons_vectors += os.path.join(unique_vectors_folder, "singletons_vectors.fastq") + " "
-        repop_singletons_vectors += os.path.join(quality_folder, "singletons_unique.fastq.clstr") + " "
-        repop_singletons_vectors += os.path.join(full_vectors_folder, "singletons_full_vectors.fastq")
-        
-        return [get_unique_vectors_reads_singletons, repop_singletons_vectors]
-        
-    def create_output_unique_vectors_pair_1_command(self, current_stage_name, quality_stage, host_stage, vectors_stage):
-        #only call if we had hosts to filter
-        subfolder               = os.path.join(self.output_path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        quality_folder          = os.path.join(self.output_path, quality_stage, "final_results")
-        host_folder             = os.path.join(self.output_path, host_stage, "final_results")
-        vectors_folder          = os.path.join(self.output_path, vectors_stage, "final_results")
-        data_folder             = os.path.join(subfolder, "data")
-        unique_vectors_folder   = os.path.join(data_folder, "3_unique_vectors")
-        full_vectors_folder     = os.path.join(data_folder, "4_full_vectors")
-        final_folder            = os.path.join(subfolder, "final_results")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(unique_vectors_folder)
-        self.make_folder(full_vectors_folder)
-        self.make_folder(final_folder)
-        
-        get_unique_vectors_reads_pair_1 = ">&2 echo get pair 1 vector reads for stats | " 
-        get_unique_vectors_reads_pair_1 += self.config_dict["Python"] + " "
-        get_unique_vectors_reads_pair_1 += self.config_dict["get_unique_host_reads"] + " "
-        
-        if(self.no_host_flag):
-            get_unique_vectors_reads_pair_1 += os.path.join(vectors_folder, "pair_1.fastq") + " "
-            get_unique_vectors_reads_pair_1 += os.path.join(quality_folder, "pair_1.fastq") + " "
-            get_unique_vectors_reads_pair_1 += os.path.join(unique_vectors_folder, "pair_1_vectors.fastq")
-
-        else:
-            get_unique_vectors_reads_pair_1 += os.path.join(vectors_folder, "pair_1.fastq") + " "
-            get_unique_vectors_reads_pair_1 += os.path.join(host_folder, "pair_1.fastq") + " "
-            get_unique_vectors_reads_pair_1 += os.path.join(unique_vectors_folder, "pair_1_vectors.fastq")
-        
-        repop_pair_1_vectors = ">&2 echo repopulating pair 1 vectors | " 
-        repop_pair_1_vectors += self.config_dict["Python"] + " "
-        repop_pair_1_vectors += self.config_dict["duplicate_repopulate"]+ " "
-        repop_pair_1_vectors += os.path.join(quality_folder, "pair_1_match.fastq") + " "
-        repop_pair_1_vectors += os.path.join(unique_vectors_folder, "pair_1_vectors.fastq") + " "
-        repop_pair_1_vectors += os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
-        repop_pair_1_vectors += os.path.join(full_vectors_folder, "pair_1_full_vectors.fastq")
-        
-        return [get_unique_vectors_reads_pair_1, repop_pair_1_vectors]
-        
-    def create_output_unique_vectors_pair_2_command(self, current_stage_name, quality_stage, host_stage, vectors_stage):
-        #only call if we had hosts to filter
-        subfolder               = os.path.join(self.output_path, current_stage_name)
-        data_folder             = os.path.join(subfolder, "data")
-        quality_folder          = os.path.join(self.output_path, quality_stage, "final_results")
-        host_folder             = os.path.join(self.output_path, host_stage, "final_results")
-        vectors_folder          = os.path.join(self.output_path, vectors_stage, "final_results")
-        data_folder             = os.path.join(subfolder, "data")
-        unique_vectors_folder   = os.path.join(data_folder, "3_unique_vectors")
-        full_vectors_folder     = os.path.join(data_folder, "4_full_vectors")
-        final_folder            = os.path.join(subfolder, "final_results")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(unique_vectors_folder)
-        self.make_folder(full_vectors_folder)
-        self.make_folder(final_folder)
-        
-        get_unique_vectors_reads_pair_2 = ">&2 echo get pair 2 vector reads for stats | " 
-        get_unique_vectors_reads_pair_2 += self.config_dict["Python"] + " "
-        get_unique_vectors_reads_pair_2 += self.config_dict["get_unique_host_reads"] + " "
-        
-        if(self.no_host_flag):
-            get_unique_vectors_reads_pair_2 += os.path.join(vectors_folder, "pair_2.fastq") + " "
-            get_unique_vectors_reads_pair_2 += os.path.join(quality_folder, "pair_2.fastq") + " "
-            get_unique_vectors_reads_pair_2 += os.path.join(unique_vectors_folder, "pair_2_vectors.fastq")
-        else:
-            get_unique_vectors_reads_pair_2 += os.path.join(vectors_folder, "pair_2.fastq") + " "
-            get_unique_vectors_reads_pair_2 += os.path.join(host_folder, "pair_2.fastq") + " "
-            get_unique_vectors_reads_pair_2 += os.path.join(unique_vectors_folder, "pair_2_vectors.fastq")
-            
-        repop_pair_2_vectors = ">&2 echo repopulating pair 2 vectors | " 
-        repop_pair_2_vectors += self.config_dict["Python"] + " "
-        repop_pair_2_vectors += self.config_dict["duplicate_repopulate"]+ " "
-        repop_pair_2_vectors += os.path.join(quality_folder, "pair_2_match.fastq") + " "
-        repop_pair_2_vectors += os.path.join(unique_vectors_folder, "pair_2_vectors.fastq") + " "
-        repop_pair_2_vectors += os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " " #we do this based on pairs now
-        repop_pair_2_vectors += os.path.join(full_vectors_folder, "pair_2_full_vectors.fastq")
-        
-        return [get_unique_vectors_reads_pair_2, repop_pair_2_vectors]
-        
-
-        
-    def create_output_per_read_scores_command(self, current_stage_name, quality_stage):
-        #only call if we had hosts to filter, and run it after the host regen is complete.
-        subfolder           = os.path.join(self.output_path, current_stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        quality_folder      = os.path.join(self.output_path, quality_stage, "final_results")
-        data_folder         = os.path.join(subfolder, "data")
-        final_folder        = os.path.join(subfolder, "final_results")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(final_folder)
+    def create_output_per_read_scores_command(self):
+     
         
         per_read_scores = ">&2 echo collecting per-read quality | " 
         per_read_scores += self.config_dict["Python"] + " "
@@ -1428,27 +1275,21 @@ class mt_pipe_commands:
         if(self.read_mode == "single"):
             per_read_scores += "single" + " "
             per_read_scores += self.config_dict["single"] + " "
-            per_read_scores += os.path.join(quality_folder, "singletons_hq.fastq") + " "
-            per_read_scores += os.path.join(final_folder)
+            per_read_scores += self.file_dict["qf_hq_s"] + " "#os.path.join(quality_folder, "singletons_hq.fastq") + " "
+            per_read_scores += self.dir_dict["out_export"] #os.path.join(final_folder)
             
         elif(self.read_mode == "paired"):
             per_read_scores += "paired" + " " 
             per_read_scores += self.config_dict["pair_1"] + " "
             per_read_scores += self.config_dict["pair_2"] + " "
-            per_read_scores += os.path.join(quality_folder, "pair_1_match.fastq") + " "
-            per_read_scores += os.path.join(quality_folder, "pair_2_match.fastq") + " "
-            per_read_scores += os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
-            per_read_scores += os.path.join(final_folder)
+            per_read_scores += self.file_dict["qf_o_p1"] + " "#os.path.join(quality_folder, "pair_1_match.fastq") + " "
+            per_read_scores += self.file_dict["qf_o_p2"] + " "#os.path.join(quality_folder, "pair_2_match.fastq") + " "
+            per_read_scores += self.file_dict["qf_o_s"] + " " #os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
+            per_read_scores += self.dir_dict["out_export"] #os.path.join(final_folder)
             
         return [per_read_scores]
         
-    def create_output_copy_taxa_command(self, current_stage_name, taxa_stage):
-        subfolder       = os.path.join(self.output_path, current_stage_name)
-        taxa_folder     = os.path.join(self.output_path, taxa_stage, "final_results")
-        final_folder    = os.path.join(subfolder, "final_results")
-        
-        self.make_folder(subfolder)
-        self.make_folder(final_folder)
+    def create_output_copy_taxa_command(self):
         
 
         copy_taxa = ">&2 echo " + str(dt.today()) + " copying taxa data | " 
@@ -1459,64 +1300,34 @@ class mt_pipe_commands:
         return [copy_taxa]
         
         
-    def create_output_contig_stats_command(self, current_stage_name, contig_stage):
-        #only call if we had hosts to filter, and run it after the host regen is complete.
-        subfolder           = os.path.join(self.output_path, current_stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        contig_folder       = os.path.join(self.output_path, contig_stage, "final_results")
-        final_folder        = os.path.join(subfolder, "final_results")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(final_folder)
+    def create_output_contig_stats_command(self):
         
         contig_stats = ">&2 echo " + str(dt.today()) + " collecting contig stats | " 
         contig_stats += self.config_dict["Python"] + " "
         contig_stats += self.config_dict["contig_stats"] + " "
-        contig_stats += os.path.join(contig_folder, "contigs.fasta") + " "
-        contig_stats += os.path.join(final_folder, "contig_stats.txt")
+        contig_stats += self.file_dict["contigs_out_fa"] + " "#os.path.join(contig_folder, "contigs.fasta") + " "
+        contig_stats += self.file_dict["out_contig_stats"]#os.path.join(final_folder, "contig_stats.txt")
         
         return [contig_stats]
         
-    def create_output_EC_heatmap_command(self, current_stage_name):
-        #only call if we had hosts to filter, and run it after the host regen is complete.
-        subfolder           = os.path.join(self.output_path, current_stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        final_folder        = os.path.join(subfolder, "final_results")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(final_folder)
+    def create_output_EC_heatmap_command(self):
         
         EC_heatmap = ">&2 echo " + str(dt.today()) + " forming EC heatmap | "
         EC_heatmap += self.config_dict["Python"] + " "
         EC_heatmap += self.config_dict["ec_heatmap"] + " "
         EC_heatmap += self.config_dict["EC_pathway"] + " "
-        EC_heatmap += os.path.join(final_folder, "EC_heatmap_RPKM.tsv") + " "
+        EC_heatmap += self.file_dict["out_heatmap_rpkm"] + " "#os.path.join(final_folder, "EC_heatmap_RPKM.tsv") + " "
         EC_heatmap += self.config_dict["path_to_superpath"] + " "
-        EC_heatmap += final_folder
+        EC_heatmap += self.dir_dict["out_export"] #final_folder
         
         return [EC_heatmap]
         
         
         
-    def create_output_read_count_command(self, current_stage_name, quality_stage, repopulation_stage, ga_final_merge_stage, enzyme_annotation_stage):
-        #only call if we had hosts to filter, and run it after the host regen is complete.
-        subfolder           = os.path.join(self.output_path, current_stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        quality_folder      = os.path.join(self.output_path, quality_stage, "final_results")
-        repopulation_folder = os.path.join(self.output_path, repopulation_stage, "final_results")
-        final_merge_folder  = os.path.join(self.output_path, ga_final_merge_stage, "final_results")
-        ea_folder           = os.path.join(self.output_path, enzyme_annotation_stage, "final_results")
-        full_hosts_folder   = os.path.join(data_folder, "2_full_hosts")
-        full_vectors_folder = os.path.join(data_folder, "4_full_vectors")
-        final_folder        = os.path.join(subfolder, "final_results")
+    def create_output_read_count_command(self):
+        #new approach. needs to cycle through.
 
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(full_hosts_folder)
-        self.make_folder(full_vectors_folder)
-        self.make_folder(final_folder)
+        
         gene_map_location = os.path.join(final_folder, "gene_map.tsv")
         
         read_counts = ">&2 echo " + str(dt.today()) + " generating read count table | "

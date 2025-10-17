@@ -219,7 +219,7 @@ if __name__ == "__main__":
         print("full path:", config_file)
     output_folder = os.path.abspath(output_folder)
     print("Outputing to:", output_folder)
-    config_obj = mpp.mpro_config(config_file)
+    config_obj = mpp.mpro_config(config_file, output_folder)
     config_dict = config_obj.get_config_dict()
     
     

@@ -20,11 +20,11 @@ def parse_fastq_streaming(filepath):
             
             # Check if we have a complete record (all 4 lines present and non-empty)
             if not seq or not plus or not qual:
-                print("Warning: Incomplete FASTQ record at end of file", filepath)
-                print("Header:", repr(header))
-                print("Seq:", repr(seq))
-                print("Plus:", repr(plus))
-                print("Qual:", repr(qual))
+                print(f"Warning: Incomplete FASTQ record at end of file {filepath}")
+                print(f"Header: {repr(header)}")
+                print(f"Seq: {repr(seq)}")
+                print(f"Plus: {repr(plus)}")
+                print(f"Qual: {repr(qual)}")
                 break
             
             header = header.strip()
@@ -34,19 +34,18 @@ def parse_fastq_streaming(filepath):
             
             # Additional validation
             if not header.startswith('@'):
-                print("Warning: Invalid header line:", header)
+                print(f"Warning: Invalid header line: {header}")
                 continue
             if not plus.startswith('+'):
-                print("Warning: Invalid plus line:", plus)
+                print(f"Warning: Invalid plus line: {plus}")
                 continue
             if len(seq) != len(qual):
-                print("Warning: Sequence and quality lengths don't match:", len(seq), "vs", len(qual))
+                print(f"Warning: Sequence and quality lengths don't match: {len(seq)} vs {len(qual)}")
                 continue
             
             # Extract ID (everything before first space)
             read_id = header.split()[0] if ' ' in header else header
-            # Fixed: Ensure proper FASTQ format - exactly 4 lines with proper newlines
-            full_record = header + '\n' + seq + '\n' + plus + '\n' + qual + '\n'
+            full_record = '\n'.join([header, seq, plus, qual]) + '\n'
             
             yield (read_id, full_record)
 
@@ -74,43 +73,12 @@ def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_
     Uses two passes to minimize memory usage with large files.
     """
     
-    # Handle existing orphans first - FIXED VERSION
+    # Handle existing orphans first
     if os.path.exists(orphans_path_i) and os.path.getsize(orphans_path_i) > 0:
         print(dt.today(), "Found existing orphans file with", os.path.getsize(orphans_path_i), "bytes")
-        
-        # Read existing orphans and ensure proper formatting
-        with open(orphans_path_i, 'r') as infile:
-            content = infile.read()
-            
-            # Remove any trailing whitespace and ensure single final newline
-            content = content.rstrip()
-            if content:
-                content += '\n'
-        
-        # Write cleaned content
-        with open(orphans_path_o, 'w') as outfile:
-            outfile.write(content)
-            
-        print("Copied and cleaned existing orphans from", orphans_path_i, "to", orphans_path_o)
-        
-        # Validate the copied file has correct line count
-        with open(orphans_path_o, 'r') as f:
-            line_count = sum(1 for _ in f)
-        
-        if line_count % 4 != 0:
-            print("WARNING: Existing orphans file has", line_count, "lines, not divisible by 4!")
-            print("Attempting to fix by removing incomplete records...")
-            
-            # Fix by removing incomplete records at the end
-            lines_to_keep = (line_count // 4) * 4
-            with open(orphans_path_o, 'r') as f:
-                lines = f.readlines()
-            
-            with open(orphans_path_o, 'w') as f:
-                f.writelines(lines[:lines_to_keep])
-            
-            print("Fixed: kept", lines_to_keep, "lines (removed", line_count - lines_to_keep, "incomplete lines)")
-            
+        with open(orphans_path_i, 'r') as infile, open(orphans_path_o, 'w') as outfile:
+            outfile.write(infile.read())
+        print("Copied existing orphans from", orphans_path_i, "to", orphans_path_o)
     else:
         if os.path.exists(orphans_path_i):
             print(dt.today(), "empty singletons file exists")
@@ -177,19 +145,9 @@ def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_
     print("Saved", matched_count_1, "matching pairs to", p1_path_o)
     print("Appended", orphan_count_0 + orphan_count_1, "new orphans to", orphans_path_o)
     
-    # FINAL VALIDATION: Check that output orphans file is properly formatted
+    # Show final orphan file size
     if os.path.exists(orphans_path_o):
-        with open(orphans_path_o, 'r') as f:
-            final_line_count = sum(1 for _ in f)
-        
         print("Total orphans file size:", os.path.getsize(orphans_path_o), "bytes")
-        print("Total orphans file lines:", final_line_count)
-        
-        if final_line_count % 4 != 0:
-            print("ERROR: Final orphans file has", final_line_count, "lines, not divisible by 4!")
-            print("This indicates a bug - the file is malformed.")
-        else:
-            print("SUCCESS: Orphans file is properly formatted (", final_line_count//4, "complete FASTQ records)")
     
     # Clean up memory
     del ids_0, ids_1, common_ids

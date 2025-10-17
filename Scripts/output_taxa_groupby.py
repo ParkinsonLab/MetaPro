@@ -1,7 +1,7 @@
 import pandas as pd
 import sys
 import os
- 
+
 # does a simple groupby and sums up the taxa found
 if __name__ == "__main__":
     taxa_class_file = sys.argv[1]

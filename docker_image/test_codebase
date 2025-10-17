@@ -8,6 +8,9 @@ RUN wget https://compsysbio.org/metapro_hosting/deepec_wrapper.py -O /usr/local/
 # Set the working directory for the pipeline code
 WORKDIR /pipeline
 
+ARG CACHE-BUSTER
+RUN echo "busting cache here"
+
 # Clone the pipeline code from the 'test' branch into the current directory
 # This single RUN command is more efficient than dozens of ADD commands
 RUN git clone --branch test https://github.com/ParkinsonLab/MetaPro.git .

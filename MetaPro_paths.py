@@ -136,7 +136,7 @@ class mpro_config:
     
     
 
-    def __init__ (self, config_path):
+    def __init__ (self, config_path, output_path="None"):
         print("CHECKING CONFIG")
         self.config_path = config_path
         if(not os.path.isabs(self.config_path)):
@@ -164,10 +164,15 @@ class mpro_config:
         database_path           = self.value_assignment("path", config, "Databases", "database_path", "None")
         
         custom_database_path    = "/pipeline/custom_databases/"
-        output_folder_default = "metapro_" + dt.today().strftime("%m%d%Y_%H%M%S")
-        output_path_default = os.path.join(os.getcwd(), output_folder_default)
-        self.config_dict["out_dir"] = self.value_assignment("path", config, "Input", "out_dir",output_path_default)
-        self.out_dir = self.config_dict["out_dir"]
+        if(output_path == "None"):
+            output_folder_default = "metapro_" + dt.today().strftime("%m%d%Y_%H%M%S")
+            output_path_default = os.path.join(os.getcwd(), output_folder_default)
+            self.config_dict["out_dir"] = self.value_assignment("path", config, "Input", "out_dir",output_path_default)
+            self.out_dir = self.config_dict["out_dir"]
+        else:
+            self.config_dict["out_dir"] = os.path.abspath(output_path)
+            self.out_dir = os.path.abspath(output_path)
+
         if not(os.path.isabs(self.out_dir)):
             self.out_dir = os.path.abspath(self.out_dir)
             self.config_dict["out_dir"] = self.out_dir
@@ -515,7 +520,7 @@ class mpro_config:
         self.config_dict["EC_Annotation_Post"]         = self.value_assignment("path", config, "code", "ec_combine", os.path.join(script_path, "ea_combine_v5.py"))
         self.config_dict["TA_apply_names"]   = self.value_assignment("path", config, "code", "ta_apply_names", os.path.join(script_path, "ta_apply_names.py"))
         self.config_dict["taxa_table"]                 = self.value_assignment("path", config, "code", "output_taxa", os.path.join(script_path, "output_taxa_groupby.py"))
-        self.config_dict["RPKM"]                       = self.value_assignment("path", config, "code", "output_rpkm", os.path.join(script_path, "output_table_v3.py"))
+        self.config_dict["RPKM"]                       = self.value_assignment("path", config, "code", "output_rpkm", os.path.join(script_path, "output_rpkm_cytoscape.py"))
         self.config_dict["format_RPKM"]                = self.value_assignment("path", config, "code", "output_reformat", os.path.join(script_path, "output_reformat_rpkm_table.py"))
         self.config_dict["read_count"]                 = self.value_assignment("path", config, "code", "output_read_count", os.path.join(script_path, "output_read_counts_v2.py"))
         self.config_dict["read_quality_metrics"]       = self.value_assignment("path", config, "code", "output_qual", os.path.join(script_path, "output_read_quality_metrics.py"))
