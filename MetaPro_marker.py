@@ -49,6 +49,7 @@ class mpro_marker:
             print(dt.today(), "skipping: ", self.marker_dict[tag])
             return False
         else:
+            print(dt.today(), "marker:", self.marker_dict[tag], "doesn't exist. running")
             return True
 
 
@@ -120,4 +121,12 @@ class mpro_marker:
 
         self.marker_dict["TA"] = os.path.join(self.dir_dict["TA"], "TA")
         self.marker_dict["EC"] = os.path.join(self.dir_dict["EC"], "EC")
-        self.marker_dict["Out"] = os.path.join(self.dir_dict["outputs"], "Out")
+        self.marker_dict["Out"] = os.path.join(self.dir_dict["out"], "Out")
+        self.marker_dict["Out_rpkm"] = os.path.join(self.dir_dict["out"], "rpkm")
+        self.marker_dict["Out_repop"] = os.path.join(self.dir_dict["out"], "repop")
+        self.marker_dict["Out_per_read"] = os.path.join(self.dir_dict["out"], "per_read_scores")
+        self.marker_dict["Out_taxa_report"] = os.path.join(self.dir_dict["out"], "taxa_report")
+        self.marker_dict["Out_contig_stats"] = os.path.join(self.dir_dict["out"], "contig_stats")
+        self.marker_dict["Out_read_count"] = os.path.join(self.dir_dict["out"], "read_count")
+        self.marker_dict["Out_taxa_groupby"] = os.path.join(self.dir_dict["out"], "taxa_groupby")
+        self.marker_dict["Out_ec_heatmap"] = os.path.join(self.dir_dict["out"], "ec_heatmap")

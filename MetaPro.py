@@ -217,17 +217,13 @@ if __name__ == "__main__":
     if(not os.path.isabs(config_file)):
         config_file = os.path.abspath(config_file)
         print("full path:", config_file)
-    output_folder = os.path.abspath(output_folder)
+    
     print("Outputing to:", output_folder)
     config_obj = mpp.mpro_config(config_file, output_folder)
     config_dict = config_obj.get_config_dict()
-    
-    
+    print("output dir from config:", config_dict["out_dir"])
+ 
     time_obj = mpt.mpro_timing()
-
-
-    
-    
 
     config_dict["no_host"] = no_host
     config_dict["verbose_mode"] = verbose_mode
@@ -245,10 +241,6 @@ if __name__ == "__main__":
         print(dt.today(), "input single overrides config")
         single = os.path.abspath(single)
         config_dict["single"] = single
-    
-    
-    
-
 
     if(config_dict["tutorial_mode"] == "None"):
         if(config_dict["pair_1"] == "None"):

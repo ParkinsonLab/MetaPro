@@ -966,7 +966,9 @@ class mp_stage:
                 self.config_dict["GA_final_merge_job_limit"], self.file_dict["ga_fm_job"], command_list)
             if self.marker_control.check_marker_list(marker_path_list):
                 self.marker_control.place_marker("GA_FM")
-                
+
+            self.mp_util.wait_for_mp_store()
+     
         self.GA_final_merge_end = time.time()
         print("GA final merge:", '%1.1f' % (self.GA_final_merge_end - self.GA_final_merge_start), "s")
         #self.mp_util.clean_or_compress(self.ga_final_merge_path, self.config_dict["keep_all"], self.keep_GA_final)
@@ -1008,129 +1010,53 @@ class mp_stage:
     def mp_output(self):
 
         if self.marker_control.check_marker("Out"):
-            self.dir_control.make_dirs_from_list("out_lost")
+            self.dir_control.make_dirs_from_list("out_list")
+            if self.marker_control.check_marker("Out_rpkm"):
+                command_list = self.commands.create_rpkm_command(self.marker_dict["Out_rpkm"])
+                self.mp_util.run_subjob_with_mp_store(self.file_dict["out_rpkm_job"], command_list)
+            
+            if self.marker_control.check_marker("Out_repop"):
+                command_list = self.commands.create_output_unique_junk(self.marker_dict["Out_repop"])
+                self.mp_util.subdivide_and_launch(10, 50, int(os.cpu_count()), self.file_dict["out_repop_job"], command_list)
+            
+            if self.marker_control.check_marker("Out_per_read"):
+                command_list = self.commands.create_output_per_read_scores_command(self.marker_dict["Out_per_read"])
+                self.mp_util.run_subjob_with_mp_store(self.file_dict["out_per_read_job"], command_list)
 
+            if self.marker_control.check_marker("Out_taxa_report"):
+                command_list = self.commands.create_output_copy_taxa_command(self.marker_dict["Out_taxa_report"])
+                self.mp_util.run_subjob_with_mp_store(self.file_dict["out_taxa_job"], command_list)
+            
+            if self.marker_control.check_marker("Out_contig_stats"):
+                command_list = self.commands.create_output_contig_stats_command(self.marker_dict["Out_contig_stats"])
+                self.mp_util.run_subjob_with_mp_store(self.file_dict["out_contig_stats_job"], command_list)
 
-        self.Cytoscape_start = time.time()
-        #if not check_where_resume(network_path, None, self.ec_path):
-        
-        if self.mp_util.check_bypass_log(self.output_folder_path, self.output_label):
             
-            #phase 1
-            if self.mp_util.check_bypass_log(self.output_folder_path, self.output_copy_gene_map_label):
-                job_name = self.output_copy_gene_map_label
-                command_list = self.commands.create_output_copy_gene_map_command(self.output_label, self.GA_final_merge_label)
-                self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
-                
-            if self.mp_util.check_bypass_log(self.output_folder_path, self.output_copy_taxa_label):
-                job_name = self.output_copy_taxa_label
-                command_list = self.commands.create_output_copy_taxa_command(self.output_label, self.ta_label)
-                self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
-            if(self.contigs_present): 
-                if self.mp_util.check_bypass_log(self.output_folder_path, self.output_contig_stats_label):
-                    job_name = self.output_contig_stats_label
-                    command_list = self.commands.create_output_contig_stats_command(self.output_label, self.assemble_contigs_label)
-                    self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
-                
             
-                
-            if not(self.config_dict["no_host"]):
-                print(dt.today(), "repopulating hosts for output")
-                if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_singletons_label):
-                    job_name = self.output_unique_hosts_singletons_label
-                    command_list = self.commands.create_output_unique_hosts_singletons_command(self.output_label, self.label_dict["qf"], self.host_filter_label)
-                    self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
-                
-                if(self.read_mode == "p"):
-                    if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_pair_1_label):
-                        job_name = self.output_unique_hosts_pair_1_label
-                        command_list = self.commands.create_output_unique_hosts_pair_1_command(self.output_label, self.label_dict["qf"], self.host_filter_label)
-                        self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
-                        
-                    if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_hosts_pair_2_label):
-                        job_name = self.output_unique_hosts_pair_2_label
-                        command_list = self.commands.create_output_unique_hosts_pair_2_command(self.output_label, self.label_dict["qf"], self.host_filter_label)
-                        self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
-                        
-                        
-            #repop vectors
-            if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_vectors_singletons_label):
-                job_name = self.output_unique_vectors_singletons_label
-                command_list = self.commands.create_output_unique_vectors_singletons_command(self.output_label, self.label_dict["qf"], self.host_filter_label, self.label_dict["vec"])
-                self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
             
-            if(self.read_mode == "p"):
-                if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_vectors_pair_1_label):
-                    job_name = self.output_unique_vectors_pair_1_label
-                    command_list = self.commands.create_output_unique_vectors_pair_1_command(self.output_label, self.label_dict["qf"], self.host_filter_label, self.label_dict["vec"])
-                    self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
-                    
-                if self.mp_util.check_bypass_log(self.output_folder_path, self.output_unique_vectors_pair_2_label):
-                    job_name = self.output_unique_vectors_pair_2_label
-                    command_list = self.commands.create_output_unique_vectors_pair_2_command(self.output_label, self.label_dict["qf"], self.host_filter_label, self.label_dict["vec"])
-                    self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
-                    
-            print(dt.today(), "output report phase 1 launched.  waiting for sync")
+            if self.marker_control.check_marker("Out_taxa_groupby"):
+                command_list = self.commands.create_output_taxa_groupby_command(self.marker_dict["Out_taxa_groupby"])
+                self.mp_util.run_subjob_with_mp_store(self.file_dict["out_taxa_groupby_job"], command_list)
+
             self.mp_util.wait_for_mp_store()
-            
-            self.mp_util.conditional_write_to_bypass_log(self.output_per_read_scores_label, "outputs/final_results", "input_per_seq_quality_report.csv")
-            self.mp_util.conditional_write_to_bypass_log(self.output_copy_gene_map_label, "outputs/final_results", "final_gene_map.tsv")
-            self.mp_util.conditional_write_to_bypass_log(self.output_copy_taxa_label, "outputs/final_results", "taxa_classifications.tsv")
-            self.mp_util.conditional_write_to_bypass_log(self.output_contig_stats_label, "outputs/final_results", "contig_stats.txt")
-            self.mp_util.conditional_write_to_bypass_log(self.output_unique_vectors_singletons_label, "outputs/data/4_full_vectors", "singletons_full_vectors.fastq")
-            if(self.read_mode == "p"):
-                self.mp_util.conditional_write_to_bypass_log(self.output_unique_vectors_pair_1_label, "outputs/data/4_full_vectors", "pair_1_full_vectors.fastq")
-                self.mp_util.conditional_write_to_bypass_log(self.output_unique_vectors_pair_2_label, "outputs/data/4_full_vectors", "pair_2_full_vectors.fastq")
-                
-            if not (self.config_dict["no_host"]):
-                self.mp_util.conditional_write_to_bypass_log(self.output_unique_hosts_singletons_label, "outputs/data/2_full_hosts", "singletons_full_hosts.fastq")
-                if(self.read_mode == "p"):
-                    self.mp_util.conditional_write_to_bypass_log(self.output_unique_hosts_pair_1_label, "outputs/data/2_full_hosts", "pair_1_full_hosts.fastq")
-                    self.mp_util.conditional_write_to_bypass_log(self.output_unique_hosts_pair_2_label, "outputs/data/2_full_hosts", "pair_2_full_hosts.fastq")
-            #----------------------------------------------------------------------------
-            #Phase 2
-            if self.mp_util.check_bypass_log(self.output_folder_path, self.output_network_gen_label):
-                command_list = self.commands.create_output_network_generation_command(self.output_label, self.GA_final_merge_label, self.ta_label, self.ec_label)
-                self.mp_util.run_subjob_with_mp_store(self.output_label, self.output_network_gen_label, self.commands, command_list)
-                
-            if self.mp_util.check_bypass_log(self.output_folder_path, self.output_taxa_groupby_label):
-                command_list = self.commands.create_output_taxa_groupby_command(self.output_label)
-                self.mp_util.run_subjob_with_mp_store(self.output_label, self.output_taxa_groupby_label, self.commands, command_list)
-        
-            print(dt.today(), "output report phase 2 launched.  waiting for sync")
-            self.mp_util.wait_for_mp_store()
-            self.mp_util.conditional_write_to_bypass_log(self.output_network_gen_label, "outputs/final_results", "RPKM_table.tsv")
-            
-            
-            #-------------------------------------------------------------------
-            #Phase 3
-            if self.mp_util.check_bypass_log(self.output_folder_path, self.output_read_count_label):
-                job_name = self.output_read_count_label
-                command_list = self.commands.create_output_read_count_command(self.output_label, self.label_dict["qf"], self.repop_job_label, self.GA_final_merge_label, self.ec_label)
-                self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
-                                
 
-            if self.mp_util.check_bypass_log(self.output_folder_path, self.output_per_read_scores_label):
-                job_name = self.output_per_read_scores_label
-                command_list = self.commands.create_output_per_read_scores_command(self.output_label, self.label_dict["qf"])
-                self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)
-                
-            if self.mp_util.check_bypass_log(self.output_folder_path, self.output_ec_heatmap_label):
-                job_name = self.output_ec_heatmap_label
-                command_list = self.commands.create_output_EC_heatmap_command(self.output_label)
-                self.mp_util.run_subjob_with_mp_store(self.output_label, job_name, self.commands, command_list)    
-            
-            print(dt.today(), "output report phase 3 launched.  waiting for sync")
-            self.mp_util.wait_for_mp_store()
-            self.mp_util.conditional_write_to_bypass_log(self.output_read_count_label, "outputs/final_results", "read_count.tsv")
-            self.mp_util.conditional_write_to_bypass_log(self.output_ec_heatmap_label, "outputs/final_results", "EC_coverage.csv")
-            self.mp_util.conditional_write_to_bypass_log(self.output_per_read_scores_label, "outputs/final_results", "quality_filter_hist.jpg")
+            if self.marker_control.check_marker("Out_read_count"):
+                command_list = self.commands.create_output_read_count_command(self.marker_dict["Out_read_count"])
+                self.mp_util.run_subjob_with_mp_store(self.file_dict["out_read_count_job"], command_list)
 
             
-        self.cleanup_cytoscape_start = time.time()
-        self.mp_util.clean_or_compress(self.network_path, self.config_dict["keep_all"], self.keep_outputs)
-        self.cleanup_cytoscape_end = time.time()
+            self.mp_util.wait_for_mp_store()
+
+            if self.marker_control.check_marker("Out_ec_heatmap"):
+                command_list = self.commands.create_output_EC_heatmap_command(self.marker_dict["Out_ec_heatmap"])
+                self.mp_util.run_subjob_with_mp_store(self.file_dict["out_ec_heatmap_job"], command_list)
+
+            self.mp_util.wait_for_mp_store()
+
             
+
+
+
             
             
             

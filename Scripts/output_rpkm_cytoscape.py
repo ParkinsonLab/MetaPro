@@ -205,6 +205,7 @@ if __name__ == "__main__":
     # genereating rank names
     rank_taxid = sorting_list
     for taxid in rank_taxid:
+        print("looking at taxid:", taxid, names_dict[taxid])
         rank_name.append(names_dict[taxid])
 
     if show_unclassified:
@@ -239,7 +240,7 @@ if __name__ == "__main__":
             if(len(line) > 1):
                 cols = line.split("\t")
                 gene = cols[0]
-                EC = cols[2].strip("\n")
+                EC = cols[1].strip("\n")
                 if(len(EC) > 1):
                     if EC in EC2genes_dict:
                         EC2genes_dict[EC].append(gene)

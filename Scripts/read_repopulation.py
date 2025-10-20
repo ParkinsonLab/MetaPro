@@ -9,6 +9,8 @@
 import sys
 import pandas as pd
 import numpy as np
+import sys
+import os
 
 def repopulate_single(ref_filename, mRNA_filename, cluster_filename, output_filename):
     ref_file = pd.read_csv(ref_filename, header = None, names = [None], sep = r'\n', engine = "python", skip_blank_lines = False, quoting=3)
@@ -65,4 +67,8 @@ if __name__ == "__main__":
     mRNA_filename = sys.argv[2]     #in: the file that will contain the reads needing to be duplicated
     cluster_filename = sys.argv[3]  #in: the cluster file showing what was in-fact duplicated
     output_filename = sys.argv[4]   #out: the final output
-    repopulate_single(ref_filename, mRNA_filename, cluster_filename, output_filename)
+    if (os.path.getsize(mRNA_filename) == 0):
+        with open(output_filename, "w") as out_file:
+            print("input file empty. skipping")
+    else:
+        repopulate_single(ref_filename, mRNA_filename, cluster_filename, output_filename)

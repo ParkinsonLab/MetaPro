@@ -18,7 +18,8 @@ class read_quality_metrics:
         #self.df_orig = None
         
         if(self.input_suffix == "fastq"):
-            self.df_file = pd.read_csv(self.input_file, header = None, names=None, sep='\n', skip_blank_lines=False, quoting = 3)
+            #self.df_file = pd.read_csv(self.input_file, header = None, names=None, sep='\n', skip_blank_lines=False, quoting = 3)
+            self.df_file = pd.read_csv(self.input_file, header = None, names=None, sep='^', engine='python', skip_blank_lines=False, quoting = 3)
             self.df_orig = pd.DataFrame(self.df_file.values.reshape(int(len(self.df_file)/4), 4))
             self.df_orig.columns = ["ID", "seq", "junk", "quality"]
             self.df_orig.drop(columns =["ID", "seq", "junk"], inplace = True)

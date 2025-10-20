@@ -212,7 +212,6 @@ class mt_pipe_commands:
 
         return COMMANDS_qual
 
-    
     def create_host_filter_command(self, host_id_list, host_count, marker):
         #may 09, 2025: removing python scripts. samtools can just do it all.
         cur_host = host_id_list[host_count]
@@ -373,8 +372,6 @@ class mt_pipe_commands:
             print(self.tutorial_keyword)
                 
         return COMMANDS_host
-
-
 
     def create_vector_filter_command(self, marker_file, final_host):
         # why do we leave all the interim files intact?
@@ -926,8 +923,7 @@ class mt_pipe_commands:
         ]
     
         return COMMANDS_bt2
-        
-    
+           
     def create_GA_BT2_pp_command(self, ref_path, gene_map, genes_hit, prot_hit, read_in_1, read_in_2, sam_file, read_out_1, read_out_2, op_mode, marker_file):
         #may 01, 2025: simplified pp call.  
         #run on every lib list section.
@@ -962,8 +958,6 @@ class mt_pipe_commands:
 
         return COMMANDS_bt2_pp
 
-
-        
     def create_GA_DMD_command(self, query_file, out_file, block_size, marker_file):
         
 
@@ -989,8 +983,6 @@ class mt_pipe_commands:
 
         return [diamond_annotate + " && " + make_marker]
 
-
-   
     def create_DIAMOND_pp_command_v2(self, reads_in, dmd_in, reads_out, prot_out, prot_map_out, marker_file):
     
         
@@ -1020,10 +1012,7 @@ class mt_pipe_commands:
 
         return COMMANDS_Annotate_Diamond_Post 
 
-
-
     def create_GA_final_merge_command(self, marker_0, marker_1, marker_2, marker_3):
-        
         
         final_merge_bt2 = self.config_dict["Python"] + " "
         final_merge_bt2 += self.config_dict["GA_final_merge_fasta"] + " "
@@ -1107,14 +1096,11 @@ class mt_pipe_commands:
         make_marker = "touch" + " " + marker
         return [deepec_run + " && " + make_marker]
         
-
-        
-        
-    def create_rpkm_command(self):
+    def create_rpkm_command(self, marker):
        
         move_map = ">&2 echo cp gene map | "
         move_map += "cp" + " " 
-        move_map += self.file_dict["gene_map_full"] + " "
+        move_map += self.file_dict["ga_fm_gene_map"] + " "
         move_map += self.file_dict["out_gene_map"]
 
         network_generation = ">&2 echo Generating RPKM and Cytoscape network | "
@@ -1125,7 +1111,7 @@ class mt_pipe_commands:
         network_generation += self.config_dict["nodes"] + " "
         network_generation += self.config_dict["names"] + " "
         network_generation += self.file_dict["out_gene_map"] + " "
-        network_generation += self.file_dict["ta_report"]+ " "
+        network_generation += self.file_dict["ga_ps_k2_report_all"]+ " "
         network_generation += self.file_dict["ec_final_report"] + " "
         network_generation += self.config_dict["show_unclassified"] + " "
         network_generation += self.file_dict["out_rpkm"] + " "
@@ -1138,10 +1124,12 @@ class mt_pipe_commands:
         flatten_rpkm += self.config_dict["format_RPKM"] + " "
         flatten_rpkm += self.file_dict["out_rpkm"] + " "
         flatten_rpkm += self.file_dict["out_heatmap_rpkm"]
+
+        make_marker = "touch " + marker
         
-        return [move_map, network_generation, flatten_rpkm]
+        return [move_map, network_generation, flatten_rpkm + " && " + make_marker]
         
-    def create_output_unique_junk(self):
+    def create_output_unique_junk(self, marker):
         command_list = list()
         for item in self.config_dict["Host_IDs"]:
             #no longer needed. we save the host reads.
@@ -1162,7 +1150,7 @@ class mt_pipe_commands:
                 repop_singletons_hosts += self.file_dict["qf_o_s"] + " " #os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
             repop_singletons_hosts += self.file_dict[item + "_host_s"] + " " #os.path.join(unique_hosts_folder, "singletons_hosts.fastq") + " "
             repop_singletons_hosts += self.file_dict["qf_clstr_s"] + " " #os.path.join(quality_folder, "singletons_unique.fastq.clstr") + " "
-            repop_singletons_hosts += self.file_dict[item + "_full_hosts_s"] #os.path.join(full_hosts_folder, "singletons_full_hosts.fastq")
+            repop_singletons_hosts += self.file_dict[item + "_full_host_s"] #os.path.join(full_hosts_folder, "singletons_full_hosts.fastq")
 
             command_list.append(repop_singletons_hosts)
 
@@ -1177,7 +1165,7 @@ class mt_pipe_commands:
 
             repop_pair_1_hosts += self.file_dict[item + "_host_p1"] + " "#os.path.join(unique_hosts_folder, "pair_1_hosts.fastq") + " "
             repop_pair_1_hosts += self.file_dict["qf_clstr_p1"] + " "#os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
-            repop_pair_1_hosts += self.file_dict[item + "_full_hosts_p1"]#os.path.join(full_hosts_folder, "pair_1_full_hosts.fastq")
+            repop_pair_1_hosts += self.file_dict[item + "_full_host_p1"]#os.path.join(full_hosts_folder, "pair_1_full_hosts.fastq")
             command_list.append(repop_pair_1_hosts)
 
             repop_pair_2_hosts = ">&2 echo repopulating pair 2 hosts | " 
@@ -1189,8 +1177,8 @@ class mt_pipe_commands:
                 repop_pair_2_hosts += self.file_dict["qf_o_p2"] + " "
 
             repop_pair_2_hosts += self.file_dict[item + "_host_p2"] + " "#os.path.join(unique_hosts_folder, "pair_1_hosts.fastq") + " "
-            repop_pair_2_hosts += self.file_dict["qf_clstr_p2"] + " "#os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
-            repop_pair_2_hosts += self.file_dict[item + "_full_hosts_p2"]#os.path.join(full_hosts_folder, "pair_1_full_hosts.fastq")
+            repop_pair_2_hosts += self.file_dict["qf_clstr_p1"] + " "#os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
+            repop_pair_2_hosts += self.file_dict[item + "_full_host_p2"]#os.path.join(full_hosts_folder, "pair_1_full_hosts.fastq")
             command_list.append(repop_pair_2_hosts)
 
 
@@ -1226,47 +1214,17 @@ class mt_pipe_commands:
         else:
             repop_vec_p2 += self.file_dict["qf_o_p2"] + " "#os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
         repop_vec_p2 += self.file_dict["vec_p2"] + " "#os.path.join(unique_vectors_folder, "singletons_vectors.fastq") + " "
-        repop_vec_p2 += self.file_dict["qf_clstr_p2"] + " "#os.path.join(quality_folder, "singletons_unique.fastq.clstr") + " "
+        repop_vec_p2 += self.file_dict["qf_clstr_p1"] + " "#os.path.join(quality_folder, "singletons_unique.fastq.clstr") + " "
         repop_vec_p2 += self.file_dict["out_full_vec_p2"] #os.path.join(full_vectors_folder, "singletons_full_vectors.fastq")
         command_list.append(repop_vec_p2)
+
+        make_marker = "touch " + marker
+        command_list.append(make_marker)
 
         return command_list
         
 
-        #only call if we had hosts to filter
-        subfolder           = os.path.join(self.output_path, current_stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        quality_folder      = os.path.join(self.output_path, quality_stage, "final_results")
-        host_folder         = os.path.join(self.output_path, host_stage, "final_results")
-        data_folder         = os.path.join(subfolder, "data")
-        unique_hosts_folder = os.path.join(data_folder, "1_unique_hosts")
-        full_hosts_folder   = os.path.join(data_folder, "2_full_hosts")
-        final_folder        = os.path.join(subfolder, "final_results")
-
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(data_folder)
-        self.make_folder(full_hosts_folder)
-        self.make_folder(final_folder)
-        
-        get_unique_host_reads_pair_2 = ">&2 echo get pair 2 host reads for stats | " 
-        get_unique_host_reads_pair_2 += self.config_dict["Python"] + " "
-        get_unique_host_reads_pair_2 += self.config_dict["get_unique_host_reads"] + " "
-        get_unique_host_reads_pair_2 += os.path.join(host_folder, "pair_2.fastq") + " "
-        get_unique_host_reads_pair_2 += os.path.join(quality_folder, "pair_2.fastq") + " "
-        get_unique_host_reads_pair_2 += os.path.join(unique_hosts_folder, "pair_2_hosts.fastq")
-        
-        repop_pair_2_hosts = ">&2 echo repopulating pair 2 hosts | " 
-        repop_pair_2_hosts += self.config_dict["Python"] + " "
-        repop_pair_2_hosts += self.config_dict["duplicate_repopulate"]+ " "
-        repop_pair_2_hosts += os.path.join(quality_folder, "pair_2_match.fastq") + " "
-        repop_pair_2_hosts += os.path.join(unique_hosts_folder, "pair_2_hosts.fastq") + " "
-        repop_pair_2_hosts += os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " " #we do this based on pairs now
-        repop_pair_2_hosts += os.path.join(full_hosts_folder, "pair_2_full_hosts.fastq")
-        
-        return [get_unique_host_reads_pair_2, repop_pair_2_hosts]
-
-    def create_output_per_read_scores_command(self):
+    def create_output_per_read_scores_command(self, marker):
      
         
         per_read_scores = ">&2 echo collecting per-read quality | " 
@@ -1287,30 +1245,34 @@ class mt_pipe_commands:
             per_read_scores += self.file_dict["qf_o_s"] + " " #os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
             per_read_scores += self.dir_dict["out_export"] #os.path.join(final_folder)
             
-        return [per_read_scores]
+        make_marker = "touch " + marker
+        return [per_read_scores + " && "+ make_marker]
         
-    def create_output_copy_taxa_command(self):
-        
-
+    def create_output_copy_taxa_command(self, marker):
         copy_taxa = ">&2 echo " + str(dt.today()) + " copying taxa data | " 
         copy_taxa += "cp" + " "
-        copy_taxa += os.path.join(taxa_folder, "constrain_classification.tsv") + " "
-        copy_taxa += os.path.join(final_folder, "taxa_classifications.tsv")
+        copy_taxa += self.file_dict["ta_report"] + " "
+        copy_taxa += self.file_dict["out_taxa_report"]
+        #copy_taxa += os.path.join(taxa_folder, "constrain_classification.tsv") + " "
+        #copy_taxa += os.path.join(final_folder, "taxa_classifications.tsv")
         
-        return [copy_taxa]
+        make_marker = "touch " + marker
+        return [copy_taxa + " && " + make_marker]
         
         
-    def create_output_contig_stats_command(self):
+    def create_output_contig_stats_command(self, marker):
         
         contig_stats = ">&2 echo " + str(dt.today()) + " collecting contig stats | " 
         contig_stats += self.config_dict["Python"] + " "
         contig_stats += self.config_dict["contig_stats"] + " "
         contig_stats += self.file_dict["contigs_out_fa"] + " "#os.path.join(contig_folder, "contigs.fasta") + " "
         contig_stats += self.file_dict["out_contig_stats"]#os.path.join(final_folder, "contig_stats.txt")
+
+        make_marker = "touch " + marker
         
-        return [contig_stats]
+        return [contig_stats + " && " + make_marker]
         
-    def create_output_EC_heatmap_command(self):
+    def create_output_EC_heatmap_command(self, marker):
         
         EC_heatmap = ">&2 echo " + str(dt.today()) + " forming EC heatmap | "
         EC_heatmap += self.config_dict["Python"] + " "
@@ -1320,49 +1282,61 @@ class mt_pipe_commands:
         EC_heatmap += self.config_dict["path_to_superpath"] + " "
         EC_heatmap += self.dir_dict["out_export"] #final_folder
         
-        return [EC_heatmap]
+        make_marker = "touch " + marker
+        return [EC_heatmap + " && " + make_marker]
         
         
         
-    def create_output_read_count_command(self):
+    def create_output_read_count_command(self, marker):
         #new approach. needs to cycle through.
 
-        
-        gene_map_location = os.path.join(final_folder, "gene_map.tsv")
-        
         read_counts = ">&2 echo " + str(dt.today()) + " generating read count table | "
         read_counts += self.config_dict["Python"] + " "
         read_counts += self.config_dict["read_count"] + " "
-        if self.read_mode == "single":
+        if(self.config_dict["read_mode"] == "s"):
             read_counts += self.config_dict["single"] + " "
-            
-        elif self.read_mode == "paired":
+        else:
             read_counts += self.config_dict["pair_1"] + " "
-        read_counts += quality_folder + " "
-        read_counts += full_hosts_folder + " "
-        read_counts += full_vectors_folder + " "
-        read_counts += repopulation_folder + " "
-        read_counts += final_merge_folder + " "
-        read_counts += ea_folder + " "
-        read_counts += os.path.join(final_folder, "read_count.tsv") + " "
-        read_counts += self.read_mode
+            
+        read_counts += self.file_dict["qf_o_s"] + " "
+        read_counts += self.file_dict["qf_o_p1"] + " "
+        read_counts += self.file_dict["qf_o_p2"] + " "
+        read_counts += self.file_dict["qf_u_s"] + " "
+        read_counts += self.file_dict["qf_u_p1"] + " "
+        read_counts += self.file_dict["qf_u_p2"] + " "
+
+        read_counts += self.dir_dict["out_hosts"] + " "
+        read_counts += self.file_dict["out_full_vec_s"] + " "
+        read_counts += self.file_dict["out_full_vec_p1"] + " "
+        read_counts += self.file_dict["out_full_vec_p2"] + " "
+        read_counts += self.file_dict["repop_other_s"] + " "
+        read_counts += self.file_dict["repop_other_p1"] + " "
+        read_counts += self.file_dict["repop_other_p2"] + " "
+        read_counts += self.file_dict["repop_s"] + " "
+        read_counts += self.file_dict["repop_p1"] + " "
+        read_counts += self.file_dict["repop_p2"] + " "
+
+        read_counts += self.file_dict["gene_map_full"] + " "
+        read_counts += self.file_dict["ec_final_report"] + " "
+        read_counts += self.file_dict["out_read_count"]
+
+        make_marker = "touch " + marker
+
+        return [read_counts + " && " + make_marker]
         
-        return [read_counts]
         
-        
-    def create_output_taxa_groupby_command(self, current_stage_name):
-        subfolder           = os.path.join(self.output_path, current_stage_name)
-        data_folder         = os.path.join(subfolder, "data")
-        final_folder        = os.path.join(subfolder, "final_results")
-        
-        self.make_folder(subfolder)
-        self.make_folder(data_folder)
-        self.make_folder(final_folder)
-        
+    def create_output_taxa_groupby_command(self, marker):
+
         taxa_groupby = ">&2 echo making Taxa summary | " 
         taxa_groupby += self.config_dict["Python"] + " "
         taxa_groupby += self.config_dict["taxa_table"] + " "
-        taxa_groupby += os.path.join(final_folder, "taxa_classifications.tsv") + " "
-        taxa_groupby += os.path.join(final_folder, "taxa_summary.tsv")
+        taxa_groupby += self.file_dict["ta_report"] + " "
+        taxa_groupby += self.file_dict["out_taxa_groupby"]
+        #taxa_groupby += os.path.join(final_folder, "taxa_classifications.tsv") + " "
+        #taxa_groupby += os.path.join(final_folder, "taxa_summary.tsv")
         
-        return [taxa_groupby]
+        make_marker = "touch " + marker
+
+        return [taxa_groupby + " && " + make_marker]
+
+

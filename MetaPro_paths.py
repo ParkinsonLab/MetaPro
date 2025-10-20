@@ -136,7 +136,7 @@ class mpro_config:
     
     
 
-    def __init__ (self, config_path, output_path="None"):
+    def __init__ (self, config_path, output_path):
         print("CHECKING CONFIG")
         self.config_path = config_path
         if(not os.path.isabs(self.config_path)):
@@ -165,13 +165,20 @@ class mpro_config:
         
         custom_database_path    = "/pipeline/custom_databases/"
         if(output_path == "None"):
+            
             output_folder_default = "metapro_" + dt.today().strftime("%m%d%Y_%H%M%S")
             output_path_default = os.path.join(os.getcwd(), output_folder_default)
             self.config_dict["out_dir"] = self.value_assignment("path", config, "Input", "out_dir",output_path_default)
+            self.config_dict["out_dir"] = os.path.abspath(self.config_dict["out_dir"])
+            print("using config output:", self.config_dict["out_dir"])
+            #time.sleep(10)
             self.out_dir = self.config_dict["out_dir"]
         else:
+            
             self.config_dict["out_dir"] = os.path.abspath(output_path)
             self.out_dir = os.path.abspath(output_path)
+            print("using inputted output dir:", self.config_dict["out_dir"])
+            #time.sleep(10)
 
         if not(os.path.isabs(self.out_dir)):
             self.out_dir = os.path.abspath(self.out_dir)

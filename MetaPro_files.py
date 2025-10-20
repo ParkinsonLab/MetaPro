@@ -314,18 +314,29 @@ class mpro_file_handler:
         self.file_dict["out_rpkm"] = os.path.join(self.dir_dict["out_export"], "RPKM_table.tsv")
         self.file_dict["out_cytoscape"] = os.path.join(self.dir_dict["out_export"], "Cytoscape_network.tsv")
         self.file_dict["out_heatmap_rpkm"] = os.path.join(self.dir_dict["out_export"], "EC_heatmap_RPKM.tsv")
+        self.file_dict["out_taxa_report"] = os.path.join(self.dir_dict["out_export"], "taxa_classification.tsv")
 
         for item in self.config_dict["Host_IDs"]:
 
             #self.file_dict[item + "_u_host_s"] = os.path.join(self.dir_dict["out_data"], item + "_u_s.fastq")
             #self.file_dict[item + "_u_host_p1"] = os.path.join(self.dir_dict["out_data"], item + "_u_p1.fastq")
-            self.file_dict[item + "_u_host_p2"] = os.path.join(self.dir_dict["out_data"], item + "_u_p2.fastq")
-            self.file_dict[item + "_full_host_s"] = os.path.join(self.dir_dict["out_data"], item + "_s_full_hosts.fastq")
-            self.file_dict[item + "_full_host_p1"] = os.path.join(self.dir_dict["out_data"], item +"_p1_full_host.fastq")
-            self.file_dict[item + "_full_host_p2"] = os.path.join(self.dir_dict["out_data"], item + "_p2_full_host.fastq")
+            #self.file_dict[item + "_u_host_p2"] = os.path.join(self.dir_dict[item + "_full_host"], item + "_u_p2.fastq")
+            self.file_dict[item + "_full_host_s"] = os.path.join(self.dir_dict[item + "_full_host"], item + "_s_full_host.fastq")
+            self.file_dict[item + "_full_host_p1"] = os.path.join(self.dir_dict[item + "_full_host"], item +"_p1_full_host.fastq")
+            self.file_dict[item + "_full_host_p2"] = os.path.join(self.dir_dict[item + "_full_host"], item + "_p2_full_host.fastq")
 
         self.file_dict["out_full_vec_s"] = os.path.join(self.dir_dict["out_data"], "full_s_vec.fastq")
         self.file_dict["out_full_vec_p1"] = os.path.join(self.dir_dict["out_data"], "full_p1_vec.fastq")
         self.file_dict["out_full_vec_p2"] = os.path.join(self.dir_dict["out_data"], "full_p2_vec.fastq")
         self.file_dict["out_contig_stats"] = os.path.join(self.dir_dict["out_export"], "contig_stats.txt")
-        
+        self.file_dict["out_read_count"] = os.path.join(self.dir_dict["out_export"], "read_counts.tsv")
+        self.file_dict["out_taxa_groupby"] = os.path.join(self.dir_dict["out_export"], "taxa_summary.tsv")
+
+        self.file_dict["out_rpkm_job"] = os.path.join(self.dir_dict["out_jobs"], "rpkm.sh")
+        self.file_dict["out_repop_job"] = os.path.join(self.dir_dict["out_jobs"], "repop.sh")
+        self.file_dict["out_per_read_job"] = os.path.join(self.dir_dict["out_jobs"], "per_read.sh")
+        self.file_dict["out_taxa_job"] = os.path.join(self.dir_dict["out_jobs"], "taxa.sh")
+        self.file_dict["out_contig_stats_job"] = os.path.join(self.dir_dict["out_jobs"], "contig_stats.sh")
+        self.file_dict["out_read_count_job"] = os.path.join(self.dir_dict["out_jobs"], "read_count.sh")
+        self.file_dict["out_taxa_groupby_job"] = os.path.join(self.dir_dict["out_jobs"], "groupby_taxa.sh")
+        self.file_dict["out_ec_heatmap_job"] = os.path.join(self.dir_dict["out_jobs"], "ec_heatmap.sh")

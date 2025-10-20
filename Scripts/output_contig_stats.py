@@ -13,27 +13,47 @@ The only function here is to find N50
 
 class contig_stats:
     def __init__(self, input_file):
-        self.df_orig = pd.read_csv(input_file, error_bad_lines=False, header=None, sep="\n")  # import the fasta
-        self.df_orig.columns = ["row"]
-        #There's apparently a possibility for NaNs to be introduced in the raw fasta.  We have to strip it before we process (from DIAMOND proteins.faa)
-        self.df_orig.dropna(inplace=True)
-        new_df = pd.DataFrame(self.df_orig.loc[self.df_orig.row.str.contains('>')])  # grab all the IDs
-        new_df.columns = ["names"]
-        new_data_df = self.df_orig.loc[~self.df_orig.row.str.contains('>')]  # grab the data
-        new_data_df.columns = ["data"]
-        self.df_orig = new_df.join(new_data_df, how='outer')  # join them into a 2-col DF
-        self.df_orig["names"] = self.df_orig.fillna(method='ffill')  # fill in the blank spaces in the name section
-        self.df_orig.dropna(inplace=True)  # remove all rows with no sequences
-        self.df_orig.index = self.df_orig.groupby('names').cumcount()  # index it for transform
-        temp_columns = self.df_orig.index  # save the index names for later
-        self.df_orig = self.df_orig.pivot(values='data', columns='names')  # pivot
-        self.df_orig = self.df_orig.T  # transpose
-        self.df_orig["seq"] = self.df_orig[self.df_orig.columns[:]].apply(lambda x: "".join(x.dropna()), axis=1)  # consolidate all cols into a single sequence
-        self.df_orig.drop(temp_columns, axis=1, inplace=True)
-        #not really needed
-        #self.df_orig["names"] = self.df_orig.index
-        #self.df_orig.index = range(self.df_orig.shape[0])
-        # At this point, we've already got the number of reads.
+        import pandas as pd
+import numpy as np
+
+class contig_stats:
+    def __init__(self, input_file):
+        # 1. Read the file into a list of lines (Standard Python reading)
+        with open(input_file, 'r') as f:
+            lines = [line.strip() for line in f if line.strip()]
+
+        # 2. Process the lines to create two lists: headers and sequences
+        headers = []
+        sequences = []
+        current_seq = []
+        
+        for line in lines:
+            if line.startswith('>'):
+                # Found a new header, save the previous sequence (if one exists)
+                if current_seq:
+                    sequences.append("".join(current_seq))
+                
+                # Start the new sequence and header
+                headers.append(line)
+                current_seq = []
+            else:
+                # Accumulate sequence data
+                current_seq.append(line)
+        
+        # 3. Save the last sequence
+        if current_seq:
+            sequences.append("".join(current_seq))
+
+        # 4. Create the final DataFrame
+        self.df_orig = pd.DataFrame({
+            "names": headers,
+            "seq": sequences
+        })
+        
+        # At this point, self.df_orig has two clean columns: 'names' and 'seq'
+        # The remaining logic in your original script (pivot, apply, drop) is now unnecessary.
+        # You can continue with your statistics calculation on this clean DataFrame.
+        # Example: print(self.df_orig.head())
         
     def contig_stats(self):
         

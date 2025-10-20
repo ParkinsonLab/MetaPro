@@ -560,6 +560,7 @@ class mp_util:
     def subdivide_and_launch(self, job_delay, mem_threshold, job_limit, job_file, commands):
         #just launches a job.  no multi-process.
         #Jan 25, 2022: now adding job controls.
+        
         job_counter = 0
         for item in commands:
             job_location = os.path.dirname(job_file)
@@ -586,7 +587,7 @@ class mp_util:
                     self.wait_for_mp_store()
             time.sleep(job_delay)
         #final wait for everything to be done
-        self.wait_for_mp_store()
+        #self.wait_for_mp_store()
                 
         
     def launch_only_with_hold(self, mem_threshold, job_limit, job_delay, job_name, command):

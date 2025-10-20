@@ -323,14 +323,25 @@ class mpro_dir:
         self.dir_dict["EC_export"] = os.path.join(self.dir_dict["EC"], "export")
         self.dir_dict["EC_list"] = ["EC", "EC_data", "EC_jobs", "EC_export"]
 
+
+        self.dir_dict["out_list"] = ["out", "out_export", "out_data", "out_hosts", "out_jobs", "out_ng", "out_unique_hosts", "out_unique_vec", "out_heatmap"]
+
         self.dir_dict["out"] = os.path.join(self.out_dir, self.label_dict["out"])
         self.dir_dict["out_export"] = os.path.join(self.dir_dict["out"], "export")
         self.dir_dict["out_data"] = os.path.join(self.dir_dict["out"], "data")
+        self.dir_dict["out_hosts"] = os.path.join(self.dir_dict["out_data"], "hosts")
+        for item in self.config_dict["Host_IDs"]:
+            self.dir_dict[item + "_full_host"] = os.path.join(self.dir_dict["out_hosts"], item)
+            self.dir_dict["out_list"].append(item + "_full_host")
         self.dir_dict["out_jobs"] = os.path.join(self.dir_dict["out"], "jobs")
         self.dir_dict["out_ng"] = os.path.join(self.dir_dict["out_data"], "metabolic_network")
         self.dir_dict["out_unique_hosts"] = os.path.join(self.dir_dict["out_data"], "unique_hosts")
         self.dir_dict["out_unique_vec"] = os.path.join(self.dir_dict["out_data"], "unique_vectors")
         self.dir_dict["out_heatmap"] = os.path.join(self.dir_dict["out_data"], "heatmap")
         
-        self.dir_dict["out_list"] = ["out", "out_export", "out_data", "out_jobs", "out_ng", "out_unique_hosts", "out_unique_vec", "out_heatmap"]
-
+        #print("out dir make list:", self.dir_dict["out_list"])
+        #for item in self.dir_dict["out_list"]:
+        #    print(item, self.dir_dict[item])
+        #time.sleep(10)    
+        
+        
