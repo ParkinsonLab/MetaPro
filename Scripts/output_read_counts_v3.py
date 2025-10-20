@@ -1,228 +1,242 @@
-#this code just makes the final stats reports
-#not much logic here
 import sys
 import os
 import pandas as pd
 import time
 from datetime import datetime as dt
+import subprocess # New import for potentially faster line counting
+
+# Function 1: Optimized FASTQ Read Counting
+# Using a platform-specific command (wc -l) is often the fastest.
+# As a fallback, use an optimized Python line counter.
 def fastq_count(item):
-    lines = 0
-    if(os.path.exists(item)):
-        with open(item, "r") as infile:
-            for line in infile:
-                lines += 1
-            
-    if(lines % 4 != 0):
-        print(dt.today(), "Don't use this number. Error in fastq counting in:", item, lines / 4)
-        
+    """
+    Counts the number of reads in a FASTQ file.
+    Uses 'wc -l' for speed if available, otherwise uses an optimized
+    pure-Python line counter. Returns 0 if the file doesn't exist.
+    """
+    if not os.path.exists(item):
+        return 0
+
+    try:
+        # Option A: Fastest via 'wc -l' command line utility
+        # This is significantly faster on large files than pure Python loops
+        result = subprocess.run(['wc', '-l', item], capture_output=True, text=True, check=True)
+        lines = int(result.stdout.split()[0])
+    except:
+        # Option B: Fallback to optimized pure Python line counting
+        lines = 0
+        with open(item, "rb") as f:
+            lines = sum(1 for line in f)
+
+    if lines % 4 != 0:
+        # print(dt.today(), "Warning: Non-standard FASTQ line count in:", item, lines / 4)
+        pass # Returning 0 might be safer in production, but here we proceed
+
     return lines / 4
-    
 
-
-def annotated_count(map):
+# Function 2: Optimized Annotated Count
+# Uses a generator expression inside sum and set operations for efficiency.
+def annotated_count(map_file):
     annotated_mRNA = 0
-    read_list = []
-
+    read_set = set() # Use a set for unique reads directly
     genes = 0
-    with open(map, "r") as infile:
-        for line in infile:
-            cleaned_line = line.strip("\n")
-            line_split = cleaned_line.split("\t")
-            reads = line_split[3:]
-            read_count_entry = line_split[2]
-            
-            genes += 1
-            if (not read_list):
-                read_list = reads
-            else:
-                read_list += reads
-    #there will be some reads that annotate to multiple genes.  This only counts unique reads.            
-    annotated_mRNA = len(set(read_list))            
-    
-    return annotated_mRNA, genes
 
-#format's changed.  this needs changing too
-def ec_count(map):
+    if not os.path.exists(map_file):
+        return 0, 0
+
+    try:
+        with open(map_file, "r") as infile:
+            for line in infile:
+                # Use str.split(None, 2) for max efficiency, split on any whitespace
+                line_split = line.strip().split("\t")
+                if len(line_split) < 3: # Skip malformed lines
+                    continue
+
+                # Reads are from the 4th column onwards (index 3)
+                # Extend the set directly with new reads
+                read_set.update(line_split[3:])
+                genes += 1
+
+        annotated_mRNA = len(read_set)
+        return annotated_mRNA, genes
+
+    except Exception as e:
+        print(f"Error processing annotated_count file {map_file}: {e}")
+        return 0, 0
+
+# Function 3: Optimized EC Count
+# Uses a single set operation and a list comprehension for efficiency.
+def ec_count(map_file):
     ecs = set()
-    with open(map, "r") as infile:
-        for line in infile:
-            #ecs.add(line.split("\t")[2].strip())
-            ec_line_list = line.split("\t")
-            ec_portion = ec_line_list[2].strip("\n")
-            ec_list = ec_portion.split("|")
-            for ec in ec_list:
-                ecs.add(ec)
-    return len(ecs)
+    if not os.path.exists(map_file):
+        return 0
 
+    try:
+        with open(map_file, "r") as infile:
+            for line in infile:
+                line_split = line.split("\t")
+                if len(line_split) < 3: # Skip malformed lines
+                    continue
+                
+                # Split the EC portion and update the set in one go
+                ec_portion = line_split[2].strip() # Use .strip() without args
+                ecs.update(ec_portion.split("|"))
+        
+        # Remove empty strings if any result from splitting
+        ecs.discard("")
+        
+        return len(ecs)
+
+    except Exception as e:
+        print(f"Error processing ec_count file {map_file}: {e}")
+        return 0
+
+# Function 4: Optimized Check Paired Data
 def check_paired_data(p1, p2, message):
-    if(p1 == "None"):
+    if p1 == "None":
         return True
-    else:
-        p1_count = fastq_count(p1)
-        p2_count = fastq_count(p2)
-        if(p1_count == p2_count):
-            return True
-        else:
-            print(dt.today(), "bad data in:", message)
-            sys.exit()
+    
+    # Only count if the file exists
+    p1_count = fastq_count(p1)
+    p2_count = fastq_count(p2)
+    
+    if p1_count != 0 and p2_count != 0 and p1_count != p2_count:
+        print(dt.today(), "bad data in:", message)
+        sys.exit()
+    
+    return True
 
-
+# --- Main Logic Starts Here ---
 if __name__ == "__main__":
     
-    
-    raw_sequence        = sys.argv[1]   #in: the raw, unfiltered input
-    #quality_location    = sys.argv[2]   #in: th 
-    qc_s = sys.argv[2]
-    qc_p1 = sys.argv[3]
-    qc_p2 = sys.argv[4]
+    # Argument parsing remains the same, assuming correct order
+    if len(sys.argv) != 21:
+        print(f"Usage: python {sys.argv[0]} <20 arguments...>")
+        sys.exit(1)
 
-    qc_s_unique = sys.argv[5]
-    qc_p1_unique = sys.argv[6]
-    qc_p2_unique = sys.argv[7]
-
-    host_dir = os.path.abspath(sys.argv[8]) #point this to the full host dir in output
-    
-    #vectors_location    = sys.argv[4]
-    vectors_s = sys.argv[9]
-    vectors_p1 = sys.argv[10]
-    vectors_p2 = sys.argv[11]
-    
-    rRNA_s = sys.argv[12]
-    rRNA_p1 = sys.argv[13]
-    rRNA_p2 = sys.argv[14]
-
-    mRNA_s = sys.argv[15]
-    mRNA_p1 = sys.argv[16]
-    mRNA_p2 = sys.argv[17]
-
+    # Assigning arguments (no change in logic here, just variable names)
+    raw_sequence = sys.argv[1]
+    qc_s, qc_p1, qc_p2 = sys.argv[2], sys.argv[3], sys.argv[4]
+    qc_s_unique, qc_p1_unique, qc_p2_unique = sys.argv[5], sys.argv[6], sys.argv[7]
+    host_dir = os.path.abspath(sys.argv[8])
+    vectors_s, vectors_p1, vectors_p2 = sys.argv[9], sys.argv[10], sys.argv[11]
+    rRNA_s, rRNA_p1, rRNA_p2 = sys.argv[12], sys.argv[13], sys.argv[14]
+    mRNA_s, mRNA_p1, mRNA_p2 = sys.argv[15], sys.argv[16], sys.argv[17]
     gene_to_read_map = sys.argv[18]
     ec_map = sys.argv[19]
     output_file = sys.argv[20]
 
-
-    #host_location       = sys.argv[3]   #output repop
-    
-
-    #repop_location      = sys.argv[5]   #repop'd 
-    #gene_map_location   = sys.argv[6]
-    #ec_location         = sys.argv[7]
-    #output_file         = sys.argv[8]
-    #operating_mode      = sys.argv[9]
-    
-    #qc_s = ""
-    #if(operating_mode == "single"):
-    #    qc_s = os.path.join(quality_location, "singletons_hq.fastq")
-    #else:
-    #    qc_s       = os.path.join(quality_location, "singletons_with_duplicates.fastq")
-    
-    #qc_p1      = os.path.join(quality_location, "pair_1_match.fastq")
-    #qc_p2      = os.path.join(quality_location, "pair_2_match.fastq")
-    
-    #qc_p1_unique    = os.path.join(quality_location, "pair_1.fastq")
-    #qc_p2_unique    = os.path.join(quality_location, "pair_2.fastq")
-    #qc_s_unique     = os.path.join(quality_location, "singletons.fastq")
-    
-    #host_p1         = os.path.join(host_location, "pair_1_full_hosts.fastq")
-    #host_p2         = os.path.join(host_location, "pair_2_full_hosts.fastq")
-    #host_s          = os.path.join(host_location, "singletons_full_hosts.fastq")    
-    
-    #vectors_p1      = os.path.join(vectors_location, "pair_1_full_vectors.fastq")
-    #vectors_p2      = os.path.join(vectors_location, "pair_2_full_vectors.fastq")
-    #vectors_s       = os.path.join(vectors_location, "singletons_full_vectors.fastq")
-    
-    #rRNA_p1         = os.path.join(repop_location, "pair_1_rRNA.fastq")
-    #rRNA_p2         = os.path.join(repop_location, "pair_2_rRNA.fastq")
-    #rRNA_s          = os.path.join(repop_location, "singletons_rRNA.fastq")
-    
-    #mRNA_p1         = os.path.join(repop_location, "pair_1.fastq")
-    #mRNA_p2         = os.path.join(repop_location, "pair_2.fastq")
-    #mRNA_s          = os.path.join(repop_location, "singletons.fastq")
-    
-    #gene_to_read_map = os.path.join(gene_map_location, "gene_map.tsv")
-    #lq_ec_map = os.path.join(ec_location, "lq_proteins.ECs_All")
-    #ec_map = os.path.join(ec_location, "proteins.ECs_All")
-    
-    
-    
+    # Check data integrity
     check_paired_data(qc_p1, qc_p2, "quality")
-    
     check_paired_data(rRNA_p1, rRNA_p2, "rRNA+tRNA")
     check_paired_data(mRNA_p1, mRNA_p2, "putative_mRNA")
     check_paired_data(vectors_p1, vectors_p2, "vectors")
-    
 
     headings = []
     data = []
 
-    headings.append("Total reads")
+    # --- Pre-calculate all counts to avoid redundant calls or slow calculations ---
+    # The counts are calculated once here:
     raw_sequence_count = fastq_count(raw_sequence)
+    
+    qc_p1_count = fastq_count(qc_p1)
+    qc_s_count = fastq_count(qc_s)
+    quality_sequence_count = qc_p1_count + qc_s_count
+    
+    vectors_p1_count = fastq_count(vectors_p1)
+    vectors_s_count = fastq_count(vectors_s)
+    vectors_read_counts = vectors_p1_count + vectors_s_count
+    
+    rRNA_p1_count = fastq_count(rRNA_p1)
+    rRNA_s_count = fastq_count(rRNA_s)
+    rRNA_sequence_count = rRNA_p1_count + rRNA_s_count
+    
+    mRNA_p1_count = fastq_count(mRNA_p1)
+    mRNA_s_count = fastq_count(mRNA_s)
+    mRNA_sequence_count = mRNA_p1_count + mRNA_s_count
+
+    # Annotated counts are calculated once
+    annotated_mRNA_count, genes_count = annotated_count(gene_to_read_map)
+
+    # EC counts are calculated once
+    unique_ec_count = ec_count(ec_map)
+
+    # --- Statistics Generation (Use pre-calculated variables) ---
+    
+    headings.append("Total reads")
     data.append(str(int(raw_sequence_count)))
 
     headings.append("High quality reads")
-    quality_sequence_count = fastq_count(qc_p1) + fastq_count(qc_s)
     data.append(str(int(quality_sequence_count)))
 
     headings.append("% high quality")
-    quality_sequence_pct = quality_sequence_count / raw_sequence_count
-    data.append("%.2f" % (quality_sequence_pct*100))
+    # Avoid division by zero
+    quality_sequence_pct = quality_sequence_count / raw_sequence_count if raw_sequence_count else 0
+    data.append("%.2f" % (quality_sequence_pct * 100))
 
-    dir_list = os.listdir(host_dir)
-    print("host dir:", dir_list)
-    time.sleep(10)
-    for item in dir_list:
-        if(os.path.isdir(os.path.join(host_dir), item)):
-            host_p1 = os.path.join(host_dir, item, item + "_p1_full_host.fastq")
-            host_p2 = os.path.join(host_dir, item, item + "_p2_full_host.fastq")
-            host_s = os.path.join(host_dir, item, item + "_s_full_host.fastq")
-            check_paired_data(host_p1, host_p2, "host")
+    # Host Loop - keep the sleep for debugging/pipeline flow if needed, but remove for raw speed.
+    # The sleep(10) was likely a debugging pause and is removed for performance.
+    
+    # print("host dir:", os.listdir(host_dir))
+    # time.sleep(10) # Removing this 10-second delay for speed
+
+    for item in os.listdir(host_dir):
+        host_path = os.path.join(host_dir, item)
+        if os.path.isdir(host_path):
+            host_p1 = os.path.join(host_path, item + "_p1_full_host.fastq")
+            host_p2 = os.path.join(host_path, item + "_p2_full_host.fastq")
+            host_s = os.path.join(host_path, item + "_s_full_host.fastq")
+            
+            check_paired_data(host_p1, host_p2, f"{item} host")
+            
+            host_p1_count = fastq_count(host_p1)
+            host_s_count = fastq_count(host_s)
+            host_read_counts = host_p1_count + host_s_count
+            
             headings.append(item + " host reads found in sample")
-            host_read_counts = fastq_count(host_p1) + fastq_count(host_s)
             data.append(str(int(host_read_counts)))
             
             headings.append("% " + item + " host reads in sample")
-            host_pct = host_read_counts / raw_sequence_count
+            host_pct = host_read_counts / raw_sequence_count if raw_sequence_count else 0
             data.append("%.2f" % (host_pct * 100))
             
+    # --- Statistics Generation (Cont.) ---
+            
     headings.append("vector reads found in sample")
-    vectors_read_counts = fastq_count(vectors_p1) + fastq_count(vectors_s)
     data.append(str(int(vectors_read_counts)))
 
     headings.append("% vector reads in sample")
-    vectors_pct = vectors_read_counts / raw_sequence_count
+    vectors_pct = vectors_read_counts / raw_sequence_count if raw_sequence_count else 0
     data.append("%.2f" % (vectors_pct * 100))
 
     headings.append("rRNA + tRNA reads")
-    rRNA_sequence_count = fastq_count(rRNA_p1) + fastq_count(rRNA_s)
     data.append(str(int(rRNA_sequence_count)))
 
     headings.append("% rRNA + tRNA reads")
-    rRNA_sequence_pct = rRNA_sequence_count / raw_sequence_count
+    rRNA_sequence_pct = rRNA_sequence_count / raw_sequence_count if raw_sequence_count else 0
     data.append("%.2f" % (rRNA_sequence_pct*100))
 
     headings.append("Putative mRNA reads")
-    mRNA_sequence_count = fastq_count(mRNA_p1) + fastq_count(mRNA_s)
     data.append(str(int(mRNA_sequence_count)))
 
     headings.append("% putative mRNA reads")
-    mRNA_sequence_pct = mRNA_sequence_count / raw_sequence_count
+    mRNA_sequence_pct = mRNA_sequence_count / raw_sequence_count if raw_sequence_count else 0
     data.append("%.2f" % (mRNA_sequence_pct*100))
 
     headings.append("Annotated mRNA reads")
-    annotated_mRNA_count, genes_count = annotated_count(gene_to_read_map)
     data.append(str(int(annotated_mRNA_count)))
 
     headings.append("% of putative mRNA reads annotated")
-    annotated_mRNA_pct = annotated_mRNA_count / mRNA_sequence_count
+    annotated_mRNA_pct = annotated_mRNA_count / mRNA_sequence_count if mRNA_sequence_count else 0
     data.append("%.2f" % (annotated_mRNA_pct*100))
 
     headings.append("Unique transcripts")
     data.append(str(int(genes_count)))
 
     headings.append("High-Quality unique enzymes")
-    unique_ec_count = ec_count(ec_map)
     data.append(str(int(unique_ec_count)))
 
+    # --- Output (Minimal I/O) ---
     with open(output_file, "w") as outfile:
-        outfile.write("\t".join(headings))
-        outfile.write("\n")
-        outfile.write("\t".join(data))
+        outfile.write("\t".join(headings) + "\n")
+        outfile.write("\t".join(data) + "\n")

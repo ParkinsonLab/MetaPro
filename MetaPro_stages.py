@@ -78,7 +78,7 @@ class mp_stage:
 
         # Creates our command object, for creating shellscripts.
 
-        self.commands = mpcom.mt_pipe_commands(self.config_dict, self.dir_dict, self.file_dict)
+        self.commands = mpcom.mt_pipe_commands(self.config_dict, self.dir_dict, self.file_dict, self.marker_dict)
         
         #special contig-bypasser logic vars
         self.contigs_present = True  #for the contig/assembly bypasser
@@ -1016,7 +1016,7 @@ class mp_stage:
                 self.mp_util.run_subjob_with_mp_store(self.file_dict["out_rpkm_job"], command_list)
             
             if self.marker_control.check_marker("Out_repop"):
-                command_list = self.commands.create_output_unique_junk(self.marker_dict["Out_repop"])
+                command_list = self.commands.create_output_unique_junk()
                 self.mp_util.subdivide_and_launch(10, 50, int(os.cpu_count()), self.file_dict["out_repop_job"], command_list)
             
             if self.marker_control.check_marker("Out_per_read"):

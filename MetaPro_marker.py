@@ -130,3 +130,14 @@ class mpro_marker:
         self.marker_dict["Out_read_count"] = os.path.join(self.dir_dict["out"], "read_count")
         self.marker_dict["Out_taxa_groupby"] = os.path.join(self.dir_dict["out"], "taxa_groupby")
         self.marker_dict["Out_ec_heatmap"] = os.path.join(self.dir_dict["out"], "ec_heatmap")
+
+        self.marker_dict["Out_vec_repop_s"] = os.path.join(self.dir_dict["out"], "vec_repop_s")
+        self.marker_dict["Out_vec_repop_p1"] = os.path.join(self.dir_dict["out"], "vec_repop_p1")
+        self.marker_dict["Out_vec_repop_p2"] = os.path.join(self.dir_dict["out"], "vec_repop_p2")
+        
+
+        for item in self.config_dict["Host_IDs"]:
+            self.marker_dict["Out_" + item + "_repop_host_s"] = os.path.join(self.dir_dict["out"], item + "_repop_host_s")
+            self.marker_dict["Out_" + item + "_repop_host_p1"] = os.path.join(self.dir_dict["out"], item + "_repop_host_p1")
+            self.marker_dict["Out_" + item + "_repop_host_p2"] = os.path.join(self.dir_dict["out"], item + "_repop_host_p2")
+            
