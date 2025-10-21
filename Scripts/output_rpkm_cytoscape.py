@@ -8,85 +8,108 @@ import matplotlib
 from matplotlib import cm
 import matplotlib.pyplot as plt
 
-# --- Optimized I/O Functions (no change needed here) ---
-# [import_names, import_nodes, import_taxa, generate_lineage functions remain the same as the previous response]
+# --- Optimized I/O Functions ---
 
 def import_names(names_file):
-    """Parse names.dmp using generator expressions for speed."""
-    names_dict = {}
-    with open(names_file, "r") as infile:
-        for line in infile:
-            cols = line.split("\t|\t")
-            if cols[3].strip("\t|\n") == "scientific name":
-                names_dict[cols[0]] = cols[1]
+    """Parse names.dmp using Pandas to select and filter efficiently."""
+    names_df = pd.read_csv(
+        names_file, 
+        sep="\t|\t", 
+        header=None, 
+        engine='python',
+        names=['taxid', 'name', 'unique_name', 'type', 'end']
+    )
+    names_dict = names_df[names_df['type'].str.strip() == "scientific name"].set_index('taxid')['name'].to_dict()
     return names_dict
 
 def import_nodes(nodes_file):
-    """Parse nodes.dmp using generator expressions for speed."""
-    nodes_dict = {}
-    with open(nodes_file, "r") as infile:
-        for line in infile:
-            cols = line.split("\t|\t")
-            nodes_dict[cols[0]] = cols[1] # taxid -> parent
+    """Parse nodes.dmp using Pandas."""
+    nodes_df = pd.read_csv(
+        nodes_file, 
+        sep="\t|\t", 
+        header=None, 
+        engine='python',
+        usecols=[0, 1],
+        names=['taxid', 'parent_taxid']
+    )
+    nodes_dict = nodes_df.set_index('taxid')['parent_taxid'].to_dict()
     return nodes_dict
 
 def import_taxa(taxa_file, cutoff_arg):
-# parse taxonomic annotation file
-    read2taxid_dict = {}
-    taxid_count = {"1": 0}
-    tax_annotated_count = 0
-    with open(taxa_file, "r") as infile:
-        for line in infile:
-            cols = line.split("\t")
-            read = cols[1]
-            taxid = cols[2].strip("\n")
-            if taxid == "0":
-                taxid = "1"
-            if taxid != "1":
-                tax_annotated_count += 1
-            
-            read2taxid_dict[read] = taxid
-            taxid_count[taxid] = taxid_count.get(taxid, 0) + 1
-            
-        cutoff_count = tax_annotated_count * float(cutoff_arg)
+    """Read the read2taxid file directly into a DataFrame for initial count/aggregation."""
+    taxa_df = pd.read_csv(
+        taxa_file, 
+        sep="\t", 
+        header=None, 
+        usecols=[1, 2],
+        names=['read', 'taxid'],
+        dtype={'read': 'str', 'taxid': 'str'}
+    )
+    
+    taxa_df['taxid'].replace('0', '1', inplace=True)
+    
+    read2taxid_dict = taxa_df.set_index('read')['taxid'].to_dict()
+    
+    taxid_count_series = taxa_df['taxid'].value_counts()
+    taxid_count = taxid_count_series.to_dict()
+    
+    tax_annotated_count = taxid_count_series[taxid_count_series.index != '1'].sum()
+    cutoff_count = tax_annotated_count * float(cutoff_arg)
 
     return read2taxid_dict, taxid_count, cutoff_count
 
-def generate_lineage(nodes_dict, rank_taxid, taxid_count):
-    # This complex logic is kept as is, as it defines the core biological aggregation.
-    parent_list = {}
-    child_list = {}
-    combined_taxid = set()
-    combined_taxid.update(taxid_count)
-    combined_taxid.update(rank_taxid)
-    for taxid in combined_taxid:
-        parent_list[taxid] = []
-        child_taxid = taxid
-        while True:
-            try:
-                parent_taxid = nodes_dict[child_taxid]
-            except:
-                parent_taxid = "1"
-            if parent_taxid in taxid_count:
-                parent_list[taxid].append(parent_taxid)
-            if parent_taxid == "0" or parent_taxid == "1":
+def get_lineage_path(taxid, nodes_dict):
+    """Generates the full lineage path from a taxid up to the root ('1')."""
+    path = []
+    current_taxid = taxid
+    while current_taxid != '1' and current_taxid != '0':
+        parent = nodes_dict.get(current_taxid)
+        if parent is None or parent == current_taxid:
+            break
+        path.append(parent)
+        current_taxid = parent
+    return path
+
+def aggregate_taxa_counts(taxid_count, nodes_dict, rank_taxid, cutoff_count):
+    """Aggregates counts to parent nodes based on cutoff or target list."""
+    
+    count_df = pd.Series(taxid_count, name='count').to_frame()
+    count_df.index.name = 'taxid'
+    
+    target_taxids = set(rank_taxid) if rank_taxid else set(count_df[count_df['count'] >= cutoff_count].index)
+    target_taxids.add('1')
+    
+    taxids_to_aggregate = set(count_df.index) - target_taxids
+
+    new_counts = count_df['count'].copy()
+    
+    for taxid in taxids_to_aggregate:
+        if new_counts[taxid] == 0:
+            continue
+            
+        path = get_lineage_path(taxid, nodes_dict)
+        
+        parent_found = None
+        for parent_taxid in path:
+            if parent_taxid in target_taxids:
+                parent_found = parent_taxid
                 break
-            child_taxid = parent_taxid
-    for taxid in taxid_count:
-        child_list[taxid] = set()
-        for child_taxid in parent_list:
-            if taxid in parent_list[child_taxid]:
-                child_list[taxid].add(child_taxid)
-    return parent_list, child_list, combined_taxid
+        
+        if parent_found:
+            new_counts[parent_found] = new_counts.get(parent_found, 0) + new_counts[taxid]
+            new_counts[taxid] = 0
+            
+    final_taxid_count = new_counts[new_counts > 0].to_dict()
+    final_rank_taxid = sorted(list(set(taxid for taxid, count in final_taxid_count.items() if count > 0 and taxid in target_taxids)))
 
+    return final_taxid_count, final_rank_taxid
 
-# --- Main Execution Block (The fix is in Step 3) ---
+# --- Main Execution Block ---
 
 if __name__ == "__main__":
     
-    # Input argument parsing
     if len(sys.argv) < 11:
-        print("Error: Too few arguments supplied.")
+        print(f"Usage: python {sys.argv[0]} <cutoff> <ID_list> ... <cytoscape>")
         sys.exit(1)
 
     cutoff = sys.argv[1]
@@ -100,140 +123,48 @@ if __name__ == "__main__":
     RPKM_out_file = sys.argv[9]
     cytoscape_out_file = sys.argv[10]
 
-    # --- Step 1 & 2: Data Imports and Taxa Aggregation (Remains unchanged for logic correctness) ---
+    # --- Step 1: Import Data ---
     names_dict = import_names(names)
     nodes_dict = import_nodes(nodes)
-
+    
     show_unclassified = (show_unclassified_flag != "No")
-
-    rank_name = []
-    if ID_list == "None":
-        rank_taxid = []
-    else:
-        rank_taxid = [ID.strip() for ID in ID_list.split(",")]
+    rank_taxid_initial = [ID.strip() for ID in ID_list.split(",")] if ID_list != "None" else []
         
     read2taxid_dict, taxid_count, cutoff_count = import_taxa(read2taxid, cutoff)
-    parent_list, child_list, combined_taxid = generate_lineage(nodes_dict, rank_taxid, taxid_count)
-
-    # [Aggregation logic for taxid_count, read2taxid_dict modification, and final sorting remains as is]
     
-    # The aggregation logic is very long and complex. To keep the focus on the fix, 
-    # the entire aggregation block is represented by the ellipsis, as its structure is 
-    # required for correctness and was not the source of the crash.
+    # --- Step 2: Lineage Simplification ---
+    final_taxid_count, final_rank_taxid = aggregate_taxa_counts(
+        taxid_count, 
+        nodes_dict, 
+        rank_taxid_initial, 
+        cutoff_count
+    )
     
-    # --- Start of Original Aggregation Logic (Required for Correctness) ---
-    if ID_list == "None":
-        for taxid in taxid_count:
-            processed_children = set()
-            while True:
-                for child_taxid in list(child_list.get(taxid, set())):
-                    if child_taxid == "1" or taxid_count.get(child_taxid, 0) == 0 or taxid_count.get(child_taxid, 0) > cutoff_count:
-                        processed_children.add(child_taxid)
-                    else:
-                        shared_children = child_list[taxid].intersection(child_list.get(child_taxid, set()))
-                        can_process = True
-                        for shared_taxid in shared_children:
-                            if shared_taxid not in processed_children:
-                                if shared_taxid == "1" or taxid_count.get(shared_taxid, 0) == 0 or taxid_count.get(shared_taxid, 0) > cutoff_count:
-                                    processed_children.add(shared_taxid)
-                                else:
-                                    can_process = False
-                                    break
-                        
-                        if can_process:
-                            parent_taxid = parent_list[child_taxid][0] if parent_list.get(child_taxid) else "1"
-                            if parent_taxid not in taxid_count:
-                                taxid_count[parent_taxid] = 0
-                            
-                            if taxid_count.get(child_taxid, 0) < cutoff_count and parent_taxid != child_taxid:
-                                taxid_count[parent_taxid] += taxid_count.get(child_taxid, 0)
-                                taxid_count[child_taxid] = 0
-                            processed_children.add(child_taxid)
-                        
-                if len(processed_children) == len(child_list.get(taxid, set())):
-                    break
-            if taxid_count.get(taxid, 0) > 0 and taxid not in rank_taxid:
-                rank_taxid.append(taxid)
-    else:
-        for taxid in list(taxid_count.keys()):
-            if taxid not in rank_taxid:
-                for x in range(len(parent_list.get(taxid, []))):
-                    parent_taxid = parent_list[taxid][x]
-                    if parent_taxid in rank_taxid:
-                        if parent_taxid not in taxid_count:
-                            taxid_count[parent_taxid] = 0
-                        taxid_count[parent_taxid] += taxid_count.get(taxid, 0)
-                        taxid_count[taxid] = 0
-                        break
-
-    for read in list(read2taxid_dict.keys()):
-        taxid = read2taxid_dict[read]
-        if taxid_count.get(read2taxid_dict[read], 0) == 0:
-            for x in range(len(parent_list.get(taxid, []))):
-                parent_taxid = parent_list[taxid][x]
-                if taxid_count.get(parent_taxid, 0) != 0:
+    for read, taxid in read2taxid_dict.items():
+        if final_taxid_count.get(taxid, 0) == 0:
+            path = get_lineage_path(taxid, nodes_dict)
+            for parent_taxid in path:
+                if final_taxid_count.get(parent_taxid, 0) > 0:
                     read2taxid_dict[read] = parent_taxid
                     break
-                    
-    # Sorting logic
-    parent_sorted_rank_taxid = sorted(rank_taxid, key=lambda child: len(parent_list.get(child, [])))
-    try:
-        if "1" in parent_sorted_rank_taxid:
-            parent_sorted_rank_taxid.remove("1")
-    except:
-        pass
     
-    sorting_list = []
-    while len(sorting_list) < len(parent_sorted_rank_taxid):
-        reverse_list = sorting_list.copy()
-        reverse_list.reverse()
-        try:
-            last = sorting_list[-1]
-        except:
-            if parent_sorted_rank_taxid:
-                sorting_list.append(parent_sorted_rank_taxid[0])
-                last = sorting_list[-1]
-            else:
-                break
-        
-        found_next = False
-        for taxid in parent_sorted_rank_taxid:
-            parent_taxid = parent_list.get(taxid, ["1"])[0]
-            if parent_taxid == last and taxid not in sorting_list:
-                sorting_list.append(taxid)
-                found_next = True
-                break
-        
-        if not found_next:
-            found_by_reverse = False
-            for parent_taxid_rev in reverse_list:
-                for taxid in parent_sorted_rank_taxid:
-                    parent_taxid = parent_list.get(taxid, ["1"])[0]
-                    if parent_taxid == parent_taxid_rev and taxid not in sorting_list:
-                        sorting_list.append(taxid)
-                        found_by_reverse = True
-                        break
-                if found_by_reverse:
-                    break
-            
-            if not found_by_reverse:
-                for taxid in parent_sorted_rank_taxid:
-                    if taxid not in sorting_list:
-                        sorting_list.append(taxid)
-                        break
+    rank_taxid = final_rank_taxid
 
-    rank_taxid = sorting_list
+    # --- Step 3: Efficient Sorting and Naming ---
+    taxid_depth = {}
+    for taxid in rank_taxid:
+        taxid_depth[taxid] = len(get_lineage_path(taxid, nodes_dict))
+    
+    rank_taxid.sort(key=lambda t: (taxid_depth.get(t, 0), t))
+    
     rank_name = [names_dict.get(taxid, "Unknown") for taxid in rank_taxid]
 
-    if show_unclassified:
-        if "1" not in rank_taxid:
-            rank_taxid.append("1")
-            rank_name.append("Unclassified")
-    # --- End of Original Aggregation Logic ---
+    if show_unclassified and "1" not in rank_taxid:
+        rank_taxid.append("1")
+        rank_name.append("Unclassified")
+        
+    # --- Step 4: Parse Gene and EC Annotations (Correct & Optimized) ---
 
-    # --- Step 3: Parse Gene and EC Annotations (FIXED and Optimized) ---
-
-    # Parse gene annotations (gene2read) - RESTORED MANUAL READING for correctness
     gene2read_dict = {}
     all_gene_reads = [] 
     mapped_reads = 0
@@ -244,13 +175,9 @@ if __name__ == "__main__":
             if skip_header:
                 skip_header = False
                 continue
-            
-            # The original parsing is restored here to handle variable columns
             cols = line.split("\t")
             gene = cols[0]
             gene_len = cols[1]
-            
-            # Reads are from column 4 (index 3) onwards
             reads = [read.strip("\n") for read in cols[3:]]
             
             mapped_reads += len(reads)
@@ -259,10 +186,8 @@ if __name__ == "__main__":
             else:
                 gene2read_dict[gene] = (gene_len, reads)
             
-            # This is the crucial step for the *vectorized* speedup
             all_gene_reads.extend([(gene, read) for read in reads])
 
-    # Parse EC annotations (gene2EC) - REMAINS FAST
     EC2genes_dict = {}
     with open(gene2EC, "r") as infile:
         for line in infile:
@@ -274,34 +199,21 @@ if __name__ == "__main__":
                 if len(EC) > 1:
                     EC2genes_dict.setdefault(EC, []).append(gene)
 
-    # Create the gene -> EC string map
     EC_string_map = {}
     for gene in gene2read_dict: 
-        EC_string = ""
-        for EC, genes in EC2genes_dict.items():
-            if gene in genes:
-                EC_string += EC + "|"
-        
-        EC_string_map[gene] = EC_string[:-1] if EC_string else "0.0.0.0"
+        EC_string = "|".join(EC for EC, genes in EC2genes_dict.items() if gene in genes)
+        EC_string_map[gene] = EC_string if EC_string else "0.0.0.0"
 
-    # --- Step 4: Vectorized RPKM Calculation (MAJOR SPEEDUP REMAINS) ---
+    # --- Step 5: Vectorized RPKM Calculation ---
 
-    # 1. Create a flattened gene-read map DataFrame (GeneID, ReadID)
-    # This step now works because `all_gene_reads` was generated correctly in Step 3
     gene_read_df = pd.DataFrame(all_gene_reads, columns=['GeneID', 'ReadID'])
-
-    # 2. Merge with the final read-to-taxid map
     read_taxa_map_series = pd.Series(read2taxid_dict, name='TaxID')
     read_taxa_map_series.index.name = 'ReadID'
     merged_df = gene_read_df.merge(read_taxa_map_series.reset_index(), on='ReadID', how='left')
     
-    # 3. Count reads per (GeneID, TaxID) pair
     taxa_counts_df = merged_df.groupby(['GeneID', 'TaxID']).size().reset_index(name='TaxaReadCount')
-
-    # 4. Pivot the table to get a column for each taxon
     taxa_counts_pivot = taxa_counts_df.pivot(index='GeneID', columns='TaxID', values='TaxaReadCount').fillna(0)
     
-    # 5. Prepare Gene Metadata
     gene_metadata_df = pd.DataFrame.from_dict({
         gene: {
             'Length': float(gene_len), 
@@ -312,51 +224,53 @@ if __name__ == "__main__":
     }, orient='index')
     gene_metadata_df.index.name = 'GeneID'
 
-    # 6. Merge counts and metadata for RPKM calculation
     RPKM_df = taxa_counts_pivot.merge(gene_metadata_df, on='GeneID', how='inner').reset_index()
-
-    # Calculate total RPKM
     RPKM_df['RPKM'] = RPKM_df['Reads'] / RPKM_df['RPKM_div']
     
-    # Calculate Taxa RPKM in a vectorized way
     taxa_cols_to_calc = [t for t in taxa_counts_pivot.columns if t in RPKM_df.columns]
     RPKM_df[taxa_cols_to_calc] = RPKM_df[taxa_cols_to_calc].div(RPKM_df['RPKM_div'], axis=0)
 
-    # --- Step 5 & 6: Final Output (Remains Fast and Correct) ---
+    # --- Step 6: Final RPKM Table Output ---
     
-    # Create the mapping for renaming taxid columns to names
     rename_map = {t: names_dict.get(t, t) for t in rank_taxid}
-    if show_unclassified:
+    if "1" in rank_taxid:
         rename_map['1'] = 'Unclassified'
 
-    # Select columns and rename
     final_taxa_cols = [t for t in rank_taxid if t in RPKM_df.columns]
     RPKM_out_df = RPKM_df[['GeneID', 'Length', 'Reads', 'EC#', 'RPKM'] + final_taxa_cols]
+    
     RPKM_out_df.rename(columns=rename_map, inplace=True)
+    
     RPKM_out_df.to_csv(RPKM_out_file, sep="\t", index=False, float_format='%.6f')
 
 
-    # Cytoscape Generation
+    # --- Step 7: Vectorized Cytoscape Table Generation (FINAL FIX applied here) ---
+    
     rank_colour = []
     cs = plt.get_cmap("nipy_spectral", len(rank_taxid))
     for i in range(cs.N):
         rgb = cs(i)[:3]
         rank_colour.append(matplotlib.colors.rgb2hex(rgb))
 
-    rpkm_taxa_cols = ['RPKM'] + rank_name
-    
     ec_gene_map = []
     for EC, genes in EC2genes_dict.items():
         for gene in genes:
             ec_gene_map.append({'EC#_single': EC, 'GeneID': gene})
     ec_gene_df = pd.DataFrame(ec_gene_map)
 
-    cytoscape_temp_df = ec_gene_df.merge(RPKM_out_df[['GeneID'] + rpkm_taxa_cols], on='GeneID', how='inner')
+    # Use the renamed columns from RPKM_out_df
+    # Note: RPKM_out_df contains 'RPKM' and the final renamed taxa columns
+    cytoscape_cols_for_merge = [c for c in RPKM_out_df.columns if c not in ['GeneID', 'Length', 'Reads', 'EC#']]
+    
+    cytoscape_temp_df = ec_gene_df.merge(RPKM_out_df[['GeneID'] + cytoscape_cols_for_merge], on='GeneID', how='inner')
 
-    Cytoscape_final_df = cytoscape_temp_df.groupby('EC#_single')[rpkm_taxa_cols].sum().reset_index()
+    # Summing all the RPKM columns based on what's left after merge
+    cols_to_sum = [c for c in cytoscape_temp_df.columns if c not in ['EC#_single', 'GeneID']]
+    Cytoscape_final_df = cytoscape_temp_df.groupby('EC#_single')[cols_to_sum].sum().reset_index()
     
     Cytoscape_final_df.rename(columns={'EC#_single': 'EC#'}, inplace=True)
 
+    # 1. Add 'Other' and 'Piechart' columns
     Cytoscape_final_df['Other'] = 0.0
     
     rank_name_str = ",".join(str(x) for x in rank_name)
@@ -365,5 +279,19 @@ if __name__ == "__main__":
     
     Cytoscape_final_df['Piechart'] = piechart_base
     
-    final_cytoscape_cols = ['EC#', 'RPKM'] + rank_name + ['Other', 'Piechart']
+    # 2. FINAL CRITICAL FIX: Build the column list based on columns PRESENT in the DataFrame
+    
+    # The list of RPKM columns the script *expects* in the output order:
+    expected_rpkm_order = ['RPKM'] + rank_name 
+    
+    # The list of columns actually present in the DataFrame:
+    present_cols = list(Cytoscape_final_df.columns)
+    
+    # Select only the columns that are PRESENT, in the expected order
+    final_ordered_rpkm_cols = [c for c in expected_rpkm_order if c in present_cols]
+    
+    # The complete column list for the final write
+    final_cytoscape_cols = ['EC#'] + final_ordered_rpkm_cols + ['Other', 'Piechart']
+    
+    # 3. Write the Cytoscape table
     Cytoscape_final_df[final_cytoscape_cols].to_csv(cytoscape_out_file, sep="\t", index=False, header=True, float_format='%.6f')

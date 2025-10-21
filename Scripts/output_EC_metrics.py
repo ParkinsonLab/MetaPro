@@ -103,7 +103,15 @@ if __name__ == "__main__":
     #this takes the rpkm df and transforms it to get our heatmap, with help from cleaned_enzyme_df
     fixed_rpkm_df = rpkm_df
     fixed_rpkm_df["EC#"] = "ec:" + fixed_rpkm_df["EC#"]
-    fixed_rpkm_df.drop(columns = ["Length", "RPKM", "Reads"], inplace = True)  #removes the cols we don't need.  Also removes "Other"
+    
+    # Drop GeneID and other metadata columns.
+    columns_to_drop = ["Length", "RPKM", "Reads", "GeneID"]
+    fixed_rpkm_df.drop(columns = [col for col in columns_to_drop if col in fixed_rpkm_df.columns], inplace = True)
+    
+    # Convert all remaining columns (sample/count columns) to numeric type, coercing errors to NaN.
+    cols_to_convert = [col for col in fixed_rpkm_df.columns if col not in ['EC#']]
+    fixed_rpkm_df[cols_to_convert] = fixed_rpkm_df[cols_to_convert].apply(pd.to_numeric, errors='coerce')
+    
     count = 0
     selected_heatmap_df = None
     for item in cleaned_enzyme_df.columns.values:
@@ -115,6 +123,10 @@ if __name__ == "__main__":
             selected_heatmap_df = pd.concat([selected_heatmap_df, new_df])
         count+= 1
     
+    # FIX: Drop 'EC#' column before aggregation, as it is an object dtype that causes the TypeError.
+    if 'EC#' in selected_heatmap_df.columns:
+        selected_heatmap_df.drop(columns=['EC#'], inplace=True)
+        
     selected_heatmap_df = selected_heatmap_df.groupby(["Superpathway"]).sum()           #collapse the rows, grouped by the superpath`
     plt.subplots(figsize = (50,20))                                                     #set the image size 
     
@@ -144,9 +156,24 @@ if __name__ == "__main__":
     heatmap.set_yticklabels(test_y, rotation = 0, ha = "right", fontsize = font_size)
     heatmap.figure.savefig(output_dir + "enzyme_superpathway_heatmap.jpg")              #export it
     selected_heatmap_df.to_csv(output_dir + "enzyme_superpathway_heatmap.csv", mode="w")
+    
     #redraw heatmap without unclassifieds
-    if("Unclassified" in fixed_rpkm_df.columns):
+    if("Unclassified" in rpkm_df.columns): # Note: use rpkm_df here to check for unclassified before any drops
+        
+        # Re-initialize fixed_rpkm_df to rpkm_df state as it was modified in place above
+        fixed_rpkm_df = rpkm_df.copy() # Use .copy() for a fresh start to avoid side effects
+        fixed_rpkm_df["EC#"] = "ec:" + fixed_rpkm_df["EC#"]
+        
+        # Drop the "Unclassified" column for the 'no_unclassified' version
         fixed_rpkm_df.drop(columns = ["Unclassified"], inplace = True)
+        
+        # Drop GeneID and other metadata columns.
+        columns_to_drop_no_unclassified = ["Length", "RPKM", "Reads", "GeneID"]
+        fixed_rpkm_df.drop(columns = [col for col in columns_to_drop_no_unclassified if col in fixed_rpkm_df.columns], inplace = True)
+        
+        # Convert all remaining columns (sample/count columns) to numeric type.
+        cols_to_convert = [col for col in fixed_rpkm_df.columns if col not in ['EC#']]
+        fixed_rpkm_df[cols_to_convert] = fixed_rpkm_df[cols_to_convert].apply(pd.to_numeric, errors='coerce')
         
         count = 0
         selected_heatmap_df = None
@@ -159,6 +186,10 @@ if __name__ == "__main__":
                 selected_heatmap_df = pd.concat([selected_heatmap_df, new_df])
             count+= 1
         
+        # FIX: Drop 'EC#' column before aggregation, as it is an object dtype that causes the TypeError.
+        if 'EC#' in selected_heatmap_df.columns:
+            selected_heatmap_df.drop(columns=['EC#'], inplace=True)
+            
         selected_heatmap_df = selected_heatmap_df.groupby(["Superpathway"]).sum()           #collapse the rows, grouped by the superpath`
         plt.subplots(figsize = (50,20))                                                     #set the image size    
         heatmap = sns.heatmap(selected_heatmap_df, cmap="rocket_r")                           #maek the heatmap.  Use a colour palette
@@ -175,12 +206,12 @@ if __name__ == "__main__":
         
         #heatmap.set_ylabel("Chicken", font_size = 50)
         font_size = 20
-        plt.ylabel("Superpathway", fontsize = font_size, fontname = "Times")
+        # FIX: Removing fontname="Times" to eliminate the 'findfont' warnings.
+        plt.ylabel("Superpathway", fontsize = font_size) 
             
-        heatmap.set_xticklabels(test_x, rotation = 40, ha = "right", fontsize = font_size, fontname = "Times")     #make the labels pretty
-        heatmap.set_yticklabels(test_y, rotation = 0, ha = "right", fontsize = font_size, fontname = "Times")
+        # FIX: Removing fontname="Times" to eliminate the 'findfont' warnings.
+        heatmap.set_xticklabels(test_x, rotation = 40, ha = "right", fontsize = font_size)     #make the labels pretty
+        # FIX: Removing fontname="Times" to eliminate the 'findfont' warnings.
+        heatmap.set_yticklabels(test_y, rotation = 0, ha = "right", fontsize = font_size)
         heatmap.figure.savefig(output_dir + "enzyme_superpathway_heatmap_no_unclassified.jpg")              #export it
-        selected_heatmap_df.to_csv(output_dir + "enzyme_superpathway_heatmap_no_unclassified.csv", mode="w")    
-    
-    
-    
+        selected_heatmap_df.to_csv(output_dir + "enzyme_superpathway_heatmap_no_unclassified.csv", mode="w")
