@@ -212,7 +212,11 @@ class mpro_file_handler:
         self.file_dict["contigs_p2"] = os.path.join(self.dir_dict["contigs_export"], "p2.fastq")
         self.file_dict["contigs_s"] = os.path.join(self.dir_dict["contigs_export"], "s.fastq")
         
-        self.file_dict["ga_ps_k2_job"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_k2.sh")
+        self.file_dict["ga_ps_k2_c_job"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_k2_c.sh")
+        self.file_dict["ga_ps_k2_s_job"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_k2_s.sh")
+        self.file_dict["ga_ps_k2_p1_job"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_k2_p1.sh")
+        self.file_dict["ga_ps_k2_p2_job"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_k2+p2.sh")
+        
         self.file_dict["ga_ps_make_job"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_make.sh")
         self.file_dict["ga_lib_status"] = os.path.join(self.dir_dict["GA_ps_export"], "lib_status.txt")
         self.file_dict["ga_lib_reject"] = os.path.join(self.dir_dict["GA_ps_export"], "lib_reject.txt")

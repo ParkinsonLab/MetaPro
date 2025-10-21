@@ -567,9 +567,9 @@ class mp_stage:
             #kraken2 on reads
             sections = ["s"]
             if self.read_mode == "paired":
-                sections.extend(["p"])
+                sections.append(["p"])
             if(self.contigs_present):
-                sections.extend(["c"])    
+                sections.append(["c"])    
             
             print("GA pre-scan:", sections)
             for section in sections:
@@ -584,7 +584,7 @@ class mp_stage:
                         self.config_dict["TA_mem_threshold"], 
                         self.config_dict["TA_job_limit"], 
                         self.config_dict["TA_job_delay"], 
-                        self.file_dict["ga_ps_k2_job"],
+                        self.file_dict["ga_ps_k2_" + section + "_job"],
                         
                         command_list
                     )        
