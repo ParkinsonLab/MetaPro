@@ -594,7 +594,7 @@ class mp_stage:
             #-------------------------------------------------------
             #use the kraken2 results to make the DB
             
-            
+            self.mp_util.wait_for_mp_store()
             #glue all k2 reports together
             k2_reports = ["ga_ps_k2_report_s", "ga_ps_k2_report_c", "ga_ps_k2_report_p"]
             with open(self.file_dict["ga_ps_k2_report_all"], "wb") as out_file:
