@@ -867,7 +867,7 @@ class mt_pipe_commands:
             
             return [kraken2_s + " && " + make_marker]
             
-        elif(operating_mode == "p"):
+        elif(operating_mode == "p1"):
             kraken2_p = ">&2 echo Kraken2 on paired | " 
             kraken2_p += self.config_dict["kraken2"] + " "
             kraken2_p += "--db " + self.config_dict["kraken2_db"] +  " "

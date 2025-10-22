@@ -567,7 +567,7 @@ class mp_stage:
             #kraken2 on reads
             sections = ["s"]
             if self.read_mode == "paired":
-                sections.append("p")
+                sections.append("p1")
             if(self.contigs_present):
                 sections.append("c")    
             
