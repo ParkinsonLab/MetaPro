@@ -567,9 +567,9 @@ class mp_stage:
             #kraken2 on reads
             sections = ["s"]
             if self.read_mode == "paired":
-                sections.append(["p"])
+                sections.append("p")
             if(self.contigs_present):
-                sections.append(["c"])    
+                sections.append("c")    
             
             print("GA pre-scan:", sections)
             for section in sections:
