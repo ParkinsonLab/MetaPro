@@ -96,7 +96,7 @@ class mpro_marker:
         self.marker_dict["GA_ps"] = os.path.join(self.dir_dict["GA_ps"], "GA_ps")
         self.marker_dict["ga_ps_s"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_s_marker")
         self.marker_dict["ga_ps_c"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_c_marker")
-        self.marker_dict["ga_ps_p"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_p_marker")
+        self.marker_dict["ga_ps_p1"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_p_marker")
         self.marker_dict["ga_ps_make"] = os.path.join(self.dir_dict["GA_ps"], "ga_ps_assemble")
         self.marker_dict["GA_BT2"] = os.path.join(self.dir_dict["GA_BT2"], "GA_BT2")
         self.marker_dict["GA_BT2_PP"] = os.path.join(self.dir_dict["GA_BT2"], "GA_BT2_PP")
