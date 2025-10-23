@@ -6,10 +6,11 @@ def parse_fastq_streaming(filepath):
     """
     Generator that yields FASTQ records one at a time without loading entire file into memory.
     Returns (id, full_record) tuples.
-    Fixed version that handles incomplete records at file end.
+    Fixed version that handles incomplete records at file end and preserves FASTQ formatting.
     """
     with open(filepath, 'r') as f:
         while True:
+            # Read all 4 lines (includes trailing '\n')
             header = f.readline()
             if not header:
                 break
@@ -18,34 +19,38 @@ def parse_fastq_streaming(filepath):
             plus = f.readline()
             qual = f.readline()
             
-            # Check if we have a complete record (all 4 lines present and non-empty)
+            # Check if we have a complete record
             if not seq or not plus or not qual:
-                print(f"Warning: Incomplete FASTQ record at end of file {filepath}")
-                print(f"Header: {repr(header)}")
-                print(f"Seq: {repr(seq)}")
-                print(f"Plus: {repr(plus)}")
-                print(f"Qual: {repr(qual)}")
+                print("Warning: Incomplete FASTQ record at end of file %s" % filepath)
+                print("Header: %r" % header)
+                print("Seq: %r" % seq)
+                print("Plus: %r" % plus)
+                print("Qual: %r" % qual)
                 break
             
-            header = header.strip()
-            seq = seq.strip()
-            plus = plus.strip()
-            qual = qual.strip()
+            # --- Create stripped versions for validation and ID extraction ONLY ---
+            stripped_header = header.strip()
+            stripped_seq = seq.strip()
+            stripped_plus = plus.strip()
+            stripped_qual = qual.strip()
             
             # Additional validation
-            if not header.startswith('@'):
-                print(f"Warning: Invalid header line: {header}")
+            if not stripped_header.startswith('@'):
+                print("Warning: Invalid header line: %s" % stripped_header)
                 continue
-            if not plus.startswith('+'):
-                print(f"Warning: Invalid plus line: {plus}")
+            if not stripped_plus.startswith('+'):
+                print("Warning: Invalid plus line: %s" % stripped_plus)
                 continue
-            if len(seq) != len(qual):
-                print(f"Warning: Sequence and quality lengths don't match: {len(seq)} vs {len(qual)}")
+            if len(stripped_seq) != len(stripped_qual):
+                print("Warning: Sequence and quality lengths don't match: %d vs %d" % (len(stripped_seq), len(stripped_qual)))
                 continue
             
             # Extract ID (everything before first space)
-            read_id = header.split()[0] if ' ' in header else header
-            full_record = '\n'.join([header, seq, plus, qual]) + '\n'
+            read_id = stripped_header.split()[0] if ' ' in stripped_header else stripped_header
+            
+            # --- Reconstruct the full record using the original, un-stripped lines ---
+            # The original lines already contain the necessary '\n' for correct FASTQ format
+            full_record = header + seq + plus + qual
             
             yield (read_id, full_record)
 
@@ -55,16 +60,16 @@ def get_read_ids(filepath):
     Memory efficient - only stores IDs, not full records.
     """
     ids = set()
-    print("Scanning IDs from", filepath)
+    print("Scanning IDs from %s" % filepath)
     
     count = 0
     for read_id, _ in parse_fastq_streaming(filepath):
         ids.add(read_id)
         count += 1
         if count % 1000000 == 0:  # Progress indicator for large files
-            print("  Processed", count, "reads...")
+            print("  Processed %d reads..." % count)
     
-    print("Found", len(ids), "unique IDs in", filepath)
+    print("Found %d unique IDs in %s" % (len(ids), filepath))
     return ids
 
 def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_o, orphans_path_o):
@@ -73,20 +78,23 @@ def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_
     Uses two passes to minimize memory usage with large files.
     """
     
-    # Handle existing orphans first
+    # Handle existing orphans first (FIXED: streams content to be memory efficient)
     if os.path.exists(orphans_path_i) and os.path.getsize(orphans_path_i) > 0:
-        print(dt.today(), "Found existing orphans file with", os.path.getsize(orphans_path_i), "bytes")
+        size = os.path.getsize(orphans_path_i)
+        print("%s Found existing orphans file with %d bytes" % (dt.today(), size))
+        # Stream content instead of reading all to memory
         with open(orphans_path_i, 'r') as infile, open(orphans_path_o, 'w') as outfile:
-            outfile.write(infile.read())
-        print("Copied existing orphans from", orphans_path_i, "to", orphans_path_o)
+            for line in infile:
+                outfile.write(line)
+        print("Copied existing orphans from %s to %s" % (orphans_path_i, orphans_path_o))
     else:
         if os.path.exists(orphans_path_i):
-            print(dt.today(), "empty singletons file exists")
+            print("%s empty singletons file exists" % dt.today())
         else:
-            print(orphans_path_i, "doesn't exist, starting with empty orphans file")
+            print("%s doesn't exist, starting with empty orphans file" % orphans_path_i)
         open(orphans_path_o, 'w').close()
     
-    print("Processing", p0_path_i, "and", p1_path_i)
+    print("Processing %s and %s" % (p0_path_i, p1_path_i))
     
     # Pass 1: Get all read IDs from both files (memory efficient)
     print("Pass 1: Collecting read IDs...")
@@ -97,10 +105,10 @@ def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_
     
     # Find intersection - reads present in both files
     common_ids = ids_0.intersection(ids_1)
-    print("Found", len(common_ids), "matching pairs")
-    print("File 0 orphans:", len(ids_0) - len(common_ids))
-    print("File 1 orphans:", len(ids_1) - len(common_ids))
-    print("ID collection time:", dt.now() - start_time)
+    print("Found %d matching pairs" % len(common_ids))
+    print("File 0 orphans: %d" % (len(ids_0) - len(common_ids)))
+    print("File 1 orphans: %d" % (len(ids_1) - len(common_ids)))
+    print("ID collection time: %s" % (dt.now() - start_time))
     
     # Pass 2: Stream through files again and write output based on ID sets
     print("Pass 2: Writing output files...")
@@ -121,7 +129,7 @@ def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_
                 orphan_count_0 += 1
             
             if (matched_count_0 + orphan_count_0) % 1000000 == 0:
-                print("  Processed", matched_count_0 + orphan_count_0, "reads from file 0...")
+                print("  Processed %d reads from file 0..." % (matched_count_0 + orphan_count_0))
     
     # Process second file
     matched_count_1 = 0
@@ -138,16 +146,16 @@ def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_
                 orphan_count_1 += 1
             
             if (matched_count_1 + orphan_count_1) % 1000000 == 0:
-                print("  Processed", matched_count_1 + orphan_count_1, "reads from file 1...")
+                print("  Processed %d reads from file 1..." % (matched_count_1 + orphan_count_1))
     
-    print("File processing time:", dt.now() - start_time)
-    print("Saved", matched_count_0, "matching pairs to", p0_path_o)
-    print("Saved", matched_count_1, "matching pairs to", p1_path_o)
-    print("Appended", orphan_count_0 + orphan_count_1, "new orphans to", orphans_path_o)
+    print("File processing time: %s" % (dt.now() - start_time))
+    print("Saved %d matching pairs to %s" % (matched_count_0, p0_path_o))
+    print("Saved %d matching pairs to %s" % (matched_count_1, p1_path_o))
+    print("Appended %d new orphans to %s" % (orphan_count_0 + orphan_count_1, orphans_path_o))
     
     # Show final orphan file size
     if os.path.exists(orphans_path_o):
-        print("Total orphans file size:", os.path.getsize(orphans_path_o), "bytes")
+        print("Total orphans file size: %d bytes" % os.path.getsize(orphans_path_o))
     
     # Clean up memory
     del ids_0, ids_1, common_ids
@@ -167,15 +175,15 @@ if __name__ == "__main__":
     orphans_path_o = os.path.abspath(sys.argv[6])
     
     print("Input files:")
-    print("  p0 in:", p0_path_i)
-    print("  p1 in:", p1_path_i)
-    print("  orphans in:", orphans_path_i)
+    print("  p0 in: %s" % p0_path_i)
+    print("  p1 in: %s" % p1_path_i)
+    print("  orphans in: %s" % orphans_path_i)
     print("Output files:")
-    print("  p0 out:", p0_path_o)
-    print("  p1 out:", p1_path_o)
-    print("  orphans out:", orphans_path_o)
+    print("  p0 out: %s" % p0_path_o)
+    print("  p1 out: %s" % p1_path_o)
+    print("  orphans out: %s" % orphans_path_o)
     
     start_time = dt.now()
     filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_o, orphans_path_o)
     end_time = dt.now()
-    print("Total processing time:", end_time - start_time)
+    print("Total processing time: %s" % (end_time - start_time))
