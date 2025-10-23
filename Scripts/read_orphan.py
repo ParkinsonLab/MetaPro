@@ -1,16 +1,18 @@
 import os
 import sys
 from datetime import datetime as dt
+# No need for 'io' as we are using raw binary mode
 
 def parse_fastq_streaming(filepath):
     """
     Generator that yields FASTQ records one at a time without loading entire file into memory.
     Returns (id, full_record) tuples.
-    Fixed version that handles incomplete records at file end and preserves FASTQ formatting.
+    **Uses binary mode for robust, platform-independent FASTQ formatting.**
     """
-    with open(filepath, 'r') as f:
+    # Open in binary read mode ('rb')
+    with open(filepath, 'rb') as f:
         while True:
-            # Read all 4 lines (includes trailing '\n')
+            # Read all 4 lines (includes trailing b'\n')
             header = f.readline()
             if not header:
                 break
@@ -21,20 +23,22 @@ def parse_fastq_streaming(filepath):
             
             # Check if we have a complete record
             if not seq or not plus or not qual:
+                # Use decode('ascii') for printing/logging
                 print("Warning: Incomplete FASTQ record at end of file %s" % filepath)
-                print("Header: %r" % header)
-                print("Seq: %r" % seq)
-                print("Plus: %r" % plus)
-                print("Qual: %r" % qual)
+                print("Header: %r" % header.decode('ascii'))
+                print("Seq: %r" % seq.decode('ascii'))
+                print("Plus: %r" % plus.decode('ascii'))
+                print("Qual: %r" % qual.decode('ascii'))
                 break
             
-            # --- Create stripped versions for validation and ID extraction ONLY ---
-            stripped_header = header.strip()
-            stripped_seq = seq.strip()
-            stripped_plus = plus.strip()
-            stripped_qual = qual.strip()
+            # --- Decode and strip for validation and ID extraction ONLY ---
+            # Use rstrip() to handle both b'\r\n' and b'\n' and then decode
+            stripped_header = header.rstrip().decode('ascii')
+            stripped_seq = seq.rstrip().decode('ascii')
+            stripped_plus = plus.rstrip().decode('ascii')
+            stripped_qual = qual.rstrip().decode('ascii')
             
-            # Additional validation
+            # Additional validation (using stripped lines)
             if not stripped_header.startswith('@'):
                 print("Warning: Invalid header line: %s" % stripped_header)
                 continue
@@ -45,11 +49,11 @@ def parse_fastq_streaming(filepath):
                 print("Warning: Sequence and quality lengths don't match: %d vs %d" % (len(stripped_seq), len(stripped_qual)))
                 continue
             
-            # Extract ID (everything before first space)
+            # Extract ID
             read_id = stripped_header.split()[0] if ' ' in stripped_header else stripped_header
             
-            # --- Reconstruct the full record using the original, un-stripped lines ---
-            # The original lines already contain the necessary '\n' for correct FASTQ format
+            # --- Reconstruct the full record using the original byte strings ---
+            # The original lines already contain the necessary byte newlines
             full_record = header + seq + plus + qual
             
             yield (read_id, full_record)
@@ -66,7 +70,7 @@ def get_read_ids(filepath):
     for read_id, _ in parse_fastq_streaming(filepath):
         ids.add(read_id)
         count += 1
-        if count % 1000000 == 0:  # Progress indicator for large files
+        if count % 1000000 == 0:
             print("  Processed %d reads..." % count)
     
     print("Found %d unique IDs in %s" % (len(ids), filepath))
@@ -78,25 +82,33 @@ def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_
     Uses two passes to minimize memory usage with large files.
     """
     
-    # Handle existing orphans first (FIXED: streams content to be memory efficient)
+    # Handle existing orphans first (Streaming and using binary mode)
     if os.path.exists(orphans_path_i) and os.path.getsize(orphans_path_i) > 0:
         size = os.path.getsize(orphans_path_i)
         print("%s Found existing orphans file with %d bytes" % (dt.today(), size))
-        # Stream content instead of reading all to memory
-        with open(orphans_path_i, 'r') as infile, open(orphans_path_o, 'w') as outfile:
-            for line in infile:
-                outfile.write(line)
+        
+        # Use binary mode ('rb', 'wb') for robust byte-by-byte copying
+        with open(orphans_path_i, 'rb') as infile, \
+             open(orphans_path_o, 'wb') as outfile:
+            # Read/write chunk-by-chunk for large files (more robust than line-by-line in binary)
+            while True:
+                chunk = infile.read(4096)
+                if not chunk:
+                    break
+                outfile.write(chunk)
+                
         print("Copied existing orphans from %s to %s" % (orphans_path_i, orphans_path_o))
     else:
         if os.path.exists(orphans_path_i):
             print("%s empty singletons file exists" % dt.today())
         else:
             print("%s doesn't exist, starting with empty orphans file" % orphans_path_i)
-        open(orphans_path_o, 'w').close()
+        # Ensure the output file is created (using 'wb')
+        open(orphans_path_o, 'wb').close() 
     
     print("Processing %s and %s" % (p0_path_i, p1_path_i))
     
-    # Pass 1: Get all read IDs from both files (memory efficient)
+    # Pass 1: Get all read IDs from both files
     print("Pass 1: Collecting read IDs...")
     start_time = dt.now()
     
@@ -119,7 +131,9 @@ def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_
     orphan_count_0 = 0
     
     print("Processing file 0...")
-    with open(p0_path_o, 'w') as matched_out, open(orphans_path_o, 'a') as orphan_out:
+    # Use binary write ('wb') and binary append ('ab') for output
+    with open(p0_path_o, 'wb') as matched_out, \
+         open(orphans_path_o, 'ab') as orphan_out:
         for read_id, full_record in parse_fastq_streaming(p0_path_i):
             if read_id in common_ids:
                 matched_out.write(full_record)
@@ -136,7 +150,9 @@ def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_
     orphan_count_1 = 0
     
     print("Processing file 1...")
-    with open(p1_path_o, 'w') as matched_out, open(orphans_path_o, 'a') as orphan_out:
+    # Use binary write ('wb') and binary append ('ab') for output
+    with open(p1_path_o, 'wb') as matched_out, \
+         open(orphans_path_o, 'ab') as orphan_out:
         for read_id, full_record in parse_fastq_streaming(p1_path_i):
             if read_id in common_ids:
                 matched_out.write(full_record)
