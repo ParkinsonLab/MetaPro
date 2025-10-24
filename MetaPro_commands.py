@@ -198,15 +198,15 @@ class mt_pipe_commands:
                 tag_remove_pair_1 + " & " +
                 tag_remove_pair_2,
                 tag_remove_singletons,
-                ">&2 echo delaying 60s | sleep 60", 
+                ">&2 echo delaying for writes | sleep " + str(self.config_dict["qf_delay"]), 
                 vsearch_merge,
                 cat_glue,
                 vsearch_filter_0 + " & " +
                 vsearch_filter_1 + " & " +
                 vsearch_filter_2,
-                ">&2 echo delaying 60s | sleep 60", 
+                ">&2 echo delaying for writes | sleep " + str(self.config_dict["qf_delay"]), 
                 orphan_read_filter,
-                ">&2 echo delaying 60s | sleep 60", 
+                ">&2 echo delaying for writes | sleep " + str(self.config_dict["qf_delay"]), 
                 cdhit_singletons,
                 cdhit_paired + " && "  + make_marker
             ]

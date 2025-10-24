@@ -401,6 +401,7 @@ class mpro_config:
         self.config_dict["TA_job_delay"]               = self.value_assignment("float", config, "Settings", "TA_job_delay", TA_job_delay_default)
         self.config_dict["repop_job_delay"]            = self.value_assignment("float", config, "Settings", "repop_job_delay", repop_job_delay_default)
         self.config_dict["EC_job_delay"]               = self.value_assignment("float", config, "Settings", "EC_job_delay", EC_job_delay_default)
+        self.config_dict["qf_delay"] = self.value_assignment("int", config, "Settings", "qf_delay", 300)
 
         #------------------------------------------------------------------------------------------------
         self.config_dict["keep_all"]                   = self.value_assignment("str", config, "Settings", "keep_all", keep_all_default)
