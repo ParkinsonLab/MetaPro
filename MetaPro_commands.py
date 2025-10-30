@@ -1324,7 +1324,7 @@ class mt_pipe_commands:
         read_counts += self.file_dict["repop_p1"] + " "
         read_counts += self.file_dict["repop_p2"] + " "
 
-        read_counts += self.file_dict["gene_map_full"] + " "
+        read_counts += self.file_dict["ga_fm_gene_map"] + " "
         read_counts += self.file_dict["ec_final_report"] + " "
         read_counts += self.file_dict["out_read_count"]
 
