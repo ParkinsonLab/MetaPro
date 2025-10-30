@@ -66,21 +66,28 @@ def annotated_count(map_file):
 
 # Function 3: Optimized EC Count
 # Uses a single set operation and a list comprehension for efficiency.
+#changed for deepec format
 def ec_count(map_file):
+    print("looking at:", map_file)
     ecs = set()
     if not os.path.exists(map_file):
+        print("can't find:", map_file)
         return 0
 
     try:
         with open(map_file, "r") as infile:
-            for line in infile:
+            for raw_line in infile:
+                line = raw_line.strip("\n")
                 line_split = line.split("\t")
-                if len(line_split) < 3: # Skip malformed lines
+                #print("looking at:", line_split)
+                if len(line_split) < 2: # Skip malformed lines
                     continue
                 
                 # Split the EC portion and update the set in one go
-                ec_portion = line_split[2].strip() # Use .strip() without args
-                ecs.update(ec_portion.split("|"))
+                ec_portion = line_split[1].strip() # Use .strip() without args
+                #print("ec portion:", ec_portion)
+                #print("ec portion split:", ec_portion.split(";"))
+                ecs.update(ec_portion.split(";"))
         
         # Remove empty strings if any result from splitting
         ecs.discard("")
@@ -125,6 +132,9 @@ if __name__ == "__main__":
     gene_to_read_map = sys.argv[18]
     ec_map = sys.argv[19]
     output_file = sys.argv[20]
+
+    for i in range (1,20):
+        print("arg:", sys.argv[i])
 
     # Check data integrity
     check_paired_data(qc_p1, qc_p2, "quality")
