@@ -65,15 +65,19 @@ def merge_map(file_dir, master_dict, context):
     return master_dict
 
 
-def transform_map(master_dict):
+def transform_map(master_dict, contig_dict):
     """Transform read-based map to gene-based map"""
     new_map_dict = defaultdict(lambda: {"reads": set(), "gene_length": ""})
     
     for read_id, read_data in master_dict.items():
         gene_name = read_data["gene"]
         gene_length = read_data["gene_length"]
-        
-        new_map_dict[gene_name]["reads"].add(read_id)
+        if(read_id in contig_dict):
+            for contig_read in contig_dict[read_id]:
+                new_map_dict[gene_name]["reads"].add(contig_read)
+        else:
+            new_map_dict[gene_name]["reads"].add(read_id)
+
         new_map_dict[gene_name]["gene_length"] = gene_length
     
     return dict(new_map_dict)
@@ -93,15 +97,25 @@ def export_map(master_dict, export_path):
             
             out_file.write(out_line + "\n")
 
+def import_contig_map(contig_map):
+    contig_dict = dict()
+    with open(contig_map, "r") as contigs_in:
+        for raw_line in contigs_in:
+            line = raw_line.strip("\n")
+            line_split = line.split("\t")
+            contig = line_split[0]
+            reads = set(line_split[2:])
+            contig_dict[contig] = reads
+    return contig_dict
+
+
+
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python script.py <bt2_dir> <dmd_dir> <export_dir>")
-        sys.exit(1)
-        
     bt2_dir = sys.argv[1]
     dmd_dir = sys.argv[2]
-    final_map_out = sys.argv[3]
+    contig_map_in = sys.argv[3]
+    final_map_out = sys.argv[4]
 
     file_list = os.listdir(bt2_dir)
     print("bt2 files:", file_list)
@@ -113,6 +127,7 @@ if __name__ == "__main__":
     }
     
     print(dt.today(), "start map merge")
+    contig_dict = import_contig_map(contig_map_in)
     
     command_args = ["p", "s", "c"]
     read_dict = {}
@@ -125,7 +140,7 @@ if __name__ == "__main__":
     print("number of reads:", len(read_dict))
     
     print(dt.today(), "start transform")
-    gene_dict = transform_map(read_dict)
+    gene_dict = transform_map(read_dict, contig_dict)
     print("number of genes:", len(gene_dict))
     
     print(dt.today(), "start export")

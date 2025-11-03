@@ -755,7 +755,7 @@ class mp_stage:
                 p_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_pp_p_" + lib_tag)
                 marker_path_list.append(p_marker)
                 command_list = self.commands.create_GA_BT2_pp_command(
-                    lib_entry, self.file_dict["gene_map_p"], self.file_dict["genes_p"], self.file_dict["bt2_prot_p"],
+                    lib_entry, self.file_dict["ga_bt2_gene_map_p"], self.file_dict["ga_bt2_genes_p"], self.file_dict["ga_bt2_prot_p"],
                     self.file_dict["contigs_p1"], self.file_dict["contigs_p2"], self.file_dict["ga_bt2_p_sam"],
                     self.file_dict["ga_rem_p1"], self.file_dict["ga_rem_p2"], "p", p_marker
                       )
@@ -769,7 +769,7 @@ class mp_stage:
                 s_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_pp_s_" + lib_tag)
                 marker_path_list.append(s_marker)
                 command_list = self.commands.create_GA_BT2_pp_command(
-                    lib_entry, self.file_dict["gene_map_s"], self.file_dict["genes_s"], self.file_dict["bt2_prot_s"],
+                    lib_entry, self.file_dict["ga_bt2_gene_map_s"], self.file_dict["ga_bt2_genes_s"], self.file_dict["ga_bt2_prot_s"],
                     self.file_dict["contigs_s"], "None", self.file_dict["ga_bt2_s_sam"],
                     self.file_dict["ga_rem_s"], "None", "s", s_marker
                 )
@@ -782,7 +782,7 @@ class mp_stage:
                 c_marker = os.path.join(self.dir_dict["GA_BT2_mkrs"], "GA_BT2_pp_c_" + lib_tag)
                 marker_path_list.append(c_marker)
                 command_list = self.commands.create_GA_BT2_pp_command(
-                    lib_entry, self.file_dict["gene_map_c"], self.file_dict["genes_c"], self.file_dict["bt2_prot_c"],
+                    lib_entry, self.file_dict["ga_bt2_gene_map_c"], self.file_dict["ga_bt2_genes_c"], self.file_dict["ga_bt2_prot_c"],
                     self.file_dict["contigs_out_fa"], "None", self.file_dict["ga_bt2_c_sam"],
                     self.file_dict["ga_rem_c"], "None", "c", c_marker
                 )
