@@ -1035,6 +1035,7 @@ class mt_pipe_commands:
         final_merge_maps += self.config_dict["GA_final_merge_maps"] + " "
         final_merge_maps += self.dir_dict["GA_BT2_export_maps"] + " "
         final_merge_maps += self.dir_dict["GA_DMD_export_maps"] + " "
+        final_merge_maps += self.file_dict["contigs_map"] + " "
         final_merge_maps += self.file_dict["ga_fm_gene_map"]
         
         
