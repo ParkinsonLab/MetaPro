@@ -964,11 +964,12 @@ class mp_stage:
             self.mp_util.subdivide_and_launch(
                 self.config_dict["GA_final_merge_job_delay"], self.config_dict["GA_final_merge_mem_threshold"], 
                 self.config_dict["GA_final_merge_job_limit"], self.file_dict["ga_fm_job"], command_list)
+            
+            self.mp_util.wait_for_mp_store()
             if self.marker_control.check_marker_list(marker_path_list):
                 self.marker_control.place_marker("GA_FM")
 
-            self.mp_util.wait_for_mp_store()
-     
+            
         self.GA_final_merge_end = time.time()
         print("GA final merge:", '%1.1f' % (self.GA_final_merge_end - self.GA_final_merge_start), "s")
         #self.mp_util.clean_or_compress(self.ga_final_merge_path, self.config_dict["keep_all"], self.keep_GA_final)
