@@ -1267,7 +1267,22 @@ class mt_pipe_commands:
         
         make_marker = "touch " + marker
         return [copy_taxa + " && " + make_marker]
-        
+    
+    def create_output_copy_leftovers_command(self, marker):
+        copy_rem_s = ">&2 echo " + str(dt.today()) + " copying leftover reads | "
+        copy_rem_s += "cp" + " " 
+        copy_rem_s = self.file_dict["ga_dmd_rem_s"] + " " + self.file_dict["out_rem_s"]
+
+        copy_rem_c = "cp" + " "
+        copy_rem_c += self.file_dict["ga_dmd_rem_c"] + " " + self.file_dict["out_rem_c"]
+
+        copy_rem_p1 = "cp" + " "
+        copy_rem_p1 += self.file_dict["ga_dmd_rem_p1"] + " " + self.file_dict["out_rem_p1"]
+
+        copy_rem_p2 = "cp" + " "
+        copy_rem_p2 += self.file_dict["ga_dmd_rem_p2"] + " " + self.file_dict["out_rem_p2"]
+
+        return [copy_rem_s, copy_rem_c, copy_rem_p1, copy_rem_p2 + " && touch " + marker]
         
     def create_output_contig_stats_command(self, marker):
         

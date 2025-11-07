@@ -1027,6 +1027,11 @@ class mp_stage:
             if self.marker_control.check_marker("Out_taxa_report"):
                 command_list = self.commands.create_output_copy_taxa_command(self.marker_dict["Out_taxa_report"])
                 self.mp_util.run_subjob_with_mp_store(self.file_dict["out_taxa_job"], command_list)
+
+            if self.marker_control.check_marker("Out_copy_rem"):
+                command_list = self.commands.create_output_copy_leftovers_command(self.marker_control["Out_copy_rem"])
+                self.mp_util.run_subjob_with_mp_store(self.file_dict["out_copy_rem_job"], command_list)
+
             
             if self.marker_control.check_marker("Out_contig_stats"):
                 command_list = self.commands.create_output_contig_stats_command(self.marker_dict["Out_contig_stats"])

@@ -253,11 +253,6 @@ class mpro_file_handler:
         self.file_dict["ga_bt2_prot_p"] = os.path.join(self.dir_dict["GA_BT2_export_prot"], "prot_p.faa")
         self.file_dict["genes_full"] = os.path.join(self.dir_dict["GA_BT2_export_prot"], "genes_annot.fasta")
 
-        self.file_dict["ga_rem_prot_p1"] = os.path.join(self.dir_dict["GA_BT2_export"], "p1_rem_prot.fasta")
-        self.file_dict["ga_rem_prot_p2"] = os.path.join(self.dir_dict["GA_BT2_export"], "p2_rem_prot.fasta")
-        self.file_dict["ga_rem_prot_c"] = os.path.join(self.dir_dict["GA_BT2_export"], "c_rem_prot.fasta")
-        self.file_dict["ga_rem_prot_s"] = os.path.join(self.dir_dict["GA_BT2_export"], "s_rem_prot.fasta")
-
         self.file_dict["ga_rem_p1"] = os.path.join(self.dir_dict["GA_BT2_export"], "p1.fasta")
         self.file_dict["ga_rem_p2"] = os.path.join(self.dir_dict["GA_BT2_export"], "p2.fasta")
         self.file_dict["ga_rem_c"] = os.path.join(self.dir_dict["GA_BT2_export"], "c.fasta")
@@ -287,10 +282,10 @@ class mpro_file_handler:
         self.file_dict["ga_dmd_prot_s"] = os.path.join(self.dir_dict["GA_DMD_export_prot"], "prot_s.faa")
 
 
-        self.file_dict["ga_dmd_rem_p1"] = os.path.join(self.dir_dict["GA_DMD_export"], "p1_rem_prot.fasta")
-        self.file_dict["ga_dmd_rem_p2"] = os.path.join(self.dir_dict["GA_DMD_export"], "p2_rem_prot.fasta")
-        self.file_dict["ga_dmd_rem_s"] = os.path.join(self.dir_dict["GA_DMD_export"], "s_rem_prot.fasta")
-        self.file_dict["ga_dmd_rem_c"] = os.path.join(self.dir_dict["GA_DMD_export"], "c_rem_prot.fasta")
+        self.file_dict["ga_dmd_rem_p1"] = os.path.join(self.dir_dict["GA_DMD_export"], "p1_rem.fasta")
+        self.file_dict["ga_dmd_rem_p2"] = os.path.join(self.dir_dict["GA_DMD_export"], "p2_rem.fasta")
+        self.file_dict["ga_dmd_rem_s"] = os.path.join(self.dir_dict["GA_DMD_export"], "s_rem.fasta")
+        self.file_dict["ga_dmd_rem_c"] = os.path.join(self.dir_dict["GA_DMD_export"], "c_rem.fasta")
 
         self.file_dict["ga_dmd_pp_p1_job"] = os.path.join(self.dir_dict["GA_DMD_jobs"], "dmd_pp_p1.sh")
         self.file_dict["ga_dmd_pp_p2_job"] = os.path.join(self.dir_dict["GA_DMD_jobs"], "dmd_pp_p2.sh")
@@ -334,7 +329,12 @@ class mpro_file_handler:
         self.file_dict["out_contig_stats"] = os.path.join(self.dir_dict["out_export"], "contig_stats.txt")
         self.file_dict["out_read_count"] = os.path.join(self.dir_dict["out_export"], "read_counts.tsv")
         self.file_dict["out_taxa_groupby"] = os.path.join(self.dir_dict["out_export"], "taxa_summary.tsv")
-
+        self.file_dict["out_rem_s"] = os.path.join(self.dir_dict["out_export"], "unannotated_s.fasta")
+        self.file_dict["out_rem_c"] = os.path.join(self.dir_dict["out_export"], "unannotated_c.fasta")
+        self.file_dict["out_rem_p1"] = os.path.join(self.dir_dict["out_export"], "unannotated_p1.fasta")
+        self.file_dict["out_rem_p2"] = os.path.join(self.dir_dict["out_export"], "unannotated_p2.fasta")
+        
+        self.file_dict["out_copy_rem_job"] = os.path.join(self.dir_dict["out_jobs"], "copy_rem_reads.sh")
         self.file_dict["out_rpkm_job"] = os.path.join(self.dir_dict["out_jobs"], "rpkm.sh")
         self.file_dict["out_repop_job"] = os.path.join(self.dir_dict["out_jobs"], "repop.sh")
         self.file_dict["out_per_read_job"] = os.path.join(self.dir_dict["out_jobs"], "per_read.sh")
