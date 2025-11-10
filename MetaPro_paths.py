@@ -61,10 +61,11 @@ class mpro_config:
         if((filetype == "str") or (filetype == "path")):
             value = str(value)
         elif(filetype == "list"):
-            
+            print("Host IDs raw input:", value)
             value = value.strip(" ")
             value = value.strip("\"")
             list_str = value.split(",")
+            print("Host IDs cleaned input:", list_str)
             value_list = list()
             for item in list_str:
                 print("host id entry type:", type(item))
