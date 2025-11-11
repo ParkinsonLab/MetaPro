@@ -62,8 +62,10 @@ class mpro_config:
             value = str(value)
         elif(filetype == "list"):
             print("Host IDs raw input:", value)
-            value = value.strip(" ")
-            value = value.strip("\"")
+            value = value.replace(" ", "")
+            #print("Value:", value)
+            value = value.replace("\"", "")
+            #print("value:", value)
             list_str = value.split(",")
             print("Host IDs cleaned input:", list_str)
             value_list = list()
@@ -71,7 +73,8 @@ class mpro_config:
                 print("host id entry type:", type(item))
                 value_list.append(item)
                 print("added to list:", value_list)
-                return value_list
+                #time.sleep(1)
+            return value_list
         
         elif(filetype == "int"):
             value = int(value)
