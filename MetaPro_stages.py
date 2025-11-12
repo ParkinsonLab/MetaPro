@@ -170,6 +170,7 @@ class mp_stage:
             
 
     def mp_host_filter(self):
+        host_count = 0
         if not self.config_dict["no_host"]:
             print("host id list:", self.config_dict["Host_IDs"])
             if("none" in self.config_dict["Host_IDs"]):
@@ -186,7 +187,7 @@ class mp_stage:
 
                             print(dt.today(), "running:", host_id + "_host")
                             self.time_control.measure_time("host", "start")
-                            host_count = 0
+                            
                             if(host_id == "none"):
                                 print(dt.today(), "no host specified. skipping")
                                 break
@@ -197,12 +198,13 @@ class mp_stage:
                             self.mp_util.launch_stage_simple(host_job, command_list, self.config_dict["keep_all"], self.config_dict["keep_host"])
                             self.time_control.measure_time("host", "end")
                             self.marker_control.place_marker(host_id + "_host")
+                            host_count += 1
                         else:
                             print(dt.today(), "skipping:", host_id + "_host")
                     else:
                         print(dt.today(), "no hosts to filter")
                         break
-            
+                
                 #self.debug_stop_check(self.label_dict[host_id + "_host"])
 
                 
@@ -1029,7 +1031,7 @@ class mp_stage:
                 self.mp_util.run_subjob_with_mp_store(self.file_dict["out_taxa_job"], command_list)
 
             if self.marker_control.check_marker("Out_copy_rem"):
-                command_list = self.commands.create_output_copy_leftovers_command(self.marker_control["Out_copy_rem"])
+                command_list = self.commands.create_output_copy_leftovers_command(self.marker_dict["Out_copy_rem"])
                 self.mp_util.run_subjob_with_mp_store(self.file_dict["out_copy_rem_job"], command_list)
 
             

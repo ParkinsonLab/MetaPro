@@ -215,8 +215,9 @@ class mt_pipe_commands:
 
     def create_host_filter_command(self, host_id_list, host_count, marker):
         #may 09, 2025: removing python scripts. samtools can just do it all.
+
         cur_host = host_id_list[host_count]
-        
+        print(dt.today(), "COMMANDS| working on host:", cur_host)
         
         host_seq_1 = self.file_dict[cur_host + "_host_p1"]
         host_seq_2 = self.file_dict[cur_host + "_host_p2"]
@@ -1271,7 +1272,7 @@ class mt_pipe_commands:
     def create_output_copy_leftovers_command(self, marker):
         copy_rem_s = ">&2 echo " + str(dt.today()) + " copying leftover reads | "
         copy_rem_s += "cp" + " " 
-        copy_rem_s = self.file_dict["ga_dmd_rem_s"] + " " + self.file_dict["out_rem_s"]
+        copy_rem_s += self.file_dict["ga_dmd_rem_s"] + " " + self.file_dict["out_rem_s"]
 
         copy_rem_c = "cp" + " "
         copy_rem_c += self.file_dict["ga_dmd_rem_c"] + " " + self.file_dict["out_rem_c"]

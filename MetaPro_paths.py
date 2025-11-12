@@ -74,7 +74,7 @@ class mpro_config:
                 value_list.append(item)
                 print("added to list:", value_list)
                 #time.sleep(1)
-            return value_list
+            return sorted(value_list)
         
         elif(filetype == "int"):
             value = int(value)
