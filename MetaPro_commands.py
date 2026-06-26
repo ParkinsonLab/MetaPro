@@ -67,27 +67,24 @@ class mt_pipe_commands:
         sort_pair_2 += self.file_dict["raw_p2"] + " "
         sort_pair_2 += self.file_dict["qf_sort_p2"]
 
-        adapter_removal_line = ">&2 echo Removing adapters | "
-        adapter_removal_line += self.config_dict["AdapterRemoval"]
+
+        trimgalore_trim = ">&2 echo Removing adapters | "
+        trimgalore_trim += self.config_dict["TrimGalore"]
         if self.read_mode == "single":
-            adapter_removal_line += " --file1 " + self.file_dict["raw_s"]
+            trimgalore_trim += " " + self.file_dict["raw_s"]
         elif self.read_mode == "paired":
-            adapter_removal_line += " --file1 " + self.file_dict["qf_sort_p1"]
-            adapter_removal_line += " --file2 " + self.file_dict["qf_sort_p2"]
-        adapter_removal_line += " --qualitybase " + q_enc
-        if(self.q_enc == "33"):
-            adapter_removal_line += " --qualitymax 75"
-        adapter_removal_line += " --threads " + self.threads_str
-        adapter_removal_line += " --minlength " + self.config_dict["adapterremoval_minlength"]
-        adapter_removal_line += " --basename " + self.dir_dict["qf_adapt"]
-        adapter_removal_line += "_AdapterRemoval"
-        adapter_removal_line += " --trimqualities "
-        if self.read_mode == "single":
-            adapter_removal_line += " --output1 " + self.file_dict["qf_adapt_s"]
-        elif self.read_mode == "paired":
-            adapter_removal_line += " --output1 " + self.file_dict["qf_adapt_p1"]
-            adapter_removal_line += " --output2 " + self.file_dict["qf_adapt_p2"]
-            adapter_removal_line += " --singleton " + self.file_dict["qf_adapt_s"]
+            trimgalore_trim += " --paired"
+            trimgalore_trim += " " + self.file_dict["qf_sort_p1"]
+            trimgalore_trim += " " + self.file_dict["qf_sort_p2"]
+        trimgalore_trim += " --quality " + self.config_dict["adapterremoval_minlength"]
+        trimgalore_trim += " --cores " + self.threads_str
+        trimgalore_trim += " --length " + self.config_dict["adapterremoval_minlength"]
+        trimgalore_trim += " --output_dir " + self.dir_dict["qf_adapt"]
+        trimgalore_trim += " --polyg"
+        trimgalore_trim += " --polya"
+        trimgalore_trim += " --trim_n"
+        trimgalore_trim += " --dont_gzip"
+
 
         #Sort-reads introduces tags at the read-level of the 
         tag_remove_pair_1 = ">&2 echo Remove tags pair 1 | "
@@ -185,7 +182,7 @@ class mt_pipe_commands:
         
         if self.read_mode == "single":
             COMMANDS_qual = [
-                adapter_removal_line,
+                trimgalore_trim,
                 vsearch_filter_0,
                 cdhit_singletons, 
                 make_marker
@@ -194,7 +191,7 @@ class mt_pipe_commands:
             COMMANDS_qual = [
                 sort_pair_1 + " & " +
                 sort_pair_2,
-                adapter_removal_line,
+                trimgalore_trim,
                 tag_remove_pair_1 + " & " +
                 tag_remove_pair_2,
                 tag_remove_singletons,

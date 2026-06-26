@@ -506,6 +506,7 @@ class mpro_config:
         self.config_dict["mgm1"]   = self.value_assignment("path", config, "Tools", "MetaGeneMark1", "gmhmmp")
         self.config_dict["kraken2"]        = self.value_assignment("path", config, "Tools", "kraken2", "kraken2")
         self.config_dict["DeepEC"]      = self.value_assignment("path", config, "Tools", "DeepEC", "run_deepectransformer.py")
+        self.config_dict["trimgalore"] = self.value_assignment("path", config, "Tools", "trimgalore", "trim_galore")
 
         #--------------------------------------------
         # Python scripts

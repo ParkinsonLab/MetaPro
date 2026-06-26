@@ -1,5 +1,5 @@
 # Use the pre-built tool stash image as the base
-FROM parkinsonlab/mpro_stash:v1.0.7
+FROM parkinsonlab/mpro_stash:v1.0.8
 
 # Download and install the DeepProZyme wrapper
 RUN wget https://compsysbio.org/metapro_hosting/deepec_wrapper.py -O /usr/local/bin/run_deepectransformer.py \
