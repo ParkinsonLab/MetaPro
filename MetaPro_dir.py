@@ -208,7 +208,7 @@ class mpro_dir:
         self.dir_dict["qf"] = os.path.join(self.out_dir, self.label_dict["qf"])
         self.dir_dict["qf_data"] = os.path.join(self.dir_dict["qf"], "data")
         self.dir_dict["qf_sort"] = os.path.join(self.dir_dict["qf_data"], "0_ID_sort")
-        self.dir_dict["qf_adapt"] = os.path.join(self.dir_dict["qf_data"], "1_adapters")
+        self.dir_dict["qf_adapt"] = os.path.join(self.dir_dict["qf_data"], "1_trimgalore")
         self.dir_dict["qf_tags"] = os.path.join(self.dir_dict["qf_data"], "2_tags")
         self.dir_dict["qf_merge"] = os.path.join(self.dir_dict["qf_data"], "3_merge")
         self.dir_dict["qf_hq"] = os.path.join(self.dir_dict["qf_data"], "4_hq")
