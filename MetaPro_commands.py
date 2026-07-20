@@ -69,21 +69,32 @@ class mt_pipe_commands:
 
 
         trimgalore_trim = ">&2 echo Removing adapters | "
-        trimgalore_trim += self.config_dict["TrimGalore"]
+        trimgalore_trim += self.config_dict["trimgalore"]
         if self.read_mode == "single":
             trimgalore_trim += " " + self.file_dict["raw_s"]
         elif self.read_mode == "paired":
             trimgalore_trim += " --paired"
             trimgalore_trim += " " + self.file_dict["qf_sort_p1"]
             trimgalore_trim += " " + self.file_dict["qf_sort_p2"]
+            trimgalore_trim += " --retain_unpaired"
         trimgalore_trim += " --quality " + self.config_dict["adapterremoval_minlength"]
         trimgalore_trim += " --cores " + self.threads_str
         trimgalore_trim += " --length " + self.config_dict["adapterremoval_minlength"]
         trimgalore_trim += " --output_dir " + self.dir_dict["qf_adapt"]
-        trimgalore_trim += " --polyg"
+        trimgalore_trim += " --poly-g"
         trimgalore_trim += " --polya"
         trimgalore_trim += " --trim_n"
         trimgalore_trim += " --dont_gzip"
+
+        if self.read_mode == "paired":
+            # WARNING: filenames below assume TrimGalore's documented naming
+            # convention (INPUT_unpaired_1.fq / INPUT_unpaired_2.fq, stem taken
+            # from the input file minus .fastq/.fq/.gz) holds for this v2 Rust
+            # build exactly as it does for v0.6.x. Not independently confirmed
+            # against a real run of --retain_unpaired on this pipeline yet.
+            trim_unpaired_1 = os.path.join(self.dir_dict["qf_adapt"], os.path.splitext(os.path.basename(self.file_dict["qf_sort_p1"]))[0] + "_unpaired_1.fq")
+            trim_unpaired_2 = os.path.join(self.dir_dict["qf_adapt"], os.path.splitext(os.path.basename(self.file_dict["qf_sort_p2"]))[0] + "_unpaired_2.fq")
+            trimgalore_trim += " && cat " + trim_unpaired_1 + " " + trim_unpaired_2 + " > " + self.file_dict["qf_adapt_s"]
 
 
         #Sort-reads introduces tags at the read-level of the 
@@ -183,6 +194,7 @@ class mt_pipe_commands:
         if self.read_mode == "single":
             COMMANDS_qual = [
                 trimgalore_trim,
+                tag_remove_singletons,
                 vsearch_filter_0,
                 cdhit_singletons, 
                 make_marker
@@ -393,13 +405,13 @@ class mt_pipe_commands:
         bt2_vr_tut_s += "-S " + self.file_dict["vec_s_sam"]
 
         samtools_no_vec_s = ">&2 echo samtools vector oprhans pt 1 | "
-        samtools_no_vec_s += self.config_dict["samtools"] + " view -f 4 "
+        samtools_no_vec_s += self.config_dict["samtools"] + " view -h -f 4 "
         samtools_no_vec_s += self.file_dict["vec_s_sam"] + " | "
         samtools_no_vec_s += self.config_dict["samtools"] + " fastq - > "
         samtools_no_vec_s += self.file_dict["no_vec_s"] + " "
         
         samtools_vec_s = ">&2 echo samtools vector oprhans pt 1 | "
-        samtools_vec_s += self.config_dict["samtools"] + " view -F 4 "
+        samtools_vec_s += self.config_dict["samtools"] + " view -h -F 4 "
         samtools_vec_s += self.file_dict["vec_s_sam"] + " | "
         samtools_vec_s += self.config_dict["samtools"] + " fastq - > "
         samtools_vec_s += self.file_dict["vec_s"] + " "
@@ -442,7 +454,7 @@ class mt_pipe_commands:
         bt2_vr_filter_paired += self.file_dict["vec_p1"] + " "
         bt2_vr_filter_paired += self.file_dict["vec_p2"]
 
-        make_marker = "touch && " + marker_file
+        make_marker = "touch " + marker_file
 
         if(self.tutorial_keyword == "vectors" or self.tutorial_keyword == "vector"):
             if self.read_mode == "single":
@@ -603,7 +615,7 @@ class mt_pipe_commands:
         repop_singletons += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"] + " "
         #the reference data to be drawn from 
         if self.read_mode == "single":
-            repop_s += self.file_dict["qf_s_hq"] + " "
+            repop_singletons += self.file_dict["qf_hq_s"] + " "
         elif self.read_mode == "paired":
             repop_singletons += self.file_dict["qf_o_s"] + " "
         repop_singletons += self.file_dict["rRNA_mRNA_s_fq"] + " "  # in -> rRNA filtration output
@@ -621,7 +633,7 @@ class mt_pipe_commands:
         repop_singletons_rRNA += self.config_dict["Python"] + " " + self.config_dict["duplicate_repopulate"] + " "
         if self.read_mode == "single":
             #repop_singletons_rRNA += os.path.join(singleton_path, "singletons_hq.fastq") + " "
-            repop_singletons_rRNA += self.file_dict["qf_s_hq"] + " "
+            repop_singletons_rRNA += self.file_dict["qf_hq_s"] + " "
         elif self.read_mode == "paired":
             repop_singletons_rRNA += self.file_dict["qf_o_s"] + " "
         repop_singletons_rRNA += self.file_dict["rRNA_other_s_fq"] + " "  # in -> rRNA filtration output
@@ -1347,6 +1359,24 @@ class mt_pipe_commands:
         return [read_counts + " && " + make_marker]
         
         
+
+    def create_accounting_command(self, stage_name, entries):
+        # Builds a subprocess call that appends read-count rows for `stage_name`
+        # to the cumulative accounting log (self.file_dict["read_accounting_log"]).
+        # entries: list of (role, label, filepath) tuples, role is "input" or "output".
+        # No marker is used here -- by design this call re-runs every time its
+        # owning stage method executes, including on resumed pipeline runs, so
+        # the log can accumulate duplicate rows for a stage across multiple runs.
+        accounting_call = ">&2 echo " + str(dt.today()) + " logging read counts for " + stage_name + " | "
+        accounting_call += self.config_dict["Python"] + " "
+        accounting_call += self.config_dict["read_accounting"] + " "
+        accounting_call += stage_name + " "
+        accounting_call += self.file_dict["read_accounting_log"]
+        for role, label, filepath in entries:
+            accounting_call += " " + role + " " + label + " " + filepath
+
+        return [accounting_call]
+
     def create_output_taxa_groupby_command(self, marker):
 
         taxa_groupby = ">&2 echo making Taxa summary | " 
@@ -1360,5 +1390,3 @@ class mt_pipe_commands:
         make_marker = "touch " + marker
 
         return [taxa_groupby + " && " + make_marker]
-
-

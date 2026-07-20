@@ -536,6 +536,7 @@ class mpro_config:
         self.config_dict["RPKM"]                       = self.value_assignment("path", config, "code", "output_rpkm", os.path.join(script_path, "output_rpkm_cytoscape.py"))
         self.config_dict["format_RPKM"]                = self.value_assignment("path", config, "code", "output_reformat", os.path.join(script_path, "output_reformat_rpkm_table.py"))
         self.config_dict["read_count"]                 = self.value_assignment("path", config, "code", "output_read_count", os.path.join(script_path, "output_read_counts_v3.py"))
+        self.config_dict["read_accounting"]             = self.value_assignment("path", config, "code", "read_accounting", os.path.join(script_path, "output_read_accounting.py"))
         self.config_dict["read_quality_metrics"]       = self.value_assignment("path", config, "code", "output_qual", os.path.join(script_path, "output_read_quality_metrics.py"))
         self.config_dict["contig_stats"]               = self.value_assignment("path", config, "code", "output_contig_stats", os.path.join(script_path, "output_contig_stats.py"))
         self.config_dict["ec_heatmap"]                 = self.value_assignment("path", config, "code", "output_heatmap", os.path.join(script_path, "output_EC_metrics.py"))

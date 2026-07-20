@@ -167,6 +167,132 @@ class mp_stage:
             self.debug_stop_check(self.label_dict["qf"])
         else:
             print(dt.today(), "skipping: QF")
+
+        # log read counts for every QF sub-step, every run (resume included).
+        # These mirror the file-to-file hops inside create_quality_control_command.
+        # That command chain has already run (or was already complete on a prior
+        # run) by this point, so every intermediate file below already exists on
+        # disk -- no need to hook into the middle of the shell script itself.
+        if self.read_mode == "paired":
+            qf_acct_steps = [
+                ("qf_sort", [
+                    ("input",  "raw_p1", self.file_dict["raw_p1"]),
+                    ("input",  "raw_p2", self.file_dict["raw_p2"]),
+                    ("output", "sorted_p1", self.file_dict["qf_sort_p1"]),
+                    ("output", "sorted_p2", self.file_dict["qf_sort_p2"]),
+                ]),
+                ("qf_trim", [
+                    ("input",  "sorted_p1", self.file_dict["qf_sort_p1"]),
+                    ("input",  "sorted_p2", self.file_dict["qf_sort_p2"]),
+                    ("output", "trimmed_p1", self.file_dict["qf_adapt_p1"]),
+                    ("output", "trimmed_p2", self.file_dict["qf_adapt_p2"]),
+                    ("output", "trimmed_s",  self.file_dict["qf_adapt_s"]),
+                    # NOTE: "unaccounted" here is a genuine, fully-expected
+                    # discard count, not a tracking gap -- TrimGalore's
+                    # --retain_unpaired only produces an output file for a
+                    # pair's surviving orphan when its mate gets trimmed
+                    # away; the discarded mate itself has no output bucket
+                    # anywhere. There's no file to point an accounting
+                    # entry at for it. (orphan count) + 2*(fully-dropped
+                    # pair count) reproduces this number exactly.
+                ]),
+                ("qf_tag_removal", [
+                    ("input",  "trimmed_p1", self.file_dict["qf_adapt_p1"]),
+                    ("input",  "trimmed_p2", self.file_dict["qf_adapt_p2"]),
+                    ("input",  "trimmed_s",  self.file_dict["qf_adapt_s"]),
+                    ("output", "tag_removed_p1", self.file_dict["qf_tags_p1"]),
+                    ("output", "tag_removed_p2", self.file_dict["qf_tags_p2"]),
+                    ("output", "tag_removed_s",  self.file_dict["qf_tags_s"]),
+                ]),
+                ("qf_merge", [
+                    ("input",  "tag_removed_p1", self.file_dict["qf_tags_p1"]),
+                    ("input",  "tag_removed_p2", self.file_dict["qf_tags_p2"]),
+                    ("input",  "tag_removed_s",  self.file_dict["qf_tags_s"]),
+                    # "merged_s" points at qf_merge_s2 -- the file AFTER
+                    # cat_glue concatenates vsearch's merge output with the
+                    # untouched tag_removed_s singletons (commands.py's
+                    # create_quality_control_command). qf_quality_filter's
+                    # own "merged_s" input entry already uses qf_merge_s2;
+                    # this used to point at qf_merge_s (pre-concatenation),
+                    # silently dropping the singleton pass-through from the
+                    # ledger.
+                    ("output", "merged_s",    self.file_dict["qf_merge_s2"]),
+                    ("output", "unmerged_p1", self.file_dict["qf_merge_p1"]),
+                    ("output", "unmerged_p2", self.file_dict["qf_merge_p2"]),
+                    # Every successfully-merged pair collapses 2 input
+                    # reads into 1 output row in qf_merge_s2. This entry
+                    # re-counts qf_merge_s (the pre-concatenation,
+                    # merge-only file) to log that second consumed read
+                    # explicitly, the same way qf_dedup logs its .clstr
+                    # file as an output for the reads it collapses.
+                    ("output", "merge_consolidation", self.file_dict["qf_merge_s"]),
+                ]),
+                ("qf_quality_filter", [
+                    ("input",  "merged_s",   self.file_dict["qf_merge_s2"]),
+                    ("input",  "unmerged_p1", self.file_dict["qf_merge_p1"]),
+                    ("input",  "unmerged_p2", self.file_dict["qf_merge_p2"]),
+                    ("output", "hq_s",  self.file_dict["qf_hq_s"]),
+                    ("output", "hq_p1", self.file_dict["qf_hq_p1"]),
+                    ("output", "hq_p2", self.file_dict["qf_hq_p2"]),
+                ]),
+                ("qf_orphan_correction", [
+                    ("input",  "hq_s",  self.file_dict["qf_hq_s"]),
+                    ("input",  "hq_p1", self.file_dict["qf_hq_p1"]),
+                    ("input",  "hq_p2", self.file_dict["qf_hq_p2"]),
+                    ("output", "orphan_corrected_s",  self.file_dict["qf_o_s"]),
+                    ("output", "orphan_corrected_p1", self.file_dict["qf_o_p1"]),
+                    ("output", "orphan_corrected_p2", self.file_dict["qf_o_p2"]),
+                ]),
+                ("qf_dedup", [
+                    ("input",  "orphan_corrected_s",  self.file_dict["qf_o_s"]),
+                    ("input",  "orphan_corrected_p1", self.file_dict["qf_o_p1"]),
+                    ("input",  "orphan_corrected_p2", self.file_dict["qf_o_p2"]),
+                    ("output", "unique_s",  self.file_dict["qf_u_s"]),
+                    ("output", "unique_p1", self.file_dict["qf_u_p1"]),
+                    ("output", "unique_p2", self.file_dict["qf_u_p2"]),
+                    ("output", "duplicates_s",  self.file_dict["qf_clstr_s"]),
+                    ("output", "duplicates_p1", self.file_dict["qf_clstr_p1"]),
+                    ("output", "duplicates_p2", self.file_dict["qf_clstr_p1"]),
+                ]),
+            ]
+        else:
+            # Single-read mode's COMMANDS_qual (in create_quality_control_command)
+            # is only [trimgalore_trim, vsearch_filter_0, cdhit_singletons, make_marker].
+            # sort/tag-removal/merge/orphan-correction never run in single mode,
+            # so those sub-steps are not logged here either.
+            # WARNING: vsearch_filter_0's single-mode branch reads
+            # self.file_dict["qf_tags_s"] as input, but tag_remove_singletons
+            # (the command that creates qf_tags_s) is never invoked in
+            # single-mode's COMMANDS_qual list. That file may not exist. This
+            # accounting step will report 0 reads into qf_quality_filter if
+            # so -- that is a pre-existing gap in create_quality_control_command
+            # being surfaced by this logging, not something introduced here,
+            # and it has not been fixed since it is outside this request.
+            qf_acct_steps = [
+                ("qf_trim", [
+                    ("input",  "raw_s", self.file_dict["raw_s"]),
+                    ("output", "trimmed_s", self.file_dict["qf_adapt_s"]),
+                    # NOTE: "unaccounted" here is a genuine discard count --
+                    # reads TrimGalore's quality/length filter removed
+                    # outright. No output bucket exists for them (single-read
+                    # mode has no --retain_unpaired orphan case either).
+                ]),
+                ("qf_quality_filter", [
+                    ("input",  "tag_removed_s", self.file_dict["qf_tags_s"]),
+                    ("output", "hq_s", self.file_dict["qf_hq_s"]),
+                ]),
+                ("qf_dedup", [
+                    ("input",  "hq_s", self.file_dict["qf_hq_s"]),
+                    ("output", "unique_s", self.file_dict["qf_u_s"]),
+                    ("output", "duplicates_s", self.file_dict["qf_clstr_s"]),
+                ]),
+            ]
+
+        for step_name, entries in qf_acct_steps:
+            acct_job_path = os.path.join(self.dir_dict["qf"], "acct_" + step_name + ".sh")
+            command_list = self.commands.create_accounting_command(step_name, entries)
+            self.mp_util.run_subjob_with_mp_store(acct_job_path, command_list)
+            self.mp_util.wait_for_mp_store()
             
 
     def mp_host_filter(self):
@@ -178,10 +304,19 @@ class mp_stage:
             
             else:
                 print(dt.today(), "host elements detected")
+                # Host_db resolves to a path containing a literal "None"
+                # component when database_path is unset in the config file --
+                # there is no real host database to filter against. This is a
+                # single global config value (not per-host), so it's checked
+                # once here rather than inside the loop.
+                host_db_is_valid = "None" not in os.path.normpath(self.config_dict["Host_db"]).split(os.sep)
+                if not host_db_is_valid:
+                    print(dt.today(), "WARNING: Host_db resolves to", self.config_dict["Host_db"], "-- database_path is likely unset in the config file. All host filtering will be skipped; 'no_host' outputs are aliased directly to their inputs (see MetaPro_files.py).")
                 for host_id in self.config_dict["Host_IDs"]:
-                    if((host_id != "none") or (host_id != "None")):
+                    if(host_id.lower() != "none"):
                         print(dt.today(), "using Host ID:", host_id)
                         print(dt.today(), "checking for marker:", host_id + "_host")
+                        host_count_at_call = host_count
                         if(self.marker_control.check_marker(host_id + "_host")):
                             self.dir_control.make_dirs_from_list(host_id + "_dir_list")
 
@@ -193,14 +328,55 @@ class mp_stage:
                                 break
                             
                             host_mkr = self.marker_dict[host_id + "_host"]
-                            host_job = os.path.join(self.dir_dict["host_jobs"], host_id + "_job.sh")
-                            command_list = self.commands.create_host_filter_command(self.config_dict["Host_IDs"], host_count, host_mkr)
-                            self.mp_util.launch_stage_simple(host_job, command_list, self.config_dict["keep_all"], self.config_dict["keep_host"])
+                            if(host_db_is_valid):
+                                host_job = os.path.join(self.dir_dict["host_jobs"], host_id + "_job.sh")
+                                command_list = self.commands.create_host_filter_command(self.config_dict["Host_IDs"], host_count, host_mkr)
+                                self.mp_util.launch_stage_simple(host_job, command_list, self.config_dict["keep_all"], self.config_dict["keep_host"])
+                            else:
+                                print(dt.today(), "skipping Bowtie2 for", host_id, "-- no valid Host_db. 'no_host' output already points at input via file_dict.")
                             self.time_control.measure_time("host", "end")
                             self.marker_control.place_marker(host_id + "_host")
-                            host_count += 1
                         else:
                             print(dt.today(), "skipping:", host_id + "_host")
+
+                        # log read counts for this host, every run.
+                        # host_count_at_call was snapshotted before the marker-check
+                        # branch above, so it reflects how many hosts were already
+                        # processed as of the START of this iteration -- matching
+                        # what create_host_filter_command used when it built this
+                        # host's actual filter command (if it ran this time).
+                        # NOTE: when host_db_is_valid is False, self.file_dict[host_id
+                        # + "_no_host_p1/p2/s"] were aliased in MetaPro_files.py to the
+                        # exact same path as host_in_p1/p2/s below -- so this stage's
+                        # "input" and "output" rows will show identical file paths and
+                        # counts, and "unaccounted" will read 0. That's expected: no
+                        # reads move anywhere in the bypass case, not a display error.
+                        if(host_count_at_call == 0):
+                            host_in_p1 = self.file_dict["qf_u_p1"]
+                            host_in_p2 = self.file_dict["qf_u_p2"]
+                            host_in_s  = self.file_dict["qf_u_s"]
+                        else:
+                            prev_host = self.config_dict["Host_IDs"][host_count_at_call - 1]
+                            host_in_p1 = self.file_dict[prev_host + "_no_host_p1"]
+                            host_in_p2 = self.file_dict[prev_host + "_no_host_p2"]
+                            host_in_s  = self.file_dict[prev_host + "_no_host_s"]
+
+                        host_acct_entries = [
+                            ("input",  "in_p1",      host_in_p1),
+                            ("input",  "in_p2",      host_in_p2),
+                            ("input",  "in_s",       host_in_s),
+                            ("output", "no_host_p1", self.file_dict[host_id + "_no_host_p1"]),
+                            ("output", "no_host_p2", self.file_dict[host_id + "_no_host_p2"]),
+                            ("output", "no_host_s",  self.file_dict[host_id + "_no_host_s"]),
+                            ("output", "host_p1",    self.file_dict[host_id + "_host_p1"]),
+                            ("output", "host_p2",    self.file_dict[host_id + "_host_p2"]),
+                            ("output", "host_s",     self.file_dict[host_id + "_host_s"]),
+                        ]
+                        acct_job_path = os.path.join(self.dir_dict["host_jobs"], host_id + "_acct_job.sh")
+                        command_list = self.commands.create_accounting_command(host_id + "_host", host_acct_entries)
+                        self.mp_util.run_subjob_with_mp_store(acct_job_path, command_list)
+                        self.mp_util.wait_for_mp_store()
+                        host_count += 1
                     else:
                         print(dt.today(), "no hosts to filter")
                         break
@@ -230,6 +406,40 @@ class mp_stage:
             self.vector_end = time.time()
             self.debug_stop_check(self.label_dict["vec"])
             self.marker_control.place_marker("vec")
+
+        # log read counts for vector filtering, every run.
+        # WARNING: create_vector_filter_command's marker line is
+        # `"touch && " + marker_file` -- malformed shell (missing argument
+        # after `touch`, `&&` in the wrong place). That is the broken-command
+        # bug flagged in the earlier audit and has not been fixed here. It
+        # means the "vec" marker may not reliably get placed, but since this
+        # accounting call sits outside the marker if-block, it still runs and
+        # logs regardless of whether the marker itself was successfully placed.
+        final_host = self.config_dict["Host_IDs"][-1]
+        if(final_host == "none"):
+            vec_in_p1 = self.file_dict["qf_u_p1"]
+            vec_in_p2 = self.file_dict["qf_u_p2"]
+            vec_in_s  = self.file_dict["qf_u_s"]
+        else:
+            vec_in_p1 = self.file_dict[final_host + "_no_host_p1"]
+            vec_in_p2 = self.file_dict[final_host + "_no_host_p2"]
+            vec_in_s  = self.file_dict[final_host + "_no_host_s"]
+
+        vec_acct_entries = [
+            ("input",  "in_p1",     vec_in_p1),
+            ("input",  "in_p2",     vec_in_p2),
+            ("input",  "in_s",      vec_in_s),
+            ("output", "no_vec_p1", self.file_dict["no_vec_p1"]),
+            ("output", "no_vec_p2", self.file_dict["no_vec_p2"]),
+            ("output", "no_vec_s",  self.file_dict["no_vec_s"]),
+            ("output", "vec_p1",    self.file_dict["vec_p1"]),
+            ("output", "vec_p2",    self.file_dict["vec_p2"]),
+            ("output", "vec_s",     self.file_dict["vec_s"]),
+        ]
+        acct_job_path = os.path.join(self.dir_dict["vec"], "acct_vector.sh")
+        command_list = self.commands.create_accounting_command("vector", vec_acct_entries)
+        self.mp_util.run_subjob_with_mp_store(acct_job_path, command_list)
+        self.mp_util.wait_for_mp_store()
 
     def mp_rRNA_filter(self):
         #don't split bnap.
@@ -442,6 +652,23 @@ class mp_stage:
             self.mp_util.wait_for_mp_store()
             self.marker_control.place_marker("rRNA")
 
+        # log read counts for rRNA filtering, every run.
+        rRNA_acct_entries = [
+            ("input",  "in_s",     self.file_dict["no_vec_s"]),
+            ("input",  "in_p1",    self.file_dict["no_vec_p1"]),
+            ("input",  "in_p2",    self.file_dict["no_vec_p2"]),
+            ("output", "mRNA_s",   self.file_dict["rRNA_mRNA_s_fq"]),
+            ("output", "mRNA_p1",  self.file_dict["rRNA_mRNA_p1_fq"]),
+            ("output", "mRNA_p2",  self.file_dict["rRNA_mRNA_p2_fq"]),
+            ("output", "other_s",  self.file_dict["rRNA_other_s_fq"]),
+            ("output", "other_p1", self.file_dict["rRNA_other_p1_fq"]),
+            ("output", "other_p2", self.file_dict["rRNA_other_p2_fq"]),
+        ]
+        acct_job_path = os.path.join(self.dir_dict["rRNA_jobs"], "acct_rRNA.sh")
+        command_list = self.commands.create_accounting_command("rRNA", rRNA_acct_entries)
+        self.mp_util.run_subjob_with_mp_store(acct_job_path, command_list)
+        self.mp_util.wait_for_mp_store()
+
 #-----------------------------------------------------------------------------------------------------------------------        
 
     def mp_repop(self):
@@ -462,6 +689,71 @@ class mp_stage:
             #self.mp_util.wait_for_mp_store()
             self.marker_control.place_marker("repop")
         self.repop_end = time.time()
+
+        # log read counts for repop, every run.
+        # repop's inputs now include the .clstr cluster file(s) (the same
+        # files qf_dedup logs as its output), so this stage is expected to
+        # balance to (near) zero unaccounted, not go negative.
+        # The "duplicates_lost_to_filtering_*" entries below account for
+        # the remaining case: if host/vector filtering removed a cluster's
+        # representative read before repop ran, that representative's
+        # duplicates are still sitting in the .clstr file (so they're
+        # still counted as a repop "input" above) but repop never
+        # reintroduces them, since it only looks up cluster members for
+        # representatives present in the post-filtering mRNA/other files.
+        # Logging that loss explicitly as an output is what makes repop's
+        # own ledger balance instead of showing a residual.
+        # WARNING: create_repop_command has a NameError bug in its
+        # single-read-mode branch (`repop_s += ...` on an undefined
+        # `repop_s`, should be `repop_singletons`) -- flagged in the earlier
+        # audit, not fixed here. In single-read mode the repop job itself
+        # will likely fail before self.file_dict["repop_s"] is ever written,
+        # so this accounting call would report 0 reads for that output.
+
+        # Gather every FASTQ of reads host filtering actually removed.
+        # Mirrors mp_host_filter's own "none"/no_host guard so this list
+        # stays empty (not a crash) when host filtering was skipped.
+        host_removed_p1 = []
+        host_removed_s = []
+        if not self.config_dict["no_host"] and "none" not in self.config_dict["Host_IDs"]:
+            for host_id in self.config_dict["Host_IDs"]:
+                if host_id.lower() != "none":
+                    host_removed_p1.append(self.file_dict[host_id + "_host_p1"])
+                    host_removed_s.append(self.file_dict[host_id + "_host_s"])
+
+        # vec_p1/vec_s are always defined (vector filtering isn't optional
+        # the way host filtering is), same as mp_vector_filter's own
+        # accounting entries above reference them directly.
+        removed_p1 = host_removed_p1 + [self.file_dict["vec_p1"]]
+        removed_s  = host_removed_s  + [self.file_dict["vec_s"]]
+
+        lost_dup_s_arg  = "::".join([self.file_dict["qf_clstr_s"]]  + removed_s)
+        lost_dup_p1_arg = "::".join([self.file_dict["qf_clstr_p1"]] + removed_p1)
+
+        repop_acct_entries = [
+            ("input",  "pre_repop_mRNA_s",   self.file_dict["rRNA_mRNA_s_fq"]),
+            ("input",  "pre_repop_mRNA_p1",  self.file_dict["rRNA_mRNA_p1_fq"]),
+            ("input",  "pre_repop_mRNA_p2",  self.file_dict["rRNA_mRNA_p2_fq"]),
+            ("input",  "pre_repop_other_s",  self.file_dict["rRNA_other_s_fq"]),
+            ("input",  "pre_repop_other_p1", self.file_dict["rRNA_other_p1_fq"]),
+            ("input",  "pre_repop_other_p2", self.file_dict["rRNA_other_p2_fq"]),
+            ("input",  "duplicates_s",  self.file_dict["qf_clstr_s"]),
+            ("input",  "duplicates_p1", self.file_dict["qf_clstr_p1"]),
+            ("input",  "duplicates_p2", self.file_dict["qf_clstr_p1"]),
+            ("output", "repop_mRNA_s",   self.file_dict["repop_s"]),
+            ("output", "repop_mRNA_p1",  self.file_dict["repop_p1"]),
+            ("output", "repop_mRNA_p2",  self.file_dict["repop_p2"]),
+            ("output", "repop_other_s",  self.file_dict["repop_other_s"]),
+            ("output", "repop_other_p1", self.file_dict["repop_other_p1"]),
+            ("output", "repop_other_p2", self.file_dict["repop_other_p2"]),
+            ("output", "duplicates_lost_to_filtering_s",  lost_dup_s_arg),
+            ("output", "duplicates_lost_to_filtering_p1", lost_dup_p1_arg),
+            ("output", "duplicates_lost_to_filtering_p2", lost_dup_p1_arg),
+        ]
+        acct_job_path = os.path.join(self.dir_dict["repop"], "acct_repop.sh")
+        command_list = self.commands.create_accounting_command("repop", repop_acct_entries)
+        self.mp_util.run_subjob_with_mp_store(acct_job_path, command_list)
+        self.mp_util.wait_for_mp_store()
 
 
     def mp_assemble(self):
@@ -1060,10 +1352,3 @@ class mp_stage:
                 self.mp_util.run_subjob_with_mp_store(self.file_dict["out_ec_heatmap_job"], command_list)
 
             self.mp_util.wait_for_mp_store()
-
-            
-
-
-
-            
-    

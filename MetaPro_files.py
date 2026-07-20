@@ -53,8 +53,11 @@ class mpro_file_handler:
         self.file_dict["raw_s"] = self.config_dict["single"]
         self.file_dict["raw_p1"] = self.config_dict["pair_1"]
         self.file_dict["raw_p2"] = self.config_dict["pair_2"]
+        self.file_dict["read_accounting_log"] = os.path.join(self.dir_dict["main"], "read_accounting_log.tsv")
         self.file_dict["qf_sort_p1"] = os.path.join(self.dir_dict["qf_sort"], "pair_1_sorted.fastq")
-        self.file_dict["qf_sort_p2"] = os.path.join(self.dir_dict["qf_sort"], "pair_2_sorted.fastq") 
+        self.file_dict["qf_sort_p2"] = os.path.join(self.dir_dict["qf_sort"], "pair_2_sorted.fastq")
+        self.file_dict["qf_tg_p1_unpaired"] = os.path.join(self.dir_dict["qf_adapt"], "pair_1_sorted_unpaired_1.fq")
+        self.file_dict["qf_tg_p2_unpaired"] = os.path.join(self.dir_dict["qf_adapt"], "pair_2_sorted_unpaired_2.fq") 
         self.file_dict["qf_adapt_s"] = os.path.join(self.dir_dict["qf_adapt"], "s_no_adapt.fastq")
         self.file_dict["qf_adapt_p1"] = os.path.join(self.dir_dict["qf_adapt"], "pair_1_sorted_val_1.fq")
         self.file_dict["qf_adapt_p2"] = os.path.join(self.dir_dict["qf_adapt"], "pair_2_sorted_val_2.fq")
@@ -85,7 +88,8 @@ class mpro_file_handler:
             "qf_merge_s", "qf_merge_s2", "qf_merge_p1", "qf_merge_p2"                                           
         ]
         self.file_dict["qf_job"] = os.path.join(self.dir_dict["qf"], "qf_job.sh")
-        for item in self.config_dict["Host_IDs"]:
+        host_db_is_valid = "None" not in os.path.normpath(self.config_dict["Host_db"]).split(os.sep)
+        for host_index, item in enumerate(self.config_dict["Host_IDs"]):
             if(item == "none"):
                 break
             else:
@@ -94,9 +98,25 @@ class mpro_file_handler:
                 self.file_dict[item + "_host_s"] = os.path.join(self.dir_dict[item + "_host_export"], "s_host.fastq")
                 self.file_dict[item + "_host_o"] = os.path.join(self.dir_dict[item + "_host_export"], "o_host.fastq")
                 self.file_dict[item + "_host_u"] = os.path.join(self.dir_dict[item + "_host_export"], "u_host.fastq")
-                self.file_dict[item + "_no_host_p1"] = os.path.join(self.dir_dict[item + "_host_export"], "p1_no_host.fastq")
-                self.file_dict[item + "_no_host_p2"] = os.path.join(self.dir_dict[item + "_host_export"], "p2_no_host.fastq")
-                self.file_dict[item + "_no_host_s"] = os.path.join(self.dir_dict[item + "_host_export"], "s_no_host.fastq")
+                if(host_db_is_valid):
+                    self.file_dict[item + "_no_host_p1"] = os.path.join(self.dir_dict[item + "_host_export"], "p1_no_host.fastq")
+                    self.file_dict[item + "_no_host_p2"] = os.path.join(self.dir_dict[item + "_host_export"], "p2_no_host.fastq")
+                    self.file_dict[item + "_no_host_s"] = os.path.join(self.dir_dict[item + "_host_export"], "s_no_host.fastq")
+                else:
+                    # Host_db resolves to a path with a "None" component
+                    # (database_path is unset in the config) -- there is no
+                    # real host database to filter against. Redirect this
+                    # host's "no_host" output to alias its own input instead
+                    # of a real export path.
+                    if(host_index == 0):
+                        self.file_dict[item + "_no_host_p1"] = self.file_dict["qf_u_p1"]
+                        self.file_dict[item + "_no_host_p2"] = self.file_dict["qf_u_p2"]
+                        self.file_dict[item + "_no_host_s"] = self.file_dict["qf_u_s"]
+                    else:
+                        prev_item = self.config_dict["Host_IDs"][host_index - 1]
+                        self.file_dict[item + "_no_host_p1"] = self.file_dict[prev_item + "_no_host_p1"]
+                        self.file_dict[item + "_no_host_p2"] = self.file_dict[prev_item + "_no_host_p2"]
+                        self.file_dict[item + "_no_host_s"] = self.file_dict[prev_item + "_no_host_s"]
                 self.file_dict[item + "_no_host_o"] = os.path.join(self.dir_dict[item + "_host_export"], "o_no_host.fastq")
                 self.file_dict[item + "_no_host_u"] = os.path.join(self.dir_dict[item + "_host_export"], "u_no_host.fastq")
                 self.file_dict[item + "_no_host_s_sam"] = os.path.join(self.dir_dict[item + "_host_scan"], "s_no_host.sam")
