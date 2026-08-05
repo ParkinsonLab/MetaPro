@@ -82,7 +82,7 @@ class mt_pipe_commands:
         trimgalore_trim += " --length " + self.config_dict["adapterremoval_minlength"]
         trimgalore_trim += " --output_dir " + self.dir_dict["qf_adapt"]
         trimgalore_trim += " --poly-g"
-        trimgalore_trim += " --polya"
+        trimgalore_trim += " --poly-a"
         trimgalore_trim += " --trim_n"
         trimgalore_trim += " --dont_gzip"
 
