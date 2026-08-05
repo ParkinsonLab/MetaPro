@@ -1,7 +1,6 @@
 import os
 import sys
 from datetime import datetime as dt
-import shutil
 # No need for 'io' as we are using raw binary mode
 
 def parse_fastq_streaming(filepath):
@@ -123,60 +122,47 @@ def filter_for_orphans(p0_path_i, p1_path_i, orphans_path_i, p0_path_o, p1_path_
     print("File 1 orphans: %d" % (len(ids_1) - len(common_ids)))
     print("ID collection time: %s" % (dt.now() - start_time))
     
-    p0_orphans_found = len(ids_0) - len(common_ids)
-    p1_orphans_found = len(ids_1) - len(common_ids)
-
-    
     # Pass 2: Stream through files again and write output based on ID sets
     print("Pass 2: Writing output files...")
     start_time = dt.now()
     
-    if(p0_orphans_found > 0):
-        # Process first file
-        matched_count_0 = 0
-        orphan_count_0 = 0
-        
-        print("Processing file 0...")
-        # Use binary write ('wb') and binary append ('ab') for output
-        with open(p0_path_o, 'wb') as matched_out, \
-            open(orphans_path_o, 'ab') as orphan_out:
-            for read_id, full_record in parse_fastq_streaming(p0_path_i):
-                if read_id in common_ids:
-                    matched_out.write(full_record)
-                    matched_count_0 += 1
-                else:
-                    orphan_out.write(full_record)
-                    orphan_count_0 += 1
-                
-                if (matched_count_0 + orphan_count_0) % 1000000 == 0:
-                    print("  Processed %d reads from file 0..." % (matched_count_0 + orphan_count_0))
-    else:
-        print(dt.today(), "no orphans found in forward reads. just making a new copy")
-        shutil.copy2(p0_path_i, p0_path_o)
-
-    if(p1_orphans_found > 0):
-        # Process second file
-        matched_count_1 = 0
-        orphan_count_1 = 0
-        
-        print("Processing file 1...")
-        # Use binary write ('wb') and binary append ('ab') for output
-        with open(p1_path_o, 'wb') as matched_out, \
-            open(orphans_path_o, 'ab') as orphan_out:
-            for read_id, full_record in parse_fastq_streaming(p1_path_i):
-                if read_id in common_ids:
-                    matched_out.write(full_record)
-                    matched_count_1 += 1
-                else:
-                    orphan_out.write(full_record)
-                    orphan_count_1 += 1
-                
-                if (matched_count_1 + orphan_count_1) % 1000000 == 0:
-                    print("  Processed %d reads from file 1..." % (matched_count_1 + orphan_count_1))
-    else:
-        print(dt.today(), "no orphans found in reverse reads. just making a new copy")
-        shutil.copy2(p1_path_i, p1_path_o)
-        
+    # Process first file
+    matched_count_0 = 0
+    orphan_count_0 = 0
+    
+    print("Processing file 0...")
+    # Use binary write ('wb') and binary append ('ab') for output
+    with open(p0_path_o, 'wb') as matched_out, \
+         open(orphans_path_o, 'ab') as orphan_out:
+        for read_id, full_record in parse_fastq_streaming(p0_path_i):
+            if read_id in common_ids:
+                matched_out.write(full_record)
+                matched_count_0 += 1
+            else:
+                orphan_out.write(full_record)
+                orphan_count_0 += 1
+            
+            if (matched_count_0 + orphan_count_0) % 1000000 == 0:
+                print("  Processed %d reads from file 0..." % (matched_count_0 + orphan_count_0))
+    
+    # Process second file
+    matched_count_1 = 0
+    orphan_count_1 = 0
+    
+    print("Processing file 1...")
+    # Use binary write ('wb') and binary append ('ab') for output
+    with open(p1_path_o, 'wb') as matched_out, \
+         open(orphans_path_o, 'ab') as orphan_out:
+        for read_id, full_record in parse_fastq_streaming(p1_path_i):
+            if read_id in common_ids:
+                matched_out.write(full_record)
+                matched_count_1 += 1
+            else:
+                orphan_out.write(full_record)
+                orphan_count_1 += 1
+            
+            if (matched_count_1 + orphan_count_1) % 1000000 == 0:
+                print("  Processed %d reads from file 1..." % (matched_count_1 + orphan_count_1))
     
     print("File processing time: %s" % (dt.now() - start_time))
     print("Saved %d matching pairs to %s" % (matched_count_0, p0_path_o))
