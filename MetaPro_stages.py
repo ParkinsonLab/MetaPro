@@ -298,7 +298,7 @@ class mp_stage:
     def mp_host_filter(self):
         host_count = 0
         if not self.config_dict["no_host"]:
-            if(not self.config_dict["Host_IDs"]):
+            if("none" in self.config_dict["Host_IDs"]):
                 print(dt.today(), "no hosts specified. bypassing")
             
             else:
@@ -391,7 +391,7 @@ class mp_stage:
             #if self.config_dict["no_host"]:
                 #get dep args from quality filter
                 #if not check_where_resume(vector_path, None, self.quality_path):
-            if(not self.config_dict["Host_IDs"]):
+            if("none" in self.config_dict["Host_IDs"]):
                 print("no host filtering performed")
             else:
                 final_host = self.config_dict["Host_IDs"][-1]
@@ -419,7 +419,7 @@ class mp_stage:
         # accounting call sits outside the marker if-block, it still runs and
         # logs regardless of whether the marker itself was successfully placed.
         
-        if(not self.config_dict["Host_IDs"]):
+        if("none" in self.config_dict["Host_IDs"]):
             vec_in_p1 = self.file_dict["qf_u_p1"]
             vec_in_p2 = self.file_dict["qf_u_p2"]
             vec_in_s  = self.file_dict["qf_u_s"]

@@ -31,7 +31,7 @@ import psutil as psu
         
 
 class mpro_config:    
-    def value_assignment(self, filetype, config, config_section, var_name, default=None):
+    def value_assignment(self, filetype, config, config_section, var_name, default):
         value = ""
         #print("CONFIG:", config)
         if config:
@@ -451,7 +451,7 @@ class mpro_config:
         self.config_dict["vector_ID"]          = self.value_assignment("str", config, "Databases", "vector_IDs","univec") 
         self.config_dict["Adapter"]             = self.value_assignment("path", config, "Databases", "Adapter", os.path.join(database_path, "Trimmomatic_adapters/TruSeq3-PE-2.fa"))
         self.config_dict["Host_db"]             = self.value_assignment("path", config, "Databases", "Host_db",  os.path.join(database_path, "Mouse_cds"))
-        self.config_dict["Host_IDs"]            = self.value_assignment("list",  config, "Databases", "Host_IDs")
+        self.config_dict["Host_IDs"]            = self.value_assignment("list",  config, "Databases", "Host_IDs", "none")
         self.config_dict["Rfam"]                = self.value_assignment("path", config, "Databases", "Rfam", os.path.join(database_path, "Rfam/Rfam.cm"))
         self.config_dict["DNA_DB"]              = self.value_assignment("path", config, "Databases", "DNA_DB", os.path.join(database_path, "ChocoPhlAn/ChocoPhlAn.fasta"))
         self.config_dict["source_taxa_DB"]      = self.value_assignment("path", config, "Databases", "source_taxa_db", os.path.join(database_path, "family_llbs"))
