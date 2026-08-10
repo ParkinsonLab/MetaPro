@@ -1143,59 +1143,64 @@ class mt_pipe_commands:
         
     def create_output_unique_junk(self):
         command_list = list()
-        for item in self.config_dict["Host_IDs"]:
-            #no longer needed. we save the host reads.
-            #get_unique_host_reads_singletons = ">&2 echo get singleton host reads for stats | "
-            #get_unique_host_reads_singletons += self.config_dict["Python"] + " "
-            #get_unique_host_reads_singletons += self.config_dict["get_unique_host_reads"] + " "
-            #get_unique_host_reads_singletons += self.file_dict[item + "_host_s"] + " "
-            #get_unique_host_reads_singletons += self.file_dict["qf_u_s"] + " "
-            #get_unique_host_reads_singletons += os.path.join(unique_hosts_folder, "singletons_hosts.fastq")
-        
-            if not (os.path.exists(self.marker_dict["Out_" + item + "_repop_host_s"])):
-                repop_singletons_hosts = ">&2 echo repopulating singletons hosts | " 
-                repop_singletons_hosts += self.config_dict["Python"] + " "
-                repop_singletons_hosts += self.config_dict["duplicate_repopulate"]+ " "
-                if(self.read_mode == "single"):
-                    repop_singletons_hosts += self.file_dict["qf_hq_s"] + " " #os.path.join(quality_folder, "singletons_hq.fastq") + " "
-                else:
-                    repop_singletons_hosts += self.file_dict["qf_o_s"] + " " #os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
-                repop_singletons_hosts += self.file_dict[item + "_host_s"] + " " #os.path.join(unique_hosts_folder, "singletons_hosts.fastq") + " "
-                repop_singletons_hosts += self.file_dict["qf_clstr_s"] + " " #os.path.join(quality_folder, "singletons_unique.fastq.clstr") + " "
-                repop_singletons_hosts += self.file_dict[item + "_full_host_s"] + " "#os.path.join(full_hosts_folder, "singletons_full_hosts.fastq")
-                repop_singletons_hosts += "&& touch " + self.marker_dict["Out_" + item + "_repop_host_s"]
+        if not self.config_dict["Host_IDs"]:
+            repop_singletons_hosts = ">&2 echo No hosts. skipping singletons"
+            repop_pair_1_hosts = ">&2 echo No hosts. skipping pair 1"
+            repop_pair_2_hosts = ">&1 echo No hosts. skipping pair 2"
+        else:
+            for item in self.config_dict["Host_IDs"]:
+                #no longer needed. we save the host reads.
+                #get_unique_host_reads_singletons = ">&2 echo get singleton host reads for stats | "
+                #get_unique_host_reads_singletons += self.config_dict["Python"] + " "
+                #get_unique_host_reads_singletons += self.config_dict["get_unique_host_reads"] + " "
+                #get_unique_host_reads_singletons += self.file_dict[item + "_host_s"] + " "
+                #get_unique_host_reads_singletons += self.file_dict["qf_u_s"] + " "
+                #get_unique_host_reads_singletons += os.path.join(unique_hosts_folder, "singletons_hosts.fastq")
+            
+                if not (os.path.exists(self.marker_dict["Out_" + item + "_repop_host_s"])):
+                    repop_singletons_hosts = ">&2 echo repopulating singletons hosts | " 
+                    repop_singletons_hosts += self.config_dict["Python"] + " "
+                    repop_singletons_hosts += self.config_dict["duplicate_repopulate"]+ " "
+                    if(self.read_mode == "single"):
+                        repop_singletons_hosts += self.file_dict["qf_hq_s"] + " " #os.path.join(quality_folder, "singletons_hq.fastq") + " "
+                    else:
+                        repop_singletons_hosts += self.file_dict["qf_o_s"] + " " #os.path.join(quality_folder, "singletons_with_duplicates.fastq") + " "
+                    repop_singletons_hosts += self.file_dict[item + "_host_s"] + " " #os.path.join(unique_hosts_folder, "singletons_hosts.fastq") + " "
+                    repop_singletons_hosts += self.file_dict["qf_clstr_s"] + " " #os.path.join(quality_folder, "singletons_unique.fastq.clstr") + " "
+                    repop_singletons_hosts += self.file_dict[item + "_full_host_s"] + " "#os.path.join(full_hosts_folder, "singletons_full_hosts.fastq")
+                    repop_singletons_hosts += "&& touch " + self.marker_dict["Out_" + item + "_repop_host_s"]
 
-                command_list.append(repop_singletons_hosts)
+                    command_list.append(repop_singletons_hosts)
 
-            if not (os.path.exists(self.marker_dict["Out_" + item + "_repop_host_p1"])):
-                repop_pair_1_hosts = ">&2 echo repopulating pair 1 hosts | " 
-                repop_pair_1_hosts += self.config_dict["Python"] + " "
-                repop_pair_1_hosts += self.config_dict["duplicate_repopulate"]+ " "
-                if self.read_mode == "single":
-                    repop_pair_1_hosts += self.file_dict["qf_hq_p1"] + " " #os.path.join(quality_folder, "pair_1_match.fastq") + " "
-                else:
-                    repop_pair_1_hosts += self.file_dict["qf_o_p1"] + " "
+                if not (os.path.exists(self.marker_dict["Out_" + item + "_repop_host_p1"])):
+                    repop_pair_1_hosts = ">&2 echo repopulating pair 1 hosts | " 
+                    repop_pair_1_hosts += self.config_dict["Python"] + " "
+                    repop_pair_1_hosts += self.config_dict["duplicate_repopulate"]+ " "
+                    if self.read_mode == "single":
+                        repop_pair_1_hosts += self.file_dict["qf_hq_p1"] + " " #os.path.join(quality_folder, "pair_1_match.fastq") + " "
+                    else:
+                        repop_pair_1_hosts += self.file_dict["qf_o_p1"] + " "
 
-                repop_pair_1_hosts += self.file_dict[item + "_host_p1"] + " "#os.path.join(unique_hosts_folder, "pair_1_hosts.fastq") + " "
-                repop_pair_1_hosts += self.file_dict["qf_clstr_p1"] + " "#os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
-                repop_pair_1_hosts += self.file_dict[item + "_full_host_p1"] + " "#os.path.join(full_hosts_folder, "pair_1_full_hosts.fastq")
-                repop_pair_1_hosts += "&& touch " + self.marker_dict["Out_" + item + "_repop_host_p1"]
-                command_list.append(repop_pair_1_hosts)
+                    repop_pair_1_hosts += self.file_dict[item + "_host_p1"] + " "#os.path.join(unique_hosts_folder, "pair_1_hosts.fastq") + " "
+                    repop_pair_1_hosts += self.file_dict["qf_clstr_p1"] + " "#os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
+                    repop_pair_1_hosts += self.file_dict[item + "_full_host_p1"] + " "#os.path.join(full_hosts_folder, "pair_1_full_hosts.fastq")
+                    repop_pair_1_hosts += "&& touch " + self.marker_dict["Out_" + item + "_repop_host_p1"]
+                    command_list.append(repop_pair_1_hosts)
 
-            if not (os.path.exists(self.marker_dict["Out_" + item + "_repop_host_p2"])):
-                repop_pair_2_hosts = ">&2 echo repopulating pair 2 hosts | " 
-                repop_pair_2_hosts += self.config_dict["Python"] + " "
-                repop_pair_2_hosts += self.config_dict["duplicate_repopulate"]+ " "
-                if self.read_mode == "single":
-                    repop_pair_2_hosts += self.file_dict["qf_hq_p2"] + " " #os.path.join(quality_folder, "pair_1_match.fastq") + " "
-                else:
-                    repop_pair_2_hosts += self.file_dict["qf_o_p2"] + " "
+                if not (os.path.exists(self.marker_dict["Out_" + item + "_repop_host_p2"])):
+                    repop_pair_2_hosts = ">&2 echo repopulating pair 2 hosts | " 
+                    repop_pair_2_hosts += self.config_dict["Python"] + " "
+                    repop_pair_2_hosts += self.config_dict["duplicate_repopulate"]+ " "
+                    if self.read_mode == "single":
+                        repop_pair_2_hosts += self.file_dict["qf_hq_p2"] + " " #os.path.join(quality_folder, "pair_1_match.fastq") + " "
+                    else:
+                        repop_pair_2_hosts += self.file_dict["qf_o_p2"] + " "
 
-                repop_pair_2_hosts += self.file_dict[item + "_host_p2"] + " "#os.path.join(unique_hosts_folder, "pair_1_hosts.fastq") + " "
-                repop_pair_2_hosts += self.file_dict["qf_clstr_p1"] + " "#os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
-                repop_pair_2_hosts += self.file_dict[item + "_full_host_p2"] + " "#os.path.join(full_hosts_folder, "pair_1_full_hosts.fastq")
-                repop_pair_2_hosts += "&& touch " + self.marker_dict["Out_" + item + "_repop_host_p2"]
-                command_list.append(repop_pair_2_hosts)
+                    repop_pair_2_hosts += self.file_dict[item + "_host_p2"] + " "#os.path.join(unique_hosts_folder, "pair_1_hosts.fastq") + " "
+                    repop_pair_2_hosts += self.file_dict["qf_clstr_p1"] + " "#os.path.join(quality_folder, "pair_1_unique.fastq.clstr") + " "
+                    repop_pair_2_hosts += self.file_dict[item + "_full_host_p2"] + " "#os.path.join(full_hosts_folder, "pair_1_full_hosts.fastq")
+                    repop_pair_2_hosts += "&& touch " + self.marker_dict["Out_" + item + "_repop_host_p2"]
+                    command_list.append(repop_pair_2_hosts)
 
         if not (os.path.exists(self.marker_dict["Out_vec_repop_s"])):
             repop_vec_s = ">&2 echo repopulating singletons vectors | " 

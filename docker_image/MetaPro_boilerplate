@@ -79,6 +79,14 @@ RUN wget https://compsysbio.org/metapro_hosting/MetaGeneMark_linux_64.tar.gz \
     && chmod 755 /pipeline_tools/mgm/gmhmmp \
     && rm -rf MetaGeneMark_linux_64*
 
+RUN wget https://github.com/gatech-genemark/MetaGeneMark-2/archive/refs/heads/main.tar.gz -O mgm2.tar.gz \
+    && tar -xzf mgm2.tar.gz && cd MetaGeneMark-2-main/src \
+    && make -f Makefile.ubuntu \
+    && mkdir -p /pipeline_tools/mgm2 \
+    && cp gmhmmp2 mgm2_11.mod mgm2_4.mod run_mgm2.pl /pipeline_tools/mgm2/ \
+    && chmod 755 /pipeline_tools/mgm2/gmhmmp2 /pipeline_tools/mgm2/run_mgm2.pl \
+    && cd /pipeline_tools && rm -rf MetaGeneMark-2-main mgm2.tar.gz
+
 
 
 # Add all the tool binaries to the system PATH
@@ -87,6 +95,7 @@ ENV PATH="${PATH}:/pipeline_tools/infernal/src:/pipeline_tools/samtools:/pipelin
 ENV PATH="${PATH}:/pipeline_tools/adapterremoval:/pipeline_tools/BLAST_p:/pipeline_tools/FastQC-0.12.1"
 ENV PATH="${PATH}:/pipeline_tools/kraken2:/pipeline_tools/barrnap-0.9/bin:/pipeline_tools/cdhit/cd-hit-auxtools"
 ENV PATH="${PATH}:/pipeline_tools/KronaTools/bin:/pipeline_tools/mgm:/pipeline_tools/TrimGalore/target/release"
+ENV PATH="${PATH}:/pipeline_tools/mgm2"
 
 # === PART 2: Create a Dedicated Conda Environment for DeepEC ===
 COPY deepec_env.yml /tmp/
@@ -129,6 +138,8 @@ RUN wget https://compsysbio.org/metapro_hosting/deepec_wrapper.py -O /usr/local/
 RUN pip install --no-cache-dir \
     biopython pandas matplotlib seaborn pillow psutil requests \
     numpy scikit-learn tqdm transformers
+
+RUN pip install --no-cache-dir pyrodigal
 	
 # === Install Rust and build TrimGalore (v2 is a Rust rewrite) ===
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y

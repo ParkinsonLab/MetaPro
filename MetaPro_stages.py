@@ -298,12 +298,12 @@ class mp_stage:
     def mp_host_filter(self):
         host_count = 0
         if not self.config_dict["no_host"]:
-            print("host id list:", self.config_dict["Host_IDs"])
-            if("none" in self.config_dict["Host_IDs"]):
+            if(not self.config_dict["Host_IDs"]):
                 print(dt.today(), "no hosts specified. bypassing")
             
             else:
                 print(dt.today(), "host elements detected")
+                print("host id list:", self.config_dict["Host_IDs"])
                 # Host_db resolves to a path containing a literal "None"
                 # component when database_path is unset in the config file --
                 # there is no real host database to filter against. This is a
@@ -391,8 +391,11 @@ class mp_stage:
             #if self.config_dict["no_host"]:
                 #get dep args from quality filter
                 #if not check_where_resume(vector_path, None, self.quality_path):
-            final_host = self.config_dict["Host_IDs"][-1]
-            print("using final host:", final_host)
+            if(not self.config_dict["Host_IDs"]):
+                print("no host filtering performed")
+            else:
+                final_host = self.config_dict["Host_IDs"][-1]
+                print("using final host:", final_host)
 
             for item in self.dir_dict["vec_list"]:
                 print("making:", item, self.dir_dict[item])
@@ -415,12 +418,13 @@ class mp_stage:
         # means the "vec" marker may not reliably get placed, but since this
         # accounting call sits outside the marker if-block, it still runs and
         # logs regardless of whether the marker itself was successfully placed.
-        final_host = self.config_dict["Host_IDs"][-1]
-        if(final_host == "none"):
+        
+        if(not self.config_dict["Host_IDs"]):
             vec_in_p1 = self.file_dict["qf_u_p1"]
             vec_in_p2 = self.file_dict["qf_u_p2"]
             vec_in_s  = self.file_dict["qf_u_s"]
         else:
+            final_host = self.config_dict["Host_IDs"][-1]
             vec_in_p1 = self.file_dict[final_host + "_no_host_p1"]
             vec_in_p2 = self.file_dict[final_host + "_no_host_p2"]
             vec_in_s  = self.file_dict[final_host + "_no_host_s"]
