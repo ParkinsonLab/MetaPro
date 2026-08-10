@@ -221,16 +221,19 @@ class mpro_dir:
         self.dir_dict["main_host"] = os.path.join(self.out_dir, "host")
         self.dir_dict["main_host_export"] = os.path.join(self.dir_dict["main_host"], "export")
         self.dir_dict["host_jobs"] = os.path.join(self.dir_dict["main_host"], "jobs")
-        for item in self.config_dict["Host_IDs"]:
-            self.dir_dict[item + "_host"] = os.path.join(self.dir_dict["main_host"], item)
-            self.dir_dict[item + "_host_data"] = os.path.join(self.dir_dict[item + "_host"], "data")
-            self.dir_dict[item +"_host_scan"] = os.path.join(self.dir_dict[item + "_host_data"], "0_BT2_scan")
-            self.dir_dict[item + "_host_export"] = os.path.join(self.dir_dict[item + "_host"], "export")
+        if("none" in self.config_dict["Host_IDs"]):
+            print("no host. not making dirs")
+        else:
+            for item in self.config_dict["Host_IDs"]:
+                self.dir_dict[item + "_host"] = os.path.join(self.dir_dict["main_host"], item)
+                self.dir_dict[item + "_host_data"] = os.path.join(self.dir_dict[item + "_host"], "data")
+                self.dir_dict[item +"_host_scan"] = os.path.join(self.dir_dict[item + "_host_data"], "0_BT2_scan")
+                self.dir_dict[item + "_host_export"] = os.path.join(self.dir_dict[item + "_host"], "export")
 
-            self.dir_dict[item + "_dir_list"] = ["main_host", "main_host_export", "host_jobs", item + "_host", item + "_host_data", item + "_host_scan", item + "_host_export"]
-            #for item in self.dir_dict[item + "_dir_list"]:
-                #print("item:", item, self.dir_dict[item])
-                #time.sleep(1)
+                self.dir_dict[item + "_dir_list"] = ["main_host", "main_host_export", "host_jobs", item + "_host", item + "_host_data", item + "_host_scan", item + "_host_export"]
+                #for item in self.dir_dict[item + "_dir_list"]:
+                    #print("item:", item, self.dir_dict[item])
+                    #time.sleep(1)
 
 
         self.dir_dict["vec"] = os.path.join(self.out_dir, self.label_dict["vec"])
@@ -330,9 +333,13 @@ class mpro_dir:
         self.dir_dict["out_export"] = os.path.join(self.dir_dict["out"], "export")
         self.dir_dict["out_data"] = os.path.join(self.dir_dict["out"], "data")
         self.dir_dict["out_hosts"] = os.path.join(self.dir_dict["out_data"], "hosts")
-        for item in self.config_dict["Host_IDs"]:
-            self.dir_dict[item + "_full_host"] = os.path.join(self.dir_dict["out_hosts"], item)
-            self.dir_dict["out_list"].append(item + "_full_host")
+        if("none" in self.config_dict["Host_IDs"]):
+            print("no host. skipping dir creation")
+        else:
+            for item in self.config_dict["Host_IDs"]:
+                self.dir_dict[item + "_full_host"] = os.path.join(self.dir_dict["out_hosts"], item)
+                self.dir_dict["out_list"].append(item + "_full_host")
+
         self.dir_dict["out_jobs"] = os.path.join(self.dir_dict["out"], "jobs")
         self.dir_dict["out_ng"] = os.path.join(self.dir_dict["out_data"], "metabolic_network")
         self.dir_dict["out_unique_hosts"] = os.path.join(self.dir_dict["out_data"], "unique_hosts")

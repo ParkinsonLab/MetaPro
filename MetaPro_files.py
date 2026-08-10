@@ -334,14 +334,17 @@ class mpro_file_handler:
         self.file_dict["out_heatmap_rpkm"] = os.path.join(self.dir_dict["out_export"], "EC_heatmap_RPKM.tsv")
         self.file_dict["out_taxa_report"] = os.path.join(self.dir_dict["out_export"], "taxa_classification.tsv")
 
-        for item in self.config_dict["Host_IDs"]:
+        if("none" in self.config_dict["Host_IDs"]):
+            print("no host. no host files")
+        else:
+            for item in self.config_dict["Host_IDs"]:
 
-            #self.file_dict[item + "_u_host_s"] = os.path.join(self.dir_dict["out_data"], item + "_u_s.fastq")
-            #self.file_dict[item + "_u_host_p1"] = os.path.join(self.dir_dict["out_data"], item + "_u_p1.fastq")
-            #self.file_dict[item + "_u_host_p2"] = os.path.join(self.dir_dict[item + "_full_host"], item + "_u_p2.fastq")
-            self.file_dict[item + "_full_host_s"] = os.path.join(self.dir_dict[item + "_full_host"], item + "_s_full_host.fastq")
-            self.file_dict[item + "_full_host_p1"] = os.path.join(self.dir_dict[item + "_full_host"], item +"_p1_full_host.fastq")
-            self.file_dict[item + "_full_host_p2"] = os.path.join(self.dir_dict[item + "_full_host"], item + "_p2_full_host.fastq")
+                #self.file_dict[item + "_u_host_s"] = os.path.join(self.dir_dict["out_data"], item + "_u_s.fastq")
+                #self.file_dict[item + "_u_host_p1"] = os.path.join(self.dir_dict["out_data"], item + "_u_p1.fastq")
+                #self.file_dict[item + "_u_host_p2"] = os.path.join(self.dir_dict[item + "_full_host"], item + "_u_p2.fastq")
+                self.file_dict[item + "_full_host_s"] = os.path.join(self.dir_dict[item + "_full_host"], item + "_s_full_host.fastq")
+                self.file_dict[item + "_full_host_p1"] = os.path.join(self.dir_dict[item + "_full_host"], item +"_p1_full_host.fastq")
+                self.file_dict[item + "_full_host_p2"] = os.path.join(self.dir_dict[item + "_full_host"], item + "_p2_full_host.fastq")
 
         self.file_dict["out_full_vec_s"] = os.path.join(self.dir_dict["out_data"], "full_s_vec.fastq")
         self.file_dict["out_full_vec_p1"] = os.path.join(self.dir_dict["out_data"], "full_p1_vec.fastq")

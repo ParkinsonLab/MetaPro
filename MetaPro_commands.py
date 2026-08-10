@@ -1143,7 +1143,7 @@ class mt_pipe_commands:
         
     def create_output_unique_junk(self):
         command_list = list()
-        if not self.config_dict["Host_IDs"]:
+        if "none" in self.config_dict["Host_IDs"]:
             repop_singletons_hosts = ">&2 echo No hosts. skipping singletons"
             repop_pair_1_hosts = ">&2 echo No hosts. skipping pair 1"
             repop_pair_2_hosts = ">&1 echo No hosts. skipping pair 2"
